@@ -1,0 +1,65 @@
+{% extends 'internship/base.html' %} {# (ده السطر الصح اللي بيشغل النافبار) #}
+{% load static %}
+
+{% block title %}طلباتي{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5" style="min-height: 60vh;">
+    
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+
+            <h2 class="mb-4">متابعة طلبات التقديم</h2>
+            <p class="lead text-muted">هنا يمكنك متابعة حالة جميع التدريبات التي قمت بالتقديم عليها.</p>
+            
+            {% if applications %}
+                <div class="card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+                    <div class="table-responsive">
+
+                        <table class="table mb-0 text-center" style="border:1px solid #eee; border-radius:12px; overflow:hidden;">
+                            <thead style="background:#f6f6f6; font-size:18px; font-weight:600;">
+                                <tr>
+                                    <th class="py-3">العنوان</th>
+                                    <th class="py-3">الموعد النهائي</th>
+                                    <th class="py-3">تاريخ الإرسال</th>
+                                    <th class="py-3">الحالة</th>
+                                </tr>
+                            </thead>
+
+                            <tbody style="font-size:17px;">
+                                {% for app in applications %}
+                                <tr>
+                                    <td class="py-3"><strong>{{ app.internship.title }}</strong></td>
+                                    <td class="py-3">{{ app.deadline|date:"Y-m-d" }}</td>
+                                    <td class="py-3">{{ app.application_date|date:"Y-m-d" }}</td>
+                                    <td class="py-3">
+                                        {% if app.status == 'مقبول' or app.status == 'تمت الموافقة' %}
+                                            <span style="color:#14a44d; font-weight:700;">تمت الموافقة</span>
+                                        {% elif app.status == 'مرفوض' %}
+                                            <span style="color:#dc3545; font-weight:700;">مرفوض</span>
+                                        {% else %}
+                                            <span style="color:#6c757d; font-weight:700;">{{ app.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            
+            {% else %}
+                <div class="choice-card text-center"> 
+                    <h4>لم تقم بالتقديم على أي تدريبات بعد</h4>
+                    <p class="text-muted">بمجرد التقديم على أي فرصة، ستظهر هنا لتتمكن من متابعة حالتها.</p>
+                    <hr class="my-3">
+                    <a href="{% url 'list' %}" class="btn btn-main">تصفح التدريبات الآن</a>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

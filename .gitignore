@@ -1,0 +1,20 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual Environment
+# (اتأكد إن ده اسم الفولدر بتاعك)
+venv/
+
+# Database
+db.sqlite3
+*.sqlite3
+
+# User Uploads (مهم جداً)
+media/
+
+# Staticfiles (ملفات الـ CSS/JS المجمعة)
+staticfiles/
+
+# ملفات الإعدادات السرية
+.env

@@ -1,0 +1,50 @@
+{% extends 'internship/base.html' %}
+{% load static %}
+
+{% block title %}حل مهمة: {{ task.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5" style="min-height: 60vh;">
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="text-center mb-4">
+                <h2 style="color: #004d99; font-weight: bold;">{{ task.title }}</h2>
+                <p class="lead text-muted">{{ task.description }}</p>
+                <p class="fw-bold" style="color: #007bff;">هذا التاسك يمنحك {{ task.points_awarded }} نقطة.</p>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                <div class="choice-card p-4 mb-4">
+                    <fieldset class="form-group">
+                        <legend class="fs-5 fw-bold" style="color: #004d99;">{{ field.label }}</legend>
+                        <hr>
+                        
+                        <div style="padding-right: 10px;">
+                        {% for radio in field %}
+                            <div class="form-check my-2">
+                                {{ radio.tag }}
+                                <label class="form-check-label" for="{{ radio.id_for_label }}" style="padding-right: 5px;">
+                                    {{ radio.choice_label }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    </fieldset>
+                </div>
+                {% endfor %}
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn-main" style="background-color: #007bff; color: white; padding: 10px 30px; font-size: 1.1em;">
+                        إنهاء وإرسال الإجابات
+                    </button>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

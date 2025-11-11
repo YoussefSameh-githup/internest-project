@@ -1,0 +1,57 @@
+{% extends 'internship/base.html' %}
+{% load static %}
+
+{% block title %}كورسات الشركاء{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4" style="color: #ffaa00;">الكورسات المعتمدة من الشركاء</h1>
+    </div>
+
+    {% for course in courses %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm" style="border-radius: 10px; border: 1px solid #ffaa00;">
+            <div class="card-body">
+                <h5 class="card-title" style="color: #004d99; font-weight: bold;">{{ course.title }}</h5>
+                
+                <p class="card-text text-muted small mb-3">
+                    مقدم بواسطة: 
+                    <strong style="color: #333;">
+                        {{ course.partner.company_name }}
+                        
+                        {% if course.partner.is_fully_verified %}
+                            <img src="{% static 'img/verified_badge.png' %}" alt="موثق" 
+                                 style="height: 16px; width: 16px; vertical-align: middle; margin-right: 3px;">
+                        {% endif %}
+                    </strong>
+                </p>
+
+                <p class="card-text">{{ course.description|truncatechars:100 }}</p>
+                <ul class="list-unstyled small">
+                    <li><strong style="color: #333;">المقدم:</strong> {{ course.instructor_name }}</li>
+                    <li><strong style="color: #333;">السعر:</strong> {{ course.price }} ج.م</li>
+                    <li><strong style="color: #333;">النقاط:</strong> {{ course.points_awarded }} نقطة</li>
+                </ul>
+                
+                {% if course.id in enrolled_course_ids %}
+                    <a href="{{ course.video_link }}" target="_blank" class="btn btn-success mt-2" style="background-color: #28a745; color: white; border: none;">
+                        شاهد الكورس (تم الشراء)
+                    </a>
+                {% else %}
+                    <a href="{% url 'course_checkout' course.id %}" class="btn btn-main mt-2" style="background-color: #007bff; color: white;">
+                        شراء الكورس الآن
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if not courses %}
+        <div class="col-12 text-center py-5">
+            <p class="lead">لا توجد كورسات متاحة حالياً.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

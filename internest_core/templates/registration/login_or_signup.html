@@ -1,0 +1,40 @@
+{% extends 'internship/base.html' %}
+{% load static %}
+
+{% block title %}تسجيل الدخول أو إنشاء حساب{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
+    <div style="width: 100%; max-width: 550px; padding: 40px; border-radius: 15px; background-color: white; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
+        
+        <h2 style="text-align: center; color: #004d99; font-weight: bold; margin-bottom: 30px;">انطلاق مسيرتك المهنية كطالب</h2>
+
+        <div style="text-align: center;">
+            <p style="font-size: 1.1em; color: #555; margin-bottom: 30px;">
+                اختر طريقة تسجيل الدخول أو أنشئ ملفك الموحد.
+            </p>
+
+            <a href="{% url 'login' %}" 
+               class="btn-main" 
+               style="background-color: #007bff; color: white; padding: 15px 30px; width: 80%; display: block; margin: 15px auto;">
+                <i class="fas fa-envelope me-2"></i> تسجيل الدخول بالإيميل وكلمة السر
+            </a>
+
+            <a href="{% url 'signup' %}" 
+               class="btn-main" 
+               style="background-color: #28a745; color: white; padding: 15px 30px; width: 80%; display: block; margin: 15px auto;">
+                <i class="fas fa-user-plus me-2"></i> إنشاء حساب جديد
+            </a>
+            
+            <hr style="margin-top: 30px; border-top: 1px solid #eee;">
+
+            <a href="#" 
+               class="btn-main" 
+               style="background-color: #dc3545; color: white; padding: 10px 20px; width: 80%; opacity: 0.6; cursor: not-allowed;">
+                <i class="fab fa-google me-2"></i> الدخول بحساب جوجل (قريباً)
+            </a>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

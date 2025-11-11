@@ -1,0 +1,39 @@
+{% extends 'internship/base.html' %}
+{% load static %}
+
+{% block title %}INTERNEST: انطلق{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 85vh; text-align: center;">
+    <div style="width: 80%; max-width: 900px; padding: 20px;">
+        
+        <img src="{% static 'img/internest_logo.JPG' %}" alt="شعار Internest" style="max-height: 180px; display: block; margin: 0 auto;" class="mb-4">
+        
+        <h1 style="font-size: 2.8rem; margin-bottom: 5px;">
+            INTERNEST
+        </h1>
+        <p class="lead-text" style="font-size: 1.2rem; margin-bottom: 40px;">
+            حيث تبدأ مسيرتك المهنية: نظام الربط الذكي بين الشركات والطلاب الجامعيين.
+        </p>
+
+        <div style="display: flex; justify-content: center; gap: 40px; margin-top: 20px;">
+            
+            <div class="choice-card" style="flex: 1; border-left: 5px solid #007bff;">
+                <h3 style="color: #007bff; margin-bottom: 20px;">أنا طالب جامعي 🎓</h3>
+                <p style="color: #555;">تصفح تدريبات حصرية، أكمل ملفك الشخصي 100%، وقدّم بسهولة.</p>
+                <a href="{% url 'login' %}" class="btn-main" style="background-color: #007bff; color: white;">
+                    تسجيل الدخول / إنشاء حساب
+                </a>
+            </div>
+
+            <div class="choice-card" style="flex: 1; border-left: 5px solid #ffaa00;">
+                <h3 style="color: #ffaa00; margin-bottom: 20px;">أنا شريك (شركة / جامعة) 🤝</h3>
+                <p style="color: #555;">استقطاب المواهب المُفرَزة بنظام التعاقد المباشر والمضمون.</p>
+                <a href="{% url 'partner_login' %}" class="btn-main">
+                    دخول الشركاء المعتمدين
+                </a>
+            </div>
+        </div>
+        </div>
+</div>
+{% endblock %}

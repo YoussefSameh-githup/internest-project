@@ -1,0 +1,153 @@
+{% extends 'internship/base.html' %}
+{% load static %}
+
+{% block title %}لوحة تحكم الشريك | الفرص المتقدمة{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-12">
+        
+        <h1 style="color: #004d99; font-weight: 700; margin-bottom: 5px;">
+            لوحة تحكم الشريك: {{ partner.company_name }}
+        </h1>
+        <p class="lead-text">
+            مرحباً، {{ partner.company_name }}. حالة التوثيق: 
+            {% if partner.is_fully_verified %}
+                <span style="color: #28a745; font-weight: bold;">موثق ✅</span>
+            {% else %}
+                <span style="color: #ffaa00; font-weight: bold;">قيد المراجعة/غير مكتمل</span>
+            {% endif %}
+        </p>
+
+        <div class="choice-card p-4 mb-4" style="border-left: 5px solid {% if partner.profile_completion_score == 100 %}#28a745{% else %}#dc3545{% endif %};">
+            {% if partner.profile_completion_score < 100 %}
+                <p style="color: #dc3545; font-weight: bold; margin-bottom: 0;">
+                    🛑 الملف غير مكتمل ({{ partner.profile_completion_score }}%). يجب إكماله لتتمكن من إرسال الطلبات!
+                    <a href="{% url 'partner_profile' %}" style="color: #007bff; text-decoration: none; margin-right: 15px;">إكمال الملف الآن ➔</a>
+                </p>
+            {% else %}
+                <p style="color: #28a745; font-weight: bold; margin-bottom: 0;">
+                    ✅ الملف مكتمل بنسبة 100%. يمكنك الآن تقديم المحتوى الجديد.
+                </p>
+            {% endif %}
+        </div>
+        
+        <div style="margin-bottom: 30px; display: flex; gap: 20px;">
+            <a href="{% url 'partner_submit_internship' %}" class="btn-main" style="background-color: #28a745; color: white; padding: 10px 20px;">
+                + تقديم فرصة تدريب جديدة
+            </a>
+            <a href="{% url 'partner_submit_course' %}" class="btn-main" style="background-color: #007bff; color: white; padding: 10px 20px;">
+                + تقديم كورس جديد
+            </a>
+            
+            <a href="{% url 'partner_profile' %}" style="margin-left: auto; text-decoration: none; color: #004d99; font-weight: bold; align-self: center;">
+                مراجعة ملف التوثيق ➔
+            </a>
+        </div>
+        
+        <h3 style="color: #004d99; margin-top: 50px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+            صندوق الوارد (ملفات المتقدمين)
+        </h3>
+        <p class="text-muted">هنا تظهر ملفات الطلاب الذين تمت الموافقة عليهم من قِبل الأدمن وإرسالهم إليك.</p>
+        
+        <div class="choice-card p-4 mb-4">
+            <table style="width: 100%; border-collapse: collapse; text-align: right;">
+                <thead>
+                    <tr style="background-color: #f0f0f0;">
+                        <th style="padding: 10px; border: 1px solid #ddd;">اسم الطالب</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">مقدم على تدريب</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">التخصص</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">تاريخ الإرسال</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">ملف CV</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in received_applicants %}
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">
+                            {{ app.student.user.first_name }} {{ app.student.user.last_name }}
+                            <div style="font-size: 0.9em; color: #6c757d; font-weight: normal;">{{ app.student.user.email }}</div>
+                        </td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">{{ app.internship.title }}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">{{ app.student.major|default:'-' }}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">{{ app.forwarded_on|date:"Y-m-d" }}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">
+                            {% if app.student.cv_file %}
+                                <a href="{{ app.student.cv_file.url }}" class="btn-main" style="padding: 5px 10px; font-size: 0.9em; background-color: #007bff; color: white; text-decoration: none;" target="_blank">
+                                    عرض/تحميل
+                                </a>
+                            {% else %}
+                                <span style="color: #6c757d;">لا يوجد</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" style="padding: 15px; text-align: center; color: #6c757d;">لم يتم إرسال أي ملفات متقدمين إليك حتى الآن.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <h3 style="color: #007bff; margin-top: 40px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+            حالة طلبات فرص التدريب
+        </h3>
+        <div class="choice-card p-4 mb-4">
+            <table style="width: 100%; border-collapse: collapse; text-align: right;">
+                <thead>
+                    <tr style="background-color: #f0f0f0;">
+                        <th style="padding: 10px; border: 1px solid #ddd;">العنوان</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">الموعد النهائي</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">تاريخ الإرسال</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for submission in internship_submissions %}
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">{{ submission.title }}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">{{ submission.deadline|date:"Y-m-d" }}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">{{ submission.submission_date|date:"Y-m-d" }}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; color: {% if submission.status == 'Approved' %}#28a745{% elif submission.status == 'Rejected' %}#dc3545{% else %}#ffaa00{% endif %};">
+                            {{ submission.get_status_display }}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4" style="padding: 15px; text-align: center; color: #6c757d;">لم يتم تقديم أي طلبات تدريب بعد.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        
+        <h3 style="color: #007bff; margin-top: 40px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+            حالة الكورسات المُقدَّمة
+        </h3>
+        <div class="choice-card p-4 mb-4">
+            <table style="width: 100%; border-collapse: collapse; text-align: right;">
+                <thead>
+                    <tr style="background-color: #f0f0f0;">
+                        <th style="padding: 10px; border: 1px solid #ddd;">العنوان</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">نقاط Gamification</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">تاريخ الإرسال</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for submission in course_submissions %}
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">{{ submission.title }}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; color: #ffaa00;">+{{ submission.points_awarded }}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">{{ submission.submission_date|date:"Y-m-d" }}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; color: {% if submission.status == 'Approved' %}#28a745{% elif submission.status == 'Rejected' %}#dc3545{% else %}#ffaa00{% endif %};">
+                            {{ submission.get_status_display }}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4" style="padding: 15px; text-align: center; color: #6c757d;">لم يتم تقديم أي كورسات بعد.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

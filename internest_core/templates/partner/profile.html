@@ -1,0 +1,74 @@
+{% extends 'internship/base.html' %}
+{% load static %}
+
+{% block title %}ملفي الشخصي للشريك{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5" style="min-height: 60vh;">
+    <h2 class="text-center mb-4" style="color: #004d99; font-weight: bold;">
+        ملف الشريك المؤسسي ونظام التوثيق
+    </h2>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            {% if messages %}
+                <div class="messages mb-4">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} text-center" role="alert" style="margin-bottom: 0;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="choice-card p-4 mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-12 text-center text-md-start">
+                        <h3 class="mb-1" style="color: #004d99;">
+                            {{ partner_profile.company_name }}
+                            {% if partner_profile.is_fully_verified %}
+                                (موثق ✅)
+                            {% endif %}
+                        </h3>
+                        <p class="text-muted mb-0">
+                            {% if partner_profile.official_email %} البريد الإلكتروني: {{ partner_profile.official_email }} {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="choice-card p-4 mb-4" style="border-left: 5px solid {% if partner_profile.profile_completion_score == 100 %}#28a745{% else %}#dc3545{% endif %};">
+                <div class="d-flex justify-content-between align-items.center">
+                    <div>
+                        <p class="mb-0" style="font-weight: bold; color: #333;">
+                            نسبة اكتمال ملف الشريك: {{ partner_profile.profile_completion_score }}%
+                        </p>
+                    </div>
+                    {% if partner_profile.profile_completion_score < 100 %}
+                        <p class="mb-0 text-danger" style="font-weight: bold; margin-left: 20px;">
+                            أكمل الملف لفتح جميع الميزات!
+                        </p>
+                    {% else %}
+                        <p class="mb-0 text-success" style="font-weight: bold; margin-left: 20px;">
+                            ملفك مكتمل 100%، كل الميزات متاحة!
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <h3 class="mb-3" style="color: #004d99;">تعديل بيانات التواصل والتوثيق (KYC)</h3>
+            <div class="choice-card p-4">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    {{ form.as_p }} 
+                    
+                    <button type="submit" class="btn-main mt-3" style="background-color: #007bff; color: white;">
+                        حفظ التعديلات
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'internship/base.html' %}
+{% load static %}
+
+{% block title %}تم تسجيل الخروج{% endblock %}
+
+{% block content %}
+<div class="container text-center" style="max-width: 600px; margin-top: 80px;">
+    <h2 class="display-main" style="color: #007bff;">لقد تم تسجيل خروجك بنجاح. 👋</h2>
+    <p class="lead-text">نتمنى أن تكون قد حصلت على تدريبك المثالي.</p>
+    
+    <div class="mt-4">
+        <a href="{% url 'login' %}" class="btn-main" style="background-color: #ffaa00; color: #333;">
+            تسجيل الدخول مجدداً
+        </a>
+    </div>
+    
+    <div class="mt-3">
+        <a href="{% url 'landing' %}" class="btn-link" style="color: #007bff;">العودة إلى الصفحة الرئيسية</a>
+    </div>
+</div>
+{% endblock %}

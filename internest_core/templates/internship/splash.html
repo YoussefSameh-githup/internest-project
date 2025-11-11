@@ -1,0 +1,48 @@
+{% extends 'internship/base.html' %}
+{% load static %}
+
+{% block title %}مرحباً بك في Internest{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center text-center py-5" style="min-height: 80vh; align-items: center;">
+    <div class="col-md-10"> <img src="{% static 'img/internest_logo.JPG' %}" alt="شعار Internest" style="max-height: 150px;" class="mb-4">
+        
+        <h1 class="display-3 fw-bold mb-3 text-primary">
+            INTERNEST: حيث تبدأ مسيرتك المهنية
+        </h1>
+        <p class="lead mb-5 text-muted">
+            نظام الربط الذكي بين الشركات والطلاب الجامعيين. اختر مسارك للمتابعة:
+        </p>
+
+        <div class="row mt-5 justify-content-center"> 
+            <div class="col-md-5 mb-4">
+                <div class="card p-4 shadow-lg h-100 border-primary">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3 fw-bold text-dark">أنا طالب جامعي 🎓</h4>
+                        <p class="text-secondary">تصفح التدريبات، أكمل ملفك الشخصي بنسبة 100%، وقدّم بسهولة.</p>
+                        <a href="{% url 'login_or_signup' %}" class="btn btn-primary btn-lg w-100 mt-4">
+                            ابدأ رحلتي المهنية
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5 mb-4">
+                <div class="card p-4 shadow-lg h-100 border-warning">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3 fw-bold text-dark">أنا شريك (شركة / جامعة) 🤝</h4>
+                        <p class="text-secondary">استقطاب المواهب المُفرَزة أو إدارة تدريب طلابي بنظام التعاقد المباشر.</p>
+                        <a href="{% url 'contact_partner' %}" class="btn btn-warning btn-lg w-100 mt-4">
+                            تواصل معنا بخصوص الشراكة
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <p class="mt-5 small text-muted">
+            إذا كنت مسجلاً مسبقاً كطالب، يمكنك الدخول مباشرة من شريط التنقل.
+        </p>
+    </div>
+</div>
+{% endblock %}

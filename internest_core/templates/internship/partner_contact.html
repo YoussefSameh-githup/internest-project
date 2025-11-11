@@ -1,0 +1,44 @@
+{% extends 'internship/base.html' %}
+
+{% block title %}شراكات Internest المضمونة{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-9 text-center">
+        
+        <h1 class="display-5 fw-bold text-dark mb-3">
+            شراكة Internest: بناء مسار مهني مضمون
+        </h1>
+        <p class="lead-text mb-5">
+            نحن نقدم نظام ربط وفرز ذكي يضمن لك أعلى جودة من الطلاب المؤهلين...
+        </p>
+
+    </div>
+</div>
+
+<div class="row justify-content-center mb-5">
+    <div class="col-md-10">
+        <div class="card p-5 shadow-lg">
+            
+            <h3 class="fw-bold mb-3 text-center" style="color: #ffaa00;">ابدأ الشراكة الآن</h3>
+            <p class="text-center text-secondary mb-4">
+                للحصول على كود الشريك السري، يُرجى التواصل معنا عبر البريد الإلكتروني الرسمي.
+            </p>
+
+            <div class="text-center mt-3">
+                <a href="mailto:partnerships@internest.com?subject=طلب%20كود%20شريك%20جديد%20للمنصة&body=نحن%20[اسم%20الشركة]%20نرغب%20في%20الحصول%20على%20كود%20شريك%20مُعتمد%20لتسهيل%20عملية%20التوظيف/التدريب." 
+                   class="btn-main" 
+                   style="background-color: #dc3545; color: white; padding: 15px 30px; margin-bottom: 20px;">
+                   إرسال طلب كود سري عبر البريد (partnerships@internest.com)
+                </a>
+
+                <div class="mt-4">
+                    <a href="{% url 'partner_login' %}" style="text-decoration: none; color: #004d99; font-weight: bold;">
+                        أنا شريك معتمد ولدي كود الدخول ➔
+                    </a>
+                </div>
+            </div>
+            </div>
+    </div>
+</div>
+{% endblock %}

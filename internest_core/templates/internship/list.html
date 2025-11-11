@@ -1,0 +1,79 @@
+{% extends 'internship/base.html' %}
+{% load static %}
+
+{% block title %}تصفح التدريبات{% endblock %}
+
+{% block content %}
+<div class="container text-center py-5">
+    
+    <div class="choice-card" style="margin-bottom: 50px;">
+        <h1 style="font-size: 2.5rem; color: #004d99;">
+            كل تدريباتك الصيفية في مكان واحد
+        </h1>
+        <p class="lead-text">ابحث، فلتر، وقدّم بسهولة وسرعة بملف موحد.</p>
+        
+        <form method="GET" action="{% url 'list' %}" style="display: flex; justify-content: center; gap: 15px; margin-top: 30px;">
+            
+            <input type="text" name="q" placeholder="ابحث عن مسمى وظيفي أو شركة..." style="width: 35%; padding: 12px; border-radius: 8px;" value="{{ request.GET.q|default:'' }}">
+
+            <select name="major" style="width: 25%; padding: 12px; border-radius: 8px;">
+                <option value="">كل التخصصات</option>
+                {% for major in available_majors %}
+                <option value="{{ major }}" {% if request.GET.major == major %}selected{% endif %}>{{ major }}</option>
+                {% endfor %}
+            </select>
+            
+            <button type="submit" class="btn-main" style="background-color: #007bff; color: white; padding: 12px 30px;">
+                ابحث الآن
+            </button>
+        </form>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 20px;">
+        {% for internship in internships %}
+        
+        <div style="flex: 1 1 48%;">
+            <div class="choice-card" style="padding: 25px; text-align: right; border-left: 5px solid {% if internship.is_premium %}#ffaa00{% else %}#007bff{% endif %}; transition: transform 0.2s;">
+                
+                <h4 class="fw-bold mb-2" style="color: #004d99; font-size: 1.3rem;">
+                    {{ internship.title }}
+                    {% if internship.is_premium %}
+                        <span style="font-size: 0.8em; background-color: #ffaa00; color: #333; padding: 3px 8px; border-radius: 5px; margin-right: 10px;">متميز</span>
+                    {% endif %}
+                </h4>
+
+                <p class="text-muted small mb-3">
+                    {{ internship.company_name }}
+                    
+                    {% if internship.company_name in verified_partner_names %}
+                        <img src="{% static 'img/verified_badge.png' %}" alt="" style="height: 16px; width: 16px; vertical-align: middle; margin-right: 3px;">
+                    {% endif %}
+
+                    | {{ internship.location }}
+                </p>
+                
+                <p class="text-secondary" style="font-size: 0.95em;">
+                    {{ internship.description|truncatewords:20 }}
+                </p>
+                
+                <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: bold; color: #ffaa00;">{{ internship.required_majors }}</span>
+                    <span style="font-size: 0.85em; color: #dc3545;">
+                        ينتهي: {{ internship.deadline|date:"Y/m/d" }}
+                    </span>
+                </div>
+
+                <a href="{% url 'apply' internship.id %}" class="btn-main mt-3" style="float: left; background-color: #007bff; color: white; padding: 8px 20px;">
+                    قدّم بملفك الموحد
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div style="width: 100%;" class="choice-card">
+            <h4 style="color: #007bff;">عذراً، لا توجد فرص تدريب مطابقة حالياً.</h4>
+            <p class="text-secondary">ابدأ بإضافة بعض الفرص من لوحة الإدارة.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

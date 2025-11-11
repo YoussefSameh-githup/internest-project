@@ -1,0 +1,27 @@
+/* styles.css */
+
+/* إضافة خطوط عربية بسيطة (إذا تم تحميلها) */
+@font-face {
+    font-family: 'Tahoma';
+    /* هنا يمكن إضافة مسار ملف الخط إذا كان موجوداً في static/fonts */
+}
+
+/* تنسيق خاص لشعار INTERNEST */
+.navbar a {
+    text-transform: uppercase;
+}
+
+/* تحسين شكل حقول الإدخال القياسية */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0 15px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: Tahoma, sans-serif;
+}

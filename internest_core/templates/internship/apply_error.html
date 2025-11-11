@@ -1,0 +1,27 @@
+
+{% extends 'internship/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center text-center">
+    <div class="col-md-8">
+        <div class="alert alert-danger p-5 shadow-lg" role="alert">
+            <h1 class="display-4 text-danger">⚠️ التقديم مرفوض مؤقتاً</h1>
+            <p class="lead fw-bold">{{ message }}</p>
+            <p>هذا الشرط يضمن أن الشركات تستقبل ملفات كاملة وموثوقة فقط.</p>
+            <hr>
+            
+            <p class="mb-4">
+                <strong>الفرصة التي كنت تحاول التقديم عليها:</strong>
+                <span class="text-primary">{{ internship.title }}</span> في شركة <span class="text-secondary">{{ internship.company_name }}</span>
+            </p>
+
+            <a href="{% url 'profile' %}" class="btn btn-warning btn-lg me-3">
+                اذهب لإكمال ملفي الآن ({{ profile.profile_completion_score }}%)
+            </a>
+            <a href="{% url 'list' %}" class="btn btn-outline-secondary btn-lg">
+                العودة لصفحة التدريبات
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

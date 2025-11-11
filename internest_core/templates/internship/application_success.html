@@ -1,0 +1,16 @@
+
+{% extends 'internship/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center text-center">
+    <div class="col-md-6">
+        <div class="alert alert-success p-5 shadow-lg" role="alert">
+            <h1 class="display-4 text-success">تم التقديم بنجاح! 🎉</h1>
+            <p class="lead">تم إرسال طلبك باستخدام ملفك الموحد على Internest. سيتم مراجعة طلبك من قبل الشركة.</p>
+            <hr>
+            <p>يمكنك متابعة حالة طلبك في لوحة التحكم الخاصة بك لاحقاً.</p>
+            <a href="{% url 'list' %}" class="btn btn-success mt-3">العودة لتصفح المزيد من التدريبات</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

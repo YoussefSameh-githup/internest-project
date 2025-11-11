@@ -1,0 +1,143 @@
+{% extends 'internship/base.html' %}
+{% load static %}
+
+{% block title %}ملفي الشخصي{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* تنسيق البوكسات (Cards) */
+    .profile-card {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        margin-bottom: 25px;
+        border-left: 5px solid #004d99; /* خط تمييز أزرق */
+    }
+    
+    /* تنسيق شريط التقدم */
+    .progress-bar-container {
+        background-color: #e9ecef;
+        border-radius: 10px;
+        margin-top: 10px;
+        overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 25px; /* زيادة ارتفاع الشريط */
+        color: white;
+        padding: 5px;
+        border-radius: 10px;
+        text-align: center;
+        transition: width 0.5s;
+        font-weight: bold;
+    }
+    
+    /* تنسيق أزرار الـ Gamification */
+    .gamification-buttons a {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .gamification-buttons a:hover {
+        background-color: #0056b3;
+    }
+
+    /* تنسيق حقول النموذج (Form) */
+    .profile-form .form-label {
+        font-weight: bold;
+        color: #333;
+        display: block;
+        margin-bottom: 5px;
+    }
+    .profile-form input[type="text"],
+    .profile-form input[type="email"],
+    .profile-form input[type="url"],
+    .profile-form select,
+    .profile-form input[type="file"] {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        box-sizing: border-box;
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-10">
+        <h2 style="color: #004d99; font-weight: 700; margin-bottom: 30px;">ملفك الشخصي ونظام الأداء</h2>
+        
+        <div class="profile-card text-center">
+            {% if profile.profile_picture %}
+                <img src="{{ profile.profile_picture.url }}" alt="صورة الملف الشخصي" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #ffaa00;">
+            {% else %}
+                <div style="width: 150px; height: 150px; border-radius: 50%; background-color: #ccc; margin: 0 auto; line-height: 150px; font-size: 3em; color: white;">👤</div>
+            {% endif %}
+            <h4 class="mt-3" style="color: #333;">مرحباً، {{ user.username }}</h4>
+            <p style="color: #6c757d; margin-bottom: 5px;">**الإيميل**: {{ user.email }}</p>
+            <p style="color: #6c757d; margin-bottom: 5px;">**الهاتف**: {{ profile.phone_number|default:"لم يحدد" }}</p>
+            {% if profile.linkedin_url %}
+                <p><a href="{{ profile.linkedin_url }}" target="_blank" style="color: #007bff; font-weight: bold; text-decoration: none;">LinkedIn Profile</a></p>
+            {% endif %}
+        </div>
+        
+        <div class="profile-card" style="border-left-color: #007bff;">
+            <h5 style="color: #007bff; font-weight: bold;">جودة ملف التقديم (Completion Score)</h5>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: {{ profile.profile_completion_score }}%; background-color: {% if profile.profile_completion_score < 100 %}#dc3545{% else %}#28a745{% endif %};">
+                    {{ profile.profile_completion_score }}% مكتمل
+                </div>
+            </div>
+            {% if profile.profile_completion_score < 100 %}
+                <p class="small mt-2" style="color: #dc3545; font-weight: bold;">⚠️ ملفك غير مكتمل. أكمل لفتح خاصية التقديم!</p>
+            {% else %}
+                <p class="small mt-2" style="color: #28a745; font-weight: bold;">✅ ملفك مكتمل وجاهز للتقديم على الفرص!</p>
+            {% endif %}
+        </div>
+
+        <div class="profile-card" style="border-left-color: #ffaa00;">
+            <h5 style="color: #ffaa00; font-weight: bold;">اسكور الأداء والأنشطة (Gamification Score)</h5>
+            <h1 style="color: #333; font-size: 3em; margin-bottom: 5px;">{{ profile.gamification_score }} نقطة</h1>
+            <p class="small text-muted">النقاط المكتسبة من التاسكات والكورسات.</p>
+            <div class="mt-3 gamification-buttons" style="display: flex; gap: 20px; justify-content: center;">
+                <a href="{% url 'task_list' %}">ابدأ التاسكات</a>
+                <a href="{% url 'course_list' %}" style="background-color: #28a745;">كورسات الشركاء</a>
+            </div>
+        </div>
+
+        <div class="profile-card profile-form">
+            <h5 style="color: #004d99; font-weight: bold; border-bottom: 2px solid #ffaa00; padding-bottom: 10px; margin-bottom: 20px;">
+                تعديل البيانات وتحميل الملفات
+            </h5>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-text small" style="color: #6c757d;">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                <button type="submit" class="btn-main" style="background-color: #007bff; color: white; padding: 12px 30px; margin-top: 15px;">
+                    حفظ وتحديث الملف
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
