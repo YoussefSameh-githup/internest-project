@@ -10,24 +10,18 @@ import dj_database_url # (✨ 1. استيراد)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- (✨ 2. إخفاء المفتاح السري) ---
-# هو هيقراه من المنصة. لو مش لاقيه، هيستخدم واحد "وهمي" (للتجربة بس)
 SECRET_KEY = os.environ.get(
     'SECRET_KEY', 
-    'django-insecure-default-key-for-development'
+    'django-insecure-default-key-for-development' # (ده مفتاح وهمي للتجربة اللوكال)
 )
 
-# --- (✨ 3. إعدادات الـ DEBUG) ---
-# هيقراها من المنصة. لو مش لاقيها، هيعتبر إننا "لوكال"
+# --- (✨ 3. إعدادات الـ DEBUG والـ HOSTS) ---
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# (✨ 4. أسماء الدومين)
-# هيقراها من المنصة. لو "لوكال"، هيضيف 127.0.0.1
-ALLOWED_HOSTS = []
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-else:
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+RAILWAY_PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
+if RAILWAY_PUBLIC_DOMAIN:
+    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
 
 
 # Application definition
@@ -37,14 +31,16 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic', # (✨ 5. إضافة Whitenoise)
+    'whitenoise.runserver_nostatic', # (✨ 4. إضافة Whitenoise)
     'django.contrib.staticfiles',
+    
+    # التطبيق بتاعك
     'internest_core.apps.InternestCoreConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # (✨ 6. إضافة Whitenoise)
+    'whitenoise.middleware.WhiteNoiseMiddleware', # (✨ 5. إضافة Whitenoise)
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -74,10 +70,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'internest_app_project.wsgi.application' # (اتأكد إن ده اسم البروجكت الصح)
 
 
-# --- (✨ 7. تعديل الداتا بيز) ---
-# هيقراها من المنصة. لو "لوكال"، هيستخدم ملف sqlite
+# --- (✨ 6. تعديل الداتا بيز) ---
 DATABASES = {
     'default': dj_database_url.config(
+        # هيستخدم sqlite لو شغال لوكال
         default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
         conn_max_age=600
     )
@@ -98,13 +94,12 @@ TIME_ZONE = 'Africa/Cairo'
 USE_I18N = True
 USE_TZ = True
 
-# --- (✨ 8. إعدادات الـ Static Files للإنتاج) ---
+# --- (✨ 7. إعدادات الـ Static Files للإنتاج) ---
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'internest_core', 'static'),
 ]
-# ده المخزن اللي WhiteNoise هيستخدمه
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # إعدادات رفع الملفات (الشعارات والصور)
@@ -112,3 +107,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# --- (✨ 8. تحديد صفحات الدخول والخروج) ---
+LOGIN_REDIRECT_URL = 'list'
+LOGIN_URL = 'login_or_signup'
+LOGOUT_REDIRECT_URL = 'landing'
