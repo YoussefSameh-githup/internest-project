@@ -18,10 +18,12 @@ SECRET_KEY = os.environ.get(
 # --- (2) وضع الـ DEBUG والـ HOSTS ---
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
+# (✨ 1. التعديل: تغيير اللوجيك لـ Render)
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
-RAILWAY_PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
-if RAILWAY_PUBLIC_DOMAIN:
-    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+# (انتهى التعديل)
 
 
 # Application definition
@@ -47,9 +49,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# --- (✨ 1. التعديل هنا) ---
+# --- (✨ 2. التعديل: تصليح الاسم الغلط) ---
 ROOT_URLCONF = 'internest_app_project.urls'
 WSGI_APPLICATION = 'internest_app_project.wsgi.application'
+# (انتهى التعديل)
 
 TEMPLATES = [
     {
