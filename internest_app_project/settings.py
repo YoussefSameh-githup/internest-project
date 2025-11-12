@@ -4,7 +4,7 @@ Django settings for Internest_Project project.
 
 from pathlib import Path
 import os
-# (شيلنا dj_database_url)
+# (مبنحتجش dj_database_url هنا)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,7 +24,7 @@ DEBUG = False
 
 # --- (3. الـ HOSTS) ---
 # (اتأكد إن ده اليوزرنيم بتاعك)
-ALLOWED_HOSTS = ['youssefsameh.pythonanywhere.com', '127.0.0.1']
+ALLOWED_HOSTS = ['youssefsameh.pythonanywhere.com', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -70,7 +70,6 @@ TEMPLATES = [
 ]
 
 # --- (4. قاعدة البيانات) ---
-# (دي بتستخدم sqlite3, وده اللي PA بيشتغل بيه في البداية)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -93,8 +92,8 @@ TIME_ZONE = 'Africa/Cairo'
 USE_I18N = True
 USE_TZ = True
 
-# --- (5. إعدادات الـ Static لـ PA) ---
-STATIC_URL = 'static/'
+# --- (✨ 5. التعديل الأهم التاني ✨) ---
+STATIC_URL = '/static/' # (لازم الـ / في الأول)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'internest_core', 'static'),
