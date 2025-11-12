@@ -4,20 +4,26 @@ Django settings for Internest_Project project.
 
 from pathlib import Path
 import os
-# (✨ 1. التعديل: شيلنا dj_database_url مبقاش ليه لازمة)
+# (شيلنا dj_database_url)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- (✨ 2. التعديل: رجعنا المفتاح السري مكانه مؤقتاً) ---
-# (PA عنده طريقة تانية لإخفائه، بس خلينا نشغل الأول)
-SECRET_KEY = 'django-insecure-default-key-for-development' # (حط المفتاح الأصلي بتاعك هنا)
+# --- (1. المفتاح السري) ---
+# (يفضل تحطه كـ Environment Variable في PythonAnywhere)
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY', 
+    'django-insecure-default-key-for-development' # (ده مفتاح وهمي)
+)
 
-# (خلينا DEBUG = True مؤقتاً لحد ما الموقع يشتغل)
-DEBUG = True
 
-# (✨ 3. التعديل: ده السطر الصح لـ PA)
-# (استبدل 'youssefsameh' باليوزرنيم اللي هتعمله على PythonAnywhere)
+# --- (✨ 2. التعديل الأهم ✨) ---
+# (لازم نقفل الـ DEBUG أونلاين علشان الـ static يشتغل)
+DEBUG = False
+
+
+# --- (3. الـ HOSTS) ---
+# (اتأكد إن ده اليوزرنيم بتاعك)
 ALLOWED_HOSTS = ['youssefsameh.pythonanywhere.com', '127.0.0.1']
 
 
@@ -28,14 +34,14 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    # 'whitenoise.runserver_nostatic', (✨ 4. اتمسح)
+    # (شيلنا whitenoise)
     'django.contrib.staticfiles',
     'internest_core.apps.InternestCoreConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # 'whitenoise.middleware.WhiteNoiseMiddleware', (✨ 5. اتمسح)
+    # (شيلنا whitenoise)
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -63,7 +69,8 @@ TEMPLATES = [
     },
 ]
 
-# --- (✨ 6. التعديل: رجعنا الداتا بيز بسيطة) ---
+# --- (4. قاعدة البيانات) ---
+# (دي بتستخدم sqlite3, وده اللي PA بيشتغل بيه في البداية)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -86,14 +93,12 @@ TIME_ZONE = 'Africa/Cairo'
 USE_I18N = True
 USE_TZ = True
 
-# --- (✨ 7. التعديل: إعدادات الـ Static لـ PA) ---
+# --- (5. إعدادات الـ Static لـ PA) ---
 STATIC_URL = 'static/'
-# (ده المسار اللي PA هيدور فيه على الـ static files بعد ما نجمعها)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'internest_core', 'static'),
 ]
-# (شيلنا STATICFILES_STORAGE)
 
 # إعدادات رفع الملفات (الشعارات والصور)
 MEDIA_URL = '/media/'
