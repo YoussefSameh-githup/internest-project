@@ -4,26 +4,21 @@ Django settings for Internest_Project project.
 
 from pathlib import Path
 import os
-import dj_database_url 
+# (✨ 1. التعديل: شيلنا dj_database_url مبقاش ليه لازمة)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- (1) المفتاح السري ---
-SECRET_KEY = os.environ.get(
-    'SECRET_KEY', 
-    'django-insecure-default-key-for-development'
-)
+# --- (✨ 2. التعديل: رجعنا المفتاح السري مكانه مؤقتاً) ---
+# (PA عنده طريقة تانية لإخفائه، بس خلينا نشغل الأول)
+SECRET_KEY = 'django-insecure-default-key-for-development' # (حط المفتاح الأصلي بتاعك هنا)
 
-# --- (2) وضع الـ DEBUG والـ HOSTS ---
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+# (خلينا DEBUG = True مؤقتاً لحد ما الموقع يشتغل)
+DEBUG = True
 
-# (✨ 1. التعديل: تغيير اللوجيك لـ Render)
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-# (انتهى التعديل)
+# (✨ 3. التعديل: ده السطر الصح لـ PA)
+# (استبدل 'youssefsameh' باليوزرنيم اللي هتعمله على PythonAnywhere)
+ALLOWED_HOSTS = ['youssefsameh.pythonanywhere.com', '127.0.0.1']
 
 
 # Application definition
@@ -33,14 +28,14 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic', 
+    # 'whitenoise.runserver_nostatic', (✨ 4. اتمسح)
     'django.contrib.staticfiles',
     'internest_core.apps.InternestCoreConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', 
+    # 'whitenoise.middleware.WhiteNoiseMiddleware', (✨ 5. اتمسح)
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -49,10 +44,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# --- (✨ 2. التعديل: تصليح الاسم الغلط) ---
 ROOT_URLCONF = 'internest_app_project.urls'
 WSGI_APPLICATION = 'internest_app_project.wsgi.application'
-# (انتهى التعديل)
 
 TEMPLATES = [
     {
@@ -70,12 +63,12 @@ TEMPLATES = [
     },
 ]
 
-# --- (قاعدة البيانات) ---
+# --- (✨ 6. التعديل: رجعنا الداتا بيز بسيطة) ---
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 
@@ -93,13 +86,14 @@ TIME_ZONE = 'Africa/Cairo'
 USE_I18N = True
 USE_TZ = True
 
-# --- (إعدادات الـ Static Files) ---
+# --- (✨ 7. التعديل: إعدادات الـ Static لـ PA) ---
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# (ده المسار اللي PA هيدور فيه على الـ static files بعد ما نجمعها)
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'internest_core', 'static'),
 ]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# (شيلنا STATICFILES_STORAGE)
 
 # إعدادات رفع الملفات (الشعارات والصور)
 MEDIA_URL = '/media/'
