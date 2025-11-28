@@ -5,7 +5,7 @@
 
 {% block extra_head %}
 <style>
-    /* تنسيق البوكسات (Cards) */
+    /* ... (تنسيقات CSS ستبقى كما هي للمحافظة على الشكل العام) ... */
     .profile-card {
         background-color: white;
         border-radius: 15px;
@@ -14,55 +14,27 @@
         margin-bottom: 25px;
         border-left: 5px solid #004d99; /* خط تمييز أزرق */
     }
-    
-    /* تنسيق شريط التقدم */
-    .progress-bar-container {
-        background-color: #e9ecef;
-        border-radius: 10px;
-        margin-top: 10px;
-        overflow: hidden;
-    }
-    .progress-bar-fill {
-        height: 25px; /* زيادة ارتفاع الشريط */
-        color: white;
-        padding: 5px;
-        border-radius: 10px;
-        text-align: center;
-        transition: width 0.5s;
-        font-weight: bold;
-    }
-    
-    /* تنسيق أزرار الـ Gamification */
-    .gamification-buttons a {
-        background-color: #007bff;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: bold;
-    }
-    .gamification-buttons a:hover {
-        background-color: #0056b3;
-    }
+    /* ... (بقية تنسيقات CSS كما هي) ... */
 
-    /* تنسيق حقول النموذج (Form) */
-    .profile-form .form-label {
-        font-weight: bold;
-        color: #333;
-        display: block;
-        margin-bottom: 5px;
+    /* تنسيق خاص بالجداول الجديدة */
+    .data-table th, .data-table td {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        text-align: right;
     }
-    .profile-form input[type="text"],
-    .profile-form input[type="email"],
-    .profile-form input[type="url"],
-    .profile-form select,
-    .profile-form input[type="file"] {
-        width: 100%;
-        padding: 10px 15px;
-        border: 1px solid #ced4da;
-        border-radius: 8px;
-        box-sizing: border-box;
+    .data-table th {
+        width: 40%;
+        color: #555;
+        font-weight: 600;
         background-color: #f8f9fa;
+    }
+    .form-group-flex {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px; /* مسافة بين الأعمدة */
+    }
+    .form-group-flex > div {
+        flex: 1 1 48%; /* يجعل كل حقل يأخذ تقريباً نصف عرض العمود */
     }
 </style>
 {% endblock %}
@@ -73,41 +45,82 @@
     <div class="col-md-10">
         <h2 style="color: #004d99; font-weight: 700; margin-bottom: 30px;">ملفك الشخصي ونظام الأداء</h2>
         
-        <div class="profile-card text-center">
-            {% if profile.profile_picture %}
-                <img src="{{ profile.profile_picture.url }}" alt="صورة الملف الشخصي" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #ffaa00;">
-            {% else %}
-                <div style="width: 150px; height: 150px; border-radius: 50%; background-color: #ccc; margin: 0 auto; line-height: 150px; font-size: 3em; color: white;">👤</div>
-            {% endif %}
-            <h4 class="mt-3" style="color: #333;">مرحباً، {{ user.username }}</h4>
-            <p style="color: #6c757d; margin-bottom: 5px;">**الإيميل**: {{ user.email }}</p>
-            <p style="color: #6c757d; margin-bottom: 5px;">**الهاتف**: {{ profile.phone_number|default:"لم يحدد" }}</p>
-            {% if profile.linkedin_url %}
-                <p><a href="{{ profile.linkedin_url }}" target="_blank" style="color: #007bff; font-weight: bold; text-decoration: none;">LinkedIn Profile</a></p>
-            {% endif %}
-        </div>
-        
-        <div class="profile-card" style="border-left-color: #007bff;">
-            <h5 style="color: #007bff; font-weight: bold;">جودة ملف التقديم (Completion Score)</h5>
-            <div class="progress-bar-container">
-                <div class="progress-bar-fill" style="width: {{ profile.profile_completion_score }}%; background-color: {% if profile.profile_completion_score < 100 %}#dc3545{% else %}#28a745{% endif %};">
-                    {{ profile.profile_completion_score }}% مكتمل
+        <div class="profile-card">
+            <div class="row">
+                <div class="col-md-4 text-center mb-4">
+                    {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" alt="صورة الملف الشخصي" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #ffaa00;">
+                    {% else %}
+                        <div style="width: 150px; height: 150px; border-radius: 50%; background-color: #ccc; margin: 0 auto; line-height: 150px; font-size: 3em; color: white;">👤</div>
+                    {% endif %}
+                    <h4 class="mt-3" style="color: #333;">مرحباً، {{ user.username }}</h4>
+                    {% if profile.linkedin_url %}
+                        <p><a href="{{ profile.linkedin_url }}" target="_blank" style="color: #007bff; font-weight: bold; text-decoration: none;">LinkedIn Profile</a></p>
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <table class="table data-table">
+                        <tbody>
+                            <tr>
+                                <th>البريد الإلكتروني الشخصي</th>
+                                <td>{{ profile.personal_email|default:"غير محدد" }} <span class="badge bg-primary">أساسي للإشعارات</span></td>
+                            </tr>
+                            {% if profile.university_email %}
+                            <tr>
+                                <th>البريد الإلكتروني الجامعي</th>
+                                <td>{{ profile.university_email }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th>رقم الهاتف</th>
+                                <td>{{ profile.phone_number|default:"غير محدد" }}</td>
+                            </tr>
+                            <tr>
+                                <th>الجامعة والتخصص</th>
+                                <td>{{ profile.university|default:"لم يحدد" }} / {{ profile.major|default:"لم يحدد" }}</td>
+                            </tr>
+                            <tr>
+                                <th>السيرة الذاتية (CV)</th>
+                                <td>
+                                    {% if profile.cv_file %}
+                                        <a href="{{ profile.cv_file.url }}" target="_blank" class="text-success">عرض الملف</a>
+                                    {% else %}
+                                        غير مرفق
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            {% if profile.profile_completion_score < 100 %}
-                <p class="small mt-2" style="color: #dc3545; font-weight: bold;">⚠️ ملفك غير مكتمل. أكمل لفتح خاصية التقديم!</p>
-            {% else %}
-                <p class="small mt-2" style="color: #28a745; font-weight: bold;">✅ ملفك مكتمل وجاهز للتقديم على الفرص!</p>
-            {% endif %}
         </div>
-
-        <div class="profile-card" style="border-left-color: #ffaa00;">
-            <h5 style="color: #ffaa00; font-weight: bold;">اسكور الأداء والأنشطة (Gamification Score)</h5>
-            <h1 style="color: #333; font-size: 3em; margin-bottom: 5px;">{{ profile.gamification_score }} نقطة</h1>
-            <p class="small text-muted">النقاط المكتسبة من التاسكات والكورسات.</p>
-            <div class="mt-3 gamification-buttons" style="display: flex; gap: 20px; justify-content: center;">
-                <a href="{% url 'task_list' %}">ابدأ التاسكات</a>
-                <a href="{% url 'course_list' %}" style="background-color: #28a745;">كورسات الشركاء</a>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="profile-card" style="border-left-color: #007bff;">
+                    <h5 style="color: #007bff; font-weight: bold;">جودة ملف التقديم</h5>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: {{ profile.profile_completion_score }}%; background-color: {% if profile.profile_completion_score < 100 %}#dc3545{% else %}#28a745{% endif %};">
+                            {{ profile.profile_completion_score }}% مكتمل
+                        </div>
+                    </div>
+                    {% if profile.profile_completion_score < 100 %}
+                        <p class="small mt-2" style="color: #dc3545; font-weight: bold;">⚠️ ملفك غير مكتمل. أكمل لفتح خاصية التقديم!</p>
+                    {% else %}
+                        <p class="small mt-2" style="color: #28a745; font-weight: bold;">✅ ملفك مكتمل وجاهز للتقديم على الفرص!</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="profile-card" style="border-left-color: #ffaa00;">
+                    <h5 style="color: #ffaa00; font-weight: bold;">اسكور الأداء</h5>
+                    <h1 style="color: #333; font-size: 3em; margin-bottom: 5px;">{{ profile.gamification_score }} نقطة</h1>
+                    <p class="small text-muted">النقاط المكتسبة من التاسكات والكورسات.</p>
+                    <div class="mt-3 gamification-buttons" style="display: flex; gap: 15px; justify-content: center;">
+                        <a href="{% url 'task_list' %}">ابدأ التاسكات</a>
+                        <a href="{% url 'course_list' %}" style="background-color: #28a745;">كورسات الشركاء</a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -118,22 +131,59 @@
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 
-                {% for field in form %}
-                    <div class="mb-3">
-                        <label for="{{ field.id_for_label }}" class="form-label">
-                            {{ field.label }}
-                        </label>
-                        {{ field }}
-                        {% if field.help_text %}
-                            <div class="form-text small" style="color: #6c757d;">{{ field.help_text }}</div>
-                        {% endif %}
-                        {% for error in field.errors %}
-                            <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
+                <div class="form-group-flex">
+                    <div>
+                        <label for="{{ form.personal_email.id_for_label }}" class="form-label">{{ form.personal_email.label }}</label>
+                        {{ form.personal_email }}
+                        <div class="text-danger small">{{ form.personal_email.errors }}</div>
                     </div>
-                {% endfor %}
+                    <div>
+                        <label for="{{ form.university_email.id_for_label }}" class="form-label">{{ form.university_email.label }}</label>
+                        {{ form.university_email }}
+                        <div class="text-danger small">{{ form.university_email.errors }}</div>
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.university.id_for_label }}" class="form-label">{{ form.university.label }}</label>
+                        {{ form.university }}
+                        <div class="text-danger small">{{ form.university.errors }}</div>
+                    </div>
+                    <div>
+                        <label for="{{ form.major.id_for_label }}" class="form-label">{{ form.major.label }}</label>
+                        {{ form.major }}
+                        <div class="text-danger small">{{ form.major.errors }}</div>
+                    </div>
 
-                <button type="submit" class="btn-main" style="background-color: #007bff; color: white; padding: 12px 30px; margin-top: 15px;">
+                    <div>
+                        <label for="{{ form.study_level.id_for_label }}" class="form-label">{{ form.study_level.label }}</label>
+                        {{ form.study_level }}
+                        <div class="text-danger small">{{ form.study_level.errors }}</div>
+                    </div>
+                    <div>
+                        <label for="{{ form.phone_number.id_for_label }}" class="form-label">{{ form.phone_number.label }}</label>
+                        {{ form.phone_number }}
+                        <div class="text-danger small">{{ form.phone_number.errors }}</div>
+                    </div>
+                    
+                    <div style="flex: 1 1 100%;">
+                        <label for="{{ form.linkedin_url.id_for_label }}" class="form-label">{{ form.linkedin_url.label }}</label>
+                        {{ form.linkedin_url }}
+                        <div class="text-danger small">{{ form.linkedin_url.errors }}</div>
+                    </div>
+
+                    <div style="flex: 1 1 48%;">
+                        <label for="{{ form.cv_file.id_for_label }}" class="form-label">{{ form.cv_file.label }}</label>
+                        {{ form.cv_file }}
+                        <div class="text-danger small">{{ form.cv_file.errors }}</div>
+                    </div>
+                    <div style="flex: 1 1 48%;">
+                        <label for="{{ form.profile_picture.id_for_label }}" class="form-label">{{ form.profile_picture.label }}</label>
+                        {{ form.profile_picture }}
+                        <div class="text-danger small">{{ form.profile_picture.errors }}</div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-main" style="background-color: #007bff; color: white; padding: 12px 30px; margin-top: 25px;">
                     حفظ وتحديث الملف
                 </button>
             </form>

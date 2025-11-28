@@ -13,6 +13,11 @@ urlpatterns = [
 
     # 3. صفحات الطلاب
     path('list/', views.internship_list, name='list'),
+    
+    # 🚀 النمط الجديد: عرض تفاصيل فرصة تدريب واحدة
+    # هذا النمط ضروري لتوليد الرابط المطلق في الإيميل
+    path('internship/<int:pk>/', views.internship_detail_view, name='internship_detail'),
+    
     path('profile/', views.profile_view, name='profile'),
     path('apply/<int:internship_id>/', views.apply_to_internship, name='apply'),
     path('apply/success/', views.application_success, name='application_success'),
@@ -30,18 +35,13 @@ urlpatterns = [
     path('partner/submit/internship/', views.partner_submit_internship, name='partner_submit_internship'),
     path('partner/submit/course/', views.partner_submit_course, name='partner_submit_course'),
 
-    # ---------------------------------
-    # --- (✨ 6. لـيـنـكـات الـتـاسـكـات الـجـديـدة ✨) ---
-    # ---------------------------------
+    # 6. لينكات التاسكات
     path('app/tasks/', views.task_list_view, name='task_list'), # (ده هيعرض قايمة التاسكات)
     path('app/courses/', views.course_list_view, name='course_list'),
     path('app/task/<int:task_id>/', views.take_task_view, name='take_task'), # (ده هيعرض الكويز نفسه)
     path('app/task/result/<int:task_id>/<int:score>/<int:total_points>/', views.task_result_view, name='task_result'), # (ده هيعرض النتيجة)
 
-
-# ---------------------------------
-    # --- (✨ 7. لـيـنـكـات الـدفـع الـجـديـدة ✨) ---
-    # ---------------------------------
+    # 7. لينكات الدفع الجديدة
     path('app/course/<int:course_id>/checkout/', views.course_checkout_view, name='course_checkout'),
     path('app/course/purchase-success/<int:enrollment_id>/', views.purchase_success_view, name='purchase_success'),
 ]

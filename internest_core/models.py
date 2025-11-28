@@ -7,6 +7,25 @@ from django.utils import timezone
 # === 1. نموذج ملف الطالب الموحد (StudentProfile) ===
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    
+    # 🚀 التعديل 1: إضافة حقل الإيميل الشخصي (مطلوب)
+    personal_email = models.EmailField(
+        unique=True, 
+        verbose_name="البريد الإلكتروني الشخصي",
+        null=True,  # 👈 يجب إضافة هذا السطر
+        blank=True  # 👈 يجب إضافة هذا السطر
+        # ⚠️ ملاحظة: بما أن الحقل فريد (unique=True) ومطلوب، قد تحتاج إلى قيمة default مؤقتة أو التأكد من إدارته عند إنشاء الحساب.
+        # للحصول على قيمة صحيحة، يفضل ربطه بإيميل الـ User، لكننا نجعله حقلاً مستقلاً هنا.
+        # سأفترض أنك ستضيف له قيمة عند إنشاء الحساب (في دالة signup في views.py).
+    )
+    
+    # 🚀 التعديل 2: إضافة حقل الإيميل الجامعي (اختياري)
+    university_email = models.EmailField(
+        blank=True, 
+        null=True, 
+        verbose_name="البريد الإلكتروني الجامعي"
+    )
+
     university = models.CharField(max_length=100, blank=True, null=True, verbose_name="الجامعة")
     major = models.CharField(max_length=100, blank=True, null=True, verbose_name="التخصص")
     study_level = models.CharField(max_length=50, choices=[('1', 'سنة أولى'), ('2', 'سنة ثانية'), ('3', 'سنة ثالثة'), ('4', 'سنة رابعة/خريج')], blank=True, null=True, verbose_name="المستوى الدراسي")
@@ -20,11 +39,22 @@ class StudentProfile(models.Model):
 
     def calculate_completion(self):
         score = 0
+        # ⚠️ التعديل 3: إزالة university_email من متطلبات نسبة الإكمال.
+        
+        # 1. الجامعة والتخصص (20 نقطة)
         if (self.university and self.university.strip()) or (self.major and self.major.strip()): score += 20
+        # 2. المستوى الدراسي (20 نقطة)
         if self.study_level: score += 20
+        # 3. ملف السيرة الذاتية (20 نقطة)
         if self.cv_file: score += 20
+        # 4. صورة الملف الشخصي (20 نقطة)
         if self.profile_picture: score += 20
+        # 5. رابط LinkedIn (20 نقطة)
         if self.linkedin_url and self.linkedin_url.startswith('http'): score += 20
+        
+        # 📝 ملاحظة: الإيميل الشخصي (personal_email) مطلوب إجبارياً في النموذج
+        # لذا نفترض أنه موجود بمجرد إنشاء الملف، ولا يضاف لحساب النسبة.
+
         self.profile_completion_score = score
         self.save()
     
@@ -76,12 +106,16 @@ class Internship(models.Model):
     is_premium = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     
-    @property
-    def company_name(self):
-        return self.partner.company_name
+@property
+def is_expired(self):
+        """التحقق من انتهاء صلاحية التدريب (للعرض الفوري)."""
+        return self.deadline < timezone.now().date()
         
-    def __str__(self):
-        return self.title
+@property
+def applicants_count(self):
+        """حساب عدد المتقدمين للفرصة."""
+        # نستخدم related_name الافتراضي 'application_set'
+        return self.application_set.count()
 
 # === 3. نموذج طلبات التقديم (Application) ===
 class Application(models.Model):
@@ -105,6 +139,15 @@ class PartnerInternshipSubmission(models.Model):
     partner = models.ForeignKey(PartnerProfile, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField()
+    
+    # 🚀 التعديل: حقل duration أصبح اختيارياً
+    duration = models.CharField(
+        max_length=50, 
+        verbose_name="مدة التدريب",
+        null=True,  
+        blank=True  
+    ) 
+    
     location = models.CharField(max_length=100)
     required_majors = models.CharField(max_length=255) 
     deadline = models.DateField()
@@ -199,7 +242,7 @@ class StudentTaskRecord(models.Model):
     class Meta:
         verbose_name = "سجل إكمال مهمة"
         verbose_name_plural = "سجلات إكمال المهام"
-        unique_together = ('student', 'task') # (✨ بيمنع الطالب يحل التاسك مرتين)
+        unique_together = ('student', 'task') # (يمنع الطالب من حل التاسك مرتين)
         
     def __str__(self):
         return f"{self.student.user.username} أكمل {self.task.title}"
@@ -230,7 +273,7 @@ class StudentEnrollment(models.Model):
     class Meta:
         verbose_name = "تسجيل (كورس)"
         verbose_name_plural = "🧑‍🎓 تسجيلات الطلاب في الكورسات"
-        unique_together = ('student', 'course') # (بيمنع الطالب يشتري نفس الكورس مرتين)
+        unique_together = ('student', 'course') # (يمنع الطالب من شراء نفس الكورس مرتين)
         
     def __str__(self):
         return f"{self.student.user.username} مسجل في {self.course.title}"

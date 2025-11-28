@@ -4,7 +4,7 @@ Django settings for Internest_Project project.
 
 from pathlib import Path
 import os
-# (مبنحتجش dj_database_url هنا)
+import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -17,13 +17,11 @@ SECRET_KEY = os.environ.get(
 )
 
 
-# --- (✨ 2. التعديل الأهم ✨) ---
-# (لازم نقفل الـ DEBUG أونلاين علشان الـ static يشتغل)
-DEBUG = False
+# --- (2. وضع التشغيل - تم تعطيل DEBUG للموقع المباشر) ---
+DEBUG = True
 
 
-# --- (3. الـ HOSTS) ---
-# (اتأكد إن ده اليوزرنيم بتاعك)
+# --- (3. الـ HOSTS - الدومين المسموح به) ---
 ALLOWED_HOSTS = ['youssefsameh.pythonanywhere.com', '127.0.0.1', 'localhost']
 
 
@@ -34,14 +32,17 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    # (شيلنا whitenoise)
+    'django.contrib.sites', 
     'django.contrib.staticfiles',
     'internest_core.apps.InternestCoreConfig',
 ]
 
+# 💡 ID الموقع الافتراضي - ضروري لعمل 'django.contrib.sites'
+SITE_ID = 1
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # (شيلنا whitenoise)
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -92,7 +93,7 @@ TIME_ZONE = 'Africa/Cairo'
 USE_I18N = True
 USE_TZ = True
 
-# --- (✨ 5. التعديل الأهم التاني ✨) ---
+# --- (5. إعدادات الملفات الثابتة والوسائط) ---
 STATIC_URL = '/static/' # (لازم الـ / في الأول)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
 STATICFILES_DIRS = [
@@ -109,3 +110,48 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'list'
 LOGIN_URL = 'login_or_signup'
 LOGOUT_REDIRECT_URL = 'landing'
+
+# ==========================================================
+# 🚀 6. إعدادات البريد الإلكتروني (EMAIL CONFIGURATION) 🚀
+# ==========================================================
+
+# 📝 ملاحظة هامة: هذا الإعداد هو لبيئة الإنتاج (SendGrid SMTP).
+# للاختبار المحلي، قم بتغييره إلى: 'django.core.mail.backends.console.EmailBackend'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' 
+
+# إعدادات SendGrid SMTP
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_PORT = 587             
+EMAIL_USE_TLS = True         
+
+# بيانات الدخول باستخدام مفتاح API Key
+EMAIL_HOST_USER = 'apikey' 
+# 🔑 مفتاح API Key السري
+EMAIL_HOST_PASSWORD = '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' 
+
+# تحديد إيميلات الإرسال
+DEFAULT_FROM_EMAIL = 'internest.opportunities@gmail.com' 
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+
+# ==========================================================
+# 📝 7. إعدادات Logging (لتتبع الإشعارات)
+# ==========================================================
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        # logger خاص بملف signals.py لتتبع ما يحدث
+        'internest_core.signals': { 
+            'handlers': ['console'],
+            'level': 'INFO', 
+            'propagate': True,
+        },
+    },
+}

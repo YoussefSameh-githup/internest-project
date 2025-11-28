@@ -64,28 +64,58 @@ class PartnerInternshipSubmissionAdmin(admin.ModelAdmin):
     list_display = ('title', 'partner', 'submission_date', 'status', 'location', 'deadline')
     list_filter = ('status', 'partner__company_name')
     actions = ['approve_submissions', 'reject_submissions'] 
+    
     def approve_submissions(self, request, queryset):
+        approved_count = 0
+        email_errors = []
+        
         for submission in queryset.filter(status='Pending'): 
-            Internship.objects.create(
-                partner=submission.partner, 
-                title=submission.title,
-                description=submission.description,
-                location=submission.location,
-                required_majors=submission.required_majors,
-                deadline=submission.deadline,
-                is_premium=True,
-                is_active=True  
-            )
-            submission.status = 'Approved'
-            submission.save()
-        self.message_user(request, "تمت الموافقة على الطلبات المحددة وتم نشرها للطلاب.")
+            try:
+                # 1. إنشاء سجل Internship (وهذا يُطلق الـ Signal)
+                Internship.objects.create(
+                    partner=submission.partner, 
+                    title=submission.title,
+                    description=submission.description,
+                    location=submission.location,
+                    required_majors=submission.required_majors,
+                    deadline=submission.deadline,
+                    is_premium=True,
+                    is_active=True 
+                    # 💡 ملاحظة: لا حاجة لحقل 'duration' هنا لأنه ليس في Internship Model
+                )
+                
+                # 2. تحديث حالة الطلب
+                submission.status = 'Approved'
+                submission.save()
+                approved_count += 1
+                
+            except Exception as e:
+                # 🚀 التعديل: معالجة الأخطاء هنا. هذا سيلتقط أي خطأ في الـ Signal (Email)
+                email_errors.append(f"الطلب {submission.title}: فشل النشر أو الإشعارات. الخطأ: {str(e)[:100]}...")
+                # لا نغير حالة الطلب هنا ليتسنى للمسؤول إعادة المحاولة
+                continue # ننتقل للطلب التالي
+                
+        if approved_count > 0:
+            self.message_user(request, f"تمت الموافقة على {approved_count} طلبات وتم نشرها للطلاب.", messages.SUCCESS)
+        
+        # عرض رسائل الأخطاء (إذا حدثت)
+        if email_errors:
+            for error in email_errors:
+                self.message_user(request, f"⚠️ تنبيه: {error}", messages.WARNING)
+
+        if approved_count == 0 and not email_errors:
+            self.message_user(request, "لم يتم العثور على طلبات معلقة للموافقة.", messages.INFO)
+            
     approve_submissions.short_description = "الموافقة على الطلبات ونشرها"
+    
     def reject_submissions(self, request, queryset):
         queryset.filter(status='Pending').update(status='Rejected')
+        self.message_user(request, "تم رفض الطلبات المحددة.")
     reject_submissions.short_description = "رفض الطلبات المحددة"
 
 @admin.register(PartnerCourseSubmission)
 class PartnerCourseSubmissionAdmin(admin.ModelAdmin):
+# ... (بقية الكود كما هو)
     list_display = ('title', 'partner', 'price', 'points_awarded', 'status', 'submission_date')
     list_filter = ('status', 'partner__company_name')
     search_fields = ('title', 'instructor_name', 'partner__company_name')

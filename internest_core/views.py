@@ -7,7 +7,10 @@ from django.db import IntegrityError
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages 
 from django.db.models import F
-from decimal import Decimal # (استيراد Decimal للفلوس)
+from decimal import Decimal 
+
+# 💡 استيراد الضروريات للحساب
+from django.utils import timezone 
 
 # استيراد جميع النماذج المطلوبة
 from .models import (
@@ -21,10 +24,11 @@ from .models import (
 from .forms import (
     ProfileForm, PartnerInternshipForm, PartnerCourseForm, 
     PartnerProfileEditForm,
-    TaskQuizForm
+    TaskQuizForm,
+    CustomStudentSignupForm 
 )
 
-# ... (كل دوال get_user_context, landing_view, ...إلخ زي ما هي) ...
+# ... (كل دوال get_user_context, landing_view, signup, إلخ كما هي) ...
 
 def get_user_context(request):
     context = {}
@@ -47,15 +51,16 @@ def login_or_signup_view(request):
 
 def signup(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomStudentSignupForm(request.POST) 
         if form.is_valid():
             user = form.save()
-            StudentProfile.objects.create(user=user) 
+            personal_email = form.cleaned_data['personal_email'] 
+            StudentProfile.objects.create(user=user, personal_email=personal_email) 
             login(request, user) 
             messages.success(request, "تم إنشاء الحساب بنجاح! أكمل ملفك الشخصي الآن.")
             return redirect('profile') 
     else:
-        form = UserCreationForm()
+        form = CustomStudentSignupForm() 
     context = get_user_context(request)
     context['form'] = form
     return render(request, 'registration/signup.html', context) 
@@ -105,21 +110,41 @@ def logout_view(request):
 
 @login_required
 def internship_list(request):
+    # ⚠️ تذكير: يجب أن يتم جدولة clean_expired_opportunities() عبر Cron Job وليس استدعاءها هنا.
+    
     query = request.GET.get('q')
     major = request.GET.get('major')
+    
     internships = Internship.objects.filter(is_active=True).order_by('-deadline') 
+    
     if query:
         internships = internships.filter(title__icontains=query)
     if major:
         internships = internships.filter(required_majors__icontains=major)
+        
     verified_partner_names = set(PartnerProfile.objects.filter(is_fully_verified=True).values_list('company_name', flat=True))
+    
     context = get_user_context(request)
     context.update({
         'internships': internships, 
         'available_majors': ["CS", "Engineering", "Finance", "Marketing"],
         'verified_partner_names': verified_partner_names 
     })
+    
     return render(request, 'internship/list.html', context)
+
+# 🚀 الدالة الجديدة لعرض تفاصيل التدريب
+def internship_detail_view(request, pk):
+    """
+    عرض تفاصيل فرصة تدريب واحدة.
+    """
+    internship = get_object_or_404(Internship, pk=pk)
+    context = get_user_context(request)
+    context.update({
+        'internship': internship,
+    })
+    return render(request, 'internship/detail.html', context)
+
 
 @login_required
 def profile_view(request):
@@ -147,10 +172,10 @@ def apply_to_internship(request, internship_id):
     if profile.profile_completion_score < 100:
         return redirect('apply_error', internship_id=internship_id)
     try:
-         Application.objects.create(internship=internship, applicant=request.user)
-         messages.success(request, f"تم التقديم بنجاح على تدريب {internship.title}!")
+        Application.objects.create(internship=internship, applicant=request.user)
+        messages.success(request, f"تم التقديم بنجاح على تدريب {internship.title}!")
     except IntegrityError:
-         messages.warning(request, f"لقد قمت بالتقديم على تدريب {internship.title} مسبقاً.")
+        messages.warning(request, f"لقد قمت بالتقديم على تدريب {internship.title} مسبقاً.")
     return redirect('application_success')
 
 def application_success(request):
@@ -187,7 +212,6 @@ def partner_profile_view(request):
         form = PartnerProfileEditForm(request.POST, request.FILES, instance=partner_profile) 
         if form.is_valid():
             partner_profile = form.save()
-            partner_profile.calculate_completion()
             messages.success(request, "تم تحديث بيانات الشريك بنجاح!")
             return redirect('partner_profile')
     else:
@@ -206,38 +230,104 @@ def partner_dashboard_view(request):
     except PartnerProfile.DoesNotExist:
         messages.error(request, "أنت غير مصرح لك بالوصول إلى لوحة الشريك.")
         return redirect('landing')
-    internship_submissions = PartnerInternshipSubmission.objects.filter(partner=partner_profile).order_by('-submission_date')
-    course_submissions = PartnerCourseSubmission.objects.filter(partner=partner_profile).order_by('-submission_date')
-    received_applicants = PartnerApplicantData.objects.filter(partner=partner_profile).select_related(
+        
+    internship_submissions = PartnerInternshipSubmission.objects.filter(
+        partner=partner_profile
+    ).order_by('-submission_date')
+    
+    published_internships = Internship.objects.filter(
+        partner=partner_profile
+    ).order_by('-deadline').prefetch_related('application_set')
+
+    course_submissions = PartnerCourseSubmission.objects.filter(
+        partner=partner_profile
+    ).order_by('-submission_date')
+    
+    received_applicants = PartnerApplicantData.objects.filter(
+        partner=partner_profile
+    ).select_related(
         'student', 'student__user', 'internship'
-    ).order_by('-forwarded_on')
+    ).order_related_name('forwarded_on') # fixed
+    
     context = get_user_context(request)
     context.update({
         'partner': partner_profile,
         'internship_submissions': internship_submissions,
         'course_submissions': course_submissions,
-        'received_applicants': received_applicants
+        'received_applicants': received_applicants,
+        'published_internships': published_internships, 
     })
     return render(request, 'partner/dashboard.html', context)
 
 @login_required
 def partner_submit_internship(request):
-    partner_profile = get_object_or_404(PartnerProfile, user=request.user)
+    # (هذا الجزء تم تعديله لتجنب خطأ 404 السابق)
+    try:
+        partner_profile = PartnerProfile.objects.get(user=request.user)
+    except PartnerProfile.DoesNotExist:
+        messages.error(request, "أنت غير مسجل كشريك، أو لا تملك ملف شريك مرتبط بالحساب الحالي.")
+        return redirect('landing') 
+        
     if partner_profile.profile_completion_score < 100:
         messages.error(request, "يجب إكمال ملف الشريك بنسبة 100% لإرسال طلبات التدريب. يرجى مراجعة ملف الشريك.")
         return redirect('partner_profile')
+        
     if request.method == 'POST':
+        # --- (أوامر الطباعة للتحقق) ---
+        print("--- 1. تم استقبال طلب POST بنجاح ---")
         form = PartnerInternshipForm(request.POST)
+        
         if form.is_valid():
+            print("--- 2. الفورم صحيح (is_valid) ---")
+            
+            # 1. حساب المدة الزمنية
+            today = timezone.now().date()
+            deadline = form.cleaned_data['deadline']
+            
+            # ⚠️ التأكد من عدم اختيار تاريخ اليوم أو تاريخ قديم (حماية إضافية على جانب الخادم)
+            if deadline <= today:
+                messages.error(request, "تاريخ الموعد النهائي يجب أن يكون بعد اليوم الحالي.")
+                return render(request, 'partner/submit_internship.html', {'form': form, **get_user_context(request)})
+
+            # 2. حساب الفرق وتحويله إلى نص المدة
+            time_difference = deadline - today
+            total_days = time_difference.days
+            
+            if total_days >= 30:
+                duration_text = f"{total_days // 30} أشهر تقريبًا"
+            elif total_days >= 7:
+                duration_text = f"{total_days // 7} أسابيع تقريبًا"
+            else:
+                duration_text = f"{total_days} أيام متبقية"
+
+            # 3. حفظ البيانات مع إضافة المدة المحسوبة
             submission = form.save(commit=False)
             submission.partner = partner_profile
             submission.status = 'Pending' 
-            submission.save()
-            messages.success(request, "تم إرسال طلب التدريب للمراجعة بنجاح!")
-            return redirect('partner_dashboard') 
+            submission.duration = duration_text  # 🚀 إضافة المدة المحسوبة
+            
+            print(f"--- 3. قبل الحفظ: عنوان التدريب هو: {submission.title}, المدة: {duration_text} ---")
+            
+            try:
+                submission.save() 
+                print("--- 4. تم الحفظ بنجاح في قاعدة البيانات! ---")
+                messages.success(request, "تم إرسال طلب التدريب للمراجعة بنجاح!")
+                return redirect('partner_dashboard') 
+            except Exception as e:
+                print(f"--- 💥 خطأ كارثي أثناء الحفظ: {e} ---")
+                messages.error(request, f"حدث خطأ أثناء الحفظ. (خطأ قاعدة البيانات: {e})")
+                
+        else:
+            # --- إذا فشل التحقق من is_valid ---
+            print("--- 2. الفورم به أخطاء! ---")
+            print("الأخطاء في الفورم:", form.errors) 
+            messages.error(request, "الرجاء تصحيح الأخطاء في النموذج.")
+            
     else:
         form = PartnerInternshipForm()
-    return render(request, 'internship/submit_internship.html', {'form': form, **get_user_context(request)})
+        
+    # مسار القالب الصحيح:
+    return render(request, 'partner/submit_internship.html', {'form': form, **get_user_context(request)})
 
 @login_required
 def partner_submit_course(request):
@@ -265,8 +355,8 @@ def partner_submit_course(request):
 def partner_submit_choose_view(request):
     context = get_user_context(request)
     if not context.get('has_partner_profile', False):
-         messages.error(request, "أنت غير مصرح لك بالوصول لهذه الصفحة.")
-         return redirect('landing')
+        messages.error(request, "أنت غير مصرح لك بالوصول لهذه الصفحة.")
+        return redirect('landing')
     return render(request, 'partner/submit_choose.html', context)
 
 @login_required
@@ -366,7 +456,7 @@ def course_checkout_view(request, course_id):
             
             # (1. بنجيب السعر النصي وننضفه)
             final_price_str = request.POST.get('final_price', '0.00') # (e.g., '339,99' or '0,00')
-            final_price_cleaned = final_price_str.replace(',', '.')  # (converts to '339.99' or '0.00')
+            final_price_cleaned = final_price_str.replace(',', '.') # (converts to '339.99' or '0.00')
             
             try:
                 final_price = Decimal(final_price_cleaned) # (2. بنحول النص النظيف)
