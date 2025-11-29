@@ -32,16 +32,15 @@ from .forms import (
 @login_required
 def home_redirect_view(request):
     """
-    توجه المستخدم إلى صفحته الرئيسية (لوحة الشريك أو قائمة التدريبات).
+    توجه المستخدم إلى صفحته الرئيسية بناءً على نوع حسابه.
     """
     # التحقق من نوع الحساب
     if hasattr(request.user, 'partnerprofile'):
         # إذا كان شريكاً، يذهب إلى لوحة الشريك
         return redirect('partner_dashboard')
     
-    # إذا كان طالباً، يذهب إلى قائمة التدريبات
-    return redirect('internship_list') 
-
+    # 💥 التصحيح هنا: نستخدم اسم النمط 'list' بدلاً من 'internship_list'
+    return redirect('list')
 
 def get_user_context(request):
     context = {}
