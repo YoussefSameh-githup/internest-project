@@ -5,23 +5,24 @@ Django settings for Internest_Project project.
 from pathlib import Path
 import os
 import logging
+# 💡 ضروري لدمج LOCALE_PATHS
+from django.utils.translation import gettext_lazy as _ 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- (1. المفتاح السري) ---
-# (يفضل تحطه كـ Environment Variable في PythonAnywhere)
 SECRET_KEY = os.environ.get(
     'SECRET_KEY', 
     'django-insecure-default-key-for-development' # (ده مفتاح وهمي)
 )
 
 
-# --- (2. وضع التشغيل - تم تعطيل DEBUG للموقع المباشر) ---
+# --- (2. وضع التشغيل) ---
 DEBUG = True
 
 
-# --- (3. الـ HOSTS - الدومين المسموح به) ---
+# --- (3. الـ HOSTS) ---
 ALLOWED_HOSTS = ['youssefsameh.pythonanywhere.com', '127.0.0.1', 'localhost']
 
 
@@ -37,7 +38,6 @@ INSTALLED_APPS = [
     'internest_core.apps.InternestCoreConfig',
 ]
 
-# 💡 ID الموقع الافتراضي - ضروري لعمل 'django.contrib.sites'
 SITE_ID = 1
 
 
@@ -45,6 +45,8 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    # 🚀 التعديل 1: إضافة LocaleMiddleware لدعم تغيير اللغة
+    'django.middleware.locale.LocaleMiddleware', 
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -87,14 +89,30 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
 
-# Internationalization
+# ==========================================================
+# 🚀 إعدادات التدويل (Internationalization Settings) 🚀
+# ==========================================================
+
+# 1. اللغات المدعومة
+LANGUAGES = [
+    ('ar', _('Arabic')),
+    ('en', _('English')),
+]
+
+# 2. مسارات ملفات الترجمة
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
+
+# اللغة الافتراضية
 LANGUAGE_CODE = 'ar' 
+
 TIME_ZONE = 'Africa/Cairo' 
-USE_I18N = True
+USE_I18N = True # تفعيل التدويل
 USE_TZ = True
 
 # --- (5. إعدادات الملفات الثابتة والوسائط) ---
-STATIC_URL = '/static/' # (لازم الـ / في الأول)
+STATIC_URL = '/static/' 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'internest_core', 'static'),

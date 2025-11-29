@@ -4,6 +4,8 @@ from django.db import models
 from django.contrib.auth.models import User 
 from django.utils import timezone
 
+
+
 # === 1. نموذج ملف الطالب الموحد (StudentProfile) ===
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -12,11 +14,8 @@ class StudentProfile(models.Model):
     personal_email = models.EmailField(
         unique=True, 
         verbose_name="البريد الإلكتروني الشخصي",
-        null=True,  # 👈 يجب إضافة هذا السطر
-        blank=True  # 👈 يجب إضافة هذا السطر
-        # ⚠️ ملاحظة: بما أن الحقل فريد (unique=True) ومطلوب، قد تحتاج إلى قيمة default مؤقتة أو التأكد من إدارته عند إنشاء الحساب.
-        # للحصول على قيمة صحيحة، يفضل ربطه بإيميل الـ User، لكننا نجعله حقلاً مستقلاً هنا.
-        # سأفترض أنك ستضيف له قيمة عند إنشاء الحساب (في دالة signup في views.py).
+        null=True, 
+        blank=True 
     )
     
     # 🚀 التعديل 2: إضافة حقل الإيميل الجامعي (اختياري)
@@ -25,7 +24,7 @@ class StudentProfile(models.Model):
         null=True, 
         verbose_name="البريد الإلكتروني الجامعي"
     )
-
+    # ... (بقية حقول StudentProfile) ...
     university = models.CharField(max_length=100, blank=True, null=True, verbose_name="الجامعة")
     major = models.CharField(max_length=100, blank=True, null=True, verbose_name="التخصص")
     study_level = models.CharField(max_length=50, choices=[('1', 'سنة أولى'), ('2', 'سنة ثانية'), ('3', 'سنة ثالثة'), ('4', 'سنة رابعة/خريج')], blank=True, null=True, verbose_name="المستوى الدراسي")
@@ -39,22 +38,11 @@ class StudentProfile(models.Model):
 
     def calculate_completion(self):
         score = 0
-        # ⚠️ التعديل 3: إزالة university_email من متطلبات نسبة الإكمال.
-        
-        # 1. الجامعة والتخصص (20 نقطة)
         if (self.university and self.university.strip()) or (self.major and self.major.strip()): score += 20
-        # 2. المستوى الدراسي (20 نقطة)
         if self.study_level: score += 20
-        # 3. ملف السيرة الذاتية (20 نقطة)
         if self.cv_file: score += 20
-        # 4. صورة الملف الشخصي (20 نقطة)
         if self.profile_picture: score += 20
-        # 5. رابط LinkedIn (20 نقطة)
         if self.linkedin_url and self.linkedin_url.startswith('http'): score += 20
-        
-        # 📝 ملاحظة: الإيميل الشخصي (personal_email) مطلوب إجبارياً في النموذج
-        # لذا نفترض أنه موجود بمجرد إنشاء الملف، ولا يضاف لحساب النسبة.
-
         self.profile_completion_score = score
         self.save()
     
@@ -87,9 +75,19 @@ class PartnerProfile(models.Model):
     profile_completion_score = models.IntegerField(default=0, verbose_name="نسبة الإكمال (%)")
 
     def calculate_completion(self):
+        # 1. حساب النسبة بناءً على البيانات التي يملأها الشريك
         required_fields = [self.official_phone, self.official_email, self.official_website, self.linkedin_url, self.logo]
         completed_fields = sum(1 for field in required_fields if field)
-        self.profile_completion_score = int((completed_fields / 5) * 100)
+        calculated_score = int((completed_fields / 5) * 100)
+        
+        # 🚀 التعديل: تطبيق المنطق الجديد
+        if self.is_fully_verified:
+            # 2. إذا تم توثيقه من المدير، تصبح النسبة 100% بغض النظر عن الحقول
+            self.profile_completion_score = 100
+        else:
+            # 3. إذا لم يوثق، نستخدم النسبة المحسوبة من البيانات
+            self.profile_completion_score = calculated_score
+            
         self.save()
 
     def __str__(self):
@@ -106,19 +104,22 @@ class Internship(models.Model):
     is_premium = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     
-@property
-def is_expired(self):
+    @property
+    def is_expired(self):
         """التحقق من انتهاء صلاحية التدريب (للعرض الفوري)."""
         return self.deadline < timezone.now().date()
         
-@property
-def applicants_count(self):
+    @property
+    def applicants_count(self):
         """حساب عدد المتقدمين للفرصة."""
-        # نستخدم related_name الافتراضي 'application_set'
         return self.application_set.count()
+        
+    def __str__(self):
+        return self.title
 
 # === 3. نموذج طلبات التقديم (Application) ===
 class Application(models.Model):
+# ... (بقية Application Model) ...
     internship = models.ForeignKey(Internship, on_delete=models.CASCADE)
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
     application_date = models.DateTimeField(auto_now_add=True)
@@ -140,12 +141,11 @@ class PartnerInternshipSubmission(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     
-    # 🚀 التعديل: حقل duration أصبح اختيارياً
     duration = models.CharField(
         max_length=50, 
         verbose_name="مدة التدريب",
-        null=True,  
-        blank=True  
+        null=True, 
+        blank=True 
     ) 
     
     location = models.CharField(max_length=100)
@@ -158,6 +158,7 @@ class PartnerInternshipSubmission(models.Model):
         return f"تقديم تدريب: {self.title} من {self.partner.company_name} ({self.status})"
 
 class PartnerCourseSubmission(models.Model):
+# ... (بقية PartnerCourseSubmission Model) ...
     partner = models.ForeignKey(PartnerProfile, on_delete=models.CASCADE)
     title = models.CharField(max_length=150)
     description = models.TextField(help_text="وصف تفصيلي للكورس.")
@@ -173,6 +174,7 @@ class PartnerCourseSubmission(models.Model):
 
 # === 6. نموذج بيانات المتقدمين (صندوق وارد الشريك) ===
 class PartnerApplicantData(models.Model):
+# ... (بقية PartnerApplicantData Model) ...
     partner = models.ForeignKey(PartnerProfile, on_delete=models.CASCADE, related_name="received_applicants", verbose_name="الشريك المستقبل")
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, verbose_name="ملف الطالب")
     internship = models.ForeignKey(Internship, on_delete=models.CASCADE, verbose_name="للتدريب")
@@ -189,6 +191,7 @@ class PartnerApplicantData(models.Model):
 
 # === 7. موديل الجولدن ليست ===
 class GoldenListStudent(StudentProfile):
+# ... (بقية GoldenListStudent Model) ...
     class Meta:
         proxy = True 
         verbose_name = "طالب في الجولدن ليست"
@@ -199,6 +202,7 @@ class GoldenListStudent(StudentProfile):
 # ---------------------------------
 
 class GamificationTask(models.Model):
+# ... (بقية GamificationTask Model) ...
     title = models.CharField(max_length=200, verbose_name="عنوان التاسك")
     description = models.TextField(verbose_name="وصف التاسك")
     points_awarded = models.IntegerField(default=10, verbose_name="النقاط الممنوحة")
@@ -212,6 +216,7 @@ class GamificationTask(models.Model):
         return self.title
 
 class TaskQuestion(models.Model):
+# ... (بقية TaskQuestion Model) ...
     task = models.ForeignKey(GamificationTask, on_delete=models.CASCADE, related_name="questions", verbose_name="التاسك التابع له")
     text = models.CharField(max_length=500, verbose_name="نص السؤال")
     
@@ -223,6 +228,7 @@ class TaskQuestion(models.Model):
         return self.text
 
 class TaskAnswer(models.Model):
+# ... (بقية TaskAnswer Model) ...
     question = models.ForeignKey(TaskQuestion, on_delete=models.CASCADE, related_name="answers", verbose_name="السؤال التابع له")
     text = models.CharField(max_length=255, verbose_name="نص الإجابة (الاختيار)")
     is_correct = models.BooleanField(default=False, verbose_name="هل هذه هي الإجابة الصحيحة؟")
@@ -235,6 +241,7 @@ class TaskAnswer(models.Model):
         return f"{self.question.text} -> {self.text} ({self.is_correct})"
 
 class StudentTaskRecord(models.Model):
+# ... (بقية StudentTaskRecord Model) ...
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="task_records")
     task = models.ForeignKey(GamificationTask, on_delete=models.CASCADE, related_name="submissions")
     completed_on = models.DateTimeField(auto_now_add=True)
@@ -253,6 +260,7 @@ class StudentTaskRecord(models.Model):
 # ---------------------------------
 
 class DiscountCode(models.Model):
+# ... (بقية DiscountCode Model) ...
     code = models.CharField(max_length=50, unique=True, verbose_name="الكود")
     discount_percentage = models.PositiveIntegerField(verbose_name="نسبة الخصم (%)", help_text="رقم من 1 إلى 100")
     is_active = models.BooleanField(default=True, verbose_name="فعال؟")
@@ -265,6 +273,7 @@ class DiscountCode(models.Model):
         return f"{self.code} ({self.discount_percentage}%)"
 
 class StudentEnrollment(models.Model):
+# ... (بقية StudentEnrollment Model) ...
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="enrolled_courses", verbose_name="الطالب")
     course = models.ForeignKey(PartnerCourseSubmission, on_delete=models.CASCADE, related_name="enrollments", verbose_name="الكورس")
     enrolled_on = models.DateTimeField(auto_now_add=True, verbose_name="تاريخ التسجيل")

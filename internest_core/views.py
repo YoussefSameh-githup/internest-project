@@ -28,7 +28,20 @@ from .forms import (
     CustomStudentSignupForm 
 )
 
-# ... (كل دوال get_user_context, landing_view, signup, إلخ كما هي) ...
+# 🚀 الدالة الجديدة للتوجيه الذكي (Home Redirect)
+@login_required
+def home_redirect_view(request):
+    """
+    توجه المستخدم إلى صفحته الرئيسية (لوحة الشريك أو قائمة التدريبات).
+    """
+    # التحقق من نوع الحساب
+    if hasattr(request.user, 'partnerprofile'):
+        # إذا كان شريكاً، يذهب إلى لوحة الشريك
+        return redirect('partner_dashboard')
+    
+    # إذا كان طالباً، يذهب إلى قائمة التدريبات
+    return redirect('internship_list') 
+
 
 def get_user_context(request):
     context = {}
@@ -212,6 +225,7 @@ def partner_profile_view(request):
         form = PartnerProfileEditForm(request.POST, request.FILES, instance=partner_profile) 
         if form.is_valid():
             partner_profile = form.save()
+            partner_profile.calculate_completion() 
             messages.success(request, "تم تحديث بيانات الشريك بنجاح!")
             return redirect('partner_profile')
     else:
@@ -247,7 +261,7 @@ def partner_dashboard_view(request):
         partner=partner_profile
     ).select_related(
         'student', 'student__user', 'internship'
-    ).order_related_name('forwarded_on') # fixed
+    ).order_by('-forwarded_on') 
     
     context = get_user_context(request)
     context.update({

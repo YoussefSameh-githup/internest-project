@@ -1,73 +1,196 @@
 {% extends 'internship/base.html' %}
 {% load static %}
 
-{% block title %}ملفي الشخصي للشريك{% endblock %}
+{% block title %}ملف الشريك المؤسسي | {{ partner_profile.company_name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* تنسيق البوكسات (Cards) */
+    .profile-card {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        margin-bottom: 25px;
+        border-left: 5px solid #004d99; /* خط تمييز أزرق */
+    }
+    
+    /* تنسيق شريط التقدم */
+    .progress-bar-container {
+        background-color: #e9ecef;
+        border-radius: 10px;
+        margin-top: 10px;
+        overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 25px; 
+        color: white;
+        padding: 5px;
+        border-radius: 10px;
+        text-align: center;
+        transition: width 0.5s;
+        font-weight: bold;
+    }
+    
+    /* تنسيق حقول النموذج (Form) */
+    .profile-form .form-label {
+        font-weight: bold;
+        color: #333;
+        display: block;
+        margin-bottom: 5px;
+    }
+    .profile-form input[type="text"],
+    .profile-form input[type="email"],
+    .profile-form input[type="url"],
+    .profile-form select,
+    .profile-form input[type="file"] {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        box-sizing: border-box;
+        background-color: #f8f9fa;
+    }
+    /* تنسيق flex للحقول لترتيبها في صفوف */
+    .form-group-flex {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 20px; 
+    }
+    .form-group-flex > div {
+        flex: 1 1 48%; /* يجعل كل حقل يأخذ تقريباً نصف عرض العمود */
+    }
+    .form-group-flex > div.full-width {
+        flex: 1 1 100%; /* حقل يأخذ العرض كاملاً */
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5 mb-5" style="min-height: 60vh;">
-    <h2 class="text-center mb-4" style="color: #004d99; font-weight: bold;">
-        ملف الشريك المؤسسي ونظام التوثيق
-    </h2>
-    
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            {% if messages %}
-                <div class="messages mb-4">
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} text-center" role="alert" style="margin-bottom: 0;">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
+<div class="row justify-content-center py-5">
+    <div class="col-md-10">
+        <h2 style="color: #004d99; font-weight: 700; margin-bottom: 30px;">ملف الشريك المؤسسي ونظام التوثيق</h2>
+        
+        <div class="profile-card text-center" style="border-left-color: #007bff;">
+            {% if partner_profile.logo %}
+                <img src="{{ partner_profile.logo.url }}" alt="شعار الشركة" style="width: 150px; height: 150px; border-radius: 50%; object-fit: contain; border: 4px solid #007bff;">
+            {% else %}
+                <div style="width: 150px; height: 150px; border-radius: 50%; background-color: #ccc; margin: 0 auto; line-height: 150px; font-size: 3em; color: white;">🏢</div>
             {% endif %}
-
-            <div class="choice-card p-4 mb-4">
-                <div class="row align-items-center">
-                    <div class="col-md-12 text-center text-md-start">
-                        <h3 class="mb-1" style="color: #004d99;">
-                            {{ partner_profile.company_name }}
-                            {% if partner_profile.is_fully_verified %}
-                                (موثق ✅)
-                            {% endif %}
-                        </h3>
-                        <p class="text-muted mb-0">
-                            {% if partner_profile.official_email %} البريد الإلكتروني: {{ partner_profile.official_email }} {% endif %}
-                        </p>
-                    </div>
+            
+            <h4 class="mt-3" style="color: #333;">{{ partner_profile.company_name }} 
+                {% if partner_profile.is_fully_verified %}
+                    <span style="color: #007bff; font-weight: bold;">(موثق ✅)</span>
+                {% endif %}
+            </h4>
+            
+            <p style="color: #6c757d; margin-bottom: 5px;">
+                <i class="fas fa-envelope"></i> البريد الإلكتروني: {{ partner_profile.official_email|default:"غير محدد" }}
+            </p>
+            <p style="color: #6c757d; margin-bottom: 5px;">
+                <i class="fas fa-link"></i> الموقع الرسمي: 
+                {% if partner_profile.official_website %}
+                    <a href="{{ partner_profile.official_website }}" target="_blank">{{ partner_profile.official_website }}</a>
+                {% else %}
+                    غير محدد
+                {% endif %}
+            </p>
+        </div>
+        
+        <div class="profile-card" style="border-left-color: #ffaa00;">
+            <h5 style="color: #ffaa00; font-weight: bold;">نسبة اكتمال ملف الشريك</h5>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: {{ partner_profile.profile_completion_score }}%; background-color: {% if partner_profile.profile_completion_score == 100 %}#28a745{% else %}#dc3545{% endif %};">
+                    {{ partner_profile.profile_completion_score }}% مكتمل
                 </div>
             </div>
+            
+            {% if partner_profile.profile_completion_score == 100 %}
+                <p class="small mt-2" style="color: #28a745; font-weight: bold;">
+                    ✅ الملف مكتمل 100%، كل الميزات متاحة!
+                </p>
+            {% else %}
+                <p class="small mt-2" style="color: #dc3545; font-weight: bold;">
+                    🛑 أكمل الملف لفتح جميع الميزات!
+                </p>
+            {% endif %}
+        </div>
 
-            <div class="choice-card p-4 mb-4" style="border-left: 5px solid {% if partner_profile.profile_completion_score == 100 %}#28a745{% else %}#dc3545{% endif %};">
-                <div class="d-flex justify-content-between align-items.center">
+        <div class="profile-card profile-form">
+            <h5 style="color: #004d99; font-weight: bold; border-bottom: 2px solid #ffaa00; padding-bottom: 10px; margin-bottom: 20px;">
+                تعديل بيانات التواصل والتوثيق (KYC)
+            </h5>
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-group-flex">
+                    
                     <div>
-                        <p class="mb-0" style="font-weight: bold; color: #333;">
-                            نسبة اكتمال ملف الشريك: {{ partner_profile.profile_completion_score }}%
-                        </p>
+                        <label for="{{ form.company_name.id_for_label }}" class="form-label">{{ form.company_name.label }}</label>
+                        {{ form.company_name }}
                     </div>
-                    {% if partner_profile.profile_completion_score < 100 %}
-                        <p class="mb-0 text-danger" style="font-weight: bold; margin-left: 20px;">
-                            أكمل الملف لفتح جميع الميزات!
-                        </p>
-                    {% else %}
-                        <p class="mb-0 text-success" style="font-weight: bold; margin-left: 20px;">
-                            ملفك مكتمل 100%، كل الميزات متاحة!
-                        </p>
-                    {% endif %}
-                </div>
-            </div>
+                    <div>
+                        <label for="{{ form.partner_code.id_for_label }}" class="form-label">{{ form.partner_code.label }}</label>
+                        {{ form.partner_code }}
+                        <div class="form-text small">{{ form.partner_code.help_text }}</div>
+                    </div>
+                    
+                    <div class="full-width">
+                        <label for="{{ form.is_academic.id_for_label }}" class="form-label">{{ form.is_academic.label }}</label>
+                        {{ form.is_academic }}
+                    </div>
 
-            <h3 class="mb-3" style="color: #004d99;">تعديل بيانات التواصل والتوثيق (KYC)</h3>
-            <div class="choice-card p-4">
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
+                    <div>
+                        <label for="{{ form.official_email.id_for_label }}" class="form-label">{{ form.official_email.label }}</label>
+                        {{ form.official_email }}
+                    </div>
+                    <div>
+                        <label for="{{ form.official_phone.id_for_label }}" class="form-label">{{ form.official_phone.label }}</label>
+                        {{ form.official_phone }}
+                    </div>
                     
-                    {{ form.as_p }} 
+                    <div>
+                        <label for="{{ form.official_website.id_for_label }}" class="form-label">{{ form.official_website.label }}</label>
+                        {{ form.official_website }}
+                    </div>
+                    <div>
+                        <label for="{{ form.linkedin_url.id_for_label }}" class="form-label">{{ form.linkedin_url.label }}</label>
+                        {{ form.linkedin_url }}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.logo.id_for_label }}" class="form-label">{{ form.logo.label }}</label>
+                        {{ form.logo }}
+                        {% if partner_profile.logo %}
+                            <div class="mt-2 small">حالياً: <a href="{{ partner_profile.logo.url }}" target="_blank">عرض الشعار</a> | {{ form.logo.subwidgets.1 }}</div>
+                        {% endif %}
+                    </div>
                     
-                    <button type="submit" class="btn-main mt-3" style="background-color: #007bff; color: white;">
-                        حفظ التعديلات
-                    </button>
-                </form>
-            </div>
+                    <div style="flex: 1 1 48%;">
+                        <label for="{{ form.facebook_url.id_for_label }}" class="form-label">{{ form.facebook_url.label }}</label>
+                        {{ form.facebook_url }}
+                    </div>
+                    <div style="flex: 1 1 48%;">
+                        <label for="{{ form.twitter_url.id_for_label }}" class="form-label">{{ form.twitter_url.label }}</label>
+                        {{ form.twitter_url }}
+                    </div>
+                    <div style="flex: 1 1 48%;">
+                        <label for="{{ form.instagram_url.id_for_label }}" class="form-label">{{ form.instagram_url.label }}</label>
+                        {{ form.instagram_url }}
+                    </div>
+                    
+                </div>
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger mt-3">{{ form.non_field_errors }}</div>
+                {% endif %}
+                
+                <button type="submit" class="btn-main" style="background-color: #007bff; color: white; padding: 12px 30px; margin-top: 25px;">
+                    حفظ التعديلات
+                </button>
+            </form>
         </div>
     </div>
 </div>
