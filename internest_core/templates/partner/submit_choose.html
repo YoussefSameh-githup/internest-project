@@ -1,41 +1,49 @@
 {% extends 'internship/base.html' %}
 {% load static %}
 
-{% block title %}إضافة محتوى جديد{% endblock %}
+{% block title %}إضافة محتوى جديد — Internest{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center py-5">
-    <div class="col-md-10">
-        <h2 style="color: #004d99; font-weight: 700; margin-bottom: 10px; text-align: center;">
-            ماذا تريد أن تضيف؟
-        </h2>
-        <p class="lead-text text-center">اختر نوع المحتوى الذي تريد تقديمه.</p>
 
-        <div style="display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; margin-top: 40px;">
+<section class="page-header">
+    <div class="container">
+        <a href="{% url 'partner_dashboard' %}" class="btn btn--ghost btn--sm mb-4">
+            <i class="bi bi-arrow-right-short"></i> العودة للوحة التحكم
+        </a>
+        <span class="eyebrow eyebrow--accent"><i class="bi bi-plus-circle-fill"></i> إضافة محتوى</span>
+        <h1 class="mt-3">ايه اللي عاوز تضيفه؟</h1>
+        <p>اختر نوع المحتوى اللي تقدمه للطلاب.</p>
+    </div>
+</section>
 
-            <a href="{% url 'partner_submit_internship' %}" class="choice-card text-decoration-none" style="flex: 1 1 300px; max-width: 400px; border-left: 5px solid #28a745; color: inherit; transition: transform 0.2s;">
-                <h3 style="color: #28a745;">+ فرصة تدريب جديدة</h3>
+<section class="section-sm">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); max-width: 880px; margin-inline: auto;">
+
+            <a href="{% url 'partner_submit_internship' %}" class="card card--hover fade-up" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+                <div class="feature__icon" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #15803d;">
+                    <i class="bi bi-briefcase-fill" style="font-size: 26px;"></i>
+                </div>
+                <h3>فرصة تدريب</h3>
                 <p class="text-muted">قدّم فرصة تدريب صيفي تستقطب أفضل الطلاب من خلال نظام الفرز الذكي.</p>
-                <span class="btn-main" style="background-color: #28a745; color: white; padding: 8px 20px; display: inline-block; margin-top: 10px;">
-                    ابدأ التقديم ➔
-                </span>
+                <div class="mt-4 flex items-center gap-2" style="color: var(--color-success); font-weight: 700; margin-top: auto;">
+                    ابدأ التقديم <i class="bi bi-arrow-left-short"></i>
+                </div>
             </a>
 
-            <a href="{% url 'partner_submit_course' %}" class="choice-card text-decoration-none" style="flex: 1 1 300px; max-width: 400px; border-left: 5px solid #007bff; color: inherit; transition: transform 0.2s;">
-                <h3 style="color: #007bff;">+ كورس تعليمي جديد</h3>
-                <p class="text-muted">قدّم كورس تعليمي للطلاب يحصل المكملون منه على نقاط Gamification.</p>
-                <span class="btn-main" style="background-color: #007bff; color: white; padding: 8px 20px; display: inline-block; margin-top: 10px;">
-                    ابدأ التقديم ➔
-                </span>
+            <a href="{% url 'partner_submit_course' %}" class="card card--hover fade-up delay-1" style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+                <div class="feature__icon" style="background: linear-gradient(135deg, var(--brand-100), var(--brand-50)); color: var(--brand-700);">
+                    <i class="bi bi-mortarboard-fill" style="font-size: 26px;"></i>
+                </div>
+                <h3>كورس تعليمي</h3>
+                <p class="text-muted">كورس بيكسب الطلاب نقاط Gamification ويرفع ترتيبهم في Golden List.</p>
+                <div class="mt-4 flex items-center gap-2" style="color: var(--brand-700); font-weight: 700; margin-top: auto;">
+                    ابدأ التقديم <i class="bi bi-arrow-left-short"></i>
+                </div>
             </a>
 
-        </div>
-
-        <div class="text-center" style="margin-top: 40px;">
-            <a href="{% url 'partner_dashboard' %}" style="color: #6c757d; text-decoration: none;">
-                ← العودة للوحة التحكم
-            </a>
         </div>
     </div>
-</div>
+</section>
+
 {% endblock %}
