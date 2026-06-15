@@ -1,40 +1,66 @@
 {% extends 'internship/base.html' %}
 {% load static %}
 
-{% block title %}تسجيل الدخول أو إنشاء حساب{% endblock %}
+{% block title %}سجل دخولك أو أنشئ حساب — Internest{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
-    <div style="width: 100%; max-width: 550px; padding: 40px; border-radius: 15px; background-color: white; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
-        
-        <h2 style="text-align: center; color: #004d99; font-weight: bold; margin-bottom: 30px;">انطلاق مسيرتك المهنية كطالب</h2>
+<div class="auth-shell">
 
-        <div style="text-align: center;">
-            <p style="font-size: 1.1em; color: #555; margin-bottom: 30px;">
-                اختر طريقة تسجيل الدخول أو أنشئ ملفك الموحد.
+    <div class="auth-shell__visual">
+        <div>
+            <a href="{% url 'landing' %}" class="nav__brand" style="color: var(--white);">
+                <img src="{% static 'img/internest_logo.jpg' %}" alt="Internest">
+                <span>INTERNEST</span>
+            </a>
+        </div>
+
+        <div>
+            <span class="eyebrow hero__eyebrow"><i class="bi bi-rocket-takeoff"></i> ابدأ مستقبلك</span>
+            <h1 style="color: var(--white); font-size: clamp(1.75rem, 3vw, var(--text-4xl)); margin-top: var(--space-4);">
+                خطوتك الأولى نحو أول تدريب حقيقي
+            </h1>
+            <p style="color: rgba(255,255,255,0.85); font-size: var(--text-lg); max-width: 380px;">
+                انضم لآلاف الطلاب اللي بنوا ملفهم المهني الموحد على Internest.
             </p>
+        </div>
 
-            <a href="{% url 'login' %}" 
-               class="btn-main" 
-               style="background-color: #007bff; color: white; padding: 15px 30px; width: 80%; display: block; margin: 15px auto;">
-                <i class="fas fa-envelope me-2"></i> تسجيل الدخول بالإيميل وكلمة السر
-            </a>
-
-            <a href="{% url 'signup' %}" 
-               class="btn-main" 
-               style="background-color: #28a745; color: white; padding: 15px 30px; width: 80%; display: block; margin: 15px auto;">
-                <i class="fas fa-user-plus me-2"></i> إنشاء حساب جديد
-            </a>
-            
-            <hr style="margin-top: 30px; border-top: 1px solid #eee;">
-
-            <a href="#" 
-               class="btn-main" 
-               style="background-color: #dc3545; color: white; padding: 10px 20px; width: 80%; opacity: 0.6; cursor: not-allowed;">
-                <i class="fab fa-google me-2"></i> الدخول بحساب جوجل (قريباً)
-            </a>
-            
+        <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+            <div style="background-color: rgba(255,255,255,0.1); padding: var(--space-3) var(--space-4); border-radius: var(--radius-pill); border: 1px solid rgba(255,255,255,0.15); font-size: var(--text-sm); color: var(--white);">
+                <i class="bi bi-check-circle-fill"></i> ملف موحد
+            </div>
+            <div style="background-color: rgba(255,255,255,0.1); padding: var(--space-3) var(--space-4); border-radius: var(--radius-pill); border: 1px solid rgba(255,255,255,0.15); font-size: var(--text-sm); color: var(--white);">
+                <i class="bi bi-check-circle-fill"></i> فرص حصرية
+            </div>
+            <div style="background-color: rgba(255,255,255,0.1); padding: var(--space-3) var(--space-4); border-radius: var(--radius-pill); border: 1px solid rgba(255,255,255,0.15); font-size: var(--text-sm); color: var(--white);">
+                <i class="bi bi-check-circle-fill"></i> كورسات معتمدة
+            </div>
         </div>
     </div>
+
+    <div class="auth-shell__form">
+        <div class="auth-shell__inner">
+            <h2>أهلاً بك 👋</h2>
+            <p class="text-muted mb-6">اختر طريقة الدخول اللي تناسبك للوصول إلى منصتك.</p>
+
+            <a href="{% url 'login' %}" class="btn btn--primary btn--lg btn--block mb-3">
+                <i class="bi bi-box-arrow-in-right"></i> تسجيل الدخول
+            </a>
+
+            <a href="{% url 'signup' %}" class="btn btn--outline btn--lg btn--block">
+                <i class="bi bi-person-plus"></i> إنشاء حساب جديد
+            </a>
+
+            <div class="divider">أو</div>
+
+            <button type="button" class="btn btn--ghost btn--lg btn--block" disabled style="border: 1px solid var(--color-border);">
+                <i class="bi bi-google"></i> الدخول بحساب Google (قريباً)
+            </button>
+
+            <p class="text-muted mt-6 text-center" style="font-size: var(--text-sm);">
+                هل أنت شريك؟ <a href="{% url 'partner_login' %}" class="fw-bold">دخول الشركاء</a>
+            </p>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

@@ -1,60 +1,69 @@
 {% extends 'internship/base.html' %}
 {% load static %}
 
-{% block title %}تسجيل الدخول{% endblock %}
+{% block title %}تسجيل الدخول — Internest{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 500px; margin-top: 50px; padding: 30px; border-radius: 10px; background-color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-    <h2 class="text-center display-main">دخول الطلاب 🚀</h2>
-    <p class="text-center text-muted mb-4">أدخل بياناتك للمتابعة إلى قائمة التدريبات.</p>
+<div class="auth-shell">
 
-    <form method="post">
-        {% csrf_token %}
-        {% if form.errors %}
-            <div class="alert alert-danger" role="alert">
-                يرجى تصحيح الأخطاء التالية في النموذج.
-            </div>
-        {% endif %}
-
-        <div class="mb-3">
-            <label for="{{ form.username.id_for_label }}" class="form-label">اسم المستخدم</label>
-            {{ form.username }}
-            {% if form.username.errors %}
-                <div class="text-danger small">{{ form.username.errors }}</div>
-            {% endif %}
+    <div class="auth-shell__visual">
+        <div>
+            <a href="{% url 'landing' %}" class="nav__brand" style="color: var(--white);">
+                <img src="{% static 'img/internest_logo.jpg' %}" alt="Internest">
+                <span>INTERNEST</span>
+            </a>
         </div>
-        
-        <div class="mb-3">
-            <label for="{{ form.password.id_for_label }}" class="form-label">كلمة المرور</label>
-            {{ form.password }}
-            {% if form.password.errors %}
-                <div class="text-danger small">{{ form.password.errors }}</div>
-            {% endif %}
-        </div>
-        
-        <input type="hidden" name="next" value="{{ next }}">
 
-        <button type="submit" class="btn-main w-100 mt-4" style="background-color: #007bff; color: white; padding: 10px;">
-            تسجيل الدخول
-        </button>
-    </form>
-    
-    <div class="text-center mt-3">
-        <small class="text-muted">
-            إذا لم يكن لديك حساب؟ 
-            <a href="{% url 'signup' %}" style="color: #007bff; font-weight: bold;">سجل الآن</a>
-        </small>
+        <div>
+            <span class="eyebrow hero__eyebrow"><i class="bi bi-hand-thumbs-up"></i> أهلاً بعودتك</span>
+            <h1 style="color: var(--white); font-size: clamp(1.75rem, 3vw, var(--text-4xl)); margin-top: var(--space-4);">
+                مستقبلك المهني فاضل خطوة
+            </h1>
+            <p style="color: rgba(255,255,255,0.85); font-size: var(--text-lg); max-width: 380px;">
+                ادخل وكمل من حيث انتهيت — فرصك المحفوظة وطلباتك في انتظارك.
+            </p>
+        </div>
+
+        <div></div>
     </div>
-</div>
 
-<style>
-    /* لتنسيق حقول الإدخال لتظهر بشكل جيد مع الـ CSS الداخلي في base.html */
-    #id_username, #id_password {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ced4da;
-        border-radius: 5px;
-        box-sizing: border-box;
-    }
-</style>
+    <div class="auth-shell__form">
+        <div class="auth-shell__inner">
+            <h2>تسجيل الدخول</h2>
+            <p class="text-muted mb-6">أدخل بياناتك للوصول إلى حسابك.</p>
+
+            <form method="post" class="form">
+                {% csrf_token %}
+
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        اسم المستخدم أو كلمة المرور غير صحيحة. حاول مرة أخرى.
+                    </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="{{ form.username.id_for_label }}" class="form-label">اسم المستخدم</label>
+                    {{ form.username }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.password.id_for_label }}" class="form-label">كلمة المرور</label>
+                    {{ form.password }}
+                </div>
+
+                <input type="hidden" name="next" value="{{ next }}">
+
+                <button type="submit" class="btn btn--primary btn--lg btn--block">
+                    <i class="bi bi-box-arrow-in-right"></i> دخول
+                </button>
+            </form>
+
+            <p class="text-muted mt-6 text-center" style="font-size: var(--text-sm);">
+                مالكش حساب؟ <a href="{% url 'signup' %}" class="fw-bold">سجّل الآن مجاناً</a>
+            </p>
+        </div>
+    </div>
+
+</div>
 {% endblock %}

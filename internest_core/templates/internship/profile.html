@@ -1,193 +1,169 @@
 {% extends 'internship/base.html' %}
 {% load static %}
 
-{% block title %}ملفي الشخصي{% endblock %}
-
-{% block extra_head %}
-<style>
-    /* ... (تنسيقات CSS ستبقى كما هي للمحافظة على الشكل العام) ... */
-    .profile-card {
-        background-color: white;
-        border-radius: 15px;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        padding: 30px;
-        margin-bottom: 25px;
-        border-left: 5px solid #004d99; /* خط تمييز أزرق */
-    }
-    /* ... (بقية تنسيقات CSS كما هي) ... */
-
-    /* تنسيق خاص بالجداول الجديدة */
-    .data-table th, .data-table td {
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-        text-align: right;
-    }
-    .data-table th {
-        width: 40%;
-        color: #555;
-        font-weight: 600;
-        background-color: #f8f9fa;
-    }
-    .form-group-flex {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px; /* مسافة بين الأعمدة */
-    }
-    .form-group-flex > div {
-        flex: 1 1 48%; /* يجعل كل حقل يأخذ تقريباً نصف عرض العمود */
-    }
-</style>
-{% endblock %}
-
+{% block title %}ملفي الشخصي — Internest{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center py-5">
-    <div class="col-md-10">
-        <h2 style="color: #004d99; font-weight: 700; margin-bottom: 30px;">ملفك الشخصي ونظام الأداء</h2>
-        
-        <div class="profile-card">
-            <div class="row">
-                <div class="col-md-4 text-center mb-4">
+
+<section class="page-header">
+    <div class="container">
+        <span class="eyebrow"><i class="bi bi-person-circle"></i> ملفي الشخصي</span>
+        <h1 class="mt-3">إدارة ملفك الموحد ونقاطك</h1>
+        <p>كل اللي تعدله هنا بيظهر للشركاء لما تقدّم على فرصة.</p>
+    </div>
+</section>
+
+<section class="section-sm">
+    <div class="container">
+
+        <div class="profile-summary mb-5 fade-up">
+            <div style="text-align: center;">
+                <div class="profile-avatar">
                     {% if profile.profile_picture %}
-                        <img src="{{ profile.profile_picture.url }}" alt="صورة الملف الشخصي" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #ffaa00;">
+                        <img src="{{ profile.profile_picture.url }}" alt="">
                     {% else %}
-                        <div style="width: 150px; height: 150px; border-radius: 50%; background-color: #ccc; margin: 0 auto; line-height: 150px; font-size: 3em; color: white;">👤</div>
-                    {% endif %}
-                    <h4 class="mt-3" style="color: #333;">مرحباً، {{ user.username }}</h4>
-                    {% if profile.linkedin_url %}
-                        <p><a href="{{ profile.linkedin_url }}" target="_blank" style="color: #007bff; font-weight: bold; text-decoration: none;">LinkedIn Profile</a></p>
+                        <i class="bi bi-person-fill"></i>
                     {% endif %}
                 </div>
-                <div class="col-md-8">
-                    <table class="table data-table">
-                        <tbody>
-                            <tr>
-                                <th>البريد الإلكتروني الشخصي</th>
-                                <td>{{ profile.personal_email|default:"غير محدد" }} <span class="badge bg-primary">أساسي للإشعارات</span></td>
-                            </tr>
-                            {% if profile.university_email %}
-                            <tr>
-                                <th>البريد الإلكتروني الجامعي</th>
-                                <td>{{ profile.university_email }}</td>
-                            </tr>
-                            {% endif %}
-                            <tr>
-                                <th>رقم الهاتف</th>
-                                <td>{{ profile.phone_number|default:"غير محدد" }}</td>
-                            </tr>
-                            <tr>
-                                <th>الجامعة والتخصص</th>
-                                <td>{{ profile.university|default:"لم يحدد" }} / {{ profile.major|default:"لم يحدد" }}</td>
-                            </tr>
-                            <tr>
-                                <th>السيرة الذاتية (CV)</th>
-                                <td>
-                                    {% if profile.cv_file %}
-                                        <a href="{{ profile.cv_file.url }}" target="_blank" class="text-success">عرض الملف</a>
-                                    {% else %}
-                                        غير مرفق
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <h3 class="mt-4 mb-0">{{ user.get_full_name|default:user.username }}</h3>
+                <p class="text-muted mb-3">@{{ user.username }}</p>
+                {% if profile.linkedin_url %}
+                    <a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener" class="btn btn--ghost btn--sm">
+                        <i class="bi bi-linkedin"></i> LinkedIn
+                    </a>
+                {% endif %}
             </div>
-        </div>
-        
-        <div class="row">
-            <div class="col-md-6">
-                <div class="profile-card" style="border-left-color: #007bff;">
-                    <h5 style="color: #007bff; font-weight: bold;">جودة ملف التقديم</h5>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill" style="width: {{ profile.profile_completion_score }}%; background-color: {% if profile.profile_completion_score < 100 %}#dc3545{% else %}#28a745{% endif %};">
-                            {{ profile.profile_completion_score }}% مكتمل
-                        </div>
+
+            <div>
+                <h4 class="mb-4">معلومات الحساب</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4);">
+                    <div>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">البريد الشخصي</span>
+                        <p class="fw-bold mt-2 mb-0">{{ profile.personal_email|default:"-" }}</p>
                     </div>
-                    {% if profile.profile_completion_score < 100 %}
-                        <p class="small mt-2" style="color: #dc3545; font-weight: bold;">⚠️ ملفك غير مكتمل. أكمل لفتح خاصية التقديم!</p>
-                    {% else %}
-                        <p class="small mt-2" style="color: #28a745; font-weight: bold;">✅ ملفك مكتمل وجاهز للتقديم على الفرص!</p>
+                    {% if profile.university_email %}
+                    <div>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">البريد الجامعي</span>
+                        <p class="fw-bold mt-2 mb-0">{{ profile.university_email }}</p>
+                    </div>
                     {% endif %}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="profile-card" style="border-left-color: #ffaa00;">
-                    <h5 style="color: #ffaa00; font-weight: bold;">اسكور الأداء</h5>
-                    <h1 style="color: #333; font-size: 3em; margin-bottom: 5px;">{{ profile.gamification_score }} نقطة</h1>
-                    <p class="small text-muted">النقاط المكتسبة من التاسكات والكورسات.</p>
-                    <div class="mt-3 gamification-buttons" style="display: flex; gap: 15px; justify-content: center;">
-                        <a href="{% url 'task_list' %}">ابدأ التاسكات</a>
-                        <a href="{% url 'course_list' %}" style="background-color: #28a745;">كورسات الشركاء</a>
+                    <div>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">رقم الهاتف</span>
+                        <p class="fw-bold mt-2 mb-0">{{ profile.phone_number|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">الجامعة</span>
+                        <p class="fw-bold mt-2 mb-0">{{ profile.university|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">التخصص</span>
+                        <p class="fw-bold mt-2 mb-0">{{ profile.major|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">السيرة الذاتية</span>
+                        <p class="fw-bold mt-2 mb-0">
+                            {% if profile.cv_file %}
+                                <a href="{{ profile.cv_file.url }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> عرض CV</a>
+                            {% else %}
+                                <span class="text-muted">غير مرفق</span>
+                            {% endif %}
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="profile-card profile-form">
-            <h5 style="color: #004d99; font-weight: bold; border-bottom: 2px solid #ffaa00; padding-bottom: 10px; margin-bottom: 20px;">
-                تعديل البيانات وتحميل الملفات
-            </h5>
-            <form method="POST" enctype="multipart/form-data">
+        <div class="metric-grid mb-5">
+            <div class="metric">
+                <div class="metric__icon"><i class="bi bi-clipboard-check"></i></div>
+                <div class="metric__value">{{ profile.profile_completion_score }}%</div>
+                <div class="metric__label">اكتمال الملف</div>
+                <div class="progress mt-3">
+                    <div class="progress__bar {% if profile.profile_completion_score == 100 %}progress__bar--success{% endif %}"
+                         style="width: {{ profile.profile_completion_score }}%;"></div>
+                </div>
+                {% if profile.profile_completion_score < 100 %}
+                    <p class="mt-3 mb-0" style="font-size: var(--text-xs); color: var(--color-danger);">
+                        <i class="bi bi-exclamation-triangle-fill"></i> أكمل لتفعيل التقديم
+                    </p>
+                {% else %}
+                    <p class="mt-3 mb-0" style="font-size: var(--text-xs); color: var(--color-success);">
+                        <i class="bi bi-check-circle-fill"></i> جاهز للتقديم
+                    </p>
+                {% endif %}
+            </div>
+
+            <div class="metric metric--accent">
+                <div class="metric__icon"><i class="bi bi-trophy-fill"></i></div>
+                <div class="metric__value">{{ profile.gamification_score }}</div>
+                <div class="metric__label">نقطة أداء</div>
+                <a href="{% url 'task_list' %}" class="btn btn--ghost btn--sm mt-3" style="padding-inline: 0;">
+                    اكسب نقاط <i class="bi bi-arrow-left-short"></i>
+                </a>
+            </div>
+
+            <div class="metric metric--success">
+                <div class="metric__icon"><i class="bi bi-mortarboard-fill"></i></div>
+                <div class="metric__value">{{ profile.study_level|default:"-" }}</div>
+                <div class="metric__label">المستوى الدراسي</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="mb-5"><i class="bi bi-pencil-square text-primary"></i> تعديل البيانات</h3>
+
+            <form method="POST" enctype="multipart/form-data" class="form">
                 {% csrf_token %}
-                
-                <div class="form-group-flex">
-                    <div>
+
+                <div class="form-grid">
+                    <div class="form-group">
                         <label for="{{ form.personal_email.id_for_label }}" class="form-label">{{ form.personal_email.label }}</label>
                         {{ form.personal_email }}
-                        <div class="text-danger small">{{ form.personal_email.errors }}</div>
+                        {% if form.personal_email.errors %}<div class="form-error">{{ form.personal_email.errors|striptags }}</div>{% endif %}
                     </div>
-                    <div>
+                    <div class="form-group">
                         <label for="{{ form.university_email.id_for_label }}" class="form-label">{{ form.university_email.label }}</label>
                         {{ form.university_email }}
-                        <div class="text-danger small">{{ form.university_email.errors }}</div>
+                        {% if form.university_email.errors %}<div class="form-error">{{ form.university_email.errors|striptags }}</div>{% endif %}
                     </div>
-                    
-                    <div>
+                    <div class="form-group">
                         <label for="{{ form.university.id_for_label }}" class="form-label">{{ form.university.label }}</label>
                         {{ form.university }}
-                        <div class="text-danger small">{{ form.university.errors }}</div>
                     </div>
-                    <div>
+                    <div class="form-group">
                         <label for="{{ form.major.id_for_label }}" class="form-label">{{ form.major.label }}</label>
                         {{ form.major }}
-                        <div class="text-danger small">{{ form.major.errors }}</div>
                     </div>
-
-                    <div>
+                    <div class="form-group">
                         <label for="{{ form.study_level.id_for_label }}" class="form-label">{{ form.study_level.label }}</label>
                         {{ form.study_level }}
-                        <div class="text-danger small">{{ form.study_level.errors }}</div>
                     </div>
-                    <div>
+                    <div class="form-group">
                         <label for="{{ form.phone_number.id_for_label }}" class="form-label">{{ form.phone_number.label }}</label>
                         {{ form.phone_number }}
-                        <div class="text-danger small">{{ form.phone_number.errors }}</div>
                     </div>
-                    
-                    <div style="flex: 1 1 100%;">
+                    <div class="form-group form-group--full">
                         <label for="{{ form.linkedin_url.id_for_label }}" class="form-label">{{ form.linkedin_url.label }}</label>
                         {{ form.linkedin_url }}
-                        <div class="text-danger small">{{ form.linkedin_url.errors }}</div>
                     </div>
-
-                    <div style="flex: 1 1 48%;">
+                    <div class="form-group">
                         <label for="{{ form.cv_file.id_for_label }}" class="form-label">{{ form.cv_file.label }}</label>
                         {{ form.cv_file }}
-                        <div class="text-danger small">{{ form.cv_file.errors }}</div>
+                        <small class="form-help">PDF / DOC / DOCX — أقصى حجم 5MB</small>
                     </div>
-                    <div style="flex: 1 1 48%;">
+                    <div class="form-group">
                         <label for="{{ form.profile_picture.id_for_label }}" class="form-label">{{ form.profile_picture.label }}</label>
                         {{ form.profile_picture }}
-                        <div class="text-danger small">{{ form.profile_picture.errors }}</div>
+                        <small class="form-help">JPG / PNG / WEBP — أقصى حجم 5MB</small>
                     </div>
                 </div>
-                
-                <button type="submit" class="btn-main" style="background-color: #007bff; color: white; padding: 12px 30px; margin-top: 25px;">
-                    حفظ وتحديث الملف
+
+                <button type="submit" class="btn btn--primary btn--lg mt-6">
+                    <i class="bi bi-save"></i> حفظ التعديلات
                 </button>
             </form>
         </div>
     </div>
-</div>
+</section>
+
 {% endblock %}

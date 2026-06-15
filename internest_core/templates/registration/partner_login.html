@@ -1,56 +1,75 @@
 {% extends 'internship/base.html' %}
 {% load static %}
 
-{% block title %}دخول الشريك{% endblock %}
+{% block title %}دخول الشركاء — Internest{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 500px; margin-top: 50px; padding: 30px; border-radius: 10px; background-color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-    <h2 class="text-center display-main" style="color: #ffaa00;">دخول الشريك 🤝</h2>
-    <p class="text-center text-muted mb-4">يرجى إدخال بيانات الشريك المعتمد للوصول إلى لوحة التحكم.</p>
+<div class="auth-shell">
 
-    {% if error_message %}
-        <div style="color: white; background-color: #dc3545; padding: 10px; margin-bottom: 15px; border-radius: 5px; text-align: center;">
-            {{ error_message }}
-        </div>
-    {% endif %}
-
-    <form method="post">
-        {% csrf_token %}
-        
-        <div class="mb-3">
-            <label for="id_username" class="form-label">اسم المستخدم (المُعيّن في الإدارة)</label> 
-            <input type="text" name="username" id="id_username" class="form-control" placeholder="أدخل اسم المستخدم" value="{{ username_val|default:'' }}" required>
+    <div class="auth-shell__visual" style="background: linear-gradient(135deg, #5b2c0c 0%, #b45309 50%, #d97706 100%);">
+        <div>
+            <a href="{% url 'landing' %}" class="nav__brand" style="color: var(--white);">
+                <img src="{% static 'img/internest_logo.jpg' %}" alt="Internest">
+                <span>INTERNEST</span>
+            </a>
         </div>
 
-        <div class="mb-3">
-            <label for="id_partner_code" class="form-label">رمز الشريك السري</label>
-            <input type="text" name="partner_code" id="id_partner_code" class="form-control" placeholder="أدخل الرمز السري" value="{{ partner_code_val|default:'' }}" required>
+        <div>
+            <span class="eyebrow hero__eyebrow"><i class="bi bi-building-fill"></i> بوابة الشركاء</span>
+            <h1 style="color: var(--white); font-size: clamp(1.75rem, 3vw, var(--text-4xl)); margin-top: var(--space-4);">
+                ادخل وقابل المواهب اللي بتدور عليها
+            </h1>
+            <p style="color: rgba(255,255,255,0.9); font-size: var(--text-lg); max-width: 380px;">
+                لوحة تحكم كاملة، صندوق وارد بملفات مفرَزة، ونشر فرص بضغطة واحدة.
+            </p>
         </div>
-        
-        <div class="mb-3">
-            <label for="id_password" class="form-label">كلمة المرور</label>
-            <input type="password" name="password" id="id_password" class="form-control" placeholder="كلمة المرور" required>
-        </div>
-        
-        <button type="submit" class="btn-main w-100 mt-4" style="background-color: #ffaa00; color: #333; padding: 10px;">
-            تسجيل الدخول
-        </button>
-    </form>
-    
-    <div class="text-center mt-3">
-        هل أنت مهتم بالشراكة؟ 
-        <a href="{% url 'contact_partner' %}" style="color: #007bff; font-weight: bold;">تواصل معنا</a>
+
+        <div></div>
     </div>
-</div>
 
-<style>
-    /* تنسيق حقول الإدخال */
-    .form-control {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ffaa00;
-        border-radius: 5px;
-        box-sizing: border-box;
-    }
-</style>
+    <div class="auth-shell__form">
+        <div class="auth-shell__inner">
+            <h2>دخول الشركاء 🤝</h2>
+            <p class="text-muted mb-6">أدخل بيانات الشريك المعتمدة من Internest.</p>
+
+            {% if error_message %}
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle-fill"></i> {{ error_message }}
+                </div>
+            {% endif %}
+
+            <form method="post" class="form">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="id_username" class="form-label">اسم المستخدم</label>
+                    <input type="text" name="username" id="id_username" class="form-control"
+                           placeholder="اسم المستخدم المعيّن لشركتك" value="{{ username_val|default:'' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_partner_code" class="form-label">رمز الشريك السري</label>
+                    <input type="text" name="partner_code" id="id_partner_code" class="form-control"
+                           placeholder="الرمز اللي وصلك من Internest" value="{{ partner_code_val|default:'' }}" required>
+                    <small class="form-help">الكود ده وصلك على بريد شركتك بعد اعتماد الانضمام.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_password" class="form-label">كلمة المرور</label>
+                    <input type="password" name="password" id="id_password" class="form-control"
+                           placeholder="كلمة المرور" required>
+                </div>
+
+                <button type="submit" class="btn btn--accent btn--lg btn--block">
+                    <i class="bi bi-box-arrow-in-right"></i> دخول لوحة الشريك
+                </button>
+            </form>
+
+            <p class="text-muted mt-6 text-center" style="font-size: var(--text-sm);">
+                مهتم تبقى شريك؟ <a href="{% url 'contact_partner' %}" class="fw-bold">تواصل معنا</a>
+            </p>
+        </div>
+    </div>
+
+</div>
 {% endblock %}
