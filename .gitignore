@@ -1,20 +1,31 @@
-# Python cache
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# Virtual Environment
-# (اتأكد إن ده اسم الفولدر بتاعك)
+# Virtual environments
 venv/
+.venv/
+env/
 
-# Database
+# Django
 db.sqlite3
 *.sqlite3
-
-# User Uploads (مهم جداً)
 media/
-
-# Staticfiles (ملفات الـ CSS/JS المجمعة)
 staticfiles/
 
-# ملفات الإعدادات السرية
+# Secrets / config
 .env
+.env.local
+*.secret
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
