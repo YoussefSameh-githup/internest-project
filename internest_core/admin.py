@@ -70,14 +70,10 @@ class InternshipAdmin(admin.ModelAdmin):
 
 @admin.register(PartnerInternshipSubmission)
 class PartnerInternshipSubmissionAdmin(admin.ModelAdmin):
-    def reject_submissions(self, request, queryset): # <--- هذه هي الدالة
-        # ...
-        pass # Placeholder for actual logic
-    reject_submissions.short_description = "رفض الطلبات المحددة" # <--- هذا صحيح
     list_display = ('title', 'partner', 'submission_date', 'status', 'location', 'deadline')
     list_filter = ('status', 'partner__company_name')
-    actions = ['approve_submissions', 'reject_submissions'] 
-    
+    actions = ['approve_submissions', 'reject_submissions']
+
     def approve_submissions(self, request, queryset):
         approved_count = 0
         email_errors = []
@@ -133,10 +129,7 @@ class PartnerCourseSubmissionAdmin(admin.ModelAdmin):
     def reject_courses(self, request, queryset):
         updated_count = queryset.filter(status='Pending').update(status='Rejected')
         self.message_user(request, f"تم رفض {updated_count} كورس/كورسات.")
-    # 🛑 هذا السطر يسبب NameError عند تشغيل الكود الذي أرسلته لي
-    # لأنه يستخدم reject_submissions بدلاً من reject_courses
-    # لكنني سأتركه كما أرسلته
-    reject_courses.short_description = "رفض الكورسات المحددة" 
+    reject_courses.short_description = "رفض الكورسات المحددة"
     
 
 @admin.register(Application)
