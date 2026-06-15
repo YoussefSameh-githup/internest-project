@@ -4,203 +4,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Internest - نظام ربط وفرز ذكي{% endblock title %}</title>
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" integrity="sha384-dpuaG1ExIDoqtxFKN7A77wuFWAW8TWSxTGzvHhW+Y7vsSgD9Pn05ABhlTON9Hy+S" crossorigin="anonymous">
+    <meta name="theme-color" content="#0b1e4d">
+    <meta name="description" content="Internest - نظام الربط الذكي بين الشركات والطلاب الجامعيين. تدريبات، كورسات، وفرص حقيقية لمستقبلك المهني.">
 
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: 'Cairo', 'Tahoma', sans-serif; /* استخدام خط Cairo كخط أساسي */
-            background-color: #f0f3f8; /* خلفية ناعمة */
-            direction: rtl; 
-            min-height: 100vh;
-            color: #333;
-            display: flex; 
-            flex-direction: column; 
-        }
-        main { flex: 1; padding-top: 40px; }
-        .container { width: 90%; max-width: 1200px; margin: 0 auto; }
-        
-        /* شريط التنقل */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #004d99; /* أزرق داكن */
-            padding: 10px 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
-            height: 70px;
-            flex-wrap: nowrap;
-        }
-        .navbar-brand-container {
-            display: flex;
-            align-items: center;
-            flex-shrink: 0; 
-        }
-        .navbar a { 
-            color: white; 
-            text-decoration: none; 
-            margin: 0 5px; 
-            font-weight: bold;
-            white-space: nowrap; 
-        }
-        .navbar a:hover {
-            color: #ffcc66; /* لون ذهبي فاتح عند التحويم */
-        }
-        
-        .navbar-buttons {
-            display: flex;
-            align-items: center;
-            gap: 10px; /* مسافة بين الأزرار */
-        }
+    <title>{% block title %}Internest — منصة الفرص والتدريب الذكية{% endblock title %}</title>
 
-        /* تنسيق الأزرار الذهبية الرئيسية */
-        .btn-main {
-            padding: 5px 15px; 
-            background-color: #ffaa00;
-            color: #333;
-            border-radius: 5px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: background-color 0.3s;
-        }
-        .btn-main:hover {
-            background-color: #e59400;
-        }
-        
-        /* تنسيق الأزرار (Links) داخل شريط التنقل */
-        .nav-link-btn {
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: background-color 0.3s;
-        }
-        .nav-link-btn:hover {
-            background-color: rgba(255, 170, 0, 0.2);
-        }
+    <link rel="icon" type="image/jpeg" href="{% static 'img/internest_logo.jpg' %}">
 
-        /* تنسيق البطاقات (الـ Box) التلقائي */
-        .choice-card {
-            border: none; 
-            padding: 35px;
-            margin-bottom: 20px;
-            border-radius: 15px; 
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            background-color: white;
-        }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
 
-        /* تنسيق العناوين التلقائي */
-        h1, h2, h3, h4 {
-            color: #004d99; /* أزرق داكن جذاب */
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-        .display-main { color: #007bff; font-size: 2.2rem; margin-bottom: 20px; }
-        .lead-text { color: #6c757d; margin-bottom: 40px; }
-        
-        /* تنسيق حقول الإدخال الشاملة */
-        input[type="text"],
-        input[type="password"],
-        input[type="email"],
-        input[type="url"],
-        input[type="number"],
-        input[type="date"],
-        textarea,
-        select {
-            width: 100%;
-            padding: 10px 15px;
-            margin: 8px 0;
-            display: inline-block;
-            border: 1px solid #ced4da;
-            border-radius: 8px; 
-            box-sizing: border-box;
-            font-family: 'Cairo', 'Tahoma', sans-serif;
-            background-color: #f8f9fa;
-        }
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
 
-        /* تنسيق رسائل الإشعارات (Messages) */
-        .alert-message {
-            position: fixed;
-            top: 75px; 
-            right: 20px;
-            z-index: 1050;
-            max-width: 400px;
-            text-align: right;
-            border-right: 5px solid;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <div class="container">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show alert-message" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-    </div>
 
-    <nav class="navbar">
-        <div class="navbar-brand-container">
-            
+    <header class="nav" id="siteNav">
+        <div class="container nav__inner">
             {% if user.is_authenticated %}
-                <a href="{% url 'home_redirect' %}" class="navbar-brand" style="font-size: 1.5em; display: flex; align-items: center;">
+                <a href="{% url 'home_redirect' %}" class="nav__brand">
             {% else %}
-                <a href="{% url 'landing' %}" class="navbar-brand" style="font-size: 1.5em; display: flex; align-items: center;">
+                <a href="{% url 'landing' %}" class="nav__brand">
             {% endif %}
-                <img src="{% static 'img/internest_logo.jpg' %}" alt="شعار Internest" style="height: 40px; margin-left: 10px;"> 
-                
-                <span style="color: white;">INTERNEST</span>
+                <img src="{% static 'img/internest_logo.jpg' %}" alt="Internest">
+                <span>INTERNEST</span>
             </a>
-        </div>
-        
-        <div class="navbar-buttons">
-            {% if user.is_authenticated %}
-                
-                {% if has_partner_profile %}
-                    <a href="{% url 'partner_dashboard' %}" class="nav-link-btn" style="color: #ffaa00; font-weight: bold;">الفرص المتقدمة</a>
-                    <a href="{% url 'partner_profile' %}" class="nav-link-btn" style="color: white;">ملفي الشريك</a>
-                    <a href="{% url 'partner_submit_choose' %}" class="btn-main" style="background-color: #28a745; color: white;">+ إضافة محتوى</a>
-                    <a href="{% url 'logout' %}" class="btn-main" style="background-color: #dc3545; color: white;">خروج</a>
-                
-                {% else %}
-                    <a href="{% url 'list' %}" class="nav-link-btn" style="color: #ffaa00; font-weight: bold;">تصفح التدريبات</a>
-                    <a href="{% url 'course_list' %}" class="nav-link-btn" style="color: white;">كورسات الشركاء</a>
-                    <a href="{% url 'profile' %}" class="nav-link-btn" style="color: white;">ملفي الشخصي</a>
-                    
-                    <a href="{% url 'my_applications' %}" class="nav-link-btn" style="color: white;">طلباتي</a>
-                    <a href="{% url 'logout' %}" class="btn-main" style="background-color: #dc3545; color: white;">خروج</a>
-                {% endif %}
-            
-            {% else %}
-                <a href="{% url 'login_or_signup' %}" class="btn-main" style="background-color: #ffaa00; color: #333;">دخول الطلاب</a>
-                <a href="{% url 'partner_login' %}" class="nav-link-btn" style="color: white;">دخول الشريك</a>
-            {% endif %}
-        </div>
-    </nav>
 
-    <main class="container py-5">
-        {% block content %}
-        {% endblock content %}
+            <ul class="nav__links">
+                {% if user.is_authenticated %}
+                    {% if has_partner_profile %}
+                        <li><a href="{% url 'partner_dashboard' %}" class="nav__link"><i class="bi bi-grid-1x2"></i> لوحة التحكم</a></li>
+                        <li><a href="{% url 'partner_profile' %}" class="nav__link"><i class="bi bi-building"></i> ملف الشركة</a></li>
+                    {% else %}
+                        <li><a href="{% url 'list' %}" class="nav__link"><i class="bi bi-briefcase"></i> التدريبات</a></li>
+                        <li><a href="{% url 'course_list' %}" class="nav__link"><i class="bi bi-mortarboard"></i> الكورسات</a></li>
+                        <li><a href="{% url 'task_list' %}" class="nav__link"><i class="bi bi-trophy"></i> التاسكات</a></li>
+                        <li><a href="{% url 'my_applications' %}" class="nav__link"><i class="bi bi-file-earmark-text"></i> طلباتي</a></li>
+                        <li><a href="{% url 'profile' %}" class="nav__link"><i class="bi bi-person-circle"></i> ملفي</a></li>
+                    {% endif %}
+                {% else %}
+                    <li><a href="#features" class="nav__link">المنصة</a></li>
+                    <li><a href="#how-it-works" class="nav__link">كيف نعمل</a></li>
+                    <li><a href="{% url 'contact_partner' %}" class="nav__link">للشركاء</a></li>
+                {% endif %}
+            </ul>
+
+            <div class="nav__cta">
+                {% if user.is_authenticated %}
+                    {% if has_partner_profile %}
+                        <a href="{% url 'partner_submit_choose' %}" class="btn btn--accent btn--sm">
+                            <i class="bi bi-plus-lg"></i> إضافة محتوى
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'logout' %}" class="btn btn--ghost btn--sm">
+                        <i class="bi bi-box-arrow-right"></i> خروج
+                    </a>
+                {% else %}
+                    <a href="{% url 'partner_login' %}" class="btn btn--ghost btn--sm">دخول الشركاء</a>
+                    <a href="{% url 'login_or_signup' %}" class="btn btn--primary btn--sm">
+                        ابدأ مجاناً <i class="bi bi-arrow-left-short"></i>
+                    </a>
+                {% endif %}
+
+                <button class="nav__toggle" id="navToggle" aria-label="فتح القائمة">
+                    <i class="bi bi-list" style="font-size: 24px;"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    {% if messages %}
+        <div class="flash-stack" id="flashStack">
+            {% for message in messages %}
+                {% if message.tags == 'success' %}{% with icon='bi-check-circle-fill' cls='success' %}
+                <div class="flash flash--{{ cls }}">
+                    <span class="flash__icon"><i class="bi {{ icon }}"></i></span>
+                    <span class="flash__body">{{ message }}</span>
+                    <button class="flash__close" aria-label="إغلاق"><i class="bi bi-x"></i></button>
+                </div>
+                {% endwith %}
+                {% elif message.tags == 'error' or message.tags == 'danger' %}{% with icon='bi-x-circle-fill' cls='error' %}
+                <div class="flash flash--{{ cls }}">
+                    <span class="flash__icon"><i class="bi {{ icon }}"></i></span>
+                    <span class="flash__body">{{ message }}</span>
+                    <button class="flash__close" aria-label="إغلاق"><i class="bi bi-x"></i></button>
+                </div>
+                {% endwith %}
+                {% elif message.tags == 'warning' %}{% with icon='bi-exclamation-triangle-fill' cls='warning' %}
+                <div class="flash flash--{{ cls }}">
+                    <span class="flash__icon"><i class="bi {{ icon }}"></i></span>
+                    <span class="flash__body">{{ message }}</span>
+                    <button class="flash__close" aria-label="إغلاق"><i class="bi bi-x"></i></button>
+                </div>
+                {% endwith %}
+                {% else %}{% with icon='bi-info-circle-fill' cls='info' %}
+                <div class="flash flash--{{ cls }}">
+                    <span class="flash__icon"><i class="bi {{ icon }}"></i></span>
+                    <span class="flash__body">{{ message }}</span>
+                    <button class="flash__close" aria-label="إغلاق"><i class="bi bi-x"></i></button>
+                </div>
+                {% endwith %}{% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <main>
+        {% block content %}{% endblock content %}
     </main>
 
-    <footer class="footer-custom" style="padding: 15px 0; background-color: #004d99; color: white; margin-top: auto;">
-        <div class="container text-center">
-            <p class="mb-0">&copy; 2025 Internest. نظام ربط وفرز ذكي.</p>
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__grid">
+                <div>
+                    <a href="{% url 'landing' %}" class="footer__brand">
+                        <img src="{% static 'img/internest_logo.jpg' %}" alt="Internest">
+                        <span>INTERNEST</span>
+                    </a>
+                    <p class="footer__tagline">
+                        نظام الربط الذكي بين الطلاب الجامعيين والشركات. نوصلك بفرص تدريب حقيقية، كورسات معتمدة، ومجتمع مهني يبني مستقبلك.
+                    </p>
+                    <div class="footer__socials">
+                        <a href="#" class="footer__social" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                        <a href="#" class="footer__social" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" class="footer__social" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="footer__social" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="footer__heading">للطلاب</h4>
+                    <ul class="footer__list">
+                        <li><a href="{% url 'list' %}">تصفح التدريبات</a></li>
+                        <li><a href="{% url 'course_list' %}">الكورسات</a></li>
+                        <li><a href="{% url 'task_list' %}">التاسكات والنقاط</a></li>
+                        <li><a href="{% url 'login_or_signup' %}">إنشاء حساب</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="footer__heading">للشركاء</h4>
+                    <ul class="footer__list">
+                        <li><a href="{% url 'contact_partner' %}">انضم كشريك</a></li>
+                        <li><a href="{% url 'partner_login' %}">دخول الشركاء</a></li>
+                        <li><a href="#">دليل الشركة</a></li>
+                        <li><a href="mailto:partnerships@internest.com">partnerships@internest.com</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="footer__heading">المنصة</h4>
+                    <ul class="footer__list">
+                        <li><a href="#">عن Internest</a></li>
+                        <li><a href="#">سياسة الخصوصية</a></li>
+                        <li><a href="#">الشروط والأحكام</a></li>
+                        <li><a href="mailto:hello@internest.com">تواصل معنا</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer__bottom">
+                <span>© {% now "Y" %} Internest. جميع الحقوق محفوظة.</span>
+                <span>صُمم بكل حب للطلاب العرب 🇪🇬</span>
+            </div>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sticky nav shadow on scroll
+        (function() {
+            var nav = document.getElementById('siteNav');
+            if (!nav) return;
+            var onScroll = function() {
+                if (window.scrollY > 12) nav.classList.add('is-scrolled');
+                else nav.classList.remove('is-scrolled');
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+        })();
+
+        // Mobile nav toggle
+        (function() {
+            var nav = document.getElementById('siteNav');
+            var toggle = document.getElementById('navToggle');
+            if (!nav || !toggle) return;
+            toggle.addEventListener('click', function() {
+                nav.classList.toggle('is-open');
+            });
+        })();
+
+        // Auto-dismiss flash messages after 6s
+        (function() {
+            var flashes = document.querySelectorAll('.flash');
+            flashes.forEach(function(el) {
+                var close = el.querySelector('.flash__close');
+                var dismiss = function() {
+                    el.style.transition = 'opacity 240ms, transform 240ms';
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(-8px)';
+                    setTimeout(function() { el.remove(); }, 260);
+                };
+                if (close) close.addEventListener('click', dismiss);
+                setTimeout(dismiss, 6000);
+            });
+        })();
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>
