@@ -1,17 +1,13 @@
-# C:\Internest\internest_core\urls.py
-
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    # 1. الصفحة الرئيسية والهبوط
-    # 💡 الصفحة الرئيسية (التي سيضغط عليها الشعار) يجب أن تكون التوجيه الذكي
-    path('home/', views.home_redirect_view, name='home_redirect'), # 🚀 المسار الجديد للشعار
-    path('', views.landing_view, name='landing'), # صفحة الهبوط لغير المسجلين
-    
-    # 2. مصادقة الطلاب
+    # 1. Landing & smart redirect
+    path('home/', views.home_redirect_view, name='home_redirect'),
+    path('', views.landing_view, name='landing'),
+
+    # 2. Student auth (signup is mounted at the project level)
     path('accounts/login-or-signup/', views.login_or_signup_view, name='login_or_signup'),
-    path('accounts/signup/', views.signup, name='signup'), 
 
     # 3. صفحات الطلاب
     path('list/', views.internship_list, name='list'),

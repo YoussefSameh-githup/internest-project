@@ -43,10 +43,10 @@
                 </h4>
 
                 <p class="text-muted small mb-3">
-                    {{ internship.company_name }}
-                    
-                    {% if internship.company_name in verified_partner_names %}
-                        <img src="{% static 'img/verified_badge.png' %}" alt="" style="height: 16px; width: 16px; vertical-align: middle; margin-right: 3px;">
+                    {{ internship.partner.company_name }}
+
+                    {% if internship.partner.company_name in verified_partner_names %}
+                        <img src="{% static 'img/verified_badge.png' %}" alt="حساب موثق" style="height: 16px; width: 16px; vertical-align: middle; margin-right: 3px;">
                     {% endif %}
 
                     | {{ internship.location }}
@@ -63,9 +63,14 @@
                     </span>
                 </div>
 
-                <a href="{% url 'apply' internship.id %}" class="btn-main mt-3" style="float: left; background-color: #007bff; color: white; padding: 8px 20px;">
-                    قدّم بملفك الموحد
-                </a>
+                <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
+                    <a href="{% url 'internship_detail' internship.id %}" class="btn-main" style="background-color: #6c757d; color: white; padding: 8px 20px;">
+                        عرض التفاصيل
+                    </a>
+                    <a href="{% url 'apply' internship.id %}" class="btn-main" style="background-color: #007bff; color: white; padding: 8px 20px;">
+                        قدّم بملفك الموحد
+                    </a>
+                </div>
             </div>
         </div>
         {% empty %}

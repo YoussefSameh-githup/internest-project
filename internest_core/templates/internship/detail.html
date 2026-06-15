@@ -1,0 +1,80 @@
+{% extends 'internship/base.html' %}
+{% load static %}
+
+{% block title %}{{ internship.title }} - تفاصيل التدريب{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-9">
+
+        <div class="choice-card p-4 mb-4" style="border-left: 5px solid {% if internship.is_premium %}#ffaa00{% else %}#007bff{% endif %};">
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h1 style="color: #004d99; font-size: 2rem; margin-bottom: 8px;">
+                        {{ internship.title }}
+                        {% if internship.is_premium %}
+                            <span style="font-size: 0.6em; background-color: #ffaa00; color: #333; padding: 4px 10px; border-radius: 6px; margin-right: 10px; vertical-align: middle;">متميز</span>
+                        {% endif %}
+                    </h1>
+                    <h4 class="text-muted" style="font-weight: 400;">
+                        {{ internship.partner.company_name }}
+                        {% if internship.partner.is_fully_verified %}
+                            <img src="{% static 'img/verified_badge.png' %}" alt="حساب موثق" style="height: 18px; width: 18px; vertical-align: middle;">
+                        {% endif %}
+                    </h4>
+                </div>
+                {% if internship.partner.logo %}
+                    <img src="{{ internship.partner.logo.url }}" alt="{{ internship.partner.company_name }}" style="max-height: 80px; max-width: 120px; border-radius: 8px;">
+                {% endif %}
+            </div>
+
+            <hr>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 30px; margin-bottom: 20px;">
+                <div>
+                    <strong style="color: #004d99;">الموقع:</strong>
+                    <span class="text-muted">{{ internship.location }}</span>
+                </div>
+                <div>
+                    <strong style="color: #004d99;">التخصصات المطلوبة:</strong>
+                    <span style="color: #ffaa00; font-weight: bold;">{{ internship.required_majors }}</span>
+                </div>
+                <div>
+                    <strong style="color: #004d99;">آخر موعد للتقديم:</strong>
+                    <span style="color: {% if internship.is_expired %}#dc3545{% else %}#28a745{% endif %}; font-weight: bold;">
+                        {{ internship.deadline|date:"Y/m/d" }}
+                        {% if internship.is_expired %}(منتهية){% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <h3 style="color: #004d99; border-bottom: 2px solid #eee; padding-bottom: 8px;">وصف الفرصة</h3>
+            <p style="white-space: pre-line; line-height: 1.8; color: #444;">{{ internship.description }}</p>
+
+            {% if not internship.is_expired and internship.is_active %}
+                <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end;">
+                    <a href="{% url 'list' %}" class="btn-main" style="background-color: #6c757d; color: white; padding: 10px 25px;">
+                        ← رجوع
+                    </a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'apply' internship.id %}" class="btn-main" style="background-color: #28a745; color: white; padding: 10px 25px;">
+                            قدّم بملفك الموحد
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login_or_signup' %}" class="btn-main" style="background-color: #007bff; color: white; padding: 10px 25px;">
+                            سجّل أولاً للتقديم
+                        </a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div style="margin-top: 30px; padding: 15px; background-color: #f8d7da; color: #842029; border-radius: 8px; text-align: center;">
+                    🛑 هذه الفرصة لم تعد متاحة للتقديم.
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

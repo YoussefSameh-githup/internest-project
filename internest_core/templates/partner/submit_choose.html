@@ -1,0 +1,41 @@
+{% extends 'internship/base.html' %}
+{% load static %}
+
+{% block title %}إضافة محتوى جديد{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-10">
+        <h2 style="color: #004d99; font-weight: 700; margin-bottom: 10px; text-align: center;">
+            ماذا تريد أن تضيف؟
+        </h2>
+        <p class="lead-text text-center">اختر نوع المحتوى الذي تريد تقديمه.</p>
+
+        <div style="display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; margin-top: 40px;">
+
+            <a href="{% url 'partner_submit_internship' %}" class="choice-card text-decoration-none" style="flex: 1 1 300px; max-width: 400px; border-left: 5px solid #28a745; color: inherit; transition: transform 0.2s;">
+                <h3 style="color: #28a745;">+ فرصة تدريب جديدة</h3>
+                <p class="text-muted">قدّم فرصة تدريب صيفي تستقطب أفضل الطلاب من خلال نظام الفرز الذكي.</p>
+                <span class="btn-main" style="background-color: #28a745; color: white; padding: 8px 20px; display: inline-block; margin-top: 10px;">
+                    ابدأ التقديم ➔
+                </span>
+            </a>
+
+            <a href="{% url 'partner_submit_course' %}" class="choice-card text-decoration-none" style="flex: 1 1 300px; max-width: 400px; border-left: 5px solid #007bff; color: inherit; transition: transform 0.2s;">
+                <h3 style="color: #007bff;">+ كورس تعليمي جديد</h3>
+                <p class="text-muted">قدّم كورس تعليمي للطلاب يحصل المكملون منه على نقاط Gamification.</p>
+                <span class="btn-main" style="background-color: #007bff; color: white; padding: 8px 20px; display: inline-block; margin-top: 10px;">
+                    ابدأ التقديم ➔
+                </span>
+            </a>
+
+        </div>
+
+        <div class="text-center" style="margin-top: 40px;">
+            <a href="{% url 'partner_dashboard' %}" style="color: #6c757d; text-decoration: none;">
+                ← العودة للوحة التحكم
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
