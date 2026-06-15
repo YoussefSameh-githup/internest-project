@@ -1,84 +1,114 @@
 {% extends 'internship/base.html' %}
 {% load static %}
 
-{% block title %}تصفح التدريبات{% endblock %}
+{% block title %}تصفّح فرص التدريب — Internest{% endblock %}
 
 {% block content %}
-<div class="container text-center py-5">
-    
-    <div class="choice-card" style="margin-bottom: 50px;">
-        <h1 style="font-size: 2.5rem; color: #004d99;">
-            كل تدريباتك الصيفية في مكان واحد
-        </h1>
-        <p class="lead-text">ابحث، فلتر، وقدّم بسهولة وسرعة بملف موحد.</p>
-        
-        <form method="GET" action="{% url 'list' %}" style="display: flex; justify-content: center; gap: 15px; margin-top: 30px;">
-            
-            <input type="text" name="q" placeholder="ابحث عن مسمى وظيفي أو شركة..." style="width: 35%; padding: 12px; border-radius: 8px;" value="{{ request.GET.q|default:'' }}">
 
-            <select name="major" style="width: 25%; padding: 12px; border-radius: 8px;">
-                <option value="">كل التخصصات</option>
-                {% for major in available_majors %}
-                <option value="{{ major }}" {% if request.GET.major == major %}selected{% endif %}>{{ major }}</option>
-                {% endfor %}
-            </select>
-            
-            <button type="submit" class="btn-main" style="background-color: #007bff; color: white; padding: 12px 30px;">
-                ابحث الآن
-            </button>
-        </form>
-    </div>
-
-    <div style="display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 20px;">
-        {% for internship in internships %}
-        
-        <div style="flex: 1 1 48%;">
-            <div class="choice-card" style="padding: 25px; text-align: right; border-left: 5px solid {% if internship.is_premium %}#ffaa00{% else %}#007bff{% endif %}; transition: transform 0.2s;">
-                
-                <h4 class="fw-bold mb-2" style="color: #004d99; font-size: 1.3rem;">
-                    {{ internship.title }}
-                    {% if internship.is_premium %}
-                        <span style="font-size: 0.8em; background-color: #ffaa00; color: #333; padding: 3px 8px; border-radius: 5px; margin-right: 10px;">متميز</span>
-                    {% endif %}
-                </h4>
-
-                <p class="text-muted small mb-3">
-                    {{ internship.partner.company_name }}
-
-                    {% if internship.partner.company_name in verified_partner_names %}
-                        <img src="{% static 'img/verified_badge.png' %}" alt="حساب موثق" style="height: 16px; width: 16px; vertical-align: middle; margin-right: 3px;">
-                    {% endif %}
-
-                    | {{ internship.location }}
-                </p>
-                
-                <p class="text-secondary" style="font-size: 0.95em;">
-                    {{ internship.description|truncatewords:20 }}
-                </p>
-                
-                <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-weight: bold; color: #ffaa00;">{{ internship.required_majors }}</span>
-                    <span style="font-size: 0.85em; color: #dc3545;">
-                        ينتهي: {{ internship.deadline|date:"Y/m/d" }}
-                    </span>
-                </div>
-
-                <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
-                    <a href="{% url 'internship_detail' internship.id %}" class="btn-main" style="background-color: #6c757d; color: white; padding: 8px 20px;">
-                        عرض التفاصيل
-                    </a>
-                    <a href="{% url 'apply' internship.id %}" class="btn-main" style="background-color: #007bff; color: white; padding: 8px 20px;">
-                        قدّم بملفك الموحد
-                    </a>
-                </div>
+<section class="page-header">
+    <div class="container">
+        <div class="page-header__inner">
+            <div>
+                <span class="eyebrow"><i class="bi bi-briefcase"></i> فرص التدريب</span>
+                <h1 class="mt-3">كل الفرص الصيفية في مكان واحد</h1>
+                <p>ابحث، فلتر، وقدّم بسهولة بملفك الموحد على Internest.</p>
             </div>
         </div>
-        {% empty %}
-        <div style="width: 100%;" class="choice-card">
-            <h4 style="color: #007bff;">عذراً، لا توجد فرص تدريب مطابقة حالياً.</h4>
-            <p class="text-secondary">ابدأ بإضافة بعض الفرص من لوحة الإدارة.</p>
-        </div>
-        {% endfor %}
     </div>
-</div>
+</section>
+
+<section class="section-sm">
+    <div class="container">
+
+        <form method="GET" action="{% url 'list' %}" class="filter-bar fade-up">
+            <div style="position: relative;">
+                <i class="bi bi-search" style="position: absolute; top: 50%; transform: translateY(-50%); inset-inline-start: 16px; color: var(--color-muted);"></i>
+                <input type="text" name="q" class="form-control" style="padding-inline-start: 44px;"
+                       placeholder="ابحث عن مسمى وظيفي أو شركة..."
+                       value="{{ request.GET.q|default:'' }}">
+            </div>
+
+            <select name="major" class="form-control">
+                <option value="">كل التخصصات</option>
+                {% for major in available_majors %}
+                    <option value="{{ major }}" {% if request.GET.major == major %}selected{% endif %}>{{ major }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="btn btn--primary btn--lg">
+                <i class="bi bi-funnel"></i> ابحث
+            </button>
+        </form>
+
+        <div class="flex items-center justify-between mt-6 mb-4" style="flex-wrap: wrap; gap: var(--space-3);">
+            <p class="text-muted mb-0">
+                {% if internships %}
+                    <strong style="color: var(--slate-900);">{{ internships|length }}</strong> فرصة متاحة
+                    {% if request.GET.q %}للبحث "{{ request.GET.q }}"{% endif %}
+                {% endif %}
+            </p>
+            {% if request.GET.q or request.GET.major %}
+                <a href="{% url 'list' %}" class="btn btn--ghost btn--sm">
+                    <i class="bi bi-x-circle"></i> إلغاء الفلترة
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="listing-grid">
+            {% for internship in internships %}
+                <article class="listing-card {% if internship.is_premium %}listing-card--premium{% endif %} fade-up">
+                    <div class="listing-card__head">
+                        <div class="listing-card__avatar">
+                            {% if internship.partner.logo %}
+                                <img src="{{ internship.partner.logo.url }}" alt="">
+                            {% else %}
+                                {{ internship.partner.company_name|slice:":1" }}
+                            {% endif %}
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <h3 class="listing-card__title">{{ internship.title }}</h3>
+                            <p class="listing-card__partner">
+                                {{ internship.partner.company_name }}
+                                {% if internship.partner.company_name in verified_partner_names %}
+                                    <i class="bi bi-patch-check-fill" style="color: var(--brand-500);" title="حساب موثق"></i>
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% if internship.is_premium %}
+                            <span class="badge badge--accent"><i class="bi bi-star-fill"></i> متميز</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="listing-card__meta">
+                        <span class="badge badge--outline"><i class="bi bi-geo-alt"></i> {{ internship.location }}</span>
+                        <span class="badge badge--primary"><i class="bi bi-mortarboard"></i> {{ internship.required_majors }}</span>
+                    </div>
+
+                    <p class="listing-card__desc">{{ internship.description|truncatewords:18 }}</p>
+
+                    <div class="listing-card__footer">
+                        <span class="text-muted" style="font-size: var(--text-xs);">
+                            <i class="bi bi-clock-history"></i>
+                            ينتهي {{ internship.deadline|date:"Y/m/d" }}
+                        </span>
+                        <div class="btn-group">
+                            <a href="{% url 'internship_detail' internship.id %}" class="btn btn--ghost btn--sm">التفاصيل</a>
+                            <a href="{% url 'apply' internship.id %}" class="btn btn--primary btn--sm">
+                                قدّم <i class="bi bi-arrow-left-short"></i>
+                            </a>
+                        </div>
+                    </div>
+                </article>
+            {% empty %}
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <div class="empty-state__icon"><i class="bi bi-search"></i></div>
+                    <h3>لا توجد فرص مطابقة حالياً</h3>
+                    <p>جرب تعدل كلمة البحث أو شيل الفلتر — وكمان فيه فرص جديدة بتنزل أسبوعياً.</p>
+                    <a href="{% url 'list' %}" class="btn btn--primary">عرض كل الفرص</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
 {% endblock %}

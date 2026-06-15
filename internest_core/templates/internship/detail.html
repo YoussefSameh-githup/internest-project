@@ -1,80 +1,110 @@
 {% extends 'internship/base.html' %}
 {% load static %}
 
-{% block title %}{{ internship.title }} - تفاصيل التدريب{% endblock %}
+{% block title %}{{ internship.title }} — {{ internship.partner.company_name }}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center py-5">
-    <div class="col-md-9">
 
-        <div class="choice-card p-4 mb-4" style="border-left: 5px solid {% if internship.is_premium %}#ffaa00{% else %}#007bff{% endif %};">
-
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
-                <div>
-                    <h1 style="color: #004d99; font-size: 2rem; margin-bottom: 8px;">
-                        {{ internship.title }}
-                        {% if internship.is_premium %}
-                            <span style="font-size: 0.6em; background-color: #ffaa00; color: #333; padding: 4px 10px; border-radius: 6px; margin-right: 10px; vertical-align: middle;">متميز</span>
-                        {% endif %}
-                    </h1>
-                    <h4 class="text-muted" style="font-weight: 400;">
-                        {{ internship.partner.company_name }}
-                        {% if internship.partner.is_fully_verified %}
-                            <img src="{% static 'img/verified_badge.png' %}" alt="حساب موثق" style="height: 18px; width: 18px; vertical-align: middle;">
-                        {% endif %}
-                    </h4>
+<section class="page-header">
+    <div class="container">
+        <a href="{% url 'list' %}" class="btn btn--ghost btn--sm mb-4">
+            <i class="bi bi-arrow-right-short"></i> العودة للقائمة
+        </a>
+        <div style="display: grid; grid-template-columns: 1fr auto; gap: var(--space-6); align-items: start;">
+            <div>
+                <div class="flex items-center gap-3 mb-3" style="flex-wrap: wrap;">
+                    {% if internship.is_premium %}<span class="badge badge--accent badge--lg"><i class="bi bi-star-fill"></i> متميز</span>{% endif %}
+                    {% if internship.is_expired %}<span class="badge badge--danger badge--lg">منتهية</span>{% endif %}
+                    {% if not internship.is_expired and internship.is_active %}<span class="badge badge--success badge--lg"><i class="bi bi-check-circle-fill"></i> نشطة</span>{% endif %}
                 </div>
-                {% if internship.partner.logo %}
-                    <img src="{{ internship.partner.logo.url }}" alt="{{ internship.partner.company_name }}" style="max-height: 80px; max-width: 120px; border-radius: 8px;">
-                {% endif %}
+                <h1>{{ internship.title }}</h1>
+                <p class="flex items-center gap-2 text-muted mb-0" style="font-size: var(--text-lg);">
+                    <i class="bi bi-building"></i>
+                    {{ internship.partner.company_name }}
+                    {% if internship.partner.is_fully_verified %}
+                        <i class="bi bi-patch-check-fill" style="color: var(--brand-500);" title="حساب موثق"></i>
+                    {% endif %}
+                </p>
+            </div>
+            {% if internship.partner.logo %}
+                <img src="{{ internship.partner.logo.url }}" alt="{{ internship.partner.company_name }}"
+                     style="width: 92px; height: 92px; border-radius: var(--radius-lg); object-fit: contain; background: var(--white); border: 1px solid var(--color-border); padding: 8px;">
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="section-sm">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-8); align-items: start;">
+
+            <div class="card">
+                <h3 style="display: flex; align-items: center; gap: var(--space-2);">
+                    <i class="bi bi-file-text" style="color: var(--brand-500);"></i> وصف الفرصة
+                </h3>
+                <p style="white-space: pre-line; line-height: 1.85; color: var(--slate-700); margin: 0;">{{ internship.description }}</p>
+
+                <hr>
+
+                <h4 class="mb-4" style="display: flex; align-items: center; gap: var(--space-2);">
+                    <i class="bi bi-info-circle" style="color: var(--brand-500);"></i> معلومات الفرصة
+                </h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-5);">
+                    <div>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">الموقع</span>
+                        <p class="fw-bold mt-2 mb-0"><i class="bi bi-geo-alt text-accent"></i> {{ internship.location }}</p>
+                    </div>
+                    <div>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">التخصصات المطلوبة</span>
+                        <p class="fw-bold mt-2 mb-0"><i class="bi bi-mortarboard text-accent"></i> {{ internship.required_majors }}</p>
+                    </div>
+                    <div>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">آخر موعد للتقديم</span>
+                        <p class="fw-bold mt-2 mb-0" style="color: {% if internship.is_expired %}var(--color-danger){% else %}var(--color-success){% endif %};">
+                            <i class="bi bi-calendar-event"></i> {{ internship.deadline|date:"Y/m/d" }}
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            <hr>
-
-            <div style="display: flex; flex-wrap: wrap; gap: 30px; margin-bottom: 20px;">
-                <div>
-                    <strong style="color: #004d99;">الموقع:</strong>
-                    <span class="text-muted">{{ internship.location }}</span>
-                </div>
-                <div>
-                    <strong style="color: #004d99;">التخصصات المطلوبة:</strong>
-                    <span style="color: #ffaa00; font-weight: bold;">{{ internship.required_majors }}</span>
-                </div>
-                <div>
-                    <strong style="color: #004d99;">آخر موعد للتقديم:</strong>
-                    <span style="color: {% if internship.is_expired %}#dc3545{% else %}#28a745{% endif %}; font-weight: bold;">
-                        {{ internship.deadline|date:"Y/m/d" }}
-                        {% if internship.is_expired %}(منتهية){% endif %}
-                    </span>
-                </div>
-            </div>
-
-            <h3 style="color: #004d99; border-bottom: 2px solid #eee; padding-bottom: 8px;">وصف الفرصة</h3>
-            <p style="white-space: pre-line; line-height: 1.8; color: #444;">{{ internship.description }}</p>
-
-            {% if not internship.is_expired and internship.is_active %}
-                <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end;">
-                    <a href="{% url 'list' %}" class="btn-main" style="background-color: #6c757d; color: white; padding: 10px 25px;">
-                        ← رجوع
-                    </a>
+            <aside class="card" style="position: sticky; top: calc(var(--navbar-height) + var(--space-4));">
+                <h4 class="mb-4">قدّم على هذه الفرصة</h4>
+                {% if not internship.is_expired and internship.is_active %}
                     {% if user.is_authenticated %}
-                        <a href="{% url 'apply' internship.id %}" class="btn-main" style="background-color: #28a745; color: white; padding: 10px 25px;">
-                            قدّم بملفك الموحد
+                        <a href="{% url 'apply' internship.id %}" class="btn btn--accent btn--lg btn--block mb-3">
+                            <i class="bi bi-send-fill"></i> قدّم بملفك الموحد
                         </a>
                     {% else %}
-                        <a href="{% url 'login_or_signup' %}" class="btn-main" style="background-color: #007bff; color: white; padding: 10px 25px;">
+                        <a href="{% url 'login_or_signup' %}" class="btn btn--primary btn--lg btn--block mb-3">
                             سجّل أولاً للتقديم
                         </a>
                     {% endif %}
-                </div>
-            {% else %}
-                <div style="margin-top: 30px; padding: 15px; background-color: #f8d7da; color: #842029; border-radius: 8px; text-align: center;">
-                    🛑 هذه الفرصة لم تعد متاحة للتقديم.
-                </div>
-            {% endif %}
+                    <p class="text-muted mb-0" style="font-size: var(--text-sm);">
+                        <i class="bi bi-shield-check text-success"></i>
+                        التقديم بملف موحد، بدون رفع CV لكل فرصة لوحدها.
+                    </p>
+                {% else %}
+                    <div class="alert alert-danger mb-0">
+                        <i class="bi bi-x-octagon-fill"></i>
+                        هذه الفرصة لم تعد متاحة للتقديم.
+                    </div>
+                {% endif %}
+
+                <hr>
+
+                <h5 class="mb-3"><i class="bi bi-building"></i> عن الشركة</h5>
+                <p class="text-muted" style="font-size: var(--text-sm);">
+                    {{ internship.partner.company_name }}
+                </p>
+                {% if internship.partner.official_website %}
+                    <a href="{{ internship.partner.official_website }}" target="_blank" rel="noopener" class="btn btn--ghost btn--sm">
+                        <i class="bi bi-link-45deg"></i> الموقع الرسمي
+                    </a>
+                {% endif %}
+            </aside>
 
         </div>
-
     </div>
-</div>
+</section>
+
 {% endblock %}
