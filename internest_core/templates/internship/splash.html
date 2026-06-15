@@ -4,45 +4,44 @@
 {% block title %}مرحباً بك في Internest{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center text-center py-5" style="min-height: 80vh; align-items: center;">
-    <div class="col-md-10"> <img src="{% static 'img/internest_logo.JPG' %}" alt="شعار Internest" style="max-height: 150px;" class="mb-4">
-        
-        <h1 class="display-3 fw-bold mb-3 text-primary">
-            INTERNEST: حيث تبدأ مسيرتك المهنية
-        </h1>
-        <p class="lead mb-5 text-muted">
-            نظام الربط الذكي بين الشركات والطلاب الجامعيين. اختر مسارك للمتابعة:
-        </p>
+<section class="section" style="min-height: 70vh; display: flex; align-items: center;">
+    <div class="container">
+        <div class="text-center" style="max-width: 720px; margin-inline: auto;">
+            <img src="{% static 'img/internest_logo.jpg' %}" alt="Internest" class="mb-5" style="height: 96px; width: 96px; border-radius: var(--radius-xl); margin-inline: auto; box-shadow: var(--shadow-lg);">
 
-        <div class="row mt-5 justify-content-center"> 
-            <div class="col-md-5 mb-4">
-                <div class="card p-4 shadow-lg h-100 border-primary">
-                    <div class="card-body">
-                        <h4 class="card-title mb-3 fw-bold text-dark">أنا طالب جامعي 🎓</h4>
-                        <p class="text-secondary">تصفح التدريبات، أكمل ملفك الشخصي بنسبة 100%، وقدّم بسهولة.</p>
-                        <a href="{% url 'login_or_signup' %}" class="btn btn-primary btn-lg w-100 mt-4">
-                            ابدأ رحلتي المهنية
-                        </a>
-                    </div>
+            <span class="eyebrow eyebrow--soft"><i class="bi bi-stars"></i> مرحباً بك في Internest</span>
+
+            <h1 class="mt-4" style="font-size: clamp(2rem, 4vw, var(--text-5xl));">
+                ابدأ مسيرتك المهنية من <span style="background: var(--gradient-accent); -webkit-background-clip: text; background-clip: text; color: transparent;">مكان واحد</span>
+            </h1>
+
+            <p class="text-muted mb-6" style="font-size: var(--text-lg);">
+                نظام الربط الذكي بين الطلاب الجامعيين والشركات. اختر مسارك للمتابعة:
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); margin-top: var(--space-8);">
+                <div class="card card--hover">
+                    <div class="feature__icon" style="background: var(--brand-100); color: var(--brand-700);"><i class="bi bi-mortarboard"></i></div>
+                    <h4>أنا طالب</h4>
+                    <p class="text-muted">تصفح التدريبات والكورسات وقدّم بملفك الموحد.</p>
+                    <a href="{% url 'login_or_signup' %}" class="btn btn--primary btn--block">
+                        ابدأ رحلتي
+                    </a>
+                </div>
+                <div class="card card--hover">
+                    <div class="feature__icon" style="background: var(--accent-100); color: var(--accent-700);"><i class="bi bi-building"></i></div>
+                    <h4>أنا شريك</h4>
+                    <p class="text-muted">شركة أو جامعة تبحث عن مواهب مفرَزة وموثوقة.</p>
+                    <a href="{% url 'contact_partner' %}" class="btn btn--accent btn--block">
+                        تواصل بخصوص الشراكة
+                    </a>
                 </div>
             </div>
 
-            <div class="col-md-5 mb-4">
-                <div class="card p-4 shadow-lg h-100 border-warning">
-                    <div class="card-body">
-                        <h4 class="card-title mb-3 fw-bold text-dark">أنا شريك (شركة / جامعة) 🤝</h4>
-                        <p class="text-secondary">استقطاب المواهب المُفرَزة أو إدارة تدريب طلابي بنظام التعاقد المباشر.</p>
-                        <a href="{% url 'contact_partner' %}" class="btn btn-warning btn-lg w-100 mt-4">
-                            تواصل معنا بخصوص الشراكة
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <p class="mt-6" style="font-size: var(--text-sm); color: var(--color-muted);">
+                لديك حساب بالفعل؟ <a href="{% url 'login' %}" class="fw-bold">سجّل الدخول</a>
+            </p>
         </div>
-        
-        <p class="mt-5 small text-muted">
-            إذا كنت مسجلاً مسبقاً كطالب، يمكنك الدخول مباشرة من شريط التنقل.
-        </p>
     </div>
-</div>
+</section>
 {% endblock %}

@@ -1,40 +1,291 @@
 {% extends 'internship/base.html' %}
 {% load static %}
 
-{% block title %}INTERNEST: انطلق{% endblock %}
+{% block title %}Internest — رحلتك المهنية تبدأ من هنا{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: center; align-items: center; min-height: 85vh; text-align: center;">
-    <div style="width: 80%; max-width: 900px; padding: 20px;">
-        
-        <img src="{% static 'img/internest_logo.jpg' %}" alt="شعار Internest" style="max-height: 180px; display: block; margin: 0 auto;" class="mb-4">
-        
-        <h1 style="font-size: 2.8rem; margin-bottom: 5px;">
-            INTERNEST
-        </h1>
-        <p class="lead-text" style="font-size: 1.2rem; margin-bottom: 40px;">
-            حيث تبدأ مسيرتك المهنية: نظام الربط الذكي بين الشركات والطلاب الجامعيين.
-        </p>
 
-        <div style="display: flex; justify-content: center; gap: 40px; margin-top: 20px;">
-            
-            <div class="choice-card" style="flex: 1; border-left: 5px solid #007bff;">
-                <h3 style="color: #007bff; margin-bottom: 20px;">أنا طالب جامعي 🎓</h3>
-                <p style="color: #555;">تصفح تدريبات حصرية، أكمل ملفك الشخصي 100%، وقدّم بسهولة.</p>
-                
-                <a href="{% url 'login_or_signup' %}" class="btn-main" style="background-color: #007bff; color: white;">
-                    تسجيل الدخول / إنشاء حساب
+<section class="hero">
+    <div class="container">
+        <div class="hero__inner">
+            <div class="fade-up">
+                <span class="eyebrow hero__eyebrow">
+                    <i class="bi bi-stars"></i> نظام الربط الذكي للطلاب والشركات
+                </span>
+
+                <h1>
+                    رحلتك المهنية تبدأ من
+                    <span class="hero__highlight">مكان واحد</span>
+                </h1>
+
+                <p class="hero__lead">
+                    اكتشف فرص تدريب حقيقية، قدّم بملفك الموحد بضغطة، وارفع مهاراتك بكورسات وتاسكات معتمدة من أكبر الشركاء.
+                </p>
+
+                <div class="hero__cta">
+                    <a href="{% url 'login_or_signup' %}" class="btn btn--accent btn--lg">
+                        أنشئ حسابك مجاناً <i class="bi bi-arrow-left-short"></i>
+                    </a>
+                    <a href="#how-it-works" class="btn btn--white btn--lg">
+                        <i class="bi bi-play-circle"></i> شوف إزاي بنشتغل
+                    </a>
+                </div>
+
+                <div class="hero__stats">
+                    <div>
+                        <div class="hero__stat-value">+50</div>
+                        <div class="hero__stat-label">شركة وجامعة شريكة</div>
+                    </div>
+                    <div>
+                        <div class="hero__stat-value">+200</div>
+                        <div class="hero__stat-label">فرصة تدريب وكورس</div>
+                    </div>
+                    <div>
+                        <div class="hero__stat-value">+1.5K</div>
+                        <div class="hero__stat-label">طالب نشط على المنصة</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero__visual fade-up delay-2" aria-hidden="true">
+                {# Decorative SVG illustration #}
+                <svg viewBox="0 0 520 480" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;">
+                    <defs>
+                        <linearGradient id="cardA" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+                            <stop offset="1" stop-color="#ffffff" stop-opacity="0.04"/>
+                        </linearGradient>
+                        <linearGradient id="cardB" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#f59e0b"/>
+                            <stop offset="1" stop-color="#d97706"/>
+                        </linearGradient>
+                        <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="20"/>
+                        </filter>
+                    </defs>
+
+                    {# Glow #}
+                    <circle cx="280" cy="240" r="180" fill="#3b6fe0" opacity="0.25" filter="url(#soft)"/>
+                    <circle cx="380" cy="120" r="80" fill="#f59e0b" opacity="0.35" filter="url(#soft)"/>
+
+                    {# Big card #}
+                    <g class="float-anim">
+                        <rect x="80" y="80" width="320" height="200" rx="22" fill="url(#cardA)" stroke="rgba(255,255,255,0.25)"/>
+                        <circle cx="120" cy="120" r="20" fill="#ffffff" opacity="0.9"/>
+                        <rect x="155" y="108" width="120" height="10" rx="5" fill="#ffffff" opacity="0.9"/>
+                        <rect x="155" y="124" width="80"  height="8"  rx="4" fill="#ffffff" opacity="0.5"/>
+                        <rect x="100" y="170" width="200" height="8" rx="4" fill="#ffffff" opacity="0.4"/>
+                        <rect x="100" y="186" width="240" height="8" rx="4" fill="#ffffff" opacity="0.4"/>
+                        <rect x="100" y="202" width="160" height="8" rx="4" fill="#ffffff" opacity="0.4"/>
+                        <rect x="100" y="232" width="80"  height="26" rx="13" fill="url(#cardB)"/>
+                        <rect x="190" y="232" width="80"  height="26" rx="13" fill="#ffffff" opacity="0.3"/>
+                    </g>
+
+                    {# Small floating card #}
+                    <g class="float-anim" style="animation-delay: -1.5s;">
+                        <rect x="280" y="290" width="200" height="120" rx="18" fill="#ffffff" opacity="0.95"/>
+                        <circle cx="312" cy="322" r="14" fill="#f59e0b"/>
+                        <rect x="335" y="316" width="100" height="8" rx="4" fill="#0b1e4d" opacity="0.85"/>
+                        <rect x="335" y="328" width="70"  height="6" rx="3" fill="#64748b"/>
+                        <rect x="300" y="356" width="160" height="6" rx="3" fill="#e2e8f0"/>
+                        <rect x="300" y="370" width="120" height="6" rx="3" fill="#e2e8f0"/>
+                        <rect x="300" y="388" width="60" height="14" rx="7" fill="#16a34a"/>
+                    </g>
+
+                    {# Tag chips #}
+                    <g class="float-anim" style="animation-delay: -2.8s;">
+                        <rect x="50" y="320" width="160" height="44" rx="22" fill="#ffffff" opacity="0.95"/>
+                        <circle cx="80" cy="342" r="14" fill="#3b6fe0"/>
+                        <text x="105" y="346" font-family="Tajawal, Cairo, sans-serif" font-weight="700" font-size="14" fill="#0b1e4d">CV موحّد</text>
+                    </g>
+                </svg>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="features">
+    <div class="container">
+        <div class="text-center" style="max-width: 720px; margin-inline: auto; margin-bottom: var(--space-12);">
+            <span class="eyebrow">منصتك المهنية الشاملة</span>
+            <h2 class="section-title mt-3">كل اللي يحتاجه الطالب الجامعي في مكان واحد</h2>
+            <p class="text-muted">من البحث عن أول تدريب، لبناء CV قوي، لمسار تعلم منظم — كله من واجهة واحدة.</p>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature fade-up">
+                <div class="feature__icon"><i class="bi bi-search"></i></div>
+                <h3>تصفية ذكية للفرص</h3>
+                <p>فلتر التدريبات بالتخصص والموقع والشركة. الفرص المنتهية بتختفي تلقائياً، فمش هتتعب نفسك.</p>
+            </div>
+
+            <div class="feature fade-up delay-1">
+                <div class="feature__icon"><i class="bi bi-file-earmark-person"></i></div>
+                <h3>ملف موحّد ذكي</h3>
+                <p>اعمل CV واحد + ملف، وقدّم على كل الفرص بضغطة. الشركاء بيشوفوا ملفك كامل لو الإكمال 100%.</p>
+            </div>
+
+            <div class="feature fade-up delay-2">
+                <div class="feature__icon"><i class="bi bi-mortarboard"></i></div>
+                <h3>كورسات معتمدة</h3>
+                <p>اشترك في كورسات حقيقية من شركاء معتمدين، واكسب نقاط بترفعك في الـ Golden List.</p>
+            </div>
+
+            <div class="feature fade-up">
+                <div class="feature__icon"><i class="bi bi-trophy"></i></div>
+                <h3>نظام Gamification</h3>
+                <p>تاسكات قصيرة بتختبر فهمك وبتديك نقاط. كل ما نقاطك تعلى، كل ما تتقدم في ترتيب أفضل الطلاب.</p>
+            </div>
+
+            <div class="feature fade-up delay-1">
+                <div class="feature__icon"><i class="bi bi-patch-check"></i></div>
+                <h3>شركاء موثقين</h3>
+                <p>كل شريك بيمر بمراجعة قبل ما يقدر ينشر فرصة. علامة الصح الزرقاء هي ضمانتك.</p>
+            </div>
+
+            <div class="feature fade-up delay-2">
+                <div class="feature__icon"><i class="bi bi-bell"></i></div>
+                <h3>إشعارات الفرص</h3>
+                <p>أول ما فرصة جديدة تنزل من شريك بتناسب تخصصك، هتوصلك على إيميلك مباشرة.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="how-it-works" style="background-color: var(--white); border-block: 1px solid var(--color-border);">
+    <div class="container">
+        <div class="text-center" style="max-width: 720px; margin-inline: auto; margin-bottom: var(--space-12);">
+            <span class="eyebrow eyebrow--accent">3 خطوات بسيطة</span>
+            <h2 class="section-title mt-3">إزاي بتشتغل؟</h2>
+            <p class="text-muted">دقايق وانت داخل عالم الفرص.</p>
+        </div>
+
+        <div class="steps">
+            <div class="step fade-up">
+                <h3>سجّل حسابك</h3>
+                <p>سجّل بإيميلك في أقل من دقيقة، واملا ملفك الشخصي مرة واحدة بس.</p>
+            </div>
+            <div class="step fade-up delay-1">
+                <h3>اكتشف الفرص</h3>
+                <p>تصفح تدريبات وكورسات الشركاء، فلتر بتخصصك، وشوف اللي يناسبك.</p>
+            </div>
+            <div class="step fade-up delay-2">
+                <h3>قدّم وكبّر شبكتك</h3>
+                <p>قدّم بضغطة، استلم إشعارات بحالة طلبك، واكسب نقاط من التاسكات والكورسات.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="card card--brand" style="padding: clamp(40px, 6vw, 72px); display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--space-12); align-items: center; border-radius: var(--radius-2xl); overflow: hidden;">
+            <div>
+                <span class="eyebrow hero__eyebrow">أنت طالب جامعي؟</span>
+                <h2 style="font-size: clamp(1.75rem, 3vw, var(--text-4xl)); margin-top: var(--space-4);">
+                    خد أول خطوة في رحلتك المهنية النهاردة
+                </h2>
+                <p style="color: rgba(255,255,255,0.85); font-size: var(--text-lg); margin-bottom: var(--space-6);">
+                    أنشئ ملفك الموحد، تصفح أحدث الفرص، وانضم لآلاف الطلاب اللي بدأوا مستقبلهم من Internest.
+                </p>
+                <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+                    <a href="{% url 'login_or_signup' %}" class="btn btn--accent btn--lg">
+                        ابدأ مجاناً <i class="bi bi-arrow-left-short"></i>
+                    </a>
+                    <a href="{% url 'list' %}" class="btn btn--white btn--lg">
+                        تصفح التدريبات الآن
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center;" aria-hidden="true">
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%; max-width: 280px; margin-inline: auto;">
+                    <defs>
+                        <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#f59e0b"/>
+                            <stop offset="1" stop-color="#d97706"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="100" cy="100" r="84" fill="rgba(255,255,255,0.12)"/>
+                    <circle cx="100" cy="100" r="64" fill="url(#badge)"/>
+                    <path d="M75 100 L92 117 L128 80" stroke="#ffffff" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" style="background-color: var(--white); border-top: 1px solid var(--color-border);">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12); align-items: center;">
+            <div>
+                <span class="eyebrow eyebrow--accent">شركة أو جامعة؟</span>
+                <h2 class="section-title mt-3">قابل أفضل الطلاب المُفرَزين</h2>
+                <p class="text-muted" style="font-size: var(--text-lg);">
+                    Internest بيوصلك بطلاب جامعيين موثوقين، ملفاتهم مكتملة، وعندهم النقاط والمهارات اللي بتحتاجها.
+                    خد ملفات جاهزة للمراجعة بدل ما تغرق في مئات الـ CVs.
+                </p>
+                <ul style="list-style: none; padding: 0; display: grid; gap: var(--space-3); margin-bottom: var(--space-6);">
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-success"></i> ملفات طلاب 100% مكتملة فقط</li>
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-success"></i> Golden List بأعلى الطلاب أداءً</li>
+                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-success"></i> صندوق وارد مُفرز يدوياً من Internest</li>
+                </ul>
+                <a href="{% url 'contact_partner' %}" class="btn btn--primary btn--lg">
+                    اطلب كود شريك معتمد <i class="bi bi-arrow-left-short"></i>
                 </a>
             </div>
 
-            <div class="choice-card" style="flex: 1; border-left: 5px solid #ffaa00;">
-                <h3 style="color: #ffaa00; margin-bottom: 20px;">أنا شريك (شركة / جامعة) 🤝</h3>
-                <p style="color: #555;">استقطاب المواهب المُفرَزة بنظام التعاقد المباشر والمضمون.</p>
-                <a href="{% url 'partner_login' %}" class="btn-main">
-                    دخول الشركاء المعتمدين
-                </a>
+            <div aria-hidden="true">
+                <svg viewBox="0 0 480 400" xmlns="http://www.w3.org/2000/svg" style="width: 100%;">
+                    <defs>
+                        <linearGradient id="partnerBg" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#e0eaff"/>
+                            <stop offset="1" stop-color="#f1f6ff"/>
+                        </linearGradient>
+                    </defs>
+                    <rect x="0" y="0" width="480" height="400" rx="22" fill="url(#partnerBg)"/>
+
+                    {# Header bar #}
+                    <rect x="32" y="32" width="416" height="56" rx="14" fill="#ffffff"/>
+                    <circle cx="64" cy="60" r="14" fill="#1d3a8a"/>
+                    <rect x="88" y="50" width="140" height="9" rx="4" fill="#0f172a"/>
+                    <rect x="88" y="64" width="90" height="7" rx="3" fill="#94a3b8"/>
+                    <rect x="380" y="50" width="50" height="22" rx="11" fill="#f59e0b"/>
+
+                    {# Stat cards #}
+                    <rect x="32" y="104" width="125" height="74" rx="14" fill="#ffffff"/>
+                    <rect x="48" y="120" width="32" height="6" rx="3" fill="#94a3b8"/>
+                    <rect x="48" y="138" width="50" height="22" rx="4" fill="#1d3a8a"/>
+
+                    <rect x="166" y="104" width="125" height="74" rx="14" fill="#ffffff"/>
+                    <rect x="182" y="120" width="32" height="6" rx="3" fill="#94a3b8"/>
+                    <rect x="182" y="138" width="50" height="22" rx="4" fill="#16a34a"/>
+
+                    <rect x="300" y="104" width="148" height="74" rx="14" fill="#ffffff"/>
+                    <rect x="316" y="120" width="42" height="6" rx="3" fill="#94a3b8"/>
+                    <rect x="316" y="138" width="62" height="22" rx="4" fill="#f59e0b"/>
+
+                    {# Student rows #}
+                    <rect x="32" y="194" width="416" height="58" rx="14" fill="#ffffff"/>
+                    <circle cx="60" cy="223" r="18" fill="#dbeafe"/>
+                    <rect x="86" y="212" width="120" height="9" rx="4" fill="#0f172a"/>
+                    <rect x="86" y="226" width="180" height="7" rx="3" fill="#94a3b8"/>
+                    <rect x="370" y="214" width="60" height="22" rx="11" fill="#dcfce7"/>
+
+                    <rect x="32" y="262" width="416" height="58" rx="14" fill="#ffffff"/>
+                    <circle cx="60" cy="291" r="18" fill="#fef3c7"/>
+                    <rect x="86" y="280" width="100" height="9" rx="4" fill="#0f172a"/>
+                    <rect x="86" y="294" width="160" height="7" rx="3" fill="#94a3b8"/>
+                    <rect x="370" y="282" width="60" height="22" rx="11" fill="#dcfce7"/>
+
+                    <rect x="32" y="330" width="416" height="58" rx="14" fill="#ffffff"/>
+                    <circle cx="60" cy="359" r="18" fill="#dbeafe"/>
+                    <rect x="86" y="348" width="140" height="9" rx="4" fill="#0f172a"/>
+                    <rect x="86" y="362" width="120" height="7" rx="3" fill="#94a3b8"/>
+                    <rect x="370" y="350" width="60" height="22" rx="11" fill="#fef3c7"/>
+                </svg>
             </div>
         </div>
-        </div>
-</div>
+    </div>
+</section>
+
 {% endblock %}

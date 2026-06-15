@@ -1,44 +1,57 @@
 {% extends 'internship/base.html' %}
+{% load static %}
 
-{% block title %}شراكات Internest المضمونة{% endblock %}
+{% block title %}للشركاء — Internest{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center py-5">
-    <div class="col-md-9 text-center">
-        
-        <h1 class="display-5 fw-bold text-dark mb-3">
-            شراكة Internest: بناء مسار مهني مضمون
-        </h1>
-        <p class="lead-text mb-5">
-            نحن نقدم نظام ربط وفرز ذكي يضمن لك أعلى جودة من الطلاب المؤهلين...
-        </p>
-
+<section class="hero" style="padding-block: var(--space-16);">
+    <div class="container">
+        <div style="max-width: 720px; margin-inline: auto; text-align: center;">
+            <span class="eyebrow hero__eyebrow"><i class="bi bi-building"></i> برنامج الشركاء</span>
+            <h1 class="mt-4">شراكة Internest: بناء مسار مهني مضمون</h1>
+            <p class="hero__lead" style="margin-inline: auto;">
+                نقدّم نظام ربط وفرز ذكي يضمن لشركتك أعلى جودة من الطلاب الجامعيين المؤهلين، ويوفر عليك مئات الساعات في الفرز اليدوي.
+            </p>
+        </div>
     </div>
-</div>
+</section>
 
-<div class="row justify-content-center mb-5">
-    <div class="col-md-10">
-        <div class="card p-5 shadow-lg">
-            
-            <h3 class="fw-bold mb-3 text-center" style="color: #ffaa00;">ابدأ الشراكة الآن</h3>
-            <p class="text-center text-secondary mb-4">
-                للحصول على كود الشريك السري، يُرجى التواصل معنا عبر البريد الإلكتروني الرسمي.
+<section class="section">
+    <div class="container">
+        <div class="feature-grid mb-6">
+            <div class="feature">
+                <div class="feature__icon"><i class="bi bi-people-fill"></i></div>
+                <h3>طلاب مفرَزون 100%</h3>
+                <p>وصلك بس ملفات الطلاب اللي ملفهم مكتمل بنسبة 100% — لا CVs نص فاضية.</p>
+            </div>
+            <div class="feature">
+                <div class="feature__icon"><i class="bi bi-trophy-fill"></i></div>
+                <h3>Golden List</h3>
+                <p>وصول للطلاب اللي عندهم أعلى نقاط أداء من التاسكات والكورسات المعتمدة.</p>
+            </div>
+            <div class="feature">
+                <div class="feature__icon"><i class="bi bi-shield-check"></i></div>
+                <h3>تعاقد مباشر آمن</h3>
+                <p>نظام تعاقد رسمي مع توثيق ملف الشريك (KYC) وعلامة موثوق ظاهرة للطلاب.</p>
+            </div>
+        </div>
+
+        <div class="card card--brand" style="padding: clamp(40px, 6vw, 64px); text-align: center; border-radius: var(--radius-2xl);">
+            <span class="eyebrow hero__eyebrow"><i class="bi bi-envelope-fill"></i> اطلب الانضمام</span>
+            <h2 style="margin-top: var(--space-4); font-size: clamp(1.75rem, 3vw, var(--text-4xl));">جاهز تبدأ الشراكة؟</h2>
+            <p style="color: rgba(255,255,255,0.85); font-size: var(--text-lg); max-width: 560px; margin-inline: auto; margin-bottom: var(--space-6);">
+                للحصول على كود الشريك السري، تواصل معنا عبر البريد الإلكتروني الرسمي وفريقنا هيرد عليك في ٢٤ ساعة.
             </p>
 
-            <div class="text-center mt-3">
-                <a href="mailto:partnerships@internest.com?subject=طلب%20كود%20شريك%20جديد%20للمنصة&body=نحن%20[اسم%20الشركة]%20نرغب%20في%20الحصول%20على%20كود%20شريك%20مُعتمد%20لتسهيل%20عملية%20التوظيف/التدريب." 
-                   class="btn-main" 
-                   style="background-color: #dc3545; color: white; padding: 15px 30px; margin-bottom: 20px;">
-                   إرسال طلب كود سري عبر البريد (partnerships@internest.com)
+            <div class="btn-group" style="justify-content: center;">
+                <a href="mailto:partnerships@internest.com?subject=طلب%20كود%20شريك%20جديد%20للمنصة&body=نحن%20[اسم%20الشركة]%20نرغب%20في%20الحصول%20على%20كود%20شريك%20مُعتمد." class="btn btn--accent btn--lg">
+                    <i class="bi bi-envelope-fill"></i> partnerships@internest.com
                 </a>
-
-                <div class="mt-4">
-                    <a href="{% url 'partner_login' %}" style="text-decoration: none; color: #004d99; font-weight: bold;">
-                        أنا شريك معتمد ولدي كود الدخول ➔
-                    </a>
-                </div>
+                <a href="{% url 'partner_login' %}" class="btn btn--white btn--lg">
+                    أنا شريك ولدي كود <i class="bi bi-arrow-left-short"></i>
+                </a>
             </div>
-            </div>
+        </div>
     </div>
-</div>
+</section>
 {% endblock %}
