@@ -1,49 +1,59 @@
 {% extends 'internship/base.html' %}
 {% load static %}
 
-{% block title %}مهام الـ Gamification{% endblock %}
+{% block title %}التاسكات والنقاط — Internest{% endblock %}
 
 {% block content %}
-<div class="container mt-5 mb-5" style="min-height: 60vh;">
-    
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="text-center mb-5">
-                <h2 style="color: #004d99; font-weight: bold;">
-                    <img src="{% static 'img/gamification-icon.jpeg' %}" alt="Tasks" style="height: 40px; vertical-align: middle; margin-left: 10px;">
-                    مهام الـ Gamification لرفع الأداء (Tasks)
-                </h2>
-                <p class="lead text-muted">أنجز هذه المهام لاكتساب النقاط ورفع الـ Gamification Score الخاص بك.</p>
-            </div>
 
-            {% if tasks %}
+<section class="page-header">
+    <div class="container">
+        <span class="eyebrow eyebrow--accent"><i class="bi bi-trophy"></i> Gamification</span>
+        <h1 class="mt-3">اكسب نقاط، ارفع ترتيبك</h1>
+        <p>تاسكات قصيرة بتختبر فهمك — كل تاسك بيكسبك نقاط بترفعك في الـ Golden List.</p>
+    </div>
+</section>
+
+<section class="section-sm">
+    <div class="container">
+        {% if tasks %}
+            <div class="listing-grid">
                 {% for task in tasks %}
-                <div class="choice-card p-4 mb-3" style="border-left: 5px solid #28a745;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h4 style="color: #004d99; font-weight: bold;">{{ task.title }}</h4>
-                            <p class="text-muted mb-0">{{ task.description|truncatewords:20 }}</p>
+                    <article class="listing-card fade-up">
+                        <div class="listing-card__head">
+                            <div class="listing-card__avatar" style="background: linear-gradient(135deg, #fef3c7, var(--accent-100)); color: var(--accent-700);">
+                                <i class="bi bi-puzzle-fill"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h3 class="listing-card__title">{{ task.title }}</h3>
+                                <p class="listing-card__partner">
+                                    <i class="bi bi-stars text-accent"></i>
+                                    +{{ task.points_awarded }} نقطة
+                                </p>
+                            </div>
                         </div>
-                        <div class="text-center" style="min-width: 120px;">
-                            <span style="font-weight: bold; color: #007bff; font-size: 1.1em;">
-                                +{{ task.points_awarded }} نقطة
-                            </span>
-                            
-                            <a href="{% url 'take_task' task.id %}" class="btn btn-success d-block mt-2" style="background-color: #28a745; border: none;">
-                                ابدأ المهمة
+
+                        <p class="listing-card__desc">{{ task.description|truncatewords:20 }}</p>
+
+                        <div class="listing-card__footer">
+                            <span class="badge badge--accent"><i class="bi bi-lightning-fill"></i> سريع</span>
+                            <a href="{% url 'take_task' task.id %}" class="btn btn--accent btn--sm">
+                                ابدأ <i class="bi bi-arrow-left-short"></i>
                             </a>
                         </div>
-                    </div>
-                </div>
+                    </article>
                 {% endfor %}
-            {% else %}
-                <div class="choice-card text-center p-5">
-                    <h4 style="color: #004d99;">رائع!</h4>
-                    <p class="text-muted">لقد أكملت جميع المهام المتاحة حالياً. تابعنا للمزيد!</p>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state__icon" style="background: var(--accent-100); color: var(--accent-700);">
+                    <i class="bi bi-emoji-sunglasses"></i>
                 </div>
-            {% endif %}
-
-        </div>
+                <h3>برافو! خلصت كل التاسكات المتاحة</h3>
+                <p>تابعنا للمزيد من التاسكات الجديدة قريباً.</p>
+                <a href="{% url 'course_list' %}" class="btn btn--primary">شوف الكورسات</a>
+            </div>
+        {% endif %}
     </div>
-</div>
+</section>
+
 {% endblock %}

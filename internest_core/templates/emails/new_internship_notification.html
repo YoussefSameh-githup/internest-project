@@ -2,43 +2,63 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>فرصة تدريب جديدة!</title>
+    <title>{{ internship_title }} — Internest</title>
 </head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-    <div style="max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-        
-        <h2 style="color: #0056b3;">خبر سار! فرصة تدريب جديدة متوفرة</h2>
-        
-        <p>عزيزي الطالب،</p>
-        
-        <p style="font-size: 16px;">
-            يسرنا أن نعلن عن إطلاق فرصة تدريب جديدة بعنوان:
-            <strong style="color: #333;">{{ internship_title }}</strong>.
-        </p>
-        
-        <p>
-            مقدمة من شريكنا: <strong>{{ partner_name }}</strong>.
-        </p>
-        
-        <p>إذا كنت مهتماً بمعرفة المزيد عن هذه الفرصة والتقديم عليها، لا تضيع الوقت!</p>
-        
-        <div style="text-align: center; margin: 25px 0;">
-            <a href="{{ internship_url }}" 
-               style="display: inline-block; padding: 12px 25px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
-                اضغط هنا للتقديم والانتقال لصفحة التدريب
-            </a>
+<body style="margin: 0; padding: 40px 20px; font-family: 'Cairo', 'Tajawal', Tahoma, sans-serif; background-color: #f8fafc; color: #0f172a;">
+
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 18px; overflow: hidden; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);">
+
+        <div style="padding: 32px; background: linear-gradient(135deg, #0b1e4d 0%, #1d3a8a 50%, #2746a8 100%); color: #ffffff; text-align: center;">
+            <div style="display: inline-block; padding: 6px 14px; background-color: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; font-size: 12px; font-weight: 700; margin-bottom: 16px; letter-spacing: 0.04em;">
+                ✨ فرصة جديدة
+            </div>
+            <h1 style="margin: 0; font-size: 26px; font-weight: 800; line-height: 1.3;">
+                فرصة تدريب جديدة في انتظارك
+            </h1>
         </div>
-        
-        <p>نأمل لك كل التوفيق في مسيرتك المهنية.</p>
-        
-        <p>مع خالص التحية،<br>
-        فريق منصة Internest</p>
-        
-        <hr style="border: 0; border-top: 1px solid #eee; margin-top: 20px;">
-        <p style="font-size: 12px; color: #999; text-align: center;">
-            تلقيت هذا البريد الإلكتروني لأنك مسجل في منصة Internest.
-        </p>
-        
+
+        <div style="padding: 40px 32px;">
+            <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.7; color: #334155;">
+                مرحباً 👋،
+            </p>
+            <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.7; color: #334155;">
+                يسرنا أن نعلمك بإضافة فرصة تدريب جديدة على منصة Internest قد تناسبك.
+            </p>
+
+            <div style="padding: 24px; background-color: #f1f6ff; border: 1px solid #e0eaff; border-radius: 14px; margin-bottom: 28px;">
+                <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">
+                    الفرصة
+                </p>
+                <h2 style="margin: 0 0 12px 0; font-size: 22px; font-weight: 800; color: #0b1e4d; line-height: 1.3;">
+                    {{ internship_title }}
+                </h2>
+                <p style="margin: 0; font-size: 14px; color: #475569;">
+                    مقدّمة من <strong style="color: #0f172a;">{{ partner_name }}</strong>
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 32px;">
+                <a href="{{ internship_url }}"
+                   style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #1a1206; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 16px; box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.6);">
+                    عرض التفاصيل والتقديم ←
+                </a>
+            </div>
+
+            <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #64748b; text-align: center;">
+                التقديم بضغطة واحدة بملفك الموحد على Internest. لا تفوّت الفرصة 🚀
+            </p>
+        </div>
+
+        <div style="padding: 24px; background-color: #f8fafc; text-align: center; border-top: 1px solid #e2e8f0;">
+            <p style="margin: 0 0 6px 0; font-size: 13px; color: #475569;">
+                مع تحيات فريق <strong style="color: #0b1e4d;">Internest</strong>
+            </p>
+            <p style="margin: 0; font-size: 11px; color: #94a3b8;">
+                تلقيت هذا البريد لأنك مسجّل على منصة Internest.
+            </p>
+        </div>
+
     </div>
+
 </body>
 </html>

@@ -1,50 +1,62 @@
 {% extends 'internship/base.html' %}
 {% load static %}
 
-{% block title %}حل مهمة: {{ task.title }}{% endblock %}
+{% block title %}{{ task.title }} — Internest{% endblock %}
 
 {% block content %}
-<div class="container mt-5 mb-5" style="min-height: 60vh;">
-    
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="text-center mb-4">
-                <h2 style="color: #004d99; font-weight: bold;">{{ task.title }}</h2>
-                <p class="lead text-muted">{{ task.description }}</p>
-                <p class="fw-bold" style="color: #007bff;">هذا التاسك يمنحك {{ task.points_awarded }} نقطة.</p>
-            </div>
 
-            <form method="POST">
+<section class="page-header">
+    <div class="container">
+        <a href="{% url 'task_list' %}" class="btn btn--ghost btn--sm mb-4">
+            <i class="bi bi-arrow-right-short"></i> العودة للتاسكات
+        </a>
+        <span class="eyebrow eyebrow--accent"><i class="bi bi-puzzle-fill"></i> تاسك</span>
+        <h1 class="mt-3">{{ task.title }}</h1>
+        <p>{{ task.description }}</p>
+        <div class="mt-3">
+            <span class="badge badge--accent badge--lg"><i class="bi bi-stars"></i> +{{ task.points_awarded }} نقطة</span>
+        </div>
+    </div>
+</section>
+
+<section class="section-sm">
+    <div class="container">
+        <div class="container-narrow" style="padding: 0;">
+            <form method="POST" class="form fade-up">
                 {% csrf_token %}
-                
+
                 {% for field in form %}
-                <div class="choice-card p-4 mb-4">
-                    <fieldset class="form-group">
-                        <legend class="fs-5 fw-bold" style="color: #004d99;">{{ field.label }}</legend>
-                        <hr>
-                        
-                        <div style="padding-right: 10px;">
-                        {% for radio in field %}
-                            <div class="form-check my-2">
-                                {{ radio.tag }}
-                                <label class="form-check-label" for="{{ radio.id_for_label }}" style="padding-right: 5px;">
-                                    {{ radio.choice_label }}
+                    <div class="card">
+                        <h4 class="mb-4" style="display: flex; align-items: flex-start; gap: var(--space-3);">
+                            <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; border-radius: var(--radius-pill); background: var(--brand-100); color: var(--brand-700); font-size: var(--text-sm); font-weight: 800;">
+                                {{ forloop.counter }}
+                            </span>
+                            <span style="flex: 1;">{{ field.label }}</span>
+                        </h4>
+
+                        <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+                            {% for radio in field %}
+                                <label style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: border-color 150ms, background-color 150ms;"
+                                       onmouseover="this.style.borderColor='var(--brand-300)'; this.style.backgroundColor='var(--brand-50)';"
+                                       onmouseout="this.style.borderColor='var(--color-border)'; this.style.backgroundColor='transparent';">
+                                    {{ radio.tag }}
+                                    <span>{{ radio.choice_label }}</span>
                                 </label>
-                            </div>
-                        {% endfor %}
+                            {% endfor %}
                         </div>
-                    </fieldset>
-                </div>
+
+                        {% if field.errors %}<div class="form-error mt-3">{{ field.errors|striptags }}</div>{% endif %}
+                    </div>
                 {% endfor %}
 
-                <div class="text-center mt-4">
-                    <button type="submit" class="btn-main" style="background-color: #007bff; color: white; padding: 10px 30px; font-size: 1.1em;">
-                        إنهاء وإرسال الإجابات
+                <div class="text-center">
+                    <button type="submit" class="btn btn--accent btn--lg">
+                        <i class="bi bi-check-circle-fill"></i> إنهاء وإرسال الإجابات
                     </button>
                 </div>
             </form>
-            
         </div>
     </div>
-</div>
+</section>
+
 {% endblock %}
