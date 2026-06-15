@@ -69,7 +69,6 @@
 
                 <form method="POST">
                     {% csrf_token %}
-                    <input type="hidden" name="final_price" value="{{ price_after_discount|floatformat:2 }}">
                     <button type="submit" name="confirm_purchase" class="btn-main w-100" style="background-color: #28a745; color: white; padding: 12px; font-size: 1.1em;">
                         تأكيد الشراء (محاكاة دفع)
                     </button>

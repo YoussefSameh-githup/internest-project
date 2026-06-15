@@ -1,8 +1,17 @@
-# C:\Internest\internest_core\models.py
-
+from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator, MinValueValidator, MaxValueValidator
 from django.db import models
-from django.contrib.auth.models import User 
+from django.contrib.auth.models import User
 from django.utils import timezone
+
+
+MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5 MB
+
+
+def validate_max_file_size(file):
+    if file and file.size > MAX_UPLOAD_SIZE:
+        mb = MAX_UPLOAD_SIZE // (1024 * 1024)
+        raise ValidationError(f"حجم الملف يجب أن لا يتجاوز {mb} ميجابايت.")
 
 
 
@@ -29,10 +38,24 @@ class StudentProfile(models.Model):
     major = models.CharField(max_length=100, blank=True, null=True, verbose_name="التخصص")
     study_level = models.CharField(max_length=50, choices=[('1', 'سنة أولى'), ('2', 'سنة ثانية'), ('3', 'سنة ثالثة'), ('4', 'سنة رابعة/خريج')], blank=True, null=True, verbose_name="المستوى الدراسي")
     phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="رقم الهاتف")
-    cv_file = models.FileField(upload_to='cvs/', blank=True, null=True, verbose_name="ملف السيرة الذاتية (CV)")
-    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True, verbose_name="صورة الملف الشخصي")
+    cv_file = models.FileField(
+        upload_to='cvs/', blank=True, null=True,
+        validators=[
+            FileExtensionValidator(['pdf', 'doc', 'docx']),
+            validate_max_file_size,
+        ],
+        verbose_name="ملف السيرة الذاتية (CV)",
+    )
+    profile_picture = models.ImageField(
+        upload_to='profile_pics/', blank=True, null=True,
+        validators=[
+            FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
+            validate_max_file_size,
+        ],
+        verbose_name="صورة الملف الشخصي",
+    )
     linkedin_url = models.URLField(max_length=200, blank=True, null=True, verbose_name="رابط LinkedIn")
-    
+
     profile_completion_score = models.IntegerField(default=0, verbose_name="نسبة الإكمال (%)")
     gamification_score = models.IntegerField(default=0, verbose_name="نقاط الأداء")
 
@@ -60,7 +83,14 @@ class PartnerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE) 
     company_name = models.CharField(max_length=200, unique=True, verbose_name="اسم الشركة/الجهة")
     partner_code = models.CharField(max_length=50, unique=True, help_text="الكود السري للدخول المخصص.")
-    logo = models.ImageField(upload_to='partner_logos/', null=True, blank=True, verbose_name="شعار الشركة/الجهة")
+    logo = models.ImageField(
+        upload_to='partner_logos/', null=True, blank=True,
+        validators=[
+            FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp', 'svg']),
+            validate_max_file_size,
+        ],
+        verbose_name="شعار الشركة/الجهة",
+    )
     
     is_academic = models.BooleanField(default=False, verbose_name="هل هي جهة أكاديمية؟")
     official_website = models.URLField(max_length=200, blank=True, null=True, verbose_name="الموقع الرسمي")
@@ -260,10 +290,25 @@ class StudentTaskRecord(models.Model):
 # ---------------------------------
 
 class DiscountCode(models.Model):
-# ... (بقية DiscountCode Model) ...
     code = models.CharField(max_length=50, unique=True, verbose_name="الكود")
-    discount_percentage = models.PositiveIntegerField(verbose_name="نسبة الخصم (%)", help_text="رقم من 1 إلى 100")
+    discount_percentage = models.PositiveIntegerField(
+        verbose_name="نسبة الخصم (%)",
+        help_text="رقم من 1 إلى 100",
+        validators=[MinValueValidator(1), MaxValueValidator(100)],
+    )
     is_active = models.BooleanField(default=True, verbose_name="فعال؟")
+    valid_until = models.DateField(null=True, blank=True, verbose_name="ينتهي في")
+    max_uses = models.PositiveIntegerField(null=True, blank=True, verbose_name="أقصى عدد استخدامات")
+    times_used = models.PositiveIntegerField(default=0, verbose_name="عدد مرات الاستخدام")
+
+    def is_valid(self):
+        if not self.is_active:
+            return False
+        if self.valid_until and self.valid_until < timezone.now().date():
+            return False
+        if self.max_uses is not None and self.times_used >= self.max_uses:
+            return False
+        return True
     
     class Meta:
         verbose_name = "كود خصم"
