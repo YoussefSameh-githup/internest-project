@@ -2,20 +2,54 @@
 
 from django.contrib import admin, messages
 from .models import (
-    StudentProfile, Internship, Application, PartnerProfile, 
+    StudentProfile, Internship, Application, PartnerProfile,
     PartnerInternshipSubmission, PartnerCourseSubmission,
     PartnerApplicantData,
     GoldenListStudent,
     GamificationTask, TaskQuestion, TaskAnswer, StudentTaskRecord,
-    
-    # (✨ استيراد موديلات الدفع الجديدة)
-    DiscountCode, StudentEnrollment
+    DiscountCode, StudentEnrollment,
+    EmailVerification,
 )
 from django.db import IntegrityError
 from django.utils.html import format_html 
 
-# --- تسجيل النماذج العادية ---
-admin.site.register(StudentProfile)
+@admin.register(StudentProfile)
+class StudentProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        'user', 'personal_email', 'personal_email_verified_badge',
+        'university_email', 'university_email_verified_badge',
+        'profile_completion_score', 'gamification_score',
+    )
+    list_filter = (
+        'personal_email_verified_at', 'university_email_verified_at',
+        'study_level', 'university',
+    )
+    search_fields = ('user__username', 'user__first_name', 'user__last_name', 'personal_email', 'university_email')
+    readonly_fields = (
+        'profile_completion_score',
+        'personal_email_verified_at', 'university_email_verified_at',
+    )
+
+    @admin.display(description="Personal verified")
+    def personal_email_verified_badge(self, obj):
+        return "✅" if obj.is_personal_email_verified else "—"
+
+    @admin.display(description="University verified")
+    def university_email_verified_badge(self, obj):
+        return "✅" if obj.is_university_email_verified else "—"
+
+
+@admin.register(EmailVerification)
+class EmailVerificationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'email', 'email_type', 'created_at', 'expires_at', 'verified_at', 'attempts')
+    list_filter = ('email_type', 'verified_at')
+    search_fields = ('user__username', 'email', 'code')
+    readonly_fields = ('code', 'created_at', 'expires_at', 'verified_at', 'attempts')
+
+    def has_add_permission(self, request):
+        return False
+
+
 admin.site.register(PartnerApplicantData)
 
 

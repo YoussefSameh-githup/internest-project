@@ -1,14 +1,24 @@
-# C:\Internest\internest_core\forms.py
-
 from django import forms
-from django.contrib.auth.forms import UserCreationForm 
-
+from django.contrib.auth.forms import UserCreationForm
+from django.db.models import Q
 
 from .models import (
-    StudentProfile, Internship, PartnerInternshipSubmission, 
-    PartnerCourseSubmission, PartnerProfile, 
-    TaskAnswer, TaskQuestion 
+    StudentProfile, Internship, PartnerInternshipSubmission,
+    PartnerCourseSubmission, PartnerProfile,
+    TaskAnswer, TaskQuestion,
 )
+
+
+def _email_taken_by_another_profile(email: str, exclude_profile_pk=None) -> bool:
+    """A given email may only belong to one student account across BOTH email slots."""
+    if not email:
+        return False
+    qs = StudentProfile.objects.filter(
+        Q(personal_email__iexact=email) | Q(university_email__iexact=email)
+    )
+    if exclude_profile_pk:
+        qs = qs.exclude(pk=exclude_profile_pk)
+    return qs.exists()
 
 # === 1. فورم تعديل ملف الطالب (ProfileForm) ===
 class ProfileForm(forms.ModelForm):
@@ -53,7 +63,27 @@ class ProfileForm(forms.ModelForm):
         if instance and not kwargs.get('initial'):
             kwargs['initial'] = {'personal_email': instance.personal_email}
         super().__init__(*args, **kwargs)
-        
+
+    def clean_personal_email(self):
+        email = self.cleaned_data.get('personal_email')
+        if email and _email_taken_by_another_profile(email, exclude_profile_pk=self.instance.pk):
+            raise forms.ValidationError("This email is already in use by another account.")
+        return email
+
+    def clean_university_email(self):
+        email = self.cleaned_data.get('university_email')
+        if email and _email_taken_by_another_profile(email, exclude_profile_pk=self.instance.pk):
+            raise forms.ValidationError("This email is already in use by another account.")
+        return email
+
+    def clean(self):
+        cleaned = super().clean()
+        personal = (cleaned.get('personal_email') or '').strip().lower()
+        university = (cleaned.get('university_email') or '').strip().lower()
+        if personal and university and personal == university:
+            raise forms.ValidationError("Personal and university emails must be different.")
+        return cleaned
+
     def save(self, commit=True):
         instance = super().save(commit=False)
         instance.personal_email = self.cleaned_data['personal_email']
@@ -132,3 +162,35 @@ class CustomStudentSignupForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
         pass
+
+    def clean_personal_email(self):
+        email = self.cleaned_data.get('personal_email')
+        if email and _email_taken_by_another_profile(email):
+            raise forms.ValidationError("This email is already registered.")
+        return email
+
+
+class OTPVerificationForm(forms.Form):
+    """Six-digit OTP entered by the student during email verification."""
+    code = forms.CharField(
+        label='OTP Code',
+        max_length=6,
+        min_length=6,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'inputmode': 'numeric',
+            'autocomplete': 'one-time-code',
+            'pattern': r'\d{6}',
+            'placeholder': '••••••',
+        }),
+    )
+    email_type = forms.ChoiceField(
+        choices=[('personal', 'Personal'), ('university', 'University')],
+        widget=forms.HiddenInput(),
+    )
+
+    def clean_code(self):
+        code = (self.cleaned_data.get('code') or '').strip()
+        if not code.isdigit() or len(code) != 6:
+            raise forms.ValidationError("The verification code must be 6 digits.")
+        return code

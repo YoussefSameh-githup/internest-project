@@ -1,17 +1,26 @@
+import secrets
+from datetime import timedelta
+
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator, MinValueValidator, MaxValueValidator
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import User
 from django.utils import timezone
 
 
 MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5 MB
+OTP_EXPIRY_MINUTES = 30
 
 
 def validate_max_file_size(file):
     if file and file.size > MAX_UPLOAD_SIZE:
         mb = MAX_UPLOAD_SIZE // (1024 * 1024)
-        raise ValidationError(f"حجم الملف يجب أن لا يتجاوز {mb} ميجابايت.")
+        raise ValidationError(f"File size must not exceed {mb} MB.")
+
+
+def generate_otp_code() -> str:
+    return f"{secrets.randbelow(1_000_000):06d}"
 
 
 
@@ -27,12 +36,31 @@ class StudentProfile(models.Model):
         blank=True 
     )
     
-    # 🚀 التعديل 2: إضافة حقل الإيميل الجامعي (اختياري)
     university_email = models.EmailField(
-        blank=True, 
-        null=True, 
+        unique=True,
+        blank=True,
+        null=True,
         verbose_name="البريد الإلكتروني الجامعي"
     )
+
+    personal_email_verified_at = models.DateTimeField(null=True, blank=True, verbose_name="تاريخ توثيق البريد الشخصي")
+    university_email_verified_at = models.DateTimeField(null=True, blank=True, verbose_name="تاريخ توثيق البريد الجامعي")
+
+    @property
+    def is_personal_email_verified(self) -> bool:
+        return self.personal_email_verified_at is not None
+
+    @property
+    def is_university_email_verified(self) -> bool:
+        return self.university_email_verified_at is not None
+
+    @property
+    def has_any_pending_email_verification(self) -> bool:
+        if self.personal_email and not self.is_personal_email_verified:
+            return True
+        if self.university_email and not self.is_university_email_verified:
+            return True
+        return False
     # ... (بقية حقول StudentProfile) ...
     university = models.CharField(max_length=100, blank=True, null=True, verbose_name="الجامعة")
     major = models.CharField(max_length=100, blank=True, null=True, verbose_name="التخصص")
@@ -317,8 +345,72 @@ class DiscountCode(models.Model):
     def __str__(self):
         return f"{self.code} ({self.discount_percentage}%)"
 
+# ---------------------------------
+# --- (✨ Email verification OTP model ✨) ---
+# ---------------------------------
+
+class EmailVerification(models.Model):
+    EMAIL_TYPE_PERSONAL = 'personal'
+    EMAIL_TYPE_UNIVERSITY = 'university'
+    EMAIL_TYPE_CHOICES = [
+        (EMAIL_TYPE_PERSONAL, 'Personal email'),
+        (EMAIL_TYPE_UNIVERSITY, 'University email'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='email_verifications')
+    email = models.EmailField()
+    email_type = models.CharField(max_length=20, choices=EMAIL_TYPE_CHOICES)
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    verified_at = models.DateTimeField(null=True, blank=True)
+    attempts = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "Email verification"
+        verbose_name_plural = "Email verifications"
+        indexes = [
+            models.Index(fields=['user', 'email_type', 'verified_at']),
+            models.Index(fields=['code']),
+        ]
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.email_type} OTP for {self.user.username} → {self.email}"
+
+    @property
+    def is_expired(self) -> bool:
+        return timezone.now() >= self.expires_at
+
+    @property
+    def is_consumed(self) -> bool:
+        return self.verified_at is not None
+
+    def is_usable(self) -> bool:
+        return not self.is_consumed and not self.is_expired and self.attempts < 5
+
+    @classmethod
+    def issue(cls, user, email: str, email_type: str, expiry_minutes: int = OTP_EXPIRY_MINUTES):
+        """Invalidate previous open codes for this slot, then issue a fresh one."""
+        cls.objects.filter(
+            user=user,
+            email_type=email_type,
+            verified_at__isnull=True,
+        ).delete()
+        return cls.objects.create(
+            user=user,
+            email=email,
+            email_type=email_type,
+            code=generate_otp_code(),
+            expires_at=timezone.now() + timedelta(minutes=expiry_minutes),
+        )
+
+    def mark_verified(self):
+        self.verified_at = timezone.now()
+        self.save(update_fields=['verified_at'])
+
+
 class StudentEnrollment(models.Model):
-# ... (بقية StudentEnrollment Model) ...
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="enrolled_courses", verbose_name="الطالب")
     course = models.ForeignKey(PartnerCourseSubmission, on_delete=models.CASCADE, related_name="enrollments", verbose_name="الكورس")
     enrolled_on = models.DateTimeField(auto_now_add=True, verbose_name="تاريخ التسجيل")
