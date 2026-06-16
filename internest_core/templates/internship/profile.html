@@ -1,15 +1,15 @@
 {% extends 'internship/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}ملفي الشخصي — Internest{% endblock %}
+{% block title %}{% trans "My profile" %} — Internest{% endblock %}
 
 {% block content %}
 
 <section class="page-header">
     <div class="container">
-        <span class="eyebrow"><i class="bi bi-person-circle"></i> ملفي الشخصي</span>
-        <h1 class="mt-3">إدارة ملفك الموحد ونقاطك</h1>
-        <p>كل اللي تعدله هنا بيظهر للشركاء لما تقدّم على فرصة.</p>
+        <span class="eyebrow"><i class="bi bi-person-circle"></i> {% trans "My profile" %}</span>
+        <h1 class="mt-3">{% trans "Manage your unified profile and points" %}</h1>
+        <p>{% trans "Everything you edit here is shown to partners when you apply to an opportunity." %}</p>
     </div>
 </section>
 
@@ -18,9 +18,9 @@
 
         {% if profile.has_any_pending_email_verification %}
             <div class="alert alert-warning fade-up mb-5">
-                <strong><i class="bi bi-envelope-exclamation-fill"></i> Email verification required.</strong>
-                We sent a 6-digit code to your unverified email(s).
-                <a href="{% url 'verify_email' %}" class="fw-bold" style="margin-inline-start: var(--space-2);">Verify now ➔</a>
+                <strong><i class="bi bi-envelope-exclamation-fill"></i> {% trans "Email verification required." %}</strong>
+                {% trans "We sent a 6-digit code to your unverified email(s)." %}
+                <a href="{% url 'verify_email' %}" class="fw-bold" style="margin-inline-start: var(--space-2);">{% trans "Verify now" %} ➔</a>
             </div>
         {% endif %}
 
@@ -43,53 +43,53 @@
             </div>
 
             <div>
-                <h4 class="mb-4">معلومات الحساب</h4>
+                <h4 class="mb-4">{% trans "Account information" %}</h4>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4);">
                     <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">البريد الشخصي</span>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "Personal email" %}</span>
                         <p class="fw-bold mt-2 mb-0">
                             {{ profile.personal_email|default:"-" }}
                             {% if profile.personal_email %}
                                 {% if profile.is_personal_email_verified %}
-                                    <span class="badge badge--success" title="Verified"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                                    <span class="badge badge--success" title="{% trans 'Verified' %}"><i class="bi bi-patch-check-fill"></i> {% trans "Verified" %}</span>
                                 {% else %}
-                                    <span class="badge badge--accent" title="Not verified"><i class="bi bi-exclamation-circle-fill"></i> Unverified</span>
+                                    <span class="badge badge--accent" title="{% trans 'Not verified' %}"><i class="bi bi-exclamation-circle-fill"></i> {% trans "Unverified" %}</span>
                                 {% endif %}
                             {% endif %}
                         </p>
                     </div>
                     {% if profile.university_email %}
                     <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">البريد الجامعي</span>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "University email" %}</span>
                         <p class="fw-bold mt-2 mb-0">
                             {{ profile.university_email }}
                             {% if profile.is_university_email_verified %}
-                                <span class="badge badge--success"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                                <span class="badge badge--success"><i class="bi bi-patch-check-fill"></i> {% trans "Verified" %}</span>
                             {% else %}
-                                <span class="badge badge--accent"><i class="bi bi-exclamation-circle-fill"></i> Unverified</span>
+                                <span class="badge badge--accent"><i class="bi bi-exclamation-circle-fill"></i> {% trans "Unverified" %}</span>
                             {% endif %}
                         </p>
                     </div>
                     {% endif %}
                     <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">رقم الهاتف</span>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "Phone number" %}</span>
                         <p class="fw-bold mt-2 mb-0">{{ profile.phone_number|default:"-" }}</p>
                     </div>
                     <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">الجامعة</span>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "University" %}</span>
                         <p class="fw-bold mt-2 mb-0">{{ profile.university|default:"-" }}</p>
                     </div>
                     <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">التخصص</span>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "Major" %}</span>
                         <p class="fw-bold mt-2 mb-0">{{ profile.major|default:"-" }}</p>
                     </div>
                     <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">السيرة الذاتية</span>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "CV" %}</span>
                         <p class="fw-bold mt-2 mb-0">
                             {% if profile.cv_file %}
-                                <a href="{{ profile.cv_file.url }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> عرض CV</a>
+                                <a href="{{ profile.cv_file.url }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> {% trans "View CV" %}</a>
                             {% else %}
-                                <span class="text-muted">غير مرفق</span>
+                                <span class="text-muted">{% trans "Not uploaded" %}</span>
                             {% endif %}
                         </p>
                     </div>
@@ -101,18 +101,18 @@
             <div class="metric">
                 <div class="metric__icon"><i class="bi bi-clipboard-check"></i></div>
                 <div class="metric__value">{{ profile.profile_completion_score }}%</div>
-                <div class="metric__label">اكتمال الملف</div>
+                <div class="metric__label">{% trans "Profile completion" %}</div>
                 <div class="progress mt-3">
                     <div class="progress__bar {% if profile.profile_completion_score == 100 %}progress__bar--success{% endif %}"
                          style="width: {{ profile.profile_completion_score }}%;"></div>
                 </div>
                 {% if profile.profile_completion_score < 100 %}
                     <p class="mt-3 mb-0" style="font-size: var(--text-xs); color: var(--color-danger);">
-                        <i class="bi bi-exclamation-triangle-fill"></i> أكمل لتفعيل التقديم
+                        <i class="bi bi-exclamation-triangle-fill"></i> {% trans "Complete to unlock applying" %}
                     </p>
                 {% else %}
                     <p class="mt-3 mb-0" style="font-size: var(--text-xs); color: var(--color-success);">
-                        <i class="bi bi-check-circle-fill"></i> جاهز للتقديم
+                        <i class="bi bi-check-circle-fill"></i> {% trans "Ready to apply" %}
                     </p>
                 {% endif %}
             </div>
@@ -120,21 +120,21 @@
             <div class="metric metric--accent">
                 <div class="metric__icon"><i class="bi bi-trophy-fill"></i></div>
                 <div class="metric__value">{{ profile.gamification_score }}</div>
-                <div class="metric__label">نقطة أداء</div>
+                <div class="metric__label">{% trans "Performance points" %}</div>
                 <a href="{% url 'task_list' %}" class="btn btn--ghost btn--sm mt-3" style="padding-inline: 0;">
-                    اكسب نقاط <i class="bi bi-arrow-left-short"></i>
+                    {% trans "Earn points" %} <i class="bi bi-arrow-left-short"></i>
                 </a>
             </div>
 
             <div class="metric metric--success">
                 <div class="metric__icon"><i class="bi bi-mortarboard-fill"></i></div>
                 <div class="metric__value">{{ profile.study_level|default:"-" }}</div>
-                <div class="metric__label">المستوى الدراسي</div>
+                <div class="metric__label">{% trans "Study level" %}</div>
             </div>
         </div>
 
         <div class="card">
-            <h3 class="mb-5"><i class="bi bi-pencil-square text-primary"></i> تعديل البيانات</h3>
+            <h3 class="mb-5"><i class="bi bi-pencil-square text-primary"></i> {% trans "Edit information" %}</h3>
 
             <form method="POST" enctype="multipart/form-data" class="form">
                 {% csrf_token %}
@@ -173,17 +173,17 @@
                     <div class="form-group">
                         <label for="{{ form.cv_file.id_for_label }}" class="form-label">{{ form.cv_file.label }}</label>
                         {{ form.cv_file }}
-                        <small class="form-help">PDF / DOC / DOCX — أقصى حجم 5MB</small>
+                        <small class="form-help">{% trans "PDF / DOC / DOCX — max size 5 MB" %}</small>
                     </div>
                     <div class="form-group">
                         <label for="{{ form.profile_picture.id_for_label }}" class="form-label">{{ form.profile_picture.label }}</label>
                         {{ form.profile_picture }}
-                        <small class="form-help">JPG / PNG / WEBP — أقصى حجم 5MB</small>
+                        <small class="form-help">{% trans "JPG / PNG / WEBP — max size 5 MB" %}</small>
                     </div>
                 </div>
 
                 <button type="submit" class="btn btn--primary btn--lg mt-6">
-                    <i class="bi bi-save"></i> حفظ التعديلات
+                    <i class="bi bi-save"></i> {% trans "Save changes" %}
                 </button>
             </form>
         </div>

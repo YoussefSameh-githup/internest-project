@@ -1,18 +1,18 @@
 {% extends 'internship/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}إتمام شراء: {{ course.title }} — Internest{% endblock %}
+{% block title %}{% blocktrans with t=course.title %}Checkout: {{ t }}{% endblocktrans %} — Internest{% endblock %}
 
 {% block content %}
 
 <section class="page-header">
     <div class="container">
         <a href="{% url 'course_list' %}" class="btn btn--ghost btn--sm mb-4">
-            <i class="bi bi-arrow-right-short"></i> العودة للكورسات
+            <i class="bi bi-arrow-right-short"></i> {% trans "Back to courses" %}
         </a>
-        <span class="eyebrow"><i class="bi bi-bag-check"></i> إتمام الشراء</span>
+        <span class="eyebrow"><i class="bi bi-bag-check"></i> {% trans "Checkout" %}</span>
         <h1 class="mt-3">{{ course.title }}</h1>
-        <p>راجع التفاصيل قبل تأكيد الشراء.</p>
+        <p>{% trans "Review the details before confirming your purchase." %}</p>
     </div>
 </section>
 
@@ -23,7 +23,7 @@
             <div style="display: flex; flex-direction: column; gap: var(--space-5);">
 
                 <div class="card">
-                    <h4 class="mb-4"><i class="bi bi-bag-heart text-primary"></i> ملخص الطلب</h4>
+                    <h4 class="mb-4"><i class="bi bi-bag-heart text-primary"></i> {% trans "Order summary" %}</h4>
 
                     <div class="flex items-center gap-4" style="padding: var(--space-4); background: var(--slate-50); border-radius: var(--radius-md);">
                         <div class="listing-card__avatar" style="width: 60px; height: 60px;">
@@ -42,34 +42,34 @@
                     </div>
 
                     <div class="flex items-center gap-3 mt-4">
-                        <span class="badge badge--accent"><i class="bi bi-stars"></i> +{{ course.points_awarded }} نقطة</span>
-                        <span class="badge badge--primary"><i class="bi bi-shield-check"></i> كورس معتمد</span>
+                        <span class="badge badge--accent"><i class="bi bi-stars"></i> {% blocktrans with p=course.points_awarded %}+{{ p }} points{% endblocktrans %}</span>
+                        <span class="badge badge--primary"><i class="bi bi-shield-check"></i> {% trans "Verified course" %}</span>
                     </div>
                 </div>
 
                 <div class="card">
-                    <h4 class="mb-4"><i class="bi bi-tag text-accent"></i> كود الخصم</h4>
+                    <h4 class="mb-4"><i class="bi bi-tag text-accent"></i> {% trans "Discount code" %}</h4>
                     <form method="POST">
                         {% csrf_token %}
                         <div style="display: flex; gap: var(--space-3);">
-                            <input type="text" name="discount_code" class="form-control" placeholder="عندك كود خصم؟ ادخله هنا..."
+                            <input type="text" name="discount_code" class="form-control" placeholder="{% trans 'Have a discount code? Enter it here...' %}"
                                    value="{{ discount_code_str }}" {% if discount_code_str %}disabled{% endif %}>
                             <button type="submit" name="apply_discount" class="btn btn--outline" {% if discount_code_str %}disabled{% endif %}>
-                                تطبيق
+                                {% trans "Apply" %}
                             </button>
                         </div>
                         {% if discount_code_str %}
                             <p class="mt-3 mb-0" style="color: var(--color-success); font-size: var(--text-sm);">
-                                <i class="bi bi-check-circle-fill"></i> تم تطبيق الكود بنجاح
+                                <i class="bi bi-check-circle-fill"></i> {% trans "Discount applied successfully" %}
                             </p>
                         {% endif %}
                     </form>
                 </div>
 
                 <div class="card">
-                    <h4 class="mb-4"><i class="bi bi-credit-card text-primary"></i> طريقة الدفع</h4>
+                    <h4 class="mb-4"><i class="bi bi-credit-card text-primary"></i> {% trans "Payment method" %}</h4>
                     <p class="text-muted mb-4" style="font-size: var(--text-sm);">
-                        هذه محاكاة لعملية الدفع. في النسخة النهائية هنربط بوابات الدفع الحقيقية.
+                        {% trans "This is a payment simulation. The final release will integrate real payment gateways." %}
                     </p>
                     <div style="display: flex; gap: var(--space-3); flex-wrap: wrap; opacity: 0.55;">
                         <div style="padding: var(--space-3) var(--space-5); background: var(--slate-100); border-radius: var(--radius-md); font-weight: 700;">Fawry</div>
@@ -81,34 +81,34 @@
 
             <aside style="position: sticky; top: calc(var(--navbar-height) + var(--space-4));">
                 <div class="pricing-card">
-                    <h4 class="mb-4"><i class="bi bi-calculator text-primary"></i> الفاتورة</h4>
+                    <h4 class="mb-4"><i class="bi bi-calculator text-primary"></i> {% trans "Invoice" %}</h4>
 
                     <div class="pricing-row">
-                        <span>السعر الأصلي</span>
-                        <span class="fw-bold">{{ original_price }} ج.م</span>
+                        <span>{% trans "Original price" %}</span>
+                        <span class="fw-bold">{{ original_price }} {% trans "EGP" %}</span>
                     </div>
 
                     {% if original_price != price_after_discount %}
                         <div class="pricing-row" style="color: var(--color-success);">
-                            <span>الخصم ({{ discount_code_str }})</span>
-                            <span class="fw-bold">- {{ discount_amount|floatformat:2 }} ج.م</span>
+                            <span>{% blocktrans with c=discount_code_str %}Discount ({{ c }}){% endblocktrans %}</span>
+                            <span class="fw-bold">- {{ discount_amount|floatformat:2 }} {% trans "EGP" %}</span>
                         </div>
                     {% endif %}
 
                     <div class="pricing-row pricing-row--total">
-                        <span style="color: var(--slate-800); font-weight: 700;">الإجمالي</span>
-                        <span class="pricing-row__value">{{ price_after_discount|floatformat:2 }} ج.م</span>
+                        <span style="color: var(--slate-800); font-weight: 700;">{% trans "Total" %}</span>
+                        <span class="pricing-row__value">{{ price_after_discount|floatformat:2 }} {% trans "EGP" %}</span>
                     </div>
 
                     <form method="POST" class="mt-5">
                         {% csrf_token %}
                         <button type="submit" name="confirm_purchase" class="btn btn--success btn--lg btn--block">
-                            <i class="bi bi-lock-fill"></i> تأكيد الشراء
+                            <i class="bi bi-lock-fill"></i> {% trans "Confirm purchase" %}
                         </button>
                     </form>
 
                     <p class="text-muted mt-4 mb-0 text-center" style="font-size: var(--text-xs);">
-                        <i class="bi bi-shield-check"></i> دفع آمن ومحمي بالكامل
+                        <i class="bi bi-shield-check"></i> {% trans "Secure and fully protected payment" %}
                     </p>
                 </div>
             </aside>

@@ -1,7 +1,7 @@
 {% extends 'internship/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}لوحة تحكم الشريك — {{ partner.company_name }}{% endblock %}
+{% block title %}{% trans "Partner dashboard" %} — {{ partner.company_name }}{% endblock %}
 
 {% block content %}
 
@@ -9,28 +9,28 @@
     <div class="container">
         <div class="page-header__inner">
             <div>
-                <span class="eyebrow"><i class="bi bi-grid-1x2"></i> لوحة الشريك</span>
+                <span class="eyebrow"><i class="bi bi-grid-1x2"></i> {% trans "Partner dashboard" %}</span>
                 <h1 class="mt-3 mb-2">
                     {{ partner.company_name }}
                     {% if partner.is_fully_verified %}
-                        <i class="bi bi-patch-check-fill" style="color: var(--brand-500); font-size: 0.75em;" title="حساب موثق"></i>
+                        <i class="bi bi-patch-check-fill" style="color: var(--brand-500); font-size: 0.75em;" title="{% trans 'Verified account' %}"></i>
                     {% endif %}
                 </h1>
                 <p>
                     {% if partner.is_fully_verified %}
-                        <span class="status-pill status-pill--approved"><i class="bi bi-shield-check"></i> حساب موثق</span>
+                        <span class="status-pill status-pill--approved"><i class="bi bi-shield-check"></i> {% trans "Verified account" %}</span>
                     {% else %}
-                        <span class="status-pill status-pill--pending"><i class="bi bi-hourglass-split"></i> قيد المراجعة / غير مكتمل</span>
+                        <span class="status-pill status-pill--pending"><i class="bi bi-hourglass-split"></i> {% trans "Under review / incomplete" %}</span>
                     {% endif %}
                 </p>
             </div>
 
             <div class="btn-group">
                 <a href="{% url 'partner_submit_choose' %}" class="btn btn--accent btn--lg">
-                    <i class="bi bi-plus-lg"></i> إضافة محتوى
+                    <i class="bi bi-plus-lg"></i> {% trans "Add content" %}
                 </a>
                 <a href="{% url 'partner_profile' %}" class="btn btn--ghost btn--lg">
-                    <i class="bi bi-gear"></i> إعدادات الملف
+                    <i class="bi bi-gear"></i> {% trans "Profile settings" %}
                 </a>
             </div>
         </div>
@@ -42,9 +42,9 @@
 
         {% if partner.profile_completion_score < 100 %}
             <div class="alert alert-warning fade-up mb-5">
-                <strong><i class="bi bi-exclamation-triangle-fill"></i> الملف غير مكتمل ({{ partner.profile_completion_score }}%).</strong>
-                لا يمكنك إرسال طلبات حتى يكتمل بنسبة 100%.
-                <a href="{% url 'partner_profile' %}" class="fw-bold" style="margin-inline-start: var(--space-2);">إكمال الآن ➔</a>
+                <strong><i class="bi bi-exclamation-triangle-fill"></i> {% blocktrans with s=partner.profile_completion_score %}Profile is incomplete ({{ s }}%).{% endblocktrans %}</strong>
+                {% trans "You cannot submit requests until your profile reaches 100%." %}
+                <a href="{% url 'partner_profile' %}" class="fw-bold" style="margin-inline-start: var(--space-2);">{% trans "Complete now" %} ➔</a>
             </div>
         {% endif %}
 
@@ -52,30 +52,30 @@
             <div class="metric">
                 <div class="metric__icon"><i class="bi bi-briefcase-fill"></i></div>
                 <div class="metric__value">{{ published_internships|length }}</div>
-                <div class="metric__label">فرصة منشورة</div>
+                <div class="metric__label">{% trans "Published opportunities" %}</div>
             </div>
             <div class="metric metric--accent">
                 <div class="metric__icon"><i class="bi bi-hourglass-split"></i></div>
                 <div class="metric__value">{{ internship_submissions|length }}</div>
-                <div class="metric__label">قيد المراجعة</div>
+                <div class="metric__label">{% trans "Under review" %}</div>
             </div>
             <div class="metric metric--success">
                 <div class="metric__icon"><i class="bi bi-inbox-fill"></i></div>
                 <div class="metric__value">{{ received_applicants|length }}</div>
-                <div class="metric__label">ملف متقدم</div>
+                <div class="metric__label">{% trans "Applicant files" %}</div>
             </div>
             <div class="metric">
                 <div class="metric__icon" style="background: #fef3c7; color: var(--accent-700);"><i class="bi bi-mortarboard-fill"></i></div>
                 <div class="metric__value">{{ course_submissions|length }}</div>
-                <div class="metric__label">كورس مقدّم</div>
+                <div class="metric__label">{% trans "Submitted courses" %}</div>
             </div>
         </div>
 
         <div class="card mb-6">
             <div class="flex items-center justify-between mb-4" style="flex-wrap: wrap; gap: var(--space-3);">
-                <h3 class="mb-0"><i class="bi bi-briefcase text-primary"></i> الفرص المنشورة</h3>
+                <h3 class="mb-0"><i class="bi bi-briefcase text-primary"></i> {% trans "Published opportunities" %}</h3>
                 <a href="{% url 'partner_submit_internship' %}" class="btn btn--primary btn--sm">
-                    <i class="bi bi-plus-lg"></i> إضافة فرصة
+                    <i class="bi bi-plus-lg"></i> {% trans "Add opportunity" %}
                 </a>
             </div>
 
@@ -84,10 +84,10 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>الفرصة</th>
-                                <th>الموعد النهائي</th>
-                                <th>الحالة</th>
-                                <th>المتقدمون</th>
+                                <th>{% trans "Opportunity" %}</th>
+                                <th>{% trans "Deadline" %}</th>
+                                <th>{% trans "Status" %}</th>
+                                <th>{% trans "Applicants" %}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -97,16 +97,16 @@
                                     <td>{{ internship.deadline|date:"Y/m/d" }}</td>
                                     <td>
                                         {% if internship.is_expired %}
-                                            <span class="status-pill status-pill--expired"><i class="bi bi-x-circle"></i> منتهية</span>
+                                            <span class="status-pill status-pill--expired"><i class="bi bi-x-circle"></i> {% trans "Expired" %}</span>
                                         {% elif internship.is_active %}
-                                            <span class="status-pill status-pill--active"><i class="bi bi-check-circle-fill"></i> نشطة</span>
+                                            <span class="status-pill status-pill--active"><i class="bi bi-check-circle-fill"></i> {% trans "Active" %}</span>
                                         {% else %}
-                                            <span class="status-pill status-pill--pending">موقوفة</span>
+                                            <span class="status-pill status-pill--pending">{% trans "Paused" %}</span>
                                         {% endif %}
                                     </td>
                                     <td>
                                         <strong style="color: var(--brand-700); font-size: var(--text-lg);">{{ internship.applicants_count }}</strong>
-                                        <span class="text-muted" style="font-size: var(--text-xs);">CV</span>
+                                        <span class="text-muted" style="font-size: var(--text-xs);">{% trans "CV" %}</span>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -116,29 +116,29 @@
             {% else %}
                 <div class="empty-state" style="padding: var(--space-8);">
                     <div class="empty-state__icon"><i class="bi bi-briefcase"></i></div>
-                    <h4>لم تنشر أي فرصة بعد</h4>
-                    <p>ابدأ بنشر أول فرصة تدريب للوصول لطلابنا.</p>
+                    <h4>{% trans "You haven't published any opportunity yet" %}</h4>
+                    <p>{% trans "Start by publishing your first internship to reach our students." %}</p>
                     <a href="{% url 'partner_submit_internship' %}" class="btn btn--primary">
-                        <i class="bi bi-plus-lg"></i> أضف فرصة جديدة
+                        <i class="bi bi-plus-lg"></i> {% trans "Add a new opportunity" %}
                     </a>
                 </div>
             {% endif %}
         </div>
 
         <div class="card mb-6">
-            <h3 class="mb-4"><i class="bi bi-inbox text-accent"></i> صندوق وارد ملفات المتقدمين</h3>
-            <p class="text-muted mb-5">هنا تظهر ملفات الطلاب اللي تمت الموافقة عليهم من Internest وتحويلهم لك.</p>
+            <h3 class="mb-4"><i class="bi bi-inbox text-accent"></i> {% trans "Applicant inbox" %}</h3>
+            <p class="text-muted mb-5">{% trans "Files of students approved by Internest and forwarded to you appear here." %}</p>
 
             {% if received_applicants %}
                 <div class="data-table-wrap" style="margin: 0; box-shadow: none;">
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>الطالب</th>
-                                <th>تقدم على</th>
-                                <th>التخصص</th>
-                                <th>تاريخ الإرسال</th>
-                                <th>CV</th>
+                                <th>{% trans "Student" %}</th>
+                                <th>{% trans "Applied to" %}</th>
+                                <th>{% trans "Major" %}</th>
+                                <th>{% trans "Forwarded on" %}</th>
+                                <th>{% trans "CV" %}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -154,7 +154,7 @@
                                     <td>
                                         {% if app.student.cv_file %}
                                             <a href="{{ app.student.cv_file.url }}" target="_blank" class="btn btn--primary btn--sm">
-                                                <i class="bi bi-download"></i> CV
+                                                <i class="bi bi-download"></i> {% trans "CV" %}
                                             </a>
                                         {% else %}
                                             <span class="text-muted">-</span>
@@ -168,15 +168,15 @@
             {% else %}
                 <div class="empty-state" style="padding: var(--space-8);">
                     <div class="empty-state__icon"><i class="bi bi-inbox"></i></div>
-                    <h4>لا توجد ملفات بعد</h4>
-                    <p>هنا هتلاقي ملفات الطلاب اللي اتفرزوا وتم تحويلهم لك.</p>
+                    <h4>{% trans "No applicant files yet" %}</h4>
+                    <p>{% trans "Pre-screened student files forwarded to you will appear here." %}</p>
                 </div>
             {% endif %}
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6);">
             <div class="card">
-                <h4 class="mb-4"><i class="bi bi-hourglass text-primary"></i> طلبات تدريب قيد المراجعة</h4>
+                <h4 class="mb-4"><i class="bi bi-hourglass text-primary"></i> {% trans "Internship submissions under review" %}</h4>
                 {% if internship_submissions %}
                     <div style="display: flex; flex-direction: column; gap: var(--space-3);">
                         {% for sub in internship_submissions %}
@@ -186,42 +186,42 @@
                                     <div class="text-muted" style="font-size: var(--text-xs);">{{ sub.submission_date|date:"Y/m/d" }}</div>
                                 </div>
                                 {% if sub.status == 'Approved' %}
-                                    <span class="status-pill status-pill--approved">{{ sub.get_status_display }}</span>
+                                    <span class="status-pill status-pill--approved">{% trans "Approved" %}</span>
                                 {% elif sub.status == 'Rejected' %}
-                                    <span class="status-pill status-pill--rejected">{{ sub.get_status_display }}</span>
+                                    <span class="status-pill status-pill--rejected">{% trans "Rejected" %}</span>
                                 {% else %}
-                                    <span class="status-pill status-pill--pending">{{ sub.get_status_display }}</span>
+                                    <span class="status-pill status-pill--pending">{% trans "Pending" %}</span>
                                 {% endif %}
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p class="text-muted mb-0">لا توجد طلبات قيد المراجعة.</p>
+                    <p class="text-muted mb-0">{% trans "No submissions under review." %}</p>
                 {% endif %}
             </div>
 
             <div class="card">
-                <h4 class="mb-4"><i class="bi bi-mortarboard text-accent"></i> الكورسات المُقدّمة</h4>
+                <h4 class="mb-4"><i class="bi bi-mortarboard text-accent"></i> {% trans "Submitted courses" %}</h4>
                 {% if course_submissions %}
                     <div style="display: flex; flex-direction: column; gap: var(--space-3);">
                         {% for sub in course_submissions %}
                             <div style="padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; gap: var(--space-3);">
                                 <div>
                                     <div class="fw-bold">{{ sub.title }}</div>
-                                    <div class="text-muted" style="font-size: var(--text-xs);">+{{ sub.points_awarded }} نقطة • {{ sub.submission_date|date:"Y/m/d" }}</div>
+                                    <div class="text-muted" style="font-size: var(--text-xs);">{% blocktrans with p=sub.points_awarded d=sub.submission_date|date:"Y/m/d" %}+{{ p }} points • {{ d }}{% endblocktrans %}</div>
                                 </div>
                                 {% if sub.status == 'Approved' %}
-                                    <span class="status-pill status-pill--approved">{{ sub.get_status_display }}</span>
+                                    <span class="status-pill status-pill--approved">{% trans "Approved" %}</span>
                                 {% elif sub.status == 'Rejected' %}
-                                    <span class="status-pill status-pill--rejected">{{ sub.get_status_display }}</span>
+                                    <span class="status-pill status-pill--rejected">{% trans "Rejected" %}</span>
                                 {% else %}
-                                    <span class="status-pill status-pill--pending">{{ sub.get_status_display }}</span>
+                                    <span class="status-pill status-pill--pending">{% trans "Pending" %}</span>
                                 {% endif %}
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p class="text-muted mb-0">لا توجد كورسات مقدّمة.</p>
+                    <p class="text-muted mb-0">{% trans "No submitted courses." %}</p>
                 {% endif %}
             </div>
         </div>

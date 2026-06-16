@@ -1,7 +1,7 @@
 {% extends 'internship/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}دخول الشركاء — Internest{% endblock %}
+{% block title %}{% trans "Partner login" %} — Internest{% endblock %}
 
 {% block content %}
 <div class="auth-shell">
@@ -15,12 +15,12 @@
         </div>
 
         <div>
-            <span class="eyebrow hero__eyebrow"><i class="bi bi-building-fill"></i> بوابة الشركاء</span>
+            <span class="eyebrow hero__eyebrow"><i class="bi bi-building-fill"></i> {% trans "Partner gateway" %}</span>
             <h1 style="color: var(--white); font-size: clamp(1.75rem, 3vw, var(--text-4xl)); margin-top: var(--space-4);">
-                ادخل وقابل المواهب اللي بتدور عليها
+                {% trans "Sign in and meet the talents you're looking for" %}
             </h1>
             <p style="color: rgba(255,255,255,0.9); font-size: var(--text-lg); max-width: 380px;">
-                لوحة تحكم كاملة، صندوق وارد بملفات مفرَزة، ونشر فرص بضغطة واحدة.
+                {% trans "A complete dashboard, a pre-screened applicant inbox, and one-click opportunity publishing." %}
             </p>
         </div>
 
@@ -29,8 +29,8 @@
 
     <div class="auth-shell__form">
         <div class="auth-shell__inner">
-            <h2>دخول الشركاء 🤝</h2>
-            <p class="text-muted mb-6">أدخل بيانات الشريك المعتمدة من Internest.</p>
+            <h2>{% trans "Partner sign in 🤝" %}</h2>
+            <p class="text-muted mb-6">{% trans "Enter the partner credentials approved by Internest." %}</p>
 
             {% if error_message %}
                 <div class="alert alert-danger">
@@ -42,31 +42,31 @@
                 {% csrf_token %}
 
                 <div class="form-group">
-                    <label for="id_username" class="form-label">اسم المستخدم</label>
+                    <label for="id_username" class="form-label">{% trans "Username" %}</label>
                     <input type="text" name="username" id="id_username" class="form-control"
-                           placeholder="اسم المستخدم المعيّن لشركتك" value="{{ username_val|default:'' }}" required>
+                           placeholder="{% trans 'The username assigned to your company' %}" value="{{ username_val|default:'' }}" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="id_partner_code" class="form-label">رمز الشريك السري</label>
+                    <label for="id_partner_code" class="form-label">{% trans "Secret partner code" %}</label>
                     <input type="text" name="partner_code" id="id_partner_code" class="form-control"
-                           placeholder="الرمز اللي وصلك من Internest" value="{{ partner_code_val|default:'' }}" required>
-                    <small class="form-help">الكود ده وصلك على بريد شركتك بعد اعتماد الانضمام.</small>
+                           placeholder="{% trans 'The code you received from Internest' %}" value="{{ partner_code_val|default:'' }}" required>
+                    <small class="form-help">{% trans "This code was sent to your company email once your partnership was approved." %}</small>
                 </div>
 
                 <div class="form-group">
-                    <label for="id_password" class="form-label">كلمة المرور</label>
+                    <label for="id_password" class="form-label">{% trans "Password" %}</label>
                     <input type="password" name="password" id="id_password" class="form-control"
-                           placeholder="كلمة المرور" required>
+                           placeholder="{% trans 'Password' %}" required>
                 </div>
 
                 <button type="submit" class="btn btn--accent btn--lg btn--block">
-                    <i class="bi bi-box-arrow-in-right"></i> دخول لوحة الشريك
+                    <i class="bi bi-box-arrow-in-right"></i> {% trans "Enter partner dashboard" %}
                 </button>
             </form>
 
             <p class="text-muted mt-6 text-center" style="font-size: var(--text-sm);">
-                مهتم تبقى شريك؟ <a href="{% url 'contact_partner' %}" class="fw-bold">تواصل معنا</a>
+                {% trans "Interested in becoming a partner?" %} <a href="{% url 'contact_partner' %}" class="fw-bold">{% trans "Contact us" %}</a>
             </p>
         </div>
     </div>

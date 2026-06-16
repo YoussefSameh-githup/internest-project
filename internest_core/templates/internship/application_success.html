@@ -1,7 +1,7 @@
 {% extends 'internship/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}تم التقديم بنجاح — Internest{% endblock %}
+{% block title %}{% trans "Application sent" %} — Internest{% endblock %}
 
 {% block content %}
 <section class="section">
@@ -11,17 +11,17 @@
                 <i class="bi bi-check-lg" style="font-size: 48px; color: var(--color-success);"></i>
             </div>
 
-            <h1 style="color: var(--color-success);">تم التقديم بنجاح 🎉</h1>
+            <h1 style="color: var(--color-success);">{% trans "Application sent successfully 🎉" %}</h1>
             <p class="text-muted" style="font-size: var(--text-lg); max-width: 480px; margin-inline: auto;">
-                وصل طلبك للمراجعة. هيتم تحويلك للشركة لو ملفك تأهل، وهتوصلك إشعارات بأي تحديث.
+                {% trans "Your application has reached our review queue. If your profile qualifies, it will be forwarded to the company and you'll be notified of any updates." %}
             </p>
 
             <div class="btn-group mt-6" style="justify-content: center;">
                 <a href="{% url 'my_applications' %}" class="btn btn--primary btn--lg">
-                    <i class="bi bi-file-earmark-text"></i> متابعة طلباتي
+                    <i class="bi bi-file-earmark-text"></i> {% trans "Track my applications" %}
                 </a>
                 <a href="{% url 'list' %}" class="btn btn--outline btn--lg">
-                    تصفّح فرص أخرى
+                    {% trans "Browse more opportunities" %}
                 </a>
             </div>
         </div>

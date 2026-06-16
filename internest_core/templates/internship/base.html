@@ -9,13 +9,13 @@
     <meta name="theme-color" content="#0b1e4d">
     <meta name="description" content="Internest - نظام الربط الذكي بين الشركات والطلاب الجامعيين. تدريبات، كورسات، وفرص حقيقية لمستقبلك المهني.">
 
-    <title>{% block title %}Internest — منصة الفرص والتدريب الذكية{% endblock title %}</title>
+    <title>{% block title %}Internest — {% trans "Smart opportunity and internship platform" %}{% endblock title %}</title>
 
     <link rel="icon" type="image/jpeg" href="{% static 'img/internest_logo.jpg' %}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     {% if LANGUAGE_BIDI %}
@@ -44,19 +44,19 @@
             <ul class="nav__links">
                 {% if user.is_authenticated %}
                     {% if has_partner_profile %}
-                        <li><a href="{% url 'partner_dashboard' %}" class="nav__link"><i class="bi bi-grid-1x2"></i> لوحة التحكم</a></li>
-                        <li><a href="{% url 'partner_profile' %}" class="nav__link"><i class="bi bi-building"></i> ملف الشركة</a></li>
+                        <li><a href="{% url 'partner_dashboard' %}" class="nav__link"><i class="bi bi-grid-1x2"></i> {% trans "Dashboard" %}</a></li>
+                        <li><a href="{% url 'partner_profile' %}" class="nav__link"><i class="bi bi-building"></i> {% trans "Company profile" %}</a></li>
                     {% else %}
-                        <li><a href="{% url 'list' %}" class="nav__link"><i class="bi bi-briefcase"></i> التدريبات</a></li>
-                        <li><a href="{% url 'course_list' %}" class="nav__link"><i class="bi bi-mortarboard"></i> الكورسات</a></li>
-                        <li><a href="{% url 'task_list' %}" class="nav__link"><i class="bi bi-trophy"></i> التاسكات</a></li>
-                        <li><a href="{% url 'my_applications' %}" class="nav__link"><i class="bi bi-file-earmark-text"></i> طلباتي</a></li>
-                        <li><a href="{% url 'profile' %}" class="nav__link"><i class="bi bi-person-circle"></i> ملفي</a></li>
+                        <li><a href="{% url 'list' %}" class="nav__link"><i class="bi bi-briefcase"></i> {% trans "Internships" %}</a></li>
+                        <li><a href="{% url 'course_list' %}" class="nav__link"><i class="bi bi-mortarboard"></i> {% trans "Courses" %}</a></li>
+                        <li><a href="{% url 'task_list' %}" class="nav__link"><i class="bi bi-trophy"></i> {% trans "Tasks" %}</a></li>
+                        <li><a href="{% url 'my_applications' %}" class="nav__link"><i class="bi bi-file-earmark-text"></i> {% trans "My applications" %}</a></li>
+                        <li><a href="{% url 'profile' %}" class="nav__link"><i class="bi bi-person-circle"></i> {% trans "My profile" %}</a></li>
                     {% endif %}
                 {% else %}
-                    <li><a href="#features" class="nav__link">المنصة</a></li>
-                    <li><a href="#how-it-works" class="nav__link">كيف نعمل</a></li>
-                    <li><a href="{% url 'contact_partner' %}" class="nav__link">للشركاء</a></li>
+                    <li><a href="#features" class="nav__link">{% trans "Platform" %}</a></li>
+                    <li><a href="#how-it-works" class="nav__link">{% trans "How it works" %}</a></li>
+                    <li><a href="{% url 'contact_partner' %}" class="nav__link">{% trans "For partners" %}</a></li>
                 {% endif %}
             </ul>
 
@@ -158,7 +158,7 @@
                         <span>INTERNEST</span>
                     </a>
                     <p class="footer__tagline">
-                        نظام الربط الذكي بين الطلاب الجامعيين والشركات. نوصلك بفرص تدريب حقيقية، كورسات معتمدة، ومجتمع مهني يبني مستقبلك.
+                        {% trans "Smart matching system between university students and companies. We connect you with real internship opportunities, verified courses, and a professional community that builds your future." %}
                     </p>
                     <div class="footer__socials">
                         <a href="#" class="footer__social" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
@@ -169,39 +169,39 @@
                 </div>
 
                 <div>
-                    <h4 class="footer__heading">للطلاب</h4>
+                    <h4 class="footer__heading">{% trans "For students" %}</h4>
                     <ul class="footer__list">
-                        <li><a href="{% url 'list' %}">تصفح التدريبات</a></li>
-                        <li><a href="{% url 'course_list' %}">الكورسات</a></li>
-                        <li><a href="{% url 'task_list' %}">التاسكات والنقاط</a></li>
-                        <li><a href="{% url 'login_or_signup' %}">إنشاء حساب</a></li>
+                        <li><a href="{% url 'list' %}">{% trans "Browse internships" %}</a></li>
+                        <li><a href="{% url 'course_list' %}">{% trans "Courses" %}</a></li>
+                        <li><a href="{% url 'task_list' %}">{% trans "Tasks & points" %}</a></li>
+                        <li><a href="{% url 'login_or_signup' %}">{% trans "Create account" %}</a></li>
                     </ul>
                 </div>
 
                 <div>
-                    <h4 class="footer__heading">للشركاء</h4>
+                    <h4 class="footer__heading">{% trans "For partners" %}</h4>
                     <ul class="footer__list">
-                        <li><a href="{% url 'contact_partner' %}">انضم كشريك</a></li>
-                        <li><a href="{% url 'partner_login' %}">دخول الشركاء</a></li>
-                        <li><a href="#">دليل الشركة</a></li>
+                        <li><a href="{% url 'contact_partner' %}">{% trans "Join as partner" %}</a></li>
+                        <li><a href="{% url 'partner_login' %}">{% trans "Partner login" %}</a></li>
+                        <li><a href="#">{% trans "Company guide" %}</a></li>
                         <li><a href="mailto:partnerships@internest.com">partnerships@internest.com</a></li>
                     </ul>
                 </div>
 
                 <div>
-                    <h4 class="footer__heading">المنصة</h4>
+                    <h4 class="footer__heading">{% trans "Platform" %}</h4>
                     <ul class="footer__list">
-                        <li><a href="#">عن Internest</a></li>
-                        <li><a href="#">سياسة الخصوصية</a></li>
-                        <li><a href="#">الشروط والأحكام</a></li>
-                        <li><a href="mailto:hello@internest.com">تواصل معنا</a></li>
+                        <li><a href="#">{% trans "About Internest" %}</a></li>
+                        <li><a href="#">{% trans "Privacy policy" %}</a></li>
+                        <li><a href="#">{% trans "Terms & conditions" %}</a></li>
+                        <li><a href="mailto:hello@internest.com">{% trans "Contact us" %}</a></li>
                     </ul>
                 </div>
             </div>
 
             <div class="footer__bottom">
-                <span>© {% now "Y" %} Internest. جميع الحقوق محفوظة.</span>
-                <span>صُمم بكل حب للطلاب العرب 🇪🇬</span>
+                <span>© {% now "Y" %} Internest. {% trans "All rights reserved." %}</span>
+                <span>{% trans "Built with care for ambitious students." %}</span>
             </div>
         </div>
     </footer>

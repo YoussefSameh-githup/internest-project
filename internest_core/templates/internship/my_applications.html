@@ -1,15 +1,15 @@
 {% extends 'internship/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}طلباتي — Internest{% endblock %}
+{% block title %}{% trans "My applications" %} — Internest{% endblock %}
 
 {% block content %}
 
 <section class="page-header">
     <div class="container">
-        <span class="eyebrow"><i class="bi bi-file-earmark-text"></i> طلباتي</span>
-        <h1 class="mt-3">متابعة طلبات التقديم</h1>
-        <p>كل التدريبات اللي قدّمت عليها وحالة كل واحد.</p>
+        <span class="eyebrow"><i class="bi bi-file-earmark-text"></i> {% trans "My applications" %}</span>
+        <h1 class="mt-3">{% trans "Track your applications" %}</h1>
+        <p>{% trans "Every internship you've applied to and its current status." %}</p>
     </div>
 </section>
 
@@ -20,11 +20,11 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>الفرصة</th>
-                            <th>الشركة</th>
-                            <th>تاريخ التقديم</th>
-                            <th>الموعد النهائي</th>
-                            <th>الحالة</th>
+                            <th>{% trans "Opportunity" %}</th>
+                            <th>{% trans "Company" %}</th>
+                            <th>{% trans "Applied on" %}</th>
+                            <th>{% trans "Deadline" %}</th>
+                            <th>{% trans "Status" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -40,11 +40,11 @@
                                 <td>{{ app.internship.deadline|date:"Y/m/d" }}</td>
                                 <td>
                                     {% if app.status == 'محول للشريك' %}
-                                        <span class="status-pill status-pill--approved"><i class="bi bi-check-circle-fill"></i> {{ app.get_status_display }}</span>
+                                        <span class="status-pill status-pill--approved"><i class="bi bi-check-circle-fill"></i> {% trans "Forwarded to partner" %}</span>
                                     {% elif app.status == 'مرفوض' %}
-                                        <span class="status-pill status-pill--rejected"><i class="bi bi-x-circle-fill"></i> {{ app.get_status_display }}</span>
+                                        <span class="status-pill status-pill--rejected"><i class="bi bi-x-circle-fill"></i> {% trans "Rejected" %}</span>
                                     {% else %}
-                                        <span class="status-pill status-pill--pending"><i class="bi bi-hourglass-split"></i> {{ app.get_status_display }}</span>
+                                        <span class="status-pill status-pill--pending"><i class="bi bi-hourglass-split"></i> {% trans "Under review" %}</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -55,10 +55,10 @@
         {% else %}
             <div class="empty-state">
                 <div class="empty-state__icon"><i class="bi bi-inbox"></i></div>
-                <h3>لم تقدّم على أي فرصة بعد</h3>
-                <p>أول ما تقدّم على فرصة، هتلاقيها هنا مع حالتها الحالية.</p>
+                <h3>{% trans "You haven't applied to any opportunity yet" %}</h3>
+                <p>{% trans "As soon as you apply to an opportunity, you'll find it here with its current status." %}</p>
                 <a href="{% url 'list' %}" class="btn btn--primary">
-                    <i class="bi bi-search"></i> تصفّح التدريبات
+                    <i class="bi bi-search"></i> {% trans "Browse internships" %}
                 </a>
             </div>
         {% endif %}

@@ -1,5 +1,5 @@
 {% extends 'internship/base.html' %}
-{% load static %}
+{% load static i18n %}
 
 {% block title %}{{ internship.title }} — {{ internship.partner.company_name }}{% endblock %}
 
@@ -8,21 +8,21 @@
 <section class="page-header">
     <div class="container">
         <a href="{% url 'list' %}" class="btn btn--ghost btn--sm mb-4">
-            <i class="bi bi-arrow-right-short"></i> العودة للقائمة
+            <i class="bi bi-arrow-right-short"></i> {% trans "Back to list" %}
         </a>
         <div style="display: grid; grid-template-columns: 1fr auto; gap: var(--space-6); align-items: start;">
             <div>
                 <div class="flex items-center gap-3 mb-3" style="flex-wrap: wrap;">
-                    {% if internship.is_premium %}<span class="badge badge--accent badge--lg"><i class="bi bi-star-fill"></i> متميز</span>{% endif %}
-                    {% if internship.is_expired %}<span class="badge badge--danger badge--lg">منتهية</span>{% endif %}
-                    {% if not internship.is_expired and internship.is_active %}<span class="badge badge--success badge--lg"><i class="bi bi-check-circle-fill"></i> نشطة</span>{% endif %}
+                    {% if internship.is_premium %}<span class="badge badge--accent badge--lg"><i class="bi bi-star-fill"></i> {% trans "Premium" %}</span>{% endif %}
+                    {% if internship.is_expired %}<span class="badge badge--danger badge--lg">{% trans "Expired" %}</span>{% endif %}
+                    {% if not internship.is_expired and internship.is_active %}<span class="badge badge--success badge--lg"><i class="bi bi-check-circle-fill"></i> {% trans "Active" %}</span>{% endif %}
                 </div>
                 <h1>{{ internship.title }}</h1>
                 <p class="flex items-center gap-2 text-muted mb-0" style="font-size: var(--text-lg);">
                     <i class="bi bi-building"></i>
                     {{ internship.partner.company_name }}
                     {% if internship.partner.is_fully_verified %}
-                        <i class="bi bi-patch-check-fill" style="color: var(--brand-500);" title="حساب موثق"></i>
+                        <i class="bi bi-patch-check-fill" style="color: var(--brand-500);" title="{% trans 'Verified account' %}"></i>
                     {% endif %}
                 </p>
             </div>
@@ -40,26 +40,26 @@
 
             <div class="card">
                 <h3 style="display: flex; align-items: center; gap: var(--space-2);">
-                    <i class="bi bi-file-text" style="color: var(--brand-500);"></i> وصف الفرصة
+                    <i class="bi bi-file-text" style="color: var(--brand-500);"></i> {% trans "Opportunity description" %}
                 </h3>
                 <p style="white-space: pre-line; line-height: 1.85; color: var(--slate-700); margin: 0;">{{ internship.description }}</p>
 
                 <hr>
 
                 <h4 class="mb-4" style="display: flex; align-items: center; gap: var(--space-2);">
-                    <i class="bi bi-info-circle" style="color: var(--brand-500);"></i> معلومات الفرصة
+                    <i class="bi bi-info-circle" style="color: var(--brand-500);"></i> {% trans "Opportunity details" %}
                 </h4>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-5);">
                     <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">الموقع</span>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "Location" %}</span>
                         <p class="fw-bold mt-2 mb-0"><i class="bi bi-geo-alt text-accent"></i> {{ internship.location }}</p>
                     </div>
                     <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">التخصصات المطلوبة</span>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "Required majors" %}</span>
                         <p class="fw-bold mt-2 mb-0"><i class="bi bi-mortarboard text-accent"></i> {{ internship.required_majors }}</p>
                     </div>
                     <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">آخر موعد للتقديم</span>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "Application deadline" %}</span>
                         <p class="fw-bold mt-2 mb-0" style="color: {% if internship.is_expired %}var(--color-danger){% else %}var(--color-success){% endif %};">
                             <i class="bi bi-calendar-event"></i> {{ internship.deadline|date:"Y/m/d" }}
                         </p>
@@ -68,37 +68,37 @@
             </div>
 
             <aside class="card" style="position: sticky; top: calc(var(--navbar-height) + var(--space-4));">
-                <h4 class="mb-4">قدّم على هذه الفرصة</h4>
+                <h4 class="mb-4">{% trans "Apply to this opportunity" %}</h4>
                 {% if not internship.is_expired and internship.is_active %}
                     {% if user.is_authenticated %}
                         <a href="{% url 'apply' internship.id %}" class="btn btn--accent btn--lg btn--block mb-3">
-                            <i class="bi bi-send-fill"></i> قدّم بملفك الموحد
+                            <i class="bi bi-send-fill"></i> {% trans "Apply with your unified profile" %}
                         </a>
                     {% else %}
                         <a href="{% url 'login_or_signup' %}" class="btn btn--primary btn--lg btn--block mb-3">
-                            سجّل أولاً للتقديم
+                            {% trans "Register first to apply" %}
                         </a>
                     {% endif %}
                     <p class="text-muted mb-0" style="font-size: var(--text-sm);">
                         <i class="bi bi-shield-check text-success"></i>
-                        التقديم بملف موحد، بدون رفع CV لكل فرصة لوحدها.
+                        {% trans "Apply with a unified profile — no need to upload a CV for every opportunity." %}
                     </p>
                 {% else %}
                     <div class="alert alert-danger mb-0">
                         <i class="bi bi-x-octagon-fill"></i>
-                        هذه الفرصة لم تعد متاحة للتقديم.
+                        {% trans "This opportunity is no longer accepting applications." %}
                     </div>
                 {% endif %}
 
                 <hr>
 
-                <h5 class="mb-3"><i class="bi bi-building"></i> عن الشركة</h5>
+                <h5 class="mb-3"><i class="bi bi-building"></i> {% trans "About the company" %}</h5>
                 <p class="text-muted" style="font-size: var(--text-sm);">
                     {{ internship.partner.company_name }}
                 </p>
                 {% if internship.partner.official_website %}
                     <a href="{{ internship.partner.official_website }}" target="_blank" rel="noopener" class="btn btn--ghost btn--sm">
-                        <i class="bi bi-link-45deg"></i> الموقع الرسمي
+                        <i class="bi bi-link-45deg"></i> {% trans "Official website" %}
                     </a>
                 {% endif %}
             </aside>

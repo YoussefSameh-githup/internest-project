@@ -1,7 +1,7 @@
 {% extends 'internship/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}نتيجة المهمة — Internest{% endblock %}
+{% block title %}{% trans "Task result" %} — Internest{% endblock %}
 
 {% block content %}
 <section class="section">
@@ -16,25 +16,25 @@
                     <i class="bi bi-trophy-fill" style="font-size: 56px; color: var(--white);"></i>
                 </div>
 
-                <h1>أحسنت! 🎉</h1>
-                <p class="text-muted" style="font-size: var(--text-lg);">أكملت تاسك "{{ task.title }}"</p>
+                <h1>{% trans "Well done! 🎉" %}</h1>
+                <p class="text-muted" style="font-size: var(--text-lg);">{% blocktrans with t=task.title %}You completed the task "{{ t }}"{% endblocktrans %}</p>
 
                 <div style="display: inline-flex; flex-direction: column; align-items: center; padding: var(--space-6) var(--space-12); background: var(--gradient-soft); border: 1px solid var(--brand-100); border-radius: var(--radius-2xl); margin-block: var(--space-6);">
-                    <span class="text-muted" style="font-size: var(--text-sm);">حصلت على</span>
+                    <span class="text-muted" style="font-size: var(--text-sm);">{% trans "You earned" %}</span>
                     <span style="font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, var(--text-6xl)); font-weight: 800; color: var(--color-success); line-height: 1;">
                         {{ score }}
                     </span>
-                    <span class="text-muted" style="font-size: var(--text-sm);">من {{ total_points }} نقطة</span>
+                    <span class="text-muted" style="font-size: var(--text-sm);">{% blocktrans with t=total_points %}out of {{ t }} points{% endblocktrans %}</span>
                 </div>
 
-                <p class="text-muted mb-6">تمت إضافة النقاط لرصيدك وتحديث ترتيبك في الـ Golden List.</p>
+                <p class="text-muted mb-6">{% trans "Points have been added to your balance and your Golden List rank is updated." %}</p>
 
                 <div class="btn-group" style="justify-content: center;">
                     <a href="{% url 'task_list' %}" class="btn btn--accent btn--lg">
-                        <i class="bi bi-arrow-right-circle-fill"></i> تاسك تاني
+                        <i class="bi bi-arrow-right-circle-fill"></i> {% trans "Another task" %}
                     </a>
                     <a href="{% url 'profile' %}" class="btn btn--outline btn--lg">
-                        عرض ملفي
+                        {% trans "View my profile" %}
                     </a>
                 </div>
             </div>

@@ -1,16 +1,16 @@
 {% extends 'internship/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}للشركاء — Internest{% endblock %}
+{% block title %}{% trans "For partners" %} — Internest{% endblock %}
 
 {% block content %}
 <section class="hero" style="padding-block: var(--space-16);">
     <div class="container">
         <div style="max-width: 720px; margin-inline: auto; text-align: center;">
-            <span class="eyebrow hero__eyebrow"><i class="bi bi-building"></i> برنامج الشركاء</span>
-            <h1 class="mt-4">شراكة Internest: بناء مسار مهني مضمون</h1>
+            <span class="eyebrow hero__eyebrow"><i class="bi bi-building"></i> {% trans "Partner program" %}</span>
+            <h1 class="mt-4">{% trans "Internest Partnership: building a guaranteed career path" %}</h1>
             <p class="hero__lead" style="margin-inline: auto;">
-                نقدّم نظام ربط وفرز ذكي يضمن لشركتك أعلى جودة من الطلاب الجامعيين المؤهلين، ويوفر عليك مئات الساعات في الفرز اليدوي.
+                {% trans "We offer a smart matching and screening system that gives your company access to the highest quality of qualified university students, saving you hundreds of hours of manual screening." %}
             </p>
         </div>
     </div>
@@ -21,34 +21,34 @@
         <div class="feature-grid mb-6">
             <div class="feature">
                 <div class="feature__icon"><i class="bi bi-people-fill"></i></div>
-                <h3>طلاب مفرَزون 100%</h3>
-                <p>وصلك بس ملفات الطلاب اللي ملفهم مكتمل بنسبة 100% — لا CVs نص فاضية.</p>
+                <h3>{% trans "100% pre-screened students" %}</h3>
+                <p>{% trans "You only receive student files whose profiles are 100% complete — no half-empty CVs." %}</p>
             </div>
             <div class="feature">
                 <div class="feature__icon"><i class="bi bi-trophy-fill"></i></div>
-                <h3>Golden List</h3>
-                <p>وصول للطلاب اللي عندهم أعلى نقاط أداء من التاسكات والكورسات المعتمدة.</p>
+                <h3>{% trans "Golden List" %}</h3>
+                <p>{% trans "Access the students with the highest performance scores from verified tasks and courses." %}</p>
             </div>
             <div class="feature">
                 <div class="feature__icon"><i class="bi bi-shield-check"></i></div>
-                <h3>تعاقد مباشر آمن</h3>
-                <p>نظام تعاقد رسمي مع توثيق ملف الشريك (KYC) وعلامة موثوق ظاهرة للطلاب.</p>
+                <h3>{% trans "Secure direct contracting" %}</h3>
+                <p>{% trans "An official contracting system with partner KYC verification and a public Verified badge for students." %}</p>
             </div>
         </div>
 
         <div class="card card--brand" style="padding: clamp(40px, 6vw, 64px); text-align: center; border-radius: var(--radius-2xl);">
-            <span class="eyebrow hero__eyebrow"><i class="bi bi-envelope-fill"></i> اطلب الانضمام</span>
-            <h2 style="margin-top: var(--space-4); font-size: clamp(1.75rem, 3vw, var(--text-4xl));">جاهز تبدأ الشراكة؟</h2>
+            <span class="eyebrow hero__eyebrow"><i class="bi bi-envelope-fill"></i> {% trans "Request to join" %}</span>
+            <h2 style="margin-top: var(--space-4); font-size: clamp(1.75rem, 3vw, var(--text-4xl));">{% trans "Ready to start the partnership?" %}</h2>
             <p style="color: rgba(255,255,255,0.85); font-size: var(--text-lg); max-width: 560px; margin-inline: auto; margin-bottom: var(--space-6);">
-                للحصول على كود الشريك السري، تواصل معنا عبر البريد الإلكتروني الرسمي وفريقنا هيرد عليك في ٢٤ ساعة.
+                {% trans "To obtain a secret partner code, reach out to us via the official email and our team will respond within 24 hours." %}
             </p>
 
             <div class="btn-group" style="justify-content: center;">
-                <a href="mailto:partnerships@internest.com?subject=طلب%20كود%20شريك%20جديد%20للمنصة&body=نحن%20[اسم%20الشركة]%20نرغب%20في%20الحصول%20على%20كود%20شريك%20مُعتمد." class="btn btn--accent btn--lg">
+                <a href="mailto:partnerships@internest.com?subject=Partner%20code%20request&body=We%20at%20[company%20name]%20would%20like%20to%20obtain%20a%20verified%20partner%20code." class="btn btn--accent btn--lg">
                     <i class="bi bi-envelope-fill"></i> partnerships@internest.com
                 </a>
                 <a href="{% url 'partner_login' %}" class="btn btn--white btn--lg">
-                    أنا شريك ولدي كود <i class="bi bi-arrow-left-short"></i>
+                    {% trans "I am a partner with a code" %} <i class="bi bi-arrow-left-short"></i>
                 </a>
             </div>
         </div>

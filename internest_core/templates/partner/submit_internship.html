@@ -1,7 +1,7 @@
 {% extends 'internship/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}تقديم فرصة تدريب — Internest{% endblock %}
+{% block title %}{% trans "Submit internship opportunity" %} — Internest{% endblock %}
 
 {% block extra_head %}
 <script>
@@ -22,11 +22,11 @@
 <section class="page-header">
     <div class="container">
         <a href="{% url 'partner_submit_choose' %}" class="btn btn--ghost btn--sm mb-4">
-            <i class="bi bi-arrow-right-short"></i> العودة
+            <i class="bi bi-arrow-right-short"></i> {% trans "Back" %}
         </a>
-        <span class="eyebrow"><i class="bi bi-briefcase"></i> فرصة تدريب جديدة</span>
-        <h1 class="mt-3">قدّم فرصة تدريب للمراجعة</h1>
-        <p>طلبك هيراجع من فريق Internest قبل ما يظهر للطلاب.</p>
+        <span class="eyebrow"><i class="bi bi-briefcase"></i> {% trans "New internship opportunity" %}</span>
+        <h1 class="mt-3">{% trans "Submit an internship opportunity for review" %}</h1>
+        <p>{% trans "Your submission is reviewed by the Internest team before it goes live to students." %}</p>
     </div>
 </section>
 
@@ -57,7 +57,7 @@
                         <div class="form-group">
                             <label for="{{ form.deadline.id_for_label }}" class="form-label">{{ form.deadline.label }}</label>
                             {{ form.deadline }}
-                            <small class="form-help">المدة بتتحسب تلقائياً من تاريخ النشر.</small>
+                            <small class="form-help">{% trans "Duration is computed automatically from the publish date." %}</small>
                             {% if form.deadline.errors %}<div class="form-error">{{ form.deadline.errors|striptags }}</div>{% endif %}
                         </div>
                     </div>
@@ -65,19 +65,19 @@
                     <div class="form-group">
                         <label for="{{ form.required_majors.id_for_label }}" class="form-label">{{ form.required_majors.label }}</label>
                         {{ form.required_majors }}
-                        <small class="form-help">مثال: CS, Engineering, Marketing</small>
+                        <small class="form-help">{% trans "Example: CS, Engineering, Marketing" %}</small>
                         {% if form.required_majors.errors %}<div class="form-error">{{ form.required_majors.errors|striptags }}</div>{% endif %}
                     </div>
 
                     <div class="form-group">
                         <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
                         {{ form.description }}
-                        <small class="form-help">اكتب وصف واضح للمسؤوليات والمتطلبات. التفاصيل بتجذب طلاب أحسن.</small>
+                        <small class="form-help">{% trans "Write a clear description of responsibilities and requirements. Details attract better students." %}</small>
                         {% if form.description.errors %}<div class="form-error">{{ form.description.errors|striptags }}</div>{% endif %}
                     </div>
 
                     <button type="submit" class="btn btn--accent btn--lg mt-4">
-                        <i class="bi bi-send-fill"></i> إرسال للمراجعة
+                        <i class="bi bi-send-fill"></i> {% trans "Submit for review" %}
                     </button>
                 </form>
             </div>

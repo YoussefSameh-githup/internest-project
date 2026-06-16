@@ -1,7 +1,7 @@
 {% extends 'internship/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}إنشاء حساب جديد — Internest{% endblock %}
+{% block title %}{% trans "Create a new account" %} — Internest{% endblock %}
 
 {% block content %}
 <div class="auth-shell">
@@ -15,12 +15,12 @@
         </div>
 
         <div>
-            <span class="eyebrow hero__eyebrow"><i class="bi bi-stars"></i> 30 ثانية وحسابك جاهز</span>
+            <span class="eyebrow hero__eyebrow"><i class="bi bi-stars"></i> {% trans "30 seconds and you're in" %}</span>
             <h1 style="color: var(--white); font-size: clamp(1.75rem, 3vw, var(--text-4xl)); margin-top: var(--space-4);">
-                مكانك في عالم الفرص في انتظارك
+                {% trans "Your place in the world of opportunities is waiting" %}
             </h1>
             <p style="color: rgba(255,255,255,0.85); font-size: var(--text-lg); max-width: 380px;">
-                ملف موحد، مئات الفرص، كورسات معتمدة، ونقاط بترفعك في الـ Golden List.
+                {% trans "Unified profile, hundreds of opportunities, verified courses, and points that lift you up the Golden List." %}
             </p>
         </div>
 
@@ -29,8 +29,8 @@
 
     <div class="auth-shell__form">
         <div class="auth-shell__inner">
-            <h2>إنشاء حساب جديد 🚀</h2>
-            <p class="text-muted mb-6">انضم لأكبر مجتمع طلابي مهني في مصر.</p>
+            <h2>{% trans "Create a new account 🚀" %}</h2>
+            <p class="text-muted mb-6">{% trans "Join the largest student professional community in the region." %}</p>
 
             <form method="post" class="form">
                 {% csrf_token %}
@@ -45,12 +45,12 @@
                 {% endfor %}
 
                 <button type="submit" class="btn btn--primary btn--lg btn--block">
-                    <i class="bi bi-person-plus-fill"></i> إنشاء الحساب
+                    <i class="bi bi-person-plus-fill"></i> {% trans "Create account" %}
                 </button>
             </form>
 
             <p class="text-muted mt-6 text-center" style="font-size: var(--text-sm);">
-                عندك حساب بالفعل؟ <a href="{% url 'login' %}" class="fw-bold">سجّل الدخول</a>
+                {% trans "Already have an account?" %} <a href="{% url 'login' %}" class="fw-bold">{% trans "Sign in" %}</a>
             </p>
         </div>
     </div>

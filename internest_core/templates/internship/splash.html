@@ -1,7 +1,7 @@
 {% extends 'internship/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}مرحباً بك في Internest{% endblock %}
+{% block title %}{% trans "Welcome to Internest" %}{% endblock %}
 
 {% block content %}
 <section class="section" style="min-height: 70vh; display: flex; align-items: center;">
@@ -9,37 +9,37 @@
         <div class="text-center" style="max-width: 720px; margin-inline: auto;">
             <img src="{% static 'img/internest_logo.jpg' %}" alt="Internest" class="mb-5" style="height: 96px; width: 96px; border-radius: var(--radius-xl); margin-inline: auto; box-shadow: var(--shadow-lg);">
 
-            <span class="eyebrow eyebrow--soft"><i class="bi bi-stars"></i> مرحباً بك في Internest</span>
+            <span class="eyebrow eyebrow--soft"><i class="bi bi-stars"></i> {% trans "Welcome to Internest" %}</span>
 
             <h1 class="mt-4" style="font-size: clamp(2rem, 4vw, var(--text-5xl));">
-                ابدأ مسيرتك المهنية من <span style="background: var(--gradient-accent); -webkit-background-clip: text; background-clip: text; color: transparent;">مكان واحد</span>
+                {% trans "Start your career from" %} <span style="background: var(--gradient-accent); -webkit-background-clip: text; background-clip: text; color: transparent;">{% trans "one place" %}</span>
             </h1>
 
             <p class="text-muted mb-6" style="font-size: var(--text-lg);">
-                نظام الربط الذكي بين الطلاب الجامعيين والشركات. اختر مسارك للمتابعة:
+                {% trans "Smart matching system between university students and companies. Choose your path to continue:" %}
             </p>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); margin-top: var(--space-8);">
                 <div class="card card--hover">
                     <div class="feature__icon" style="background: var(--brand-100); color: var(--brand-700);"><i class="bi bi-mortarboard"></i></div>
-                    <h4>أنا طالب</h4>
-                    <p class="text-muted">تصفح التدريبات والكورسات وقدّم بملفك الموحد.</p>
+                    <h4>{% trans "I am a student" %}</h4>
+                    <p class="text-muted">{% trans "Browse internships and courses and apply with your unified profile." %}</p>
                     <a href="{% url 'login_or_signup' %}" class="btn btn--primary btn--block">
-                        ابدأ رحلتي
+                        {% trans "Start my journey" %}
                     </a>
                 </div>
                 <div class="card card--hover">
                     <div class="feature__icon" style="background: var(--accent-100); color: var(--accent-700);"><i class="bi bi-building"></i></div>
-                    <h4>أنا شريك</h4>
-                    <p class="text-muted">شركة أو جامعة تبحث عن مواهب مفرَزة وموثوقة.</p>
+                    <h4>{% trans "I am a partner" %}</h4>
+                    <p class="text-muted">{% trans "A company or university looking for pre-screened, verified talent." %}</p>
                     <a href="{% url 'contact_partner' %}" class="btn btn--accent btn--block">
-                        تواصل بخصوص الشراكة
+                        {% trans "Contact us about partnership" %}
                     </a>
                 </div>
             </div>
 
             <p class="mt-6" style="font-size: var(--text-sm); color: var(--color-muted);">
-                لديك حساب بالفعل؟ <a href="{% url 'login' %}" class="fw-bold">سجّل الدخول</a>
+                {% trans "Already have an account?" %} <a href="{% url 'login' %}" class="fw-bold">{% trans "Sign in" %}</a>
             </p>
         </div>
     </div>
