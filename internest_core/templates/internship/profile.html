@@ -16,6 +16,14 @@
 <section class="section-sm">
     <div class="container">
 
+        {% if profile.has_any_pending_email_verification %}
+            <div class="alert alert-warning fade-up mb-5">
+                <strong><i class="bi bi-envelope-exclamation-fill"></i> Email verification required.</strong>
+                We sent a 6-digit code to your unverified email(s).
+                <a href="{% url 'verify_email' %}" class="fw-bold" style="margin-inline-start: var(--space-2);">Verify now ➔</a>
+            </div>
+        {% endif %}
+
         <div class="profile-summary mb-5 fade-up">
             <div style="text-align: center;">
                 <div class="profile-avatar">
@@ -39,12 +47,28 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4);">
                     <div>
                         <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">البريد الشخصي</span>
-                        <p class="fw-bold mt-2 mb-0">{{ profile.personal_email|default:"-" }}</p>
+                        <p class="fw-bold mt-2 mb-0">
+                            {{ profile.personal_email|default:"-" }}
+                            {% if profile.personal_email %}
+                                {% if profile.is_personal_email_verified %}
+                                    <span class="badge badge--success" title="Verified"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                                {% else %}
+                                    <span class="badge badge--accent" title="Not verified"><i class="bi bi-exclamation-circle-fill"></i> Unverified</span>
+                                {% endif %}
+                            {% endif %}
+                        </p>
                     </div>
                     {% if profile.university_email %}
                     <div>
                         <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">البريد الجامعي</span>
-                        <p class="fw-bold mt-2 mb-0">{{ profile.university_email }}</p>
+                        <p class="fw-bold mt-2 mb-0">
+                            {{ profile.university_email }}
+                            {% if profile.is_university_email_verified %}
+                                <span class="badge badge--success"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                            {% else %}
+                                <span class="badge badge--accent"><i class="bi bi-exclamation-circle-fill"></i> Unverified</span>
+                            {% endif %}
+                        </p>
                     </div>
                     {% endif %}
                     <div>

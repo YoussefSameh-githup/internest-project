@@ -1,0 +1,62 @@
+{% extends 'internship/base.html' %}
+{% load static %}
+
+{% block title %}Verify your email — Internest{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container-narrow">
+        <div class="card fade-up" style="padding: var(--space-10);">
+            <div class="text-center mb-5">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--brand-100); display: inline-flex; align-items: center; justify-content: center; margin-bottom: var(--space-4);">
+                    <i class="bi bi-envelope-check-fill" style="font-size: 36px; color: var(--brand-700);"></i>
+                </div>
+                <h1>Verify your email</h1>
+                <p class="text-muted">
+                    For your security, we need to confirm the email addresses on your Internest account.
+                    Enter the 6-digit code we sent you.
+                </p>
+            </div>
+
+            <form method="POST" class="form">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label">Which email are you verifying?</label>
+                    <select name="email_type" class="form-control">
+                        {% for code, email, label in pending %}
+                            <option value="{{ code }}" {% if form.email_type.value == code %}selected{% endif %}>
+                                {{ label }} — {{ email }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.code.id_for_label }}" class="form-label">6-digit code</label>
+                    {{ form.code }}
+                    {% if form.code.errors %}<div class="form-error">{{ form.code.errors|striptags }}</div>{% endif %}
+                </div>
+
+                <button type="submit" class="btn btn--primary btn--lg btn--block">
+                    <i class="bi bi-check-circle-fill"></i> Verify
+                </button>
+            </form>
+
+            <div class="divider">Didn't receive it?</div>
+
+            <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+                {% for code, email, label in pending %}
+                    <a href="{% url 'resend_verification' code %}" class="btn btn--ghost btn--block">
+                        <i class="bi bi-arrow-clockwise"></i> Resend code to {{ label|lower }} ({{ email }})
+                    </a>
+                {% endfor %}
+            </div>
+
+            <p class="text-muted mt-6 text-center" style="font-size: var(--text-sm);">
+                Codes expire after 30 minutes. After 5 incorrect attempts, request a new one.
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -9,6 +9,10 @@ urlpatterns = [
     # 2. Student auth (signup is mounted at the project level)
     path('accounts/login-or-signup/', views.login_or_signup_view, name='login_or_signup'),
 
+    # Email verification
+    path('accounts/verify-email/', views.verify_email_view, name='verify_email'),
+    path('accounts/verify-email/resend/<str:email_type>/', views.resend_verification_view, name='resend_verification'),
+
     # 3. صفحات الطلاب
     path('list/', views.internship_list, name='list'),
     

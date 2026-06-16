@@ -1,12 +1,17 @@
 import logging
-from decimal import Decimal, InvalidOperation
+import os
+from decimal import Decimal
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError, transaction
-from django.contrib.auth import authenticate, login, logout
+from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.core.mail import EmailMultiAlternatives
+from django.db import IntegrityError, transaction
 from django.db.models import F
+from django.http import FileResponse, Http404, HttpResponseForbidden
+from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string
 from django.utils import timezone
 
 from .models import (
@@ -15,15 +20,67 @@ from .models import (
     PartnerApplicantData,
     GamificationTask, TaskAnswer, StudentTaskRecord,
     DiscountCode, StudentEnrollment,
+    EmailVerification,
 )
 from .forms import (
     ProfileForm, PartnerInternshipForm, PartnerCourseForm,
     PartnerProfileEditForm,
     TaskQuizForm,
     CustomStudentSignupForm,
+    OTPVerificationForm,
 )
 
 logger = logging.getLogger(__name__)
+
+
+# -------------------------------------------------------------------
+# Email verification helpers
+# -------------------------------------------------------------------
+def _send_verification_email(user, otp: EmailVerification) -> None:
+    """Send a professional English email containing the OTP code."""
+    label = "personal" if otp.email_type == EmailVerification.EMAIL_TYPE_PERSONAL else "university"
+    subject = f"Internest — Verify your {label} email"
+    context = {
+        "user": user,
+        "code": otp.code,
+        "email_type_label": label.title(),
+        "expires_minutes": int((otp.expires_at - timezone.now()).total_seconds() // 60) or 30,
+    }
+    html_body = render_to_string("emails/verification_email.html", context)
+    text_body = render_to_string("emails/verification_email.txt", context)
+    msg = EmailMultiAlternatives(
+        subject=subject,
+        body=text_body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[otp.email],
+    )
+    msg.attach_alternative(html_body, "text/html")
+    try:
+        msg.send(fail_silently=False)
+    except Exception:
+        logger.exception("Failed to send verification email to %s", otp.email)
+
+
+def _issue_and_send_verification(user, email: str, email_type: str) -> None:
+    if not email:
+        return
+    otp = EmailVerification.issue(user=user, email=email, email_type=email_type)
+    _send_verification_email(user, otp)
+
+
+# -------------------------------------------------------------------
+# Protected media view (works with DEBUG=False)
+# -------------------------------------------------------------------
+@login_required
+def serve_protected_media(request, filepath: str):
+    """Stream user-uploaded files. Login required; path traversal blocked."""
+    media_root = os.path.realpath(settings.MEDIA_ROOT)
+    absolute = os.path.realpath(os.path.join(media_root, filepath))
+    if not absolute.startswith(media_root + os.sep) and absolute != media_root:
+        raise Http404()
+    if not os.path.isfile(absolute):
+        raise Http404()
+    return FileResponse(open(absolute, "rb"))
 
 
 def _get_student_profile(user):
@@ -56,12 +113,26 @@ def get_user_context(request):
 @login_required
 def home_redirect_view(request):
     """Send the user to their natural homepage based on account type."""
+    # Refresh the session expiry on every visit (sliding window).
+    request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+
     if _get_partner_profile(request.user) is not None:
         return redirect("partner_dashboard")
+
+    profile = _get_student_profile(request.user)
+    if profile is not None and profile.has_any_pending_email_verification:
+        return redirect("verify_email")
     return redirect("list")
 
 
 def landing_view(request):
+    # Authenticated users skip the landing page entirely and go to their workspace.
+    if request.user.is_authenticated:
+        if _get_partner_profile(request.user) is not None:
+            return redirect("partner_dashboard")
+        if _get_student_profile(request.user) is not None:
+            return redirect("list")
+        return redirect("home_redirect")
     return render(request, "internship/landing_page.html", get_user_context(request))
 
 
@@ -70,20 +141,108 @@ def login_or_signup_view(request):
 
 
 def signup(request):
+    if request.user.is_authenticated:
+        return redirect("home_redirect")
+
     if request.method == "POST":
         form = CustomStudentSignupForm(request.POST)
         if form.is_valid():
             user = form.save()
             personal_email = form.cleaned_data["personal_email"]
             StudentProfile.objects.create(user=user, personal_email=personal_email)
+
+            # Persistent session for the new user.
             login(request, user)
-            messages.success(request, "تم إنشاء الحساب بنجاح! أكمل ملفك الشخصي الآن.")
-            return redirect("profile")
+            request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+
+            # Trigger OTP to the personal email immediately.
+            _issue_and_send_verification(user, personal_email, EmailVerification.EMAIL_TYPE_PERSONAL)
+
+            messages.success(
+                request,
+                "Account created. We sent a verification code to your personal email.",
+            )
+            return redirect("verify_email")
     else:
         form = CustomStudentSignupForm()
     context = get_user_context(request)
     context["form"] = form
     return render(request, "registration/signup.html", context)
+
+
+@login_required
+def verify_email_view(request):
+    """Display pending OTPs for the user and accept code submissions."""
+    profile = _get_student_profile(request.user)
+    if profile is None:
+        messages.error(request, "Email verification is only available for student accounts.")
+        return redirect("home_redirect")
+
+    pending = []
+    if profile.personal_email and not profile.is_personal_email_verified:
+        pending.append((EmailVerification.EMAIL_TYPE_PERSONAL, profile.personal_email, "Personal email"))
+    if profile.university_email and not profile.is_university_email_verified:
+        pending.append((EmailVerification.EMAIL_TYPE_UNIVERSITY, profile.university_email, "University email"))
+
+    if not pending:
+        messages.success(request, "All your emails are already verified.")
+        return redirect("profile")
+
+    if request.method == "POST":
+        form = OTPVerificationForm(request.POST)
+        if form.is_valid():
+            code = form.cleaned_data["code"]
+            email_type = form.cleaned_data["email_type"]
+
+            otp = (
+                EmailVerification.objects
+                .filter(user=request.user, email_type=email_type, verified_at__isnull=True)
+                .order_by("-created_at")
+                .first()
+            )
+            if otp is None:
+                messages.error(request, "No active verification code. Request a new one.")
+            elif otp.is_expired:
+                messages.error(request, "This code has expired. Please request a new one.")
+            elif otp.attempts >= 5:
+                messages.error(request, "Too many incorrect attempts. Please request a new code.")
+            elif otp.code != code:
+                otp.attempts = F("attempts") + 1
+                otp.save(update_fields=["attempts"])
+                messages.error(request, "Incorrect code. Please try again.")
+            else:
+                otp.mark_verified()
+                if email_type == EmailVerification.EMAIL_TYPE_PERSONAL:
+                    profile.personal_email_verified_at = timezone.now()
+                else:
+                    profile.university_email_verified_at = timezone.now()
+                profile.save(update_fields=[
+                    "personal_email_verified_at", "university_email_verified_at",
+                ])
+                messages.success(request, "Email verified successfully ✅")
+                return redirect("verify_email")
+    else:
+        form = OTPVerificationForm(initial={"email_type": pending[0][0]})
+
+    context = get_user_context(request)
+    context.update({"form": form, "pending": pending, "profile": profile})
+    return render(request, "registration/verify_email.html", context)
+
+
+@login_required
+def resend_verification_view(request, email_type: str):
+    if email_type not in (EmailVerification.EMAIL_TYPE_PERSONAL, EmailVerification.EMAIL_TYPE_UNIVERSITY):
+        return HttpResponseForbidden()
+    profile = _get_student_profile(request.user)
+    if profile is None:
+        return redirect("home_redirect")
+    email = profile.personal_email if email_type == EmailVerification.EMAIL_TYPE_PERSONAL else profile.university_email
+    if not email:
+        messages.error(request, "Add the email to your profile first.")
+        return redirect("profile")
+    _issue_and_send_verification(request.user, email, email_type)
+    messages.success(request, f"A new verification code was sent to {email}.")
+    return redirect("verify_email")
 
 
 def contact_partner_view(request):
@@ -186,11 +345,29 @@ def profile_view(request):
 
     profile, _ = StudentProfile.objects.get_or_create(user=request.user)
     if request.method == "POST":
+        old_personal = profile.personal_email
+        old_university = profile.university_email
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             profile = form.save()
+            # Trigger OTP when an email changes; reset verified flag on that slot.
+            if (profile.personal_email or "").lower() != (old_personal or "").lower():
+                profile.personal_email_verified_at = None
+                profile.save(update_fields=["personal_email_verified_at"])
+                _issue_and_send_verification(
+                    request.user, profile.personal_email, EmailVerification.EMAIL_TYPE_PERSONAL,
+                )
+            if (profile.university_email or "").lower() != (old_university or "").lower():
+                profile.university_email_verified_at = None
+                profile.save(update_fields=["university_email_verified_at"])
+                if profile.university_email:
+                    _issue_and_send_verification(
+                        request.user, profile.university_email, EmailVerification.EMAIL_TYPE_UNIVERSITY,
+                    )
             profile.calculate_completion()
             messages.success(request, "تم تحديث ملفك الشخصي بنجاح!")
+            if profile.has_any_pending_email_verification:
+                return redirect("verify_email")
             return redirect("profile")
     else:
         form = ProfileForm(instance=profile)
@@ -208,6 +385,9 @@ def apply_to_internship(request, internship_id):
         return redirect("landing")
 
     internship = get_object_or_404(Internship, id=internship_id, is_active=True)
+    if not profile.is_personal_email_verified:
+        messages.warning(request, "Please verify your personal email before applying.")
+        return redirect("verify_email")
     if profile.profile_completion_score < 100:
         return redirect("apply_error", internship_id=internship_id)
 
