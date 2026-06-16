@@ -108,12 +108,23 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGES = [
     ("ar", _("Arabic")),
     ("en", _("English")),
+    ("de", _("German")),
+    ("fr", _("French")),
 ]
 LOCALE_PATHS = [BASE_DIR / "locale"]
 LANGUAGE_CODE = "ar"
 TIME_ZONE = "Africa/Cairo"
 USE_I18N = True
+USE_L10N = True
 USE_TZ = True
+LANGUAGE_COOKIE_NAME = "internest_lang"
+LANGUAGE_COOKIE_AGE = 60 * 60 * 24 * 365  # one year
+
+# --- (3b) Session persistence: stay logged in across tab/browser closes ---
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30          # 30 days
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = True               # sliding expiry on every request
+SESSION_COOKIE_NAME = "internest_sessionid"
 
 # --- (4) Static / Media ---
 STATIC_URL = "/static/"
@@ -131,7 +142,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- (5) Auth redirects ---
-LOGIN_REDIRECT_URL = "list"
+LOGIN_REDIRECT_URL = "home_redirect"
 LOGIN_URL = "login_or_signup"
 LOGOUT_REDIRECT_URL = "landing"
 

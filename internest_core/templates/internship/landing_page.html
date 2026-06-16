@@ -1,7 +1,7 @@
 {% extends 'internship/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Internest — رحلتك المهنية تبدأ من هنا{% endblock %}
+{% block title %}Internest — {% trans "Your career journey starts here" %}{% endblock %}
 
 {% block content %}
 
@@ -24,26 +24,11 @@
 
                 <div class="hero__cta">
                     <a href="{% url 'login_or_signup' %}" class="btn btn--accent btn--lg">
-                        أنشئ حسابك مجاناً <i class="bi bi-arrow-left-short"></i>
+                        {% trans "Create your free account" %} <i class="bi bi-arrow-left-short"></i>
                     </a>
                     <a href="#how-it-works" class="btn btn--white btn--lg">
-                        <i class="bi bi-play-circle"></i> شوف إزاي بنشتغل
+                        <i class="bi bi-play-circle"></i> {% trans "How it works" %}
                     </a>
-                </div>
-
-                <div class="hero__stats">
-                    <div>
-                        <div class="hero__stat-value">+50</div>
-                        <div class="hero__stat-label">شركة وجامعة شريكة</div>
-                    </div>
-                    <div>
-                        <div class="hero__stat-value">+200</div>
-                        <div class="hero__stat-label">فرصة تدريب وكورس</div>
-                    </div>
-                    <div>
-                        <div class="hero__stat-value">+1.5K</div>
-                        <div class="hero__stat-label">طالب نشط على المنصة</div>
-                    </div>
                 </div>
             </div>
 

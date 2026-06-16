@@ -1,6 +1,8 @@
-{% load static %}
+{% load static i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +18,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+    {% if LANGUAGE_BIDI %}
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+    {% else %}
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    {% endif %}
 
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
@@ -55,23 +61,49 @@
             </ul>
 
             <div class="nav__cta">
+                {# Language switcher #}
+                <div class="lang-switcher" id="langSwitcher">
+                    <button type="button" class="lang-switcher__toggle" aria-haspopup="true" aria-expanded="false">
+                        <i class="bi bi-globe2"></i>
+                        <span>{{ LANGUAGE_CODE|upper }}</span>
+                        <i class="bi bi-chevron-down" style="font-size: 12px;"></i>
+                    </button>
+                    <div class="lang-switcher__menu" role="menu">
+                        {% get_available_languages as LANGUAGES %}
+                        {% for lang_code, lang_name in LANGUAGES %}
+                            <form action="{% url 'set_language' %}" method="post" style="margin: 0;">
+                                {% csrf_token %}
+                                <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                <input name="language" type="hidden" value="{{ lang_code }}">
+                                <button type="submit"
+                                        class="lang-switcher__option {% if lang_code == LANGUAGE_CODE %}is-active{% endif %}"
+                                        role="menuitem">
+                                    <span class="lang-switcher__code">{{ lang_code|upper }}</span>
+                                    <span class="lang-switcher__name">{{ lang_name }}</span>
+                                    {% if lang_code == LANGUAGE_CODE %}<i class="bi bi-check2" style="margin-inline-start: auto;"></i>{% endif %}
+                                </button>
+                            </form>
+                        {% endfor %}
+                    </div>
+                </div>
+
                 {% if user.is_authenticated %}
                     {% if has_partner_profile %}
                         <a href="{% url 'partner_submit_choose' %}" class="btn btn--accent btn--sm">
-                            <i class="bi bi-plus-lg"></i> إضافة محتوى
+                            <i class="bi bi-plus-lg"></i> {% trans "Add content" %}
                         </a>
                     {% endif %}
                     <a href="{% url 'logout' %}" class="btn btn--ghost btn--sm">
-                        <i class="bi bi-box-arrow-right"></i> خروج
+                        <i class="bi bi-box-arrow-right"></i> {% trans "Logout" %}
                     </a>
                 {% else %}
-                    <a href="{% url 'partner_login' %}" class="btn btn--ghost btn--sm">دخول الشركاء</a>
+                    <a href="{% url 'partner_login' %}" class="btn btn--ghost btn--sm">{% trans "Partner login" %}</a>
                     <a href="{% url 'login_or_signup' %}" class="btn btn--primary btn--sm">
-                        ابدأ مجاناً <i class="bi bi-arrow-left-short"></i>
+                        {% trans "Get started" %} <i class="bi bi-arrow-left-short"></i>
                     </a>
                 {% endif %}
 
-                <button class="nav__toggle" id="navToggle" aria-label="فتح القائمة">
+                <button class="nav__toggle" id="navToggle" aria-label="{% trans 'Open menu' %}">
                     <i class="bi bi-list" style="font-size: 24px;"></i>
                 </button>
             </div>
@@ -195,6 +227,21 @@
             if (!nav || !toggle) return;
             toggle.addEventListener('click', function() {
                 nav.classList.toggle('is-open');
+            });
+        })();
+
+        // Language switcher dropdown
+        (function() {
+            var sw = document.getElementById('langSwitcher');
+            if (!sw) return;
+            var btn = sw.querySelector('.lang-switcher__toggle');
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                sw.classList.toggle('is-open');
+                btn.setAttribute('aria-expanded', sw.classList.contains('is-open'));
+            });
+            document.addEventListener('click', function(e) {
+                if (!sw.contains(e.target)) sw.classList.remove('is-open');
             });
         })();
 

@@ -1,0 +1,46 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Internest 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-17 00:00+0000\n"
+"PO-Revision-Date: 2026-06-17 00:00+0000\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Arabic"
+msgstr "Arabisch"
+
+msgid "English"
+msgstr "Englisch"
+
+msgid "German"
+msgstr "Deutsch"
+
+msgid "French"
+msgstr "Französisch"
+
+msgid "Get started"
+msgstr "Loslegen"
+
+msgid "Partner login"
+msgstr "Partner-Login"
+
+msgid "Logout"
+msgstr "Abmelden"
+
+msgid "Add content"
+msgstr "Inhalt hinzufügen"
+
+msgid "Open menu"
+msgstr "Menü öffnen"
+
+msgid "Create your free account"
+msgstr "Kostenloses Konto erstellen"
+
+msgid "How it works"
+msgstr "So funktioniert's"
+
+msgid "Your career journey starts here"
+msgstr "Hier beginnt deine Karriere"
