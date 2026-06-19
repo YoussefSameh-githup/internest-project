@@ -68,6 +68,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Internest: lock unverified students on the verify-email page.
+    "internest_core.middleware.EmailVerificationGateMiddleware",
 ]
 
 ROOT_URLCONF = "internest_app_project.urls"
@@ -146,17 +148,24 @@ LOGIN_REDIRECT_URL = "home_redirect"
 LOGIN_URL = "login_or_signup"
 LOGOUT_REDIRECT_URL = "landing"
 
-# --- (6) Email ---
-# Use console backend by default to avoid leaking creds in dev / tests.
+# =========================================================================
+# (6) Email (native Django SMTP). Production reads creds from env vars set
+# in the WSGI file (or shell). Local DEBUG falls back to the console
+# backend so a missing API key does not block dev.
+# Compatible with SendGrid, Mailgun, Postmark, Amazon SES, Gmail, etc.
+# =========================================================================
 EMAIL_BACKEND = os.environ.get(
     "DJANGO_EMAIL_BACKEND",
-    "django.core.mail.backends.console.EmailBackend",
+    "django.core.mail.backends.console.EmailBackend" if DEBUG
+    else "django.core.mail.backends.smtp.EmailBackend",
 )
 EMAIL_HOST = os.environ.get("DJANGO_EMAIL_HOST", "smtp.sendgrid.net")
 EMAIL_PORT = int(os.environ.get("DJANGO_EMAIL_PORT", "587"))
 EMAIL_USE_TLS = env_bool("DJANGO_EMAIL_USE_TLS", default=True)
+EMAIL_USE_SSL = env_bool("DJANGO_EMAIL_USE_SSL", default=False)  # mutually exclusive with TLS
 EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER", "apikey")
 EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD", "")
+EMAIL_TIMEOUT = int(os.environ.get("DJANGO_EMAIL_TIMEOUT", "20"))
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DJANGO_DEFAULT_FROM_EMAIL",
     "internest.opportunities@gmail.com",

@@ -6,14 +6,13 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.core.mail import EmailMultiAlternatives
 from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
-from django.template.loader import render_to_string
 from django.utils import timezone
 
+from .email_helpers import issue_and_send_verification as _issue_and_send_verification
 from .models import (
     Internship, StudentProfile, Application,
     PartnerProfile, PartnerInternshipSubmission, PartnerCourseSubmission,
@@ -31,41 +30,6 @@ from .forms import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-# -------------------------------------------------------------------
-# Email verification helpers
-# -------------------------------------------------------------------
-def _send_verification_email(user, otp: EmailVerification) -> None:
-    """Send a professional English email containing the OTP code."""
-    label = "personal" if otp.email_type == EmailVerification.EMAIL_TYPE_PERSONAL else "university"
-    subject = f"Internest — Verify your {label} email"
-    context = {
-        "user": user,
-        "code": otp.code,
-        "email_type_label": label.title(),
-        "expires_minutes": int((otp.expires_at - timezone.now()).total_seconds() // 60) or 30,
-    }
-    html_body = render_to_string("emails/verification_email.html", context)
-    text_body = render_to_string("emails/verification_email.txt", context)
-    msg = EmailMultiAlternatives(
-        subject=subject,
-        body=text_body,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[otp.email],
-    )
-    msg.attach_alternative(html_body, "text/html")
-    try:
-        msg.send(fail_silently=False)
-    except Exception:
-        logger.exception("Failed to send verification email to %s", otp.email)
-
-
-def _issue_and_send_verification(user, email: str, email_type: str) -> None:
-    if not email:
-        return
-    otp = EmailVerification.issue(user=user, email=email, email_type=email_type)
-    _send_verification_email(user, otp)
 
 
 # -------------------------------------------------------------------

@@ -3,6 +3,10 @@
 
 {% block title %}Verify your email — Internest{% endblock %}
 
+{# Strict verification page: hide the global navbar so unverified users
+   cannot reach internships, profile, dashboard, etc. via nav links. #}
+{% block top_nav %}{% endblock %}
+
 {% block content %}
 <section class="section">
     <div class="container-narrow">

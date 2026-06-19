@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.contrib.auth.signals import user_logged_in
 from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
 from django.db.models.signals import post_save
@@ -8,7 +9,7 @@ from django.dispatch import receiver
 from django.template.loader import render_to_string
 from django.urls import reverse
 
-from .models import Internship, StudentProfile
+from .models import EmailVerification, Internship, StudentProfile
 
 logger = logging.getLogger(__name__)
 
@@ -69,3 +70,34 @@ def send_new_internship_notification(sender, instance, created, **kwargs):
         )
     except Exception:
         logger.exception("Failed to send new-internship notification")
+
+
+@receiver(user_logged_in)
+def re_verify_emails_on_login(sender, request, user, **kwargs):
+    """Every login resets verified flags + issues fresh OTPs so the student
+    must re-confirm ownership of their personal/university emails."""
+    from .email_helpers import issue_and_send_verification  # local: avoid circular import
+
+    try:
+        profile = user.studentprofile
+    except StudentProfile.DoesNotExist:
+        return
+
+    touched = False
+    if profile.personal_email and profile.personal_email_verified_at is not None:
+        profile.personal_email_verified_at = None
+        touched = True
+    if profile.university_email and profile.university_email_verified_at is not None:
+        profile.university_email_verified_at = None
+        touched = True
+
+    if touched:
+        profile.save(update_fields=[
+            "personal_email_verified_at",
+            "university_email_verified_at",
+        ])
+
+    if profile.personal_email and not profile.is_personal_email_verified:
+        issue_and_send_verification(user, profile.personal_email, EmailVerification.EMAIL_TYPE_PERSONAL)
+    if profile.university_email and not profile.is_university_email_verified:
+        issue_and_send_verification(user, profile.university_email, EmailVerification.EMAIL_TYPE_UNIVERSITY)

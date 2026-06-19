@@ -30,6 +30,7 @@
 </head>
 <body>
 
+    {% block top_nav %}
     <header class="nav" id="siteNav">
         <div class="container nav__inner">
             {% if user.is_authenticated %}
@@ -109,6 +110,7 @@
             </div>
         </div>
     </header>
+    {% endblock top_nav %}
 
     {% if messages %}
         <div class="flash-stack" id="flashStack">
