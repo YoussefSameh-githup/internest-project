@@ -5,3 +5,4 @@ sqlparse==0.5.3
 tzdata==2025.2
 whitenoise==6.11.0
 django-ratelimit==4.1.0
+django-anymail[sendgrid]==12.0

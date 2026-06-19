@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.sites",
     "django.contrib.staticfiles",
+    "anymail",  # SendGrid HTTP API backend (works on PythonAnywhere free tier)
     "internest_core.apps.InternestCoreConfig",
 ]
 
@@ -157,12 +158,22 @@ LOGOUT_REDIRECT_URL = "landing"
 EMAIL_BACKEND = os.environ.get(
     "DJANGO_EMAIL_BACKEND",
     "django.core.mail.backends.console.EmailBackend" if DEBUG
-    else "django.core.mail.backends.smtp.EmailBackend",
+    else "anymail.backends.sendgrid.EmailBackend",
 )
+# Anymail config — SendGrid via HTTPS API (works on PythonAnywhere free
+# tier, where outbound SMTP is blocked). Re-uses DJANGO_EMAIL_HOST_PASSWORD
+# so you don't have to set a new env var for the SendGrid API key.
+ANYMAIL = {
+    "SENDGRID_API_KEY": os.environ.get(
+        "ANYMAIL_SENDGRID_API_KEY",
+        os.environ.get("DJANGO_EMAIL_HOST_PASSWORD", ""),
+    ),
+}
+# Kept for any legacy / fallback code that still wants SMTP creds.
 EMAIL_HOST = os.environ.get("DJANGO_EMAIL_HOST", "smtp.sendgrid.net")
 EMAIL_PORT = int(os.environ.get("DJANGO_EMAIL_PORT", "587"))
 EMAIL_USE_TLS = env_bool("DJANGO_EMAIL_USE_TLS", default=True)
-EMAIL_USE_SSL = env_bool("DJANGO_EMAIL_USE_SSL", default=False)  # mutually exclusive with TLS
+EMAIL_USE_SSL = env_bool("DJANGO_EMAIL_USE_SSL", default=False)
 EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER", "apikey")
 EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD", "")
 EMAIL_TIMEOUT = int(os.environ.get("DJANGO_EMAIL_TIMEOUT", "20"))
