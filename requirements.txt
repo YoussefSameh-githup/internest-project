@@ -6,3 +6,4 @@ tzdata==2025.2
 whitenoise==6.11.0
 django-ratelimit==4.1.0
 django-anymail[resend,sendgrid]==12.0
+django-environ==0.11.2

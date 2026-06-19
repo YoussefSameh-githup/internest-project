@@ -4,28 +4,40 @@ Django settings for Internest_Project project.
 
 from pathlib import Path
 import os
+import environ
 from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# =========================================================================
+# django-environ: load configuration from BASE_DIR/.env so the WSGI app,
+# manage.py, and `python manage.py shell` all see the same variables.
+# overwrite=False means values already present in os.environ (e.g. set
+# in the PythonAnywhere WSGI file) still take precedence over the .env
+# file — useful when you want to override a single value per deploy.
+# =========================================================================
+env = environ.Env(
+    DJANGO_DEBUG=(bool, False),
+    DJANGO_SECURE_SSL_REDIRECT=(bool, False),
+    DJANGO_EMAIL_USE_TLS=(bool, True),
+)
+environ.Env.read_env(BASE_DIR / ".env", overwrite=False)
+
 
 def env_bool(name: str, default: bool = False) -> bool:
-    raw = os.environ.get(name)
-    if raw is None:
-        return default
-    return raw.strip().lower() in {"1", "true", "yes", "on"}
+    return env.bool(name, default=default)
 
 
 def env_list(name: str, default=None):
-    raw = os.environ.get(name)
+    raw = env.str(name, default="")
     if not raw:
         return default or []
     return [item.strip() for item in raw.split(",") if item.strip()]
 
 
 # --- (1) Security ---
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
-DEBUG = env_bool("DJANGO_DEBUG", default=False)
+SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="")
+DEBUG = env.bool("DJANGO_DEBUG", default=False)
 
 if not SECRET_KEY:
     if DEBUG:
@@ -149,18 +161,15 @@ LOGIN_REDIRECT_URL = "home_redirect"
 LOGIN_URL = "login_or_signup"
 LOGOUT_REDIRECT_URL = "landing"
 
-# =========================================================================
-# (6) Email (native Django SMTP). Production reads creds from env vars set
-# in the WSGI file (or shell). Local DEBUG falls back to the console
-# backend so a missing API key does not block dev.
-# Compatible with SendGrid, Mailgun, Postmark, Amazon SES, Gmail, etc.
-# =========================================================================
-# --- Email (SendGrid HTTPS API via Anymail) ---
-EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
+# --- (6) Email (SendGrid HTTPS API via Anymail) ---
+# Read straight from the .env file via django-environ so the same value
+# is visible to the web app, to `manage.py shell`, and to any management
+# command, with zero ambiguity.
+EMAIL_BACKEND = env.str("DJANGO_EMAIL_BACKEND", default="anymail.backends.sendgrid.EmailBackend")
 ANYMAIL = {
-    "SENDGRID_API_KEY": os.environ.get("ANYMAIL_SENDGRID_API_KEY"),
+    "SENDGRID_API_KEY": env.str("ANYMAIL_SENDGRID_API_KEY", default=""),
 }
-DEFAULT_FROM_EMAIL = "internest.opportunities@gmail.com"
+DEFAULT_FROM_EMAIL = env.str("DJANGO_DEFAULT_FROM_EMAIL", default="internest.opportunities@gmail.com")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 EMAIL_TIMEOUT = 20
 
