@@ -158,12 +158,15 @@ LOGOUT_REDIRECT_URL = "landing"
 EMAIL_BACKEND = os.environ.get(
     "DJANGO_EMAIL_BACKEND",
     "django.core.mail.backends.console.EmailBackend" if DEBUG
-    else "anymail.backends.sendgrid.EmailBackend",
+    else "anymail.backends.resend.EmailBackend",
 )
-# Anymail config — SendGrid via HTTPS API (works on PythonAnywhere free
-# tier, where outbound SMTP is blocked). Re-uses DJANGO_EMAIL_HOST_PASSWORD
-# so you don't have to set a new env var for the SendGrid API key.
+# Anymail config — Resend (default) + SendGrid (fallback) via HTTPS API.
+# PythonAnywhere's free tier blocks SMTP but allows outbound HTTPS to
+# api.resend.com and api.sendgrid.com.
+# Each ESP reads its own API key from a dedicated env var. The legacy
+# DJANGO_EMAIL_HOST_PASSWORD is honoured for SendGrid for back-compat.
 ANYMAIL = {
+    "RESEND_API_KEY": os.environ.get("ANYMAIL_RESEND_API_KEY", ""),
     "SENDGRID_API_KEY": os.environ.get(
         "ANYMAIL_SENDGRID_API_KEY",
         os.environ.get("DJANGO_EMAIL_HOST_PASSWORD", ""),
