@@ -155,36 +155,14 @@ LOGOUT_REDIRECT_URL = "landing"
 # backend so a missing API key does not block dev.
 # Compatible with SendGrid, Mailgun, Postmark, Amazon SES, Gmail, etc.
 # =========================================================================
-EMAIL_BACKEND = os.environ.get(
-    "DJANGO_EMAIL_BACKEND",
-    "django.core.mail.backends.console.EmailBackend" if DEBUG
-    else "anymail.backends.sendgrid.EmailBackend",
-)
-# Anymail config — SendGrid (default) + Resend (optional fallback) via
-# HTTPS API. PythonAnywhere's free tier blocks SMTP but allows outbound
-# HTTPS to api.sendgrid.com and api.resend.com. Each ESP reads its own
-# API key from a dedicated env var. The legacy DJANGO_EMAIL_HOST_PASSWORD
-# is honoured for SendGrid for back-compat.
+# --- Email (SendGrid HTTPS API via Anymail) ---
+EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
 ANYMAIL = {
-    "SENDGRID_API_KEY": os.environ.get(
-        "ANYMAIL_SENDGRID_API_KEY",
-        os.environ.get("DJANGO_EMAIL_HOST_PASSWORD", ""),
-    ),
-    "RESEND_API_KEY": os.environ.get("ANYMAIL_RESEND_API_KEY", ""),
+    "SENDGRID_API_KEY": os.environ.get("ANYMAIL_SENDGRID_API_KEY"),
 }
-# Kept for any legacy / fallback code that still wants SMTP creds.
-EMAIL_HOST = os.environ.get("DJANGO_EMAIL_HOST", "smtp.sendgrid.net")
-EMAIL_PORT = int(os.environ.get("DJANGO_EMAIL_PORT", "587"))
-EMAIL_USE_TLS = env_bool("DJANGO_EMAIL_USE_TLS", default=True)
-EMAIL_USE_SSL = env_bool("DJANGO_EMAIL_USE_SSL", default=False)
-EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER", "apikey")
-EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD", "")
-EMAIL_TIMEOUT = int(os.environ.get("DJANGO_EMAIL_TIMEOUT", "20"))
-DEFAULT_FROM_EMAIL = os.environ.get(
-    "DJANGO_DEFAULT_FROM_EMAIL",
-    "internest.opportunities@gmail.com",
-)
+DEFAULT_FROM_EMAIL = "internest.opportunities@gmail.com"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+EMAIL_TIMEOUT = 20
 
 # --- (7) Production hardening (only when DEBUG=False) ---
 if not DEBUG:
