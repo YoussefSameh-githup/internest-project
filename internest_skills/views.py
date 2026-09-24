@@ -249,6 +249,7 @@ def challenge_result(request, token):
         "attempt": attempt,
         "student_skill": ss,
         "upskill": recommendations_for(ss),
+        "leaderboard": engine.leaderboard_position(ss) if attempt.state == ChallengeAttempt.STATE_COMPLETED else None,
     })
     return render(request, "skills/result.html", context)
 

@@ -363,30 +363,52 @@ class NewUserRobustnessTests(Base):
 
 @override_settings(AGENTROUTER_API_KEY="k", AGENTROUTER_BASE_URL="https://llm.test/v1")
 class QuizGenerationTests(Base):
+    # Difficulties deliberately out of order ("hhhmmmmeee"): the engine must serve easy → hard.
+
     QUIZ = json.dumps({"q": [
-        {"s": "Forecasting", "p": f"Question number {i} about demand forecasting?", "c": ["A", "B", "C", "D"], "a": i % 4}
-        for i in range(8)
+        {"s": "Forecasting" if i % 2 else "Inventory", "d": "hhhmmmmeee"[i], "t": f"Topic {i}",
+         "p": f"Question number {i} about demand planning?", "k": "print(sum([1, 2]))" if i == 0 else "",
+         "c": ["A", "B", "C", "D"], "a": i % 4}
+        for i in range(10)
     ] + [{"s": "Bad", "p": "short", "c": ["A"], "a": 5}]})
 
     def setUp(self):
         self.new_skill = Skill.objects.create(name="Supply Chain Planning", slug="supply-chain-planning", discipline="business")
 
-    def test_start_generates_quiz_for_skill_without_items(self):
-        ss = self._claim(skill=self.new_skill)
+    def _start(self, ss):
         self.client.force_login(self.student_user)
-        with mock.patch("openai.resources.chat.completions.Completions.create", return_value=_llm_reply(self.QUIZ)):
+        with mock.patch("openai.resources.chat.completions.Completions.create", return_value=_llm_reply(self.QUIZ)) as create:
             self.assertContains(self.client.get(reverse("skills_hub")), "Start challenge")
             resp = self.client.post(reverse("skills_challenge_start", args=[ss.pk]))
+        return resp, create
+
+    def test_generates_ten_progressive_questions_with_full_timer(self):
+        ss = self._claim(skill=self.new_skill)
+        resp, create = self._start(ss)
         attempt = ss.attempts.get()
         self.assertRedirects(resp, reverse("skills_challenge", args=[attempt.token]), fetch_redirect_response=False)
-        self.assertEqual(self.new_skill.items.count(), 8)
-        item = self.new_skill.items.first()
-        self.assertEqual(item.time_limit_seconds, 45)
-        self.assertIn(item.correct_index, range(4))
-        page = self.client.get(resp.url)
-        self.assertContains(page, 'data-role="begin" disabled')
-        payload = self.client.post(reverse("skills_api_next", args=[attempt.token])).json()
-        self.assertEqual(payload["item"]["remaining_seconds"], 45)
+        self.assertEqual(self.new_skill.items.count(), 10)
+        self.assertIn("workplace scenarios", create.call_args.kwargs["messages"][0]["content"])
+        self.assertContains(self.client.get(resp.url), 'data-role="begin" disabled')
+
+        served = []
+        for _ in range(10):
+            item = self.client.post(reverse("skills_api_next", args=[attempt.token])).json()["item"]
+            self.assertEqual(item["remaining_seconds"], item["time_limit"])
+            self.assertNotIn("correct_index", item)
+            served.append(item["difficulty"])
+            self.client.post(reverse("skills_api_answer", args=[attempt.token]),
+                             json.dumps({"item_id": item["item_id"], "choice_index": 0}), content_type="application/json")
+        order = [ChallengeItem.DIFFICULTY_ORDER[d] for d in served]
+        self.assertEqual(order, sorted(order))
+        hard_code = ChallengeItem.objects.get(skill=self.new_skill, topic="Topic 0")
+        self.assertEqual((hard_code.difficulty, hard_code.code_snippet, hard_code.time_limit_seconds), ("hard", "print(sum([1, 2]))", 60))
+
+    def test_technical_skill_prompt_requests_code(self):
+        from .quizgen import build_system_prompt
+        self.assertIn("snippet", build_system_prompt(Skill.objects.get(slug="python")))
+        self.assertIn("snippet", build_system_prompt(Skill(name="Cybersecurity", discipline="general")))
+        self.assertIn("workplace scenarios", build_system_prompt(Skill.objects.get(slug="project-management")))
 
     def test_generation_failure_redirects_with_message(self):
         ss = self._claim(skill=self.new_skill)
@@ -402,6 +424,43 @@ class QuizGenerationTests(Base):
             from .quizgen import ensure_challenge_items
             total = ensure_challenge_items(self.skill)
             again = ensure_challenge_items(self.skill)
-        self.assertGreaterEqual(total, self.skill.challenge_length)
+        self.assertEqual(total, self.skill.challenge_length)
         self.assertEqual(total, again)
         self.assertGreater(total, before)
+
+
+class FeedbackAndLeaderboardTests(ChallengeFlowTests):
+    def test_missed_answers_become_actionable_topics_and_rank_is_shown(self):
+        peer = self._claim(student=self.other_student)
+        peer.score, peer.percentile = 90, 50
+        peer.save()
+        ss = self._claim()
+        attempt = self._answer_all(engine.start_attempt(ss), correct=False)
+        self.assertTrue(attempt.improvement_topics)
+        first = attempt.improvement_topics[0]
+        self.assertTrue({"topic", "sub_skill", "difficulty", "action", "reason"} <= first.keys())
+        self.assertTrue(first["action"].startswith("Review "))
+        ss.refresh_from_db()
+        board = engine.leaderboard_position(ss)
+        self.assertEqual((board["rank"], board["peers"]), (2, 2))
+        self.client.force_login(self.student_user)
+        page = self.client.get(reverse("skills_result", args=[attempt.token]))
+        self.assertContains(page, "What to improve")
+        self.assertContains(page, "#2")
+        data = self.client.get(reverse("skills_api_recommendations", args=[ss.pk])).json()
+        self.assertEqual(data["improvement_topics"], attempt.improvement_topics)
+
+    def test_perfect_run_has_no_topics(self):
+        attempt = self._answer_all(engine.start_attempt(self._claim()))
+        self.assertEqual(attempt.improvement_topics, [])
+
+
+class CVCompactionTests(TestCase):
+    def test_drops_contacts_urls_and_duplicates_but_keeps_sections(self):
+        from .extraction import compact_cv_text
+        cv = chr(10).join([
+            "Jane Doe", "jane@x.com", "+20 100 123 4567", "https://github.com/jane", "EXPERIENCE",
+            "• Built ETL in Python", "• Built ETL in Python", "Page 1 of 2", "PROJECTS", "Chatbot",
+        ])
+        self.assertEqual(compact_cv_text(cv).splitlines(),
+                         ["Jane Doe", "EXPERIENCE", "Built ETL in Python", "PROJECTS", "Chatbot"])

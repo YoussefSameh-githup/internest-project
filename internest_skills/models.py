@@ -36,7 +36,7 @@ class Skill(models.Model):
         blank=True,
         help_text="Comma-separated phrases that imply this skill from projects / work history.",
     )
-    challenge_length = models.PositiveSmallIntegerField(default=8, validators=[MinValueValidator(3), MaxValueValidator(30)])
+    challenge_length = models.PositiveSmallIntegerField(default=10, validators=[MinValueValidator(3), MaxValueValidator(30)])
     pass_threshold = models.PositiveSmallIntegerField(default=70, validators=[MinValueValidator(1), MaxValueValidator(100)])
     is_active = models.BooleanField(default=True)
 
@@ -91,6 +91,13 @@ class ChallengeItem(models.Model):
         default=list, blank=True,
         help_text='Case only: list of concept groups; each group is a list of accepted terms, e.g. [["npv","net present value"],["discount"]].',
     )
+    DIFFICULTY_EASY, DIFFICULTY_MEDIUM, DIFFICULTY_HARD = "easy", "medium", "hard"
+    DIFFICULTY_CHOICES = [(DIFFICULTY_EASY, "Easy"), (DIFFICULTY_MEDIUM, "Medium"), (DIFFICULTY_HARD, "Hard")]
+    DIFFICULTY_ORDER = {DIFFICULTY_EASY: 0, DIFFICULTY_MEDIUM: 1, DIFFICULTY_HARD: 2}
+
+    difficulty = models.CharField(max_length=6, choices=DIFFICULTY_CHOICES, default=DIFFICULTY_MEDIUM)
+    code_snippet = models.TextField(blank=True, help_text="Optional code shown under the question (technical skills).")
+    topic = models.CharField(max_length=160, blank=True, help_text="Specific concept tested; used for improvement feedback.")
     time_limit_seconds = models.PositiveSmallIntegerField(default=45, validators=[MinValueValidator(30), MaxValueValidator(60)])
     weight = models.PositiveSmallIntegerField(default=1)
     is_active = models.BooleanField(default=True)
@@ -209,6 +216,7 @@ class ChallengeAttempt(models.Model):
     termination_reason = models.CharField(max_length=120, blank=True)
     score_pct = models.PositiveSmallIntegerField(null=True, blank=True)
     sub_skill_breakdown = models.JSONField(default=dict, blank=True)
+    improvement_topics = models.JSONField(default=list, blank=True)
     started_at = models.DateTimeField(auto_now_add=True)
     finished_at = models.DateTimeField(null=True, blank=True)
 

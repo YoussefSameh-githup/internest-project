@@ -8,8 +8,10 @@
   var ui = {
     timer: $("timer"), progress: $("progress"), counter: $("counter"), subskill: $("subskill"),
     warning: $("warning"), intro: $("intro"), begin: $("begin"), stage: $("stage"),
-    prompt: $("prompt"), choices: $("choices"), text: $("text"), submit: $("submit")
+    prompt: $("prompt"), choices: $("choices"), text: $("text"), submit: $("submit"),
+    code: $("code"), difficulty: $("difficulty")
   };
+  var DIFFICULTY = { easy: ["Easy", "badge--success"], medium: ["Medium", "badge--accent"], hard: ["Hard", "badge--danger"] };
 
   var current = null, selectedChoice = null, tick = null, busy = false, running = false, finished = false;
   var telemetry, lastInputAt, lastFocusLossAt = 0;
@@ -58,6 +60,14 @@
     selectedChoice = null;
     resetTelemetry();
     ui.prompt.textContent = item.prompt;
+    ui.code.hidden = !item.code;
+    ui.code.firstChild.textContent = item.code || "";
+    var diff = DIFFICULTY[item.difficulty];
+    ui.difficulty.hidden = !diff;
+    if (diff) {
+      ui.difficulty.textContent = diff[0];
+      ui.difficulty.className = "badge " + diff[1];
+    }
     ui.counter.textContent = item.index + " / " + item.total;
     ui.subskill.textContent = item.sub_skill;
     ui.progress.style.width = Math.round(((item.index - 1) / item.total) * 100) + "%";

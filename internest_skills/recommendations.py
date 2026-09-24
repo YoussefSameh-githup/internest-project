@@ -101,8 +101,12 @@ def recommendations_for(student_skill) -> dict:
                     "expected_outcome": outcome,
                 })
 
+    last = student_skill.attempts.filter(state="completed").order_by("-finished_at").first()
     return {
         "student_skill_id": student_skill.id,
+        "score": student_skill.score,
+        "percentile": student_skill.percentile,
+        "improvement_topics": last.improvement_topics if last else [],
         "skill": student_skill.skill.name,
         "status": student_skill.status,
         "status_label": student_skill.status_label,

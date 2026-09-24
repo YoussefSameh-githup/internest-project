@@ -14,7 +14,7 @@ from .llm import chat_json, llm_enabled
 from .models import Skill, StudentSkill
 
 MAX_TEXT_CHARS = 200_000
-LLM_INPUT_CHARS = 8_000
+LLM_INPUT_CHARS = 14_000
 LLM_MAX_SKILLS = 20
 
 logger = logging.getLogger(__name__)
@@ -59,7 +59,7 @@ def _normalize(text: str) -> str:
 
 
 _ARABIC_PROCLITICS = r"(?:وال|بال|فال|كال|لل|ال|و|ف|ب|ل|ك)?"
-_ARABIC_BLOCK = re.compile(r"[؀-ۿ]")
+_ARABIC_BLOCK = re.compile("[\\u0600-\\u06FF]")
 
 
 def _term_pattern(term: str) -> re.Pattern:
@@ -98,7 +98,8 @@ def extract_skills(text: str, skills=None) -> list[ExtractedSkill]:
 
 
 _SYSTEM_PROMPT = (
-    "Extract ALL professional skills from a CV (any discipline, English/Arabic), max 20, most relevant first. "
+    "Read the WHOLE CV (summary, experience, projects, education, courses, activities; English/Arabic, any discipline) "
+    "and list ALL professional skills, max 20, most relevant first; include implicit ones shown by projects/work. "
     "Reuse the exact known name when one fits; otherwise give a short canonical English skill name (1-4 words). "
     "t: e=explicitly stated, i=implied by projects/work. "
     "d: c=computing b=business m=media l=law e=engineering h=health g=general. "
@@ -132,8 +133,24 @@ def _get_or_create_skill(name: str, discipline_code: str, by_name: dict):
     return skill if skill is not None and skill.is_active else None
 
 
+_NOISE_LINE = re.compile(r"^(?:[\w.+-]+@[\w-]+\.[\w.]+|\+?[\d\s()./-]{7,}|(?:https?://|www\.)\S+|page \d+(?: of \d+)?)$", re.I)
+
+
+def compact_cv_text(text: str) -> str:
+    """Keep every section but drop tokens that carry no skill signal (contacts, URLs, page footers, repeats)."""
+    seen, lines = set(), []
+    for raw in text.splitlines():
+        line = re.sub(r"\s+", " ", raw).strip(" \t•·-–—|")
+        key = line.lower()
+        if len(line) < 2 or key in seen or _NOISE_LINE.match(line):
+            continue
+        seen.add(key)
+        lines.append(line)
+    return "\n".join(lines)
+
+
 def extract_skills_llm(text: str, skills) -> list[ExtractedSkill]:
-    cv = re.sub(r"\s+", " ", text).strip()[:LLM_INPUT_CHARS]
+    cv = compact_cv_text(text)[:LLM_INPUT_CHARS]
     known = ", ".join(s.name for s in skills)
     data = chat_json(_SYSTEM_PROMPT, f"Known: {known}\nCV:\n{cv}", max_tokens=300)
     items = data.get("skills")

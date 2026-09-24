@@ -22,8 +22,10 @@ class ChallengeError(Exception):
 
 def _pick_items(skill):
     by_sub = defaultdict(list)
-    for item in ChallengeItem.objects.filter(skill=skill, is_active=True).only("id", "sub_skill_id"):
+    difficulty_of = {}
+    for item in ChallengeItem.objects.filter(skill=skill, is_active=True).only("id", "sub_skill_id", "difficulty"):
         by_sub[item.sub_skill_id].append(item.id)
+        difficulty_of[item.id] = ChallengeItem.DIFFICULTY_ORDER.get(item.difficulty, 1)
     if sum(len(v) for v in by_sub.values()) < 3:
         raise ChallengeError("This skill does not have a challenge yet.")
     pools = list(by_sub.values())
@@ -36,6 +38,7 @@ def _pick_items(skill):
             if pool and len(picked) < skill.challenge_length:
                 picked.append(pool.pop())
     random.shuffle(picked)
+    picked.sort(key=difficulty_of.__getitem__)  # progressive: easy → medium → hard (stable, random within a level)
     return picked
 
 
@@ -109,6 +112,8 @@ def serve_next(attempt):
         "total": attempt.total_items,
         "kind": item.kind,
         "prompt": item.prompt,
+        "code": item.code_snippet,
+        "difficulty": item.difficulty,
         "choices": item.choices if item.kind == ChallengeItem.KIND_MCQ else [],
         "sub_skill": item.sub_skill.name,
         "time_limit": item.time_limit_seconds,
@@ -202,6 +207,38 @@ def _percentile(skill, score, exclude_pk):
     return round((below + 0.5 * equal) / n * 100)
 
 
+def improvement_topics(responses) -> list[dict]:
+    """Actionable study topics from missed answers, fundamentals (easy misses) first."""
+    topics = {}
+    for r in responses:
+        item = r.item
+        missed = r.credit < (1.0 if item.kind == ChallengeItem.KIND_MCQ else CASE_PASS_CREDIT)
+        if not missed:
+            continue
+        topic = item.topic or item.sub_skill.name
+        reason = "timed_out" if r.timed_out else ("integrity" if r.integrity_flags else "incorrect")
+        entry = topics.setdefault(topic.lower(), {
+            "topic": topic,
+            "sub_skill": item.sub_skill.name,
+            "difficulty": item.difficulty,
+            "reason": reason,
+            "action": f"Review {topic} ({item.sub_skill.name}) and practise {item.get_difficulty_display().lower()}-level problems on it.",
+            "missed": 0,
+        })
+        entry["missed"] += 1
+    return sorted(topics.values(), key=lambda t: (ChallengeItem.DIFFICULTY_ORDER.get(t["difficulty"], 1), -t["missed"]))
+
+
+def leaderboard_position(student_skill) -> dict | None:
+    """Rank among peers who completed the same skill's challenge (by best current score)."""
+    if student_skill.score is None:
+        return None
+    scores = list(StudentSkill.objects.filter(skill=student_skill.skill, score__isnull=False).values_list("score", flat=True))
+    rank = 1 + sum(1 for s in scores if s > student_skill.score)
+    return {"rank": rank, "peers": len(scores), "percentile": student_skill.percentile,
+            "top_percent": max(1, 100 - (student_skill.percentile or 0))}
+
+
 def finalize(attempt):
     responses = list(attempt.responses.select_related("item__sub_skill"))
     earned = total = 0.0
@@ -224,6 +261,7 @@ def finalize(attempt):
     attempt.finished_at = timezone.now()
     attempt.score_pct = score
     attempt.sub_skill_breakdown = breakdown
+    attempt.improvement_topics = improvement_topics(responses)
     attempt.save()
 
     ss = attempt.student_skill
