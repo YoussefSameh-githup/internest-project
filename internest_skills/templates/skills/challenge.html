@@ -1,0 +1,57 @@
+{% extends 'internship/base.html' %}
+{% load static i18n %}
+
+{% block title %}{{ skill.name }} — {% trans "Skill challenge" %}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'skills/skills.css' %}">{% endblock %}
+
+{% block content %}
+<section class="section-sm">
+    <div class="container-narrow">
+        <div id="skills-challenge" class="card skills-challenge"
+             data-next-url="{% url 'skills_api_next' attempt.token %}"
+             data-answer-url="{% url 'skills_api_answer' attempt.token %}"
+             data-event-url="{% url 'skills_api_event' attempt.token %}"
+             data-csrf="{{ csrf_token }}">
+
+            <div class="skills-challenge__head">
+                <div>
+                    <span class="eyebrow"><i class="bi bi-shield-lock"></i> {% trans "Proctored challenge" %}</span>
+                    <h2 class="mt-2 mb-0">{{ skill.name }}</h2>
+                </div>
+                <div class="skills-timer" aria-live="polite"><i class="bi bi-stopwatch"></i> <span data-role="timer">--</span>s</div>
+            </div>
+
+            <div class="progress mt-4"><div class="progress__bar" data-role="progress" style="width:0%"></div></div>
+            <div class="flex justify-between mt-2 text-muted" style="font-size: var(--text-xs);">
+                <span data-role="counter"></span>
+                <span data-role="subskill"></span>
+            </div>
+
+            <div class="alert alert-warning mt-4" data-role="warning" hidden></div>
+
+            <div data-role="intro" class="mt-5">
+                <ul class="skills-rules">
+                    <li>{% trans "Each question has its own timer (30–60 seconds). Unanswered questions are skipped automatically." %}</li>
+                    <li>{% trans "Copy, paste and right-click are disabled." %}</li>
+                    <li>{% trans "Leaving this tab or window gives a warning. After 2 warnings the session ends." %}</li>
+                    <li>{% trans "Written answers are checked for pasted or machine-generated text." %}</li>
+                </ul>
+                <button class="btn btn--primary btn--lg mt-4" data-role="begin">{% trans "I'm ready — begin" %}</button>
+            </div>
+
+            <div data-role="stage" class="mt-5 no-select" hidden>
+                <p class="skills-prompt" data-role="prompt"></p>
+                <div data-role="choices" class="skills-choices"></div>
+                <textarea data-role="text" class="form-control" rows="6" hidden
+                          autocomplete="off" autocorrect="off" spellcheck="false"
+                          placeholder="{% trans 'Type your answer…' %}"></textarea>
+                <button class="btn btn--primary mt-4" data-role="submit" disabled>{% trans "Submit answer" %}</button>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'skills/challenge.js' %}"></script>
+{% endblock %}

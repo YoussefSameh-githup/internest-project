@@ -1,0 +1,17 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}Internest Pro{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container-narrow">
+        <div class="card card--brand text-center">
+            <i class="bi bi-gem" style="font-size: 3rem;"></i>
+            <h2 class="mt-3">{% trans "Verified skills are an Internest Pro feature" %}</h2>
+            <p>{% trans "Upgrade to Pro to see verified skill badges, scores and percentiles for candidates who apply to your opportunities." %}</p>
+            <a href="{% url 'contact_partner' %}" class="btn btn--white mt-3">{% trans "Contact us to upgrade" %}</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,37 @@
+.skills-step {
+  display: inline-grid; place-items: center;
+  width: 1.75rem; height: 1.75rem; border-radius: 999px;
+  background: var(--brand-100); color: var(--brand-700);
+  font-size: var(--text-sm); font-weight: 700;
+}
+.skills-source-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+.skills-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.skill-tile {
+  border: 1px solid var(--brand-100); border-radius: 12px; padding: var(--space-4);
+  background: var(--white);
+}
+.skill-tile--verified { border-color: #bbf7d0; background: #f0fdf4; }
+.skill-tile--lag { border-color: #fde68a; background: #fffbeb; }
+.skill-tile__meta { font-size: var(--text-xs); color: var(--gray-500, #6b7280); margin-top: var(--space-1); }
+.skill-tile__score { font-weight: 700; color: #15803d; margin-top: var(--space-2); }
+.skill-tile__evidence { font-size: var(--text-xs); color: var(--gray-600, #4b5563); margin-top: var(--space-2); font-style: italic; }
+
+.skills-challenge__head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+.skills-timer {
+  font-size: 1.5rem; font-weight: 800; padding: var(--space-2) var(--space-4);
+  border-radius: 12px; background: var(--brand-100); color: var(--brand-700);
+  font-variant-numeric: tabular-nums;
+}
+.skills-timer.is-urgent { background: #fee2e2; color: #b91c1c; }
+.skills-rules { padding-inline-start: 1.25rem; line-height: 1.9; }
+.skills-prompt { font-size: 1.1rem; font-weight: 600; white-space: pre-line; }
+.skills-choices { display: grid; gap: var(--space-3); }
+.skills-choice {
+  text-align: start; padding: var(--space-3) var(--space-4); border-radius: 10px;
+  border: 1px solid var(--brand-100); background: var(--white); cursor: pointer;
+}
+.skills-choice:hover { border-color: var(--brand-700); }
+.skills-choice.is-selected { border-color: var(--brand-700); background: var(--brand-100); font-weight: 600; }
+.no-select, .no-select * { -webkit-user-select: none; user-select: none; }
+.no-select textarea { -webkit-user-select: text; user-select: text; }

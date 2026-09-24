@@ -21,6 +21,7 @@ urlpatterns = [
     # Protected media serving (works even when DEBUG=False).
     re_path(r'^media/(?P<filepath>.+)$', core_views.serve_protected_media, name='serve_media'),
 
+    path('', include('internest_skills.urls')),
     path('', include('internest_core.urls')),
 ]
 

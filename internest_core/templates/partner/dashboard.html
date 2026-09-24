@@ -1,5 +1,5 @@
 {% extends 'internship/base.html' %}
-{% load static i18n %}
+{% load static i18n skills_tags %}
 
 {% block title %}{% trans "Partner dashboard" %} — {{ partner.company_name }}{% endblock %}
 
@@ -126,7 +126,16 @@
         </div>
 
         <div class="card mb-6">
-            <h3 class="mb-4"><i class="bi bi-inbox text-accent"></i> {% trans "Applicant inbox" %}</h3>
+            {% partner_is_pro partner as is_pro %}
+            {% partner_is_verified_university partner as is_university %}
+            <div class="flex items-center justify-between mb-4" style="flex-wrap: wrap; gap: var(--space-3);">
+                <h3 class="mb-0"><i class="bi bi-inbox text-accent"></i> {% trans "Applicant inbox" %}</h3>
+                {% if is_university %}
+                    <a href="{% url 'skills_university_dashboard' %}" class="btn btn--outline btn--sm"><i class="bi bi-bar-chart"></i> {% trans "Employability analytics" %}</a>
+                {% elif not is_pro %}
+                    <span class="badge badge--accent"><i class="bi bi-gem"></i> {% trans "Verified skills available on Internest Pro" %}</span>
+                {% endif %}
+            </div>
             <p class="text-muted mb-5">{% trans "Files of students approved by Internest and forwarded to you appear here." %}</p>
 
             {% if received_applicants %}
@@ -139,6 +148,7 @@
                                 <th>{% trans "Major" %}</th>
                                 <th>{% trans "Forwarded on" %}</th>
                                 <th>{% trans "CV" %}</th>
+                                <th>{% trans "Verified skills" %}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,6 +168,15 @@
                                             </a>
                                         {% else %}
                                             <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if is_pro %}
+                                            <a href="{% url 'skills_student_report' app.student.pk %}" class="btn btn--ghost btn--sm">
+                                                <i class="bi bi-patch-check"></i> {% trans "Skill report" %}
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted" title="Internest Pro"><i class="bi bi-lock-fill"></i></span>
                                         {% endif %}
                                     </td>
                                 </tr>

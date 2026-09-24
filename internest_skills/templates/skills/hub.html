@@ -1,0 +1,117 @@
+{% extends 'internship/base.html' %}
+{% load static i18n %}
+
+{% block title %}{% trans "Verify Your Skills" %} — Internest{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'skills/skills.css' %}">{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <a href="{% url 'profile' %}" class="eyebrow"><i class="bi bi-arrow-right-short"></i> {% trans "My profile" %}</a>
+        <h1 class="mt-3">{% trans "Verify Your Skills" %}</h1>
+        <p>{% trans "Upload your CV or LinkedIn export. We detect your skills, then you prove them in a short timed challenge." %}</p>
+    </div>
+</section>
+
+<section class="section-sm">
+    <div class="container">
+
+        <div class="card mb-6">
+            <h3 class="mb-4"><span class="skills-step">1</span> {% trans "Analyze your CV or LinkedIn" %}</h3>
+            <form method="post" enctype="multipart/form-data" class="skills-source-form">
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+                <div class="skills-source-grid">
+                    {% for field in form %}
+                        <div>
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}<div class="text-danger" style="font-size: var(--text-xs);">{{ field.errors|join:" " }}</div>{% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn--primary mt-4"><i class="bi bi-cpu"></i> {% trans "Analyze skills" %}</button>
+                {% if skill_profile.last_extracted_at %}
+                    <span class="text-muted" style="font-size: var(--text-xs); margin-inline-start: var(--space-3);">
+                        {% trans "Last analysis" %}: {{ skill_profile.last_extracted_at|date:"Y/m/d H:i" }}
+                    </span>
+                {% endif %}
+            </form>
+        </div>
+
+        {% if verified %}
+        <div class="card mb-6">
+            <h3 class="mb-4"><i class="bi bi-patch-check-fill text-success"></i> {% trans "Verified skill badges" %}</h3>
+            <div class="skills-grid">
+                {% for s in verified %}
+                    <div class="skill-tile skill-tile--verified">
+                        <div class="fw-bold">{{ s.skill.name }}</div>
+                        <div class="skill-tile__meta">{{ s.skill.get_discipline_display }}</div>
+                        <div class="skill-tile__score">{{ s.score }}% · {% trans "Percentile" %} {{ s.percentile }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if lagging %}
+        <div class="card mb-6">
+            <h3 class="mb-4"><i class="bi bi-graph-up-arrow text-primary"></i> {% trans "Upskilling paths" %}</h3>
+            <div class="skills-grid">
+                {% for s in lagging %}
+                    <div class="skill-tile skill-tile--lag">
+                        <div class="fw-bold">{{ s.skill.name }}</div>
+                        <div class="skill-tile__meta">{{ s.status_label }}</div>
+                        {% with last=s.attempts.first %}
+                            {% if last %}<a class="btn btn--ghost btn--sm mt-2" href="{% url 'skills_result' last.token %}">{% trans "View learning path" %}</a>{% endif %}
+                        {% endwith %}
+                        {% if s.in_cooldown %}
+                            <div class="skill-tile__meta mt-2"><i class="bi bi-hourglass-split"></i> {% trans "Retest available" %}: {{ s.cooldown_until|date:"Y/m/d" }}</div>
+                        {% elif s.active_items >= 3 %}
+                            <form method="post" action="{% url 'skills_challenge_start' s.id %}" class="mt-2">{% csrf_token %}
+                                <button class="btn btn--primary btn--sm">{% trans "Retake challenge" %}</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <h3 class="mb-2"><span class="skills-step">2</span> {% trans "Claimed skills — verify them" %}</h3>
+            <p class="text-muted" style="font-size: var(--text-sm);">
+                <i class="bi bi-info-circle"></i>
+                {% trans "Each challenge is timed (30–60 seconds per question). Copy/paste is disabled and leaving the tab more than twice ends the session." %}
+            </p>
+            {% if claimed %}
+                <div class="skills-grid">
+                    {% for s in claimed %}
+                        <div class="skill-tile">
+                            <div class="flex justify-between items-center">
+                                <span class="fw-bold">{{ s.skill.name }}</span>
+                                <span class="badge {% if s.source == 'explicit' %}badge--primary{% else %}badge--info{% endif %}">
+                                    {% if s.source == 'explicit' %}{% trans "Explicit" %}{% else %}{% trans "Inferred" %}{% endif %}
+                                </span>
+                            </div>
+                            <div class="skill-tile__meta">{{ s.skill.get_discipline_display }}</div>
+                            {% if s.evidence %}<div class="skill-tile__evidence">“{{ s.evidence|truncatechars:120 }}”</div>{% endif %}
+                            {% if s.in_cooldown %}
+                                <div class="skill-tile__meta mt-2"><i class="bi bi-hourglass-split"></i> {% trans "Retest available" %}: {{ s.cooldown_until|date:"Y/m/d" }}</div>
+                            {% elif s.active_items >= 3 %}
+                                <form method="post" action="{% url 'skills_challenge_start' s.id %}" class="mt-3">{% csrf_token %}
+                                    <button class="btn btn--primary btn--sm"><i class="bi bi-stopwatch"></i> {% trans "Start challenge" %}</button>
+                                </form>
+                            {% else %}
+                                <div class="skill-tile__meta mt-2">{% trans "Challenge coming soon" %}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">{% trans "No claimed skills yet. Analyze your CV above to get started." %}</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "anymail",  # SendGrid HTTP API backend (works on PythonAnywhere free tier)
     "internest_core.apps.InternestCoreConfig",
+    "internest_skills.apps.InternestSkillsConfig",
 ]
 
 SITE_ID = 1

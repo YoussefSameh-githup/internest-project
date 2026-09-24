@@ -1,5 +1,5 @@
 {% extends 'internship/base.html' %}
-{% load static i18n %}
+{% load static i18n skills_tags %}
 
 {% block title %}{% trans "My profile" %} — Internest{% endblock %}
 
@@ -96,6 +96,8 @@
                 </div>
             </div>
         </div>
+
+        {% skills_profile_card profile %}
 
         <div class="metric-grid mb-5">
             <div class="metric">

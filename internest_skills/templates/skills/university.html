@@ -1,0 +1,68 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Employability analytics" %} — {{ partner.company_name }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <span class="eyebrow"><i class="bi bi-bank"></i> NAQAAE</span>
+        <h1 class="mt-3">{% trans "Student employability analytics" %}</h1>
+        <p>{{ partner.company_name }} — {% trans "students who chose to share their verified skills with you." %}</p>
+    </div>
+</section>
+
+<section class="section-sm">
+    <div class="container">
+        <div class="metric-grid mb-6">
+            <div class="metric"><div class="metric__icon"><i class="bi bi-people-fill"></i></div><div class="metric__value">{{ total_students }}</div><div class="metric__label">{% trans "Affiliated students" %}</div></div>
+            <div class="metric metric--success"><div class="metric__icon"><i class="bi bi-patch-check-fill"></i></div><div class="metric__value">{{ employable }}</div><div class="metric__label">{% trans "With ≥1 verified skill" %}</div></div>
+            <div class="metric metric--accent"><div class="metric__icon"><i class="bi bi-graph-up"></i></div><div class="metric__value">{{ employability_rate }}%</div><div class="metric__label">{% trans "Verified-skill employability rate" %}</div></div>
+        </div>
+
+        <div class="card mb-6">
+            <h3 class="mb-4">{% trans "Skills overview" %}</h3>
+            <div class="data-table-wrap" style="margin: 0; box-shadow: none;">
+                <table class="data-table">
+                    <thead><tr><th>{% trans "Skill" %}</th><th>{% trans "Claimed" %}</th><th>{% trans "Verified" %}</th><th>{% trans "Skill lag" %}</th><th>{% trans "Avg. percentile" %}</th></tr></thead>
+                    <tbody>
+                        {% for row in by_skill %}
+                            <tr>
+                                <td class="fw-bold">{{ row.skill__name }}</td>
+                                <td>{{ row.claimed }}</td>
+                                <td>{{ row.verified }}</td>
+                                <td>{{ row.lagging }}</td>
+                                <td>{% if row.avg_percentile is not None %}P{{ row.avg_percentile|floatformat:0 }}{% else %}-{% endif %}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="5" class="text-muted">{% trans "No data yet." %}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="mb-4">{% trans "Students" %}</h3>
+            <div class="data-table-wrap" style="margin: 0; box-shadow: none;">
+                <table class="data-table">
+                    <thead><tr><th>{% trans "Student" %}</th><th>{% trans "Major" %}</th><th>{% trans "Verified" %}</th><th>{% trans "Upskilling" %}</th><th></th></tr></thead>
+                    <tbody>
+                        {% for s in per_student %}
+                            <tr>
+                                <td class="fw-bold">{{ s.user.get_full_name|default:s.user.username }}</td>
+                                <td>{{ s.major|default:"-" }}</td>
+                                <td>{{ s.verified_count }}</td>
+                                <td>{{ s.lag_count }}</td>
+                                <td><a class="btn btn--ghost btn--sm" href="{% url 'skills_student_report' s.pk %}">{% trans "Report" %}</a></td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="5" class="text-muted">{% trans "No affiliated students yet." %}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

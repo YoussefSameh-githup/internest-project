@@ -1,0 +1,78 @@
+{% extends 'internship/base.html' %}
+{% load static i18n %}
+
+{% block title %}{{ student_skill.skill.name }} — {% trans "Challenge result" %}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'skills/skills.css' %}">{% endblock %}
+
+{% block content %}
+<section class="section-sm">
+    <div class="container-narrow">
+
+        {% if attempt.state == 'terminated' %}
+            <div class="card text-center">
+                <i class="bi bi-pause-circle" style="font-size: 3rem; color: var(--accent-700);"></i>
+                <h2 class="mt-3">{% trans "Session ended" %}</h2>
+                <p class="text-muted">
+                    {% if attempt.termination_reason == 'focus_lost' %}
+                        {% trans "The challenge window lost focus more than twice." %}
+                    {% elif attempt.termination_reason == 'ai_or_pasted_content' %}
+                        {% trans "Several answers did not look like they were typed during the session." %}
+                    {% else %}
+                        {% trans "The session was not completed in time." %}
+                    {% endif %}
+                </p>
+                <p class="mb-0">{% trans "You can retake this challenge on" %} <strong>{{ student_skill.cooldown_until|date:"Y/m/d" }}</strong>.</p>
+            </div>
+
+        {% elif student_skill.status == 'verified' %}
+            <div class="card text-center">
+                <i class="bi bi-patch-check-fill" style="font-size: 3.5rem; color: #16a34a;"></i>
+                <h2 class="mt-3">{% trans "Verified Skill Badge earned" %}</h2>
+                <p class="fw-bold" style="font-size: 1.25rem;">{{ student_skill.skill.name }}</p>
+                <div class="metric-grid mt-4">
+                    <div class="metric"><div class="metric__value">{{ attempt.score_pct }}%</div><div class="metric__label">{% trans "Score" %}</div></div>
+                    <div class="metric metric--success"><div class="metric__value">P{{ student_skill.percentile }}</div><div class="metric__label">{% trans "Percentile" %}</div></div>
+                </div>
+            </div>
+
+        {% else %}
+            <div class="card mb-5">
+                <span class="badge badge--accent"><i class="bi bi-graph-up-arrow"></i> {{ student_skill.status_label }}</span>
+                <h2 class="mt-3">{% trans "Your personalized upskilling path" %}</h2>
+                <p class="text-muted">{% trans "You're close. Focus on the areas below, then retake the challenge." %}</p>
+                <ul class="mb-0">
+                    {% for gap in student_skill.lag_sub_skills %}
+                        <li><strong>{{ gap.name }}</strong> — {{ gap.accuracy }}%</li>
+                    {% endfor %}
+                </ul>
+                <p class="mt-3 mb-0" data-cooldown="{{ upskill.cooldown.seconds_remaining }}">
+                    <i class="bi bi-hourglass-split"></i> {% trans "Retest available in" %}
+                    <strong data-role="cooldown">{{ student_skill.cooldown_until|timeuntil }}</strong>
+                    ({{ student_skill.cooldown_until|date:"Y/m/d" }})
+                </p>
+            </div>
+
+            <div class="skills-grid">
+                {% for rec in upskill.recommendations %}
+                    <div class="skill-tile">
+                        <span class="badge {% if rec.provider_type == 'internest_partner' %}badge--primary{% else %}badge--info{% endif %}">
+                            {% if rec.provider_type == 'internest_partner' %}{% trans "Internest partner" %}{% else %}{{ rec.provider }}{% endif %}
+                        </span>
+                        <div class="fw-bold mt-2">{{ rec.title }}</div>
+                        <div class="skill-tile__meta">{{ rec.provider }} · {{ rec.sub_skill }}</div>
+                        <div class="skill-tile__evidence">{{ rec.expected_outcome }}</div>
+                        <a href="{{ rec.url }}" class="btn btn--primary btn--sm mt-3"
+                           {% if rec.provider_type != 'internest_partner' %}target="_blank" rel="noopener"{% endif %}>
+                            {% if rec.price %}{{ rec.price }} {% trans "EGP" %} · {% endif %}{% trans "Open course" %}
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="text-center mt-6">
+            <a href="{% url 'skills_hub' %}" class="btn btn--ghost">{% trans "Back to my skills" %}</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
