@@ -162,15 +162,16 @@ LOGIN_REDIRECT_URL = "home_redirect"
 LOGIN_URL = "login_or_signup"
 LOGOUT_REDIRECT_URL = "landing"
 
-# --- (6) Email (SendGrid HTTPS API via Anymail) ---
-# Read straight from the .env file via django-environ so the same value
-# is visible to the web app, to `manage.py shell`, and to any management
-# command, with zero ambiguity.
-EMAIL_BACKEND = env.str("DJANGO_EMAIL_BACKEND", default="anymail.backends.sendgrid.EmailBackend")
-ANYMAIL = {
-    "SENDGRID_API_KEY": env.str("ANYMAIL_SENDGRID_API_KEY", default=""),
-}
-DEFAULT_FROM_EMAIL = env.str("DJANGO_DEFAULT_FROM_EMAIL", default="internest.opportunities@gmail.com")
+# --- (6) Email (Gmail SMTP) ---
+# .env is loaded into os.environ above by environ.Env.read_env().
+# EMAIL_HOST_PASSWORD must be a Gmail App Password (requires 2-Step Verification).
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "internest.opportunities@gmail.com")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = f"Internest <{EMAIL_HOST_USER}>"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 EMAIL_TIMEOUT = 20
 
