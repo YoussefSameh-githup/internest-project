@@ -322,3 +322,37 @@ class GateAndNavTests(Base):
     def test_student_sees_nav_button(self):
         self.client.force_login(self.student_user)
         self.assertContains(self.client.get(reverse("list")), "Analyze & Verify Skills")
+
+
+class NewUserRobustnessTests(Base):
+    def test_new_user_without_profile_gets_redirected_not_500(self):
+        fresh = User.objects.create_user("fresh", password="pw")
+        self.client.force_login(fresh)
+        resp = self.client.get(reverse("skills_hub"))
+        self.assertRedirects(resp, reverse("profile"), fetch_redirect_response=False)
+        self.assertTrue(StudentProfile.objects.filter(user=fresh).exists())
+        profile = self.client.get(reverse("profile"))
+        self.assertEqual(profile.status_code, 200)
+        self.assertContains(profile, "complete your basic profile")
+        self.assertContains(profile, "Analyze & Verify Skills")
+
+    def test_existing_user_with_null_fields_loads_both_pages(self):
+        StudentProfile.objects.filter(pk=self.student.pk).update(university=None, major=None, study_level=None)
+        self.client.force_login(self.student_user)
+        self.assertEqual(self.client.get(reverse("profile")).status_code, 200)
+        self.assertEqual(self.client.get(reverse("skills_hub")).status_code, 302)
+
+    def test_complete_profile_loads_skills_hub(self):
+        self.client.force_login(self.student_user)
+        self.assertEqual(self.client.get(reverse("profile")).status_code, 200)
+        self.assertEqual(self.client.get(reverse("skills_hub")).status_code, 200)
+
+    def test_profile_renders_when_skills_tables_unavailable(self):
+        self.client.force_login(self.student_user)
+        with mock.patch.object(StudentSkill._meta, "db_table", "missing_skills_table"):
+            self.assertEqual(self.client.get(reverse("profile")).status_code, 200)
+
+    def test_admin_does_not_see_nav_button(self):
+        admin = User.objects.create_superuser("root", "r@x.com", "pw")
+        self.client.force_login(admin)
+        self.assertNotContains(self.client.get(reverse("list")), "Analyze & Verify Skills")

@@ -33,7 +33,7 @@ def student_gate(api=False):
         @wraps(view)
         @login_required
         def wrapper(request, *args, **kwargs):
-            student = student_for(request.user)
+            student = student_for(request.user, create=True)
             if student is None:
                 if api:
                     return JsonResponse({"error": "students_only"}, status=403)
@@ -41,7 +41,7 @@ def student_gate(api=False):
             if missing_profile_fields(student):
                 if api:
                     return JsonResponse({"error": "profile_incomplete", "profile_url": reverse("profile")}, status=403)
-                messages.warning(request, "Complete your basic profile (university, major and study level) to analyze and verify your skills.")
+                messages.warning(request, "Please complete your basic profile first (university, major and study level) to analyze and verify your skills.")
                 return redirect("profile")
             request.student = student
             return view(request, *args, **kwargs)

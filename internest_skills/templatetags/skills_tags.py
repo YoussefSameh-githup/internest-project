@@ -1,14 +1,24 @@
+import logging
+
 from django import template
+from django.db import DatabaseError
 
 from ..models import StudentSkill
-from ..permissions import is_pro_employer, is_verified_university, skill_view_role, student_for
+from ..permissions import is_pro_employer, is_verified_university, is_student_role, skill_view_role
 
 register = template.Library()
+logger = logging.getLogger(__name__)
 
 
 @register.inclusion_tag("skills/_profile_card.html", takes_context=True)
 def skills_profile_card(context, student):
-    skills = list(student.skills.select_related("skill")) if student and student.pk else []
+    skills = []
+    if student is not None and student.pk:
+        try:
+            skills = list(student.skills.select_related("skill"))
+        except DatabaseError:
+            # Profile page must still render if skills tables are unavailable (e.g. migration not applied yet).
+            logger.exception("Could not load skills for profile card")
     return {
         "request": context.get("request"),
         "verified": [s for s in skills if s.status == StudentSkill.STATUS_VERIFIED],
@@ -34,4 +44,4 @@ def partner_is_verified_university(partner):
 
 @register.simple_tag
 def is_student_user(user):
-    return student_for(user) is not None
+    return is_student_role(user)
