@@ -34,6 +34,7 @@
                     <div class="metric metric--success"><div class="metric__value">P{{ student_skill.percentile }}</div><div class="metric__label">{% trans "Percentile" %}</div></div>
                 </div>
             </div>
+            {% if upskill.recommendations %}<h3 class="mt-6 mb-4">{% trans "Level up next" %}</h3>{% endif %}
 
         {% else %}
             <div class="card mb-5">
@@ -51,7 +52,9 @@
                     ({{ student_skill.cooldown_until|date:"Y/m/d" }})
                 </p>
             </div>
+        {% endif %}
 
+        {% if attempt.state != 'terminated' and upskill.recommendations %}
             <div class="skills-grid">
                 {% for rec in upskill.recommendations %}
                     <div class="skill-tile">
@@ -59,7 +62,7 @@
                             {% if rec.provider_type == 'internest_partner' %}{% trans "Internest partner" %}{% else %}{{ rec.provider }}{% endif %}
                         </span>
                         <div class="fw-bold mt-2">{{ rec.title }}</div>
-                        <div class="skill-tile__meta">{{ rec.provider }} · {{ rec.sub_skill }}</div>
+                        <div class="skill-tile__meta">{{ rec.provider }}{% if rec.sub_skill %} · {{ rec.sub_skill }}{% endif %}</div>
                         <div class="skill-tile__evidence">{{ rec.expected_outcome }}</div>
                         <a href="{{ rec.url }}" class="btn btn--primary btn--sm mt-3"
                            {% if rec.provider_type != 'internest_partner' %}target="_blank" rel="noopener"{% endif %}>

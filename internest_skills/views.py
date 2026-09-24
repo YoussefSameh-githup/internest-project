@@ -1,5 +1,6 @@
 import json
 import logging
+from functools import wraps
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -12,13 +13,13 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from internest_core.models import StudentProfile
-from internest_core.views import _get_partner_profile, _get_student_profile, get_user_context
+from internest_core.views import _get_partner_profile, get_user_context
 
 from . import challenge as engine
 from .extraction import ExtractionError, extract_skills, read_document_text, save_claimed_skills
 from .forms import SkillSourceForm
 from .models import ChallengeAttempt, ChallengeItem, SkillProfile, StudentSkill
-from .permissions import ROLE_SELF, is_pro_employer, is_verified_university, skill_view_role
+from .permissions import is_verified_university, missing_profile_fields, skill_view_role, student_for
 from .recommendations import recommendations_for
 
 logger = logging.getLogger(__name__)
@@ -26,11 +27,26 @@ logger = logging.getLogger(__name__)
 MAX_EXTRACTIONS_PER_DAY = 5
 
 
-def _require_student(request):
-    student = _get_student_profile(request.user)
-    if student is None or _get_partner_profile(request.user) is not None:
-        return None
-    return student
+def student_gate(api=False):
+    """Students only (never startups/universities), and only once their basic profile is saved."""
+    def decorator(view):
+        @wraps(view)
+        @login_required
+        def wrapper(request, *args, **kwargs):
+            student = student_for(request.user)
+            if student is None:
+                if api:
+                    return JsonResponse({"error": "students_only"}, status=403)
+                raise Http404
+            if missing_profile_fields(student):
+                if api:
+                    return JsonResponse({"error": "profile_incomplete", "profile_url": reverse("profile")}, status=403)
+                messages.warning(request, "Complete your basic profile (university, major and study level) to analyze and verify your skills.")
+                return redirect("profile")
+            request.student = student
+            return view(request, *args, **kwargs)
+        return wrapper
+    return decorator
 
 
 def _skills_with_challenge_flag(qs):
@@ -40,12 +56,9 @@ def _skills_with_challenge_flag(qs):
 
 
 # ---------------------------------------------------------------- student hub
-@login_required
+@student_gate()
 def skills_hub(request):
-    student = _require_student(request)
-    if student is None:
-        messages.warning(request, "Skill verification is available for students only.")
-        return redirect("home_redirect")
+    student = request.student
     skill_profile, _ = SkillProfile.objects.get_or_create(student=student)
 
     if request.method == "POST":
@@ -114,12 +127,10 @@ def _handle_extraction(request, student, skill_profile, data):
 
 
 # ---------------------------------------------------------------- challenge flow
-@login_required
+@student_gate()
 @require_POST
 def challenge_start(request, student_skill_id):
-    student = _require_student(request)
-    if student is None:
-        raise Http404
+    student = request.student
     with transaction.atomic():
         ss = get_object_or_404(StudentSkill.objects.select_for_update().select_related("skill"), pk=student_skill_id, student=student)
         try:
@@ -130,12 +141,10 @@ def challenge_start(request, student_skill_id):
     return redirect("skills_challenge", token=attempt.token)
 
 
-@login_required
+@student_gate()
 @require_GET
 def challenge_run(request, token):
-    student = _require_student(request)
-    if student is None:
-        raise Http404
+    student = request.student
     attempt = get_object_or_404(ChallengeAttempt.objects.select_related("student_skill__skill"), token=token, student_skill__student=student)
     if not attempt.is_active:
         return redirect("skills_result", token=attempt.token)
@@ -152,10 +161,7 @@ def _json_body(request):
 
 
 def _attempt_or_404(request, token):
-    student = _require_student(request)
-    if student is None:
-        raise Http404
-    attempt = engine.active_attempt_for(student, token)
+    attempt = engine.active_attempt_for(request.student, token)
     if attempt is None:
         raise Http404
     return attempt
@@ -168,7 +174,7 @@ def _next_payload(attempt):
     return {"state": attempt.state, "result_url": reverse("skills_result", args=[attempt.token])}
 
 
-@login_required
+@student_gate(api=True)
 @require_POST
 def api_next(request, token):
     with transaction.atomic():
@@ -176,7 +182,7 @@ def api_next(request, token):
         return JsonResponse(_next_payload(attempt))
 
 
-@login_required
+@student_gate(api=True)
 @require_POST
 def api_answer(request, token):
     body = _json_body(request)
@@ -200,7 +206,7 @@ def api_answer(request, token):
         return JsonResponse(_next_payload(attempt))
 
 
-@login_required
+@student_gate(api=True)
 @require_POST
 def api_event(request, token):
     kind = _json_body(request).get("type")
@@ -222,11 +228,9 @@ def api_event(request, token):
         return JsonResponse(payload)
 
 
-@login_required
+@student_gate()
 def challenge_result(request, token):
-    student = _require_student(request)
-    if student is None:
-        raise Http404
+    student = request.student
     attempt = get_object_or_404(ChallengeAttempt.objects.select_related("student_skill__skill"), token=token, student_skill__student=student)
     if attempt.is_active:
         return redirect("skills_challenge", token=attempt.token)
@@ -235,17 +239,15 @@ def challenge_result(request, token):
     context.update({
         "attempt": attempt,
         "student_skill": ss,
-        "upskill": recommendations_for(ss) if ss.status == StudentSkill.STATUS_LAG else None,
+        "upskill": recommendations_for(ss),
     })
     return render(request, "skills/result.html", context)
 
 
-@login_required
+@student_gate(api=True)
 @require_GET
 def api_recommendations(request, student_skill_id):
-    ss = get_object_or_404(StudentSkill.objects.select_related("skill", "student"), pk=student_skill_id)
-    if skill_view_role(request.user, ss.student) != ROLE_SELF and not request.user.is_superuser:
-        return JsonResponse({"error": "forbidden"}, status=403)
+    ss = get_object_or_404(StudentSkill.objects.select_related("skill", "student"), pk=student_skill_id, student=request.student)
     return JsonResponse(recommendations_for(ss))
 
 

@@ -9,9 +9,7 @@
                 {% if lag_count %}· {% blocktrans with n=lag_count %}{{ n }} upskilling paths{% endblocktrans %}{% endif %}
             </p>
         </div>
-        <a href="{% url 'skills_hub' %}" class="btn btn--primary btn--lg">
-            <i class="bi bi-shield-check"></i> {% trans "Verify Your Skills" %}
-        </a>
+        <a href="{% url 'skills_hub' %}" class="btn btn--ghost btn--sm">{% trans "Manage skills" %} <i class="bi bi-arrow-left-short"></i></a>
     </div>
     {% if verified %}
         <div class="flex mt-4" style="flex-wrap: wrap; gap: var(--space-2);">

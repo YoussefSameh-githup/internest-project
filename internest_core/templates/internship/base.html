@@ -1,4 +1,4 @@
-{% load static i18n %}
+{% load static i18n skills_tags %}
 {% get_current_language as LANGUAGE_CODE %}
 {% get_current_language_bidi as LANGUAGE_BIDI %}
 <!DOCTYPE html>
@@ -92,6 +92,12 @@
                     {% if has_partner_profile %}
                         <a href="{% url 'partner_submit_choose' %}" class="btn btn--accent btn--sm">
                             <i class="bi bi-plus-lg"></i> {% trans "Add content" %}
+                        </a>
+                    {% endif %}
+                    {% is_student_user user as show_skills_cta %}
+                    {% if show_skills_cta %}
+                        <a href="{% url 'skills_hub' %}" class="btn btn--primary btn--sm">
+                            <i class="bi bi-shield-check"></i> {% trans "Analyze & Verify Skills" %}
                         </a>
                     {% endif %}
                     <a href="{% url 'logout' %}" class="btn btn--ghost btn--sm">

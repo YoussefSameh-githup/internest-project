@@ -222,3 +222,9 @@ LOGGING = {
         },
     },
 }
+
+# --- Skill extraction LLM (OpenAI-compatible via AgentRouter); regex fallback when unset ---
+AGENTROUTER_API_KEY = env.str("AGENTROUTER_API_KEY", default="")
+AGENTROUTER_BASE_URL = env.str("AGENTROUTER_BASE_URL", default="")
+SKILLS_LLM_MODEL = env.str("SKILLS_LLM_MODEL", default="gpt-4o-mini")
+SKILLS_LLM_TIMEOUT = env.float("SKILLS_LLM_TIMEOUT", default=15.0)

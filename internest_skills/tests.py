@@ -1,12 +1,14 @@
 import io
 import json
 from datetime import timedelta
+from types import SimpleNamespace
+from unittest import mock
 
 import docx
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -39,9 +41,9 @@ class Base(TestCase):
     def setUpTestData(cls):
         call_command("seed_skills", stdout=io.StringIO())
         cls.student_user = User.objects.create_user("stud", password="pw")
-        cls.student = StudentProfile.objects.create(user=cls.student_user, major="Finance")
+        cls.student = StudentProfile.objects.create(user=cls.student_user, university="Cairo", major="Finance", study_level="3")
         cls.other_user = User.objects.create_user("other", password="pw")
-        cls.other_student = StudentProfile.objects.create(user=cls.other_user)
+        cls.other_student = StudentProfile.objects.create(user=cls.other_user, university="Ain Shams", major="Law", study_level="2")
 
         cls.uni_user = User.objects.create_user("uni", password="pw")
         cls.uni = PartnerProfile.objects.create(user=cls.uni_user, company_name="Cairo Uni", partner_code="U1",
@@ -261,7 +263,7 @@ class AccessControlTests(Base):
 
     def test_profile_cta_and_partner_dashboard_render(self):
         self.client.force_login(self.student_user)
-        self.assertContains(self.client.get(reverse("profile")), "Verify Your Skills")
+        self.assertContains(self.client.get(reverse("profile")), "Analyze & Verify Skills")
         self._forward(self.pro, self.student)
         self.client.force_login(self.pro_user)
         self.assertContains(self.client.get(reverse("partner_dashboard")),
@@ -276,3 +278,47 @@ class AccessControlTests(Base):
         self.assertEqual(self.client.get(reverse("skills_api_recommendations", args=[ss.pk])).status_code, 403)
         self.client.force_login(self.student_user)
         self.assertEqual(self.client.get(reverse("skills_api_recommendations", args=[ss.pk])).status_code, 200)
+
+
+def _llm_reply(content):
+    return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=content))])
+
+
+@override_settings(AGENTROUTER_API_KEY="k", AGENTROUTER_BASE_URL="https://llm.test/v1")
+class LLMExtractionTests(Base):
+    def test_llm_result_mapped_to_taxonomy_and_unknown_dropped(self):
+        reply = _llm_reply('{"skills":[{"n":"python","t":"i"},{"n":"Quantum Knitting","t":"e"},{"n":"Excel","t":"e"}]}')
+        with mock.patch("openai.resources.chat.completions.Completions.create", return_value=reply) as create:
+            found = {e.skill.name: e.source for e in extract_skills("Automated reports for the finance team.")}
+        self.assertEqual(found, {"Python": "implicit", "Excel": "explicit"})
+        kwargs = create.call_args.kwargs
+        self.assertEqual(kwargs["model"], "gpt-4o-mini")
+        self.assertEqual(kwargs["max_tokens"], 300)
+        self.assertEqual(kwargs["response_format"], {"type": "json_object"})
+
+    def test_falls_back_to_regex_on_error_or_bad_json(self):
+        for effect in (TimeoutError("slow"), None):
+            kw = {"side_effect": effect} if effect else {"return_value": _llm_reply("not json")}
+            with mock.patch("openai.resources.chat.completions.Completions.create", **kw):
+                found = {e.skill.name for e in extract_skills("Skills: SQL and pivot tables")}
+            self.assertEqual(found, {"SQL", "Excel"})
+
+
+class GateAndNavTests(Base):
+    def test_incomplete_profile_redirects_to_profile(self):
+        StudentProfile.objects.filter(pk=self.student.pk).update(major="")
+        self.client.force_login(self.student_user)
+        self.assertRedirects(self.client.get(reverse("skills_hub")), reverse("profile"), fetch_redirect_response=False)
+        ss = self._claim()
+        resp = self.client.get(reverse("skills_api_recommendations", args=[ss.pk]))
+        self.assertEqual(resp.json()["error"], "profile_incomplete")
+
+    def test_partners_and_universities_blocked_and_no_nav_button(self):
+        for user in (self.pro_user, self.uni_user):
+            self.client.force_login(user)
+            self.assertEqual(self.client.get(reverse("skills_hub")).status_code, 404)
+            self.assertNotContains(self.client.get(reverse("partner_dashboard")), reverse("skills_hub"))
+
+    def test_student_sees_nav_button(self):
+        self.client.force_login(self.student_user)
+        self.assertContains(self.client.get(reverse("list")), "Analyze & Verify Skills")

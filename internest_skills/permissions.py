@@ -21,6 +21,20 @@ def _student(user):
         return None
 
 
+def student_for(user):
+    """StudentProfile for a logged-in, non-partner user; None for startups, universities and anonymous."""
+    if not user.is_authenticated or _partner(user) is not None:
+        return None
+    return _student(user)
+
+
+PROFILE_GATE_FIELDS = ("university", "major", "study_level")
+
+
+def missing_profile_fields(student) -> list[str]:
+    return [f for f in PROFILE_GATE_FIELDS if not (getattr(student, f, None) or "").strip()]
+
+
 def is_pro_employer(partner) -> bool:
     if partner is None or partner.is_academic:
         return False

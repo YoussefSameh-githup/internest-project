@@ -1,7 +1,7 @@
 from django import template
 
 from ..models import StudentSkill
-from ..permissions import is_pro_employer, is_verified_university, skill_view_role
+from ..permissions import is_pro_employer, is_verified_university, skill_view_role, student_for
 
 register = template.Library()
 
@@ -30,3 +30,8 @@ def partner_is_pro(partner):
 @register.simple_tag
 def partner_is_verified_university(partner):
     return is_verified_university(partner)
+
+
+@register.simple_tag
+def is_student_user(user):
+    return student_for(user) is not None

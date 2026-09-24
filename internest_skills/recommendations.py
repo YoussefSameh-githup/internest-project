@@ -21,8 +21,8 @@ _EXTERNAL_SEARCH = [
 ]
 
 
-def _partner_courses(sub_skill):
-    terms = sub_skill.search_terms
+def _partner_courses(sub_skill=None, terms=None):
+    terms = terms or sub_skill.search_terms
     match = reduce(or_, (Q(title__icontains=t) | Q(description__icontains=t) for t in terms))
     return (
         PartnerCourseSubmission.objects.filter(status="Approved")
@@ -32,10 +32,36 @@ def _partner_courses(sub_skill):
     )
 
 
+def _level_up(student_skill):
+    """Next-level courses for an already verified skill."""
+    skill = student_skill.skill
+    recs = [{
+        "sub_skill": None,
+        "title": c.title,
+        "provider": c.partner.company_name,
+        "provider_type": "internest_partner",
+        "url": reverse("course_checkout", args=[c.id]),
+        "price": str(c.price),
+        "expected_outcome": f"Advance your verified {skill.name} skill",
+    } for c in _partner_courses(terms=[skill.name] + [s.name for s in skill.sub_skills.all()])]
+    if not recs:
+        q = quote_plus(f"advanced {skill.name}")
+        recs = [{
+            "sub_skill": None,
+            "title": f"Advanced {skill.name} on {provider}",
+            "provider": provider,
+            "provider_type": "external_search",
+            "url": pattern.format(q=q),
+            "price": None,
+            "expected_outcome": f"Advance your verified {skill.name} skill",
+        } for provider, pattern in _EXTERNAL_SEARCH]
+    return recs
+
+
 def recommendations_for(student_skill) -> dict:
-    gap_ids = [g["id"] for g in student_skill.lag_sub_skills]
+    gap_ids = [g["id"] for g in student_skill.lag_sub_skills] if student_skill.status == "lag" else []
     sub_skills = SubSkill.objects.filter(id__in=gap_ids, skill=student_skill.skill)
-    recs = []
+    recs = _level_up(student_skill) if student_skill.status == "verified" else []
     for sub in sub_skills:
         outcome = f"Close the gap in {sub.name} and pass the {student_skill.skill.name} retest"
         partner = list(_partner_courses(sub))

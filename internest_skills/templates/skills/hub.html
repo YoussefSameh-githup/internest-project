@@ -48,6 +48,9 @@
                         <div class="fw-bold">{{ s.skill.name }}</div>
                         <div class="skill-tile__meta">{{ s.skill.get_discipline_display }}</div>
                         <div class="skill-tile__score">{{ s.score }}% · {% trans "Percentile" %} {{ s.percentile }}</div>
+                        {% with last=s.attempts.first %}
+                            {% if last %}<a class="btn btn--ghost btn--sm mt-2" href="{% url 'skills_result' last.token %}">{% trans "Level-up courses" %}</a>{% endif %}
+                        {% endwith %}
                     </div>
                 {% endfor %}
             </div>
