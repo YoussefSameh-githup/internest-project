@@ -21,7 +21,7 @@ from .forms import SkillSourceForm
 from .llm import llm_enabled
 from .models import ChallengeAttempt, ChallengeItem, SkillProfile, StudentSkill
 from .permissions import is_verified_university, missing_profile_fields, skill_view_role, student_for
-from .quizgen import MIN_ITEMS_TO_START, ensure_challenge_items
+from .quizgen import quiz_item_ids_for
 from .recommendations import recommendations_for
 
 logger = logging.getLogger(__name__)
@@ -135,16 +135,18 @@ def _handle_extraction(request, student, skill_profile, data):
 def challenge_start(request, student_skill_id):
     student = request.student
     ss = get_object_or_404(StudentSkill.objects.select_related("skill"), pk=student_skill_id, student=student)
-    # Network call happens outside the row lock below.
-    if ss.status != StudentSkill.STATUS_VERIFIED and not ss.in_cooldown:
-        if ensure_challenge_items(ss.skill) < MIN_ITEMS_TO_START:
-            messages.warning(request, "We couldn't prepare a challenge for this skill right now. Please try again in a few minutes.")
-            return redirect("skills_hub")
+    item_ids = None
+    # Live quiz generation (network) happens outside the row lock; skipped when resuming or not eligible.
+    can_start = ss.status != StudentSkill.STATUS_VERIFIED and not ss.in_cooldown
+    if can_start and not ss.attempts.filter(state=ChallengeAttempt.STATE_ACTIVE).exists():
+        item_ids = quiz_item_ids_for(ss.skill)
     with transaction.atomic():
         ss = get_object_or_404(StudentSkill.objects.select_for_update().select_related("skill"), pk=student_skill_id, student=student)
         try:
-            attempt = engine.start_attempt(ss)
+            attempt = engine.start_attempt(ss, item_ids=item_ids)
         except engine.ChallengeError as exc:
+            if can_start and item_ids is None:
+                exc = "We couldn't prepare a challenge for this skill right now. Please try again in a few minutes."
             messages.warning(request, str(exc))
             return redirect("skills_hub")
     return redirect("skills_challenge", token=attempt.token)

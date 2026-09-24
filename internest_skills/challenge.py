@@ -47,7 +47,8 @@ def _max_duration(attempt):
     return timedelta(seconds=sum(limits) + 60 * 5)
 
 
-def start_attempt(student_skill: StudentSkill) -> ChallengeAttempt:
+def start_attempt(student_skill: StudentSkill, item_ids=None) -> ChallengeAttempt:
+    """`item_ids` is a freshly generated live quiz; without it, questions come from the saved bank."""
     if student_skill.status == StudentSkill.STATUS_VERIFIED:
         raise ChallengeError("This skill is already verified.")
     if student_skill.in_cooldown:
@@ -58,7 +59,7 @@ def start_attempt(student_skill: StudentSkill) -> ChallengeAttempt:
             return active
         terminate(active, "abandoned")
         raise ChallengeError("Your previous session was abandoned. Retest is available after the cooldown ends.")
-    return ChallengeAttempt.objects.create(student_skill=student_skill, item_ids=_pick_items(student_skill.skill))
+    return ChallengeAttempt.objects.create(student_skill=student_skill, item_ids=item_ids or _pick_items(student_skill.skill))
 
 
 def _current_item(attempt):

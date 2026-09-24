@@ -72,10 +72,15 @@ def _clean_item(raw):
     }
 
 
-def generate_items(skill, count=GENERATE_BATCH) -> int:
+class QuizGenerationError(Exception):
+    pass
+
+
+def generate_items(skill, count=GENERATE_BATCH) -> list[ChallengeItem]:
+    """Ask the LLM for `count` fresh questions and save them (they also become the offline fallback bank)."""
     existing_subs = list(skill.sub_skills.values_list("name", flat=True))
     user = (
-        f"Skill: {skill.name} ({skill.get_discipline_display()}). Questions: {count}."
+        f"Skill: {skill.name} ({skill.get_discipline_display()}). Questions: {count}. Write NEW questions."
         + (f" Prefer these sub-skills: {', '.join(existing_subs)}." if existing_subs else "")
     )
     data = chat_json(build_system_prompt(skill), user, max_tokens=MAX_TOKENS, timeout=60)
@@ -83,33 +88,47 @@ def generate_items(skill, count=GENERATE_BATCH) -> int:
     if not isinstance(raw_items, list):
         raise ValueError("LLM quiz response missing 'q' list")
 
-    existing_prompts = set(skill.items.values_list("prompt", flat=True))
-    created = 0
+    existing = {i.prompt: i for i in skill.items.filter(is_active=True)}
+    items = []
     for raw in raw_items[:count]:
-        item = _clean_item(raw)
-        if item is None or item["prompt"] in existing_prompts:
+        cleaned = _clean_item(raw)
+        if cleaned is None:
+            continue
+        if cleaned["prompt"] in existing:
+            items.append(existing[cleaned["prompt"]])
             continue
         sub, _ = SubSkill.objects.get_or_create(
-            skill=skill, name=item["sub_skill"], defaults={"keywords": item["topic"] or item["sub_skill"]},
+            skill=skill, name=cleaned["sub_skill"], defaults={"keywords": cleaned["topic"] or cleaned["sub_skill"]},
         )
-        ChallengeItem.objects.create(
+        item = ChallengeItem.objects.create(
             skill=skill, sub_skill=sub, kind=ChallengeItem.KIND_MCQ,
-            prompt=item["prompt"], code_snippet=item["code"], topic=item["topic"],
-            difficulty=item["difficulty"], choices=item["choices"], correct_index=item["correct_index"],
-            time_limit_seconds=_TIME_LIMIT[item["difficulty"]] + (15 if item["code"] and item["difficulty"] != "hard" else 0),
+            prompt=cleaned["prompt"], code_snippet=cleaned["code"], topic=cleaned["topic"],
+            difficulty=cleaned["difficulty"], choices=cleaned["choices"], correct_index=cleaned["correct_index"],
+            time_limit_seconds=_TIME_LIMIT[cleaned["difficulty"]] + (15 if cleaned["code"] and cleaned["difficulty"] != "hard" else 0),
         )
-        existing_prompts.add(item["prompt"])
-        created += 1
-    return created
+        existing[item.prompt] = item
+        items.append(item)
+    return items
 
 
-def ensure_challenge_items(skill) -> int:
-    """Make sure `skill` has a full challenge; returns the number of active items afterwards."""
-    active = skill.items.filter(is_active=True).count()
-    if active >= skill.challenge_length or not llm_enabled():
-        return active
+def live_quiz_item_ids(skill) -> list[int]:
+    """Primary path: a fresh LLM-generated quiz for this attempt, easy → hard. Raises QuizGenerationError on failure."""
+    if not llm_enabled():
+        raise QuizGenerationError("LLM not configured")
     try:
-        generate_items(skill, count=min(GENERATE_BATCH, max(skill.challenge_length - active, MIN_ITEMS_TO_START)))
-    except Exception:
-        logger.warning("Quiz generation failed for skill %s", skill.pk, exc_info=True)
-    return skill.items.filter(is_active=True).count()
+        items = generate_items(skill, count=skill.challenge_length)
+    except Exception as exc:
+        raise QuizGenerationError(str(exc)) from exc
+    if len(items) < MIN_ITEMS_TO_START:
+        raise QuizGenerationError(f"only {len(items)} usable questions generated")
+    items.sort(key=lambda i: ChallengeItem.DIFFICULTY_ORDER.get(i.difficulty, 1))
+    return [i.id for i in items]
+
+
+def quiz_item_ids_for(skill):
+    """Live quiz first; ONLY on failure return None so the engine falls back to the saved question bank."""
+    try:
+        return live_quiz_item_ids(skill)
+    except QuizGenerationError:
+        logger.warning("Live quiz generation failed for skill %s; using saved questions", skill.pk, exc_info=True)
+        return None

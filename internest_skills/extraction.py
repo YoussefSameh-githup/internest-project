@@ -100,7 +100,8 @@ def extract_skills(text: str, skills=None) -> list[ExtractedSkill]:
 _SYSTEM_PROMPT = (
     "Read the WHOLE CV (summary, experience, projects, education, courses, activities; English/Arabic, any discipline) "
     "and list ALL professional skills, max 20, most relevant first; include implicit ones shown by projects/work. "
-    "Reuse the exact known name when one fits; otherwise give a short canonical English skill name (1-4 words). "
+    "Standardize every name to the global ESCO / O*NET skill taxonomy (preferred label, 1-4 words, English); "
+    "if a Known name is the same skill, return that Known name exactly. "
     "t: e=explicitly stated, i=implied by projects/work. "
     "d: c=computing b=business m=media l=law e=engineering h=health g=general. "
     'JSON only: {"skills":[{"n":"","t":"e","d":"c"}]}'
@@ -171,8 +172,6 @@ def extract_skills_llm(text: str, skills) -> list[ExtractedSkill]:
         source = StudentSkill.SOURCE_EXPLICIT if item.get("t") == "e" else StudentSkill.SOURCE_IMPLICIT
         evidence = local[skill.pk].evidence if skill.pk in local else ""
         results.append(ExtractedSkill(skill, source, evidence))
-    # Exact alias hits are high-precision; keep any the model missed.
-    results.extend(e for pk, e in local.items() if pk not in seen and e.source == StudentSkill.SOURCE_EXPLICIT)
     return results
 
 

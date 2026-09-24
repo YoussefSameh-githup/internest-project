@@ -298,6 +298,20 @@ class LLMExtractionTests(Base):
         self.assertEqual(kwargs["model"], "gpt-4o-mini")
         self.assertEqual(kwargs["max_tokens"], 300)
         self.assertEqual(kwargs["response_format"], {"type": "json_object"})
+        self.assertIn("ESCO / O*NET", kwargs["messages"][0]["content"])
+
+    def test_api_result_is_authoritative_no_local_merge(self):
+        reply = _llm_reply('{"skills":[{"n":"Data Analysis","t":"e","d":"c"}]}')
+        with mock.patch("openai.resources.chat.completions.Completions.create", return_value=reply):
+            found = {e.skill.name for e in extract_skills("Skills: SQL and pivot tables")}
+        self.assertEqual(found, {"Data Analysis"})
+
+    def test_cv_upload_attaches_api_skills_to_student(self):
+        reply = _llm_reply('{"skills":[{"n":"Supply Chain Management","t":"e","d":"b"},{"n":"SQL","t":"i","d":"c"}]}')
+        self.client.force_login(self.student_user)
+        with mock.patch("openai.resources.chat.completions.Completions.create", return_value=reply):
+            self.client.post(reverse("skills_hub"), {"cv_file": _docx_upload("Led procurement and logistics at a retail firm.")})
+        self.assertEqual(set(self.student.skills.values_list("skill__name", flat=True)), {"Supply Chain Management", "SQL"})
 
     def test_falls_back_to_regex_on_error_or_bad_json(self):
         for effect in (TimeoutError("slow"), None):
@@ -418,15 +432,48 @@ class QuizGenerationTests(Base):
         self.assertContains(resp, "prepare a challenge")
         self.assertFalse(ss.attempts.exists())
 
-    def test_seeded_skill_is_topped_up_not_duplicated(self):
-        before = self.skill.items.count()
-        with mock.patch("openai.resources.chat.completions.Completions.create", return_value=_llm_reply(self.QUIZ)):
-            from .quizgen import ensure_challenge_items
-            total = ensure_challenge_items(self.skill)
-            again = ensure_challenge_items(self.skill)
-        self.assertEqual(total, self.skill.challenge_length)
-        self.assertEqual(total, again)
-        self.assertGreater(total, before)
+    def test_live_quiz_is_primary_even_when_saved_questions_exist(self):
+        seeded_ids = set(self.skill.items.values_list("id", flat=True))
+        ss = self._claim()
+        self.client.force_login(self.student_user)
+        with mock.patch("openai.resources.chat.completions.Completions.create", return_value=_llm_reply(self.QUIZ)) as create:
+            self.client.post(reverse("skills_challenge_start", args=[ss.pk]))
+        self.assertEqual(create.call_count, 1)
+        attempt = ss.attempts.get()
+        self.assertEqual(len(attempt.item_ids), 10)
+        self.assertFalse(seeded_ids & set(attempt.item_ids))
+
+    def test_resuming_an_active_attempt_does_not_regenerate(self):
+        ss = self._claim()
+        self.client.force_login(self.student_user)
+        with mock.patch("openai.resources.chat.completions.Completions.create", return_value=_llm_reply(self.QUIZ)) as create:
+            self.client.post(reverse("skills_challenge_start", args=[ss.pk]))
+            self.client.post(reverse("skills_challenge_start", args=[ss.pk]))
+        self.assertEqual(create.call_count, 1)
+        self.assertEqual(ss.attempts.count(), 1)
+
+    def test_api_failure_falls_back_to_saved_questions(self):
+        seeded_ids = set(self.skill.items.values_list("id", flat=True))
+        ss = self._claim()
+        self.client.force_login(self.student_user)
+        for failure in (TimeoutError("down"), _llm_reply("not json"), _llm_reply('{"q": []}')):
+            kw = {"side_effect": failure} if isinstance(failure, Exception) else {"return_value": failure}
+            ss.attempts.all().delete()
+            with mock.patch("openai.resources.chat.completions.Completions.create", **kw) as create:
+                resp = self.client.post(reverse("skills_challenge_start", args=[ss.pk]))
+            self.assertTrue(create.called)
+            attempt = ss.attempts.get()
+            self.assertRedirects(resp, reverse("skills_challenge", args=[attempt.token]), fetch_redirect_response=False)
+            self.assertTrue(set(attempt.item_ids) <= seeded_ids)
+
+    @override_settings(AGENTROUTER_API_KEY="")
+    def test_no_api_key_uses_saved_questions_without_calling_api(self):
+        ss = self._claim()
+        self.client.force_login(self.student_user)
+        with mock.patch("openai.resources.chat.completions.Completions.create") as create:
+            self.client.post(reverse("skills_challenge_start", args=[ss.pk]))
+        create.assert_not_called()
+        self.assertTrue(ss.attempts.exists())
 
 
 class FeedbackAndLeaderboardTests(ChallengeFlowTests):
