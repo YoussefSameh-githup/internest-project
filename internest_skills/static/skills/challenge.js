@@ -45,6 +45,10 @@
   function handle(payload) {
     busy = false;
     if (!payload) return;
+    if (payload.error && !payload.item && !payload.result_url) {
+      if (payload.profile_url) return window.location.assign(payload.profile_url);
+      return showWarning("Could not load the next question. Please refresh the page.");
+    }
     if (payload.result_url && payload.state !== "active") return finish(payload.result_url);
     if (payload.item) render(payload.item);
   }
@@ -187,7 +191,9 @@
   });
 
   ui.submit.addEventListener("click", function () { submit(false); });
+  ui.begin.disabled = false;
   ui.begin.addEventListener("click", function () {
+    ui.begin.disabled = true;
     running = true;
     ui.intro.hidden = true;
     ui.stage.hidden = false;

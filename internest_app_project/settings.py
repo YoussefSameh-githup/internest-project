@@ -147,6 +147,8 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "internest_core" / "static"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# Serve app static files (e.g. internest_skills/static) even if collectstatic wasn't re-run after a deploy.
+WHITENOISE_USE_FINDERS = True
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -225,7 +227,7 @@ LOGGING = {
 }
 
 # --- Skill extraction LLM (OpenAI-compatible via AgentRouter); regex fallback when unset ---
-AGENTROUTER_API_KEY = env.str("AGENTROUTER_API_KEY", default="")
-AGENTROUTER_BASE_URL = env.str("AGENTROUTER_BASE_URL", default="")
+AGENTROUTER_API_KEY = os.getenv("AGENTROUTER_API_KEY", "")  # secret: set in .env, never commit
+AGENTROUTER_BASE_URL = os.getenv("AGENTROUTER_BASE_URL", "https://agentrouter.org/v1")
 SKILLS_LLM_MODEL = env.str("SKILLS_LLM_MODEL", default="gpt-4o-mini")
 SKILLS_LLM_TIMEOUT = env.float("SKILLS_LLM_TIMEOUT", default=15.0)

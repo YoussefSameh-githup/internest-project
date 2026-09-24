@@ -18,8 +18,10 @@ from internest_core.views import _get_partner_profile, get_user_context
 from . import challenge as engine
 from .extraction import ExtractionError, extract_skills, read_document_text, save_claimed_skills
 from .forms import SkillSourceForm
+from .llm import llm_enabled
 from .models import ChallengeAttempt, ChallengeItem, SkillProfile, StudentSkill
 from .permissions import is_verified_university, missing_profile_fields, skill_view_role, student_for
+from .quizgen import MIN_ITEMS_TO_START, ensure_challenge_items
 from .recommendations import recommendations_for
 
 logger = logging.getLogger(__name__)
@@ -80,6 +82,7 @@ def skills_hub(request):
         "verified": [s for s in skills if s.status == StudentSkill.STATUS_VERIFIED],
         "lagging": [s for s in skills if s.status == StudentSkill.STATUS_LAG],
         "claimed": [s for s in skills if s.status == StudentSkill.STATUS_CLAIMED],
+        "can_generate_quiz": llm_enabled(),
     })
     return render(request, "skills/hub.html", context)
 
@@ -131,6 +134,12 @@ def _handle_extraction(request, student, skill_profile, data):
 @require_POST
 def challenge_start(request, student_skill_id):
     student = request.student
+    ss = get_object_or_404(StudentSkill.objects.select_related("skill"), pk=student_skill_id, student=student)
+    # Network call happens outside the row lock below.
+    if ss.status != StudentSkill.STATUS_VERIFIED and not ss.in_cooldown:
+        if ensure_challenge_items(ss.skill) < MIN_ITEMS_TO_START:
+            messages.warning(request, "We couldn't prepare a challenge for this skill right now. Please try again in a few minutes.")
+            return redirect("skills_hub")
     with transaction.atomic():
         ss = get_object_or_404(StudentSkill.objects.select_for_update().select_related("skill"), pk=student_skill_id, student=student)
         try:

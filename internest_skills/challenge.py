@@ -1,4 +1,5 @@
 """Proctored challenge engine. All timing and scoring decisions are server-side."""
+import math
 import random
 from collections import defaultdict
 from datetime import timedelta
@@ -101,7 +102,7 @@ def serve_next(attempt):
     if attempt.current_served_at is None:
         attempt.current_served_at = timezone.now()
         attempt.save(update_fields=["current_served_at"])
-    remaining = max(0, int((_deadline(attempt, item) - timezone.now()).total_seconds()))
+    remaining = max(0, math.ceil((_deadline(attempt, item) - timezone.now()).total_seconds()))
     return {
         "item_id": item.id,
         "index": attempt.current_index + 1,

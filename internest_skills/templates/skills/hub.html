@@ -70,7 +70,7 @@
                         {% endwith %}
                         {% if s.in_cooldown %}
                             <div class="skill-tile__meta mt-2"><i class="bi bi-hourglass-split"></i> {% trans "Retest available" %}: {{ s.cooldown_until|date:"Y/m/d" }}</div>
-                        {% elif s.active_items >= 3 %}
+                        {% elif s.active_items >= 3 or can_generate_quiz %}
                             <form method="post" action="{% url 'skills_challenge_start' s.id %}" class="mt-2">{% csrf_token %}
                                 <button class="btn btn--primary btn--sm">{% trans "Retake challenge" %}</button>
                             </form>
@@ -101,7 +101,7 @@
                             {% if s.evidence %}<div class="skill-tile__evidence">“{{ s.evidence|truncatechars:120 }}”</div>{% endif %}
                             {% if s.in_cooldown %}
                                 <div class="skill-tile__meta mt-2"><i class="bi bi-hourglass-split"></i> {% trans "Retest available" %}: {{ s.cooldown_until|date:"Y/m/d" }}</div>
-                            {% elif s.active_items >= 3 %}
+                            {% elif s.active_items >= 3 or can_generate_quiz %}
                                 <form method="post" action="{% url 'skills_challenge_start' s.id %}" class="mt-3">{% csrf_token %}
                                     <button class="btn btn--primary btn--sm"><i class="bi bi-stopwatch"></i> {% trans "Start challenge" %}</button>
                                 </form>

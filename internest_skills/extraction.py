@@ -3,19 +3,19 @@
 Primary: LLM (OpenAI-compatible, AgentRouter). Fallback: local regex matcher.
 """
 import io
-import json
 import logging
 import re
 from dataclasses import dataclass
 
-from django.conf import settings
-from django.db import transaction
+from django.db import IntegrityError, transaction
+from django.utils.text import slugify
 
+from .llm import chat_json, llm_enabled
 from .models import Skill, StudentSkill
 
 MAX_TEXT_CHARS = 200_000
 LLM_INPUT_CHARS = 8_000
-LLM_MAX_SKILLS = 25
+LLM_MAX_SKILLS = 20
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +89,7 @@ class ExtractedSkill:
 def extract_skills(text: str, skills=None) -> list[ExtractedSkill]:
     """LLM extraction when configured; any failure falls back to the local matcher."""
     skills = list(skills if skills is not None else Skill.objects.filter(is_active=True))
-    if settings.AGENTROUTER_API_KEY and settings.AGENTROUTER_BASE_URL:
+    if llm_enabled():
         try:
             return extract_skills_llm(text, skills)
         except Exception:
@@ -98,44 +98,56 @@ def extract_skills(text: str, skills=None) -> list[ExtractedSkill]:
 
 
 _SYSTEM_PROMPT = (
-    "Extract a candidate's skills from a CV (any discipline, English/Arabic). "
-    "Use ONLY names from the allowed list. t='e' if explicitly stated, 'i' if implied by projects/work. "
-    'Reply JSON only: {"skills":[{"n":"<name>","t":"e|i"}]}'
+    "Extract ALL professional skills from a CV (any discipline, English/Arabic), max 20, most relevant first. "
+    "Reuse the exact known name when one fits; otherwise give a short canonical English skill name (1-4 words). "
+    "t: e=explicitly stated, i=implied by projects/work. "
+    "d: c=computing b=business m=media l=law e=engineering h=health g=general. "
+    'JSON only: {"skills":[{"n":"","t":"e","d":"c"}]}'
 )
+_DISCIPLINE_CODES = {"c": "computing", "b": "business", "m": "media", "l": "law", "e": "engineering", "h": "health", "g": "general"}
+
+
+def _get_or_create_skill(name: str, discipline_code: str, by_name: dict):
+    key = name.lower()
+    if key in by_name:
+        return by_name[key]
+    if not (2 <= len(name) <= 60) or len(name.split()) > 5:
+        return None
+    skill = Skill.objects.filter(name__iexact=name).first()
+    if skill is None:
+        base = slugify(name, allow_unicode=True)[:90] or "skill"
+        slug, n = base, 2
+        while Skill.objects.filter(slug=slug).exists():
+            slug, n = f"{base}-{n}", n + 1
+        try:
+            skill = Skill.objects.create(
+                name=name, slug=slug,
+                discipline=_DISCIPLINE_CODES.get(discipline_code, "general"),
+                aliases=name,
+            )
+        except IntegrityError:
+            skill = Skill.objects.filter(name__iexact=name).first()
+    if skill is not None:
+        by_name[key] = skill
+    return skill if skill is not None and skill.is_active else None
 
 
 def extract_skills_llm(text: str, skills) -> list[ExtractedSkill]:
-    from openai import OpenAI
-
-    by_name = {s.name.lower(): s for s in skills}
     cv = re.sub(r"\s+", " ", text).strip()[:LLM_INPUT_CHARS]
-    client = OpenAI(
-        api_key=settings.AGENTROUTER_API_KEY,
-        base_url=settings.AGENTROUTER_BASE_URL,
-        timeout=settings.SKILLS_LLM_TIMEOUT,
-        max_retries=1,
-    )
-    resp = client.chat.completions.create(
-        model=settings.SKILLS_LLM_MODEL,
-        response_format={"type": "json_object"},
-        max_tokens=300,
-        temperature=0,
-        messages=[
-            {"role": "system", "content": _SYSTEM_PROMPT},
-            {"role": "user", "content": f"Allowed: {', '.join(s.name for s in skills)}\nCV:\n{cv}"},
-        ],
-    )
-    data = json.loads(resp.choices[0].message.content or "")
+    known = ", ".join(s.name for s in skills)
+    data = chat_json(_SYSTEM_PROMPT, f"Known: {known}\nCV:\n{cv}", max_tokens=300)
     items = data.get("skills")
     if not isinstance(items, list):
         raise ValueError("LLM response missing 'skills' list")
 
+    by_name = {s.name.lower(): s for s in skills}
     local = {e.skill.pk: e for e in extract_skills_local(text, skills)}
     results, seen = [], set()
     for item in items[:LLM_MAX_SKILLS]:
         if not isinstance(item, dict):
             continue
-        skill = by_name.get(str(item.get("n", "")).strip().lower())
+        name = re.sub(r"\s+", " ", str(item.get("n", ""))).strip()
+        skill = _get_or_create_skill(name, str(item.get("d", "g")), by_name) if name else None
         if skill is None or skill.pk in seen:
             continue
         seen.add(skill.pk)

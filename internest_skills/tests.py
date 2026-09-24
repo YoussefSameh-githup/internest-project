@@ -36,6 +36,7 @@ def _docx_upload(text, name="cv.docx"):
                               content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
 
+@override_settings(AGENTROUTER_API_KEY="")  # never hit the real LLM from tests
 class Base(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -286,11 +287,13 @@ def _llm_reply(content):
 
 @override_settings(AGENTROUTER_API_KEY="k", AGENTROUTER_BASE_URL="https://llm.test/v1")
 class LLMExtractionTests(Base):
-    def test_llm_result_mapped_to_taxonomy_and_unknown_dropped(self):
-        reply = _llm_reply('{"skills":[{"n":"python","t":"i"},{"n":"Quantum Knitting","t":"e"},{"n":"Excel","t":"e"}]}')
+    def test_llm_maps_known_skills_and_creates_new_ones(self):
+        reply = _llm_reply('{"skills":[{"n":"python","t":"i","d":"c"},{"n":"Supply Chain Planning","t":"e","d":"b"},'
+                           '{"n":"Excel","t":"e","d":"b"},{"n":"","t":"e"},{"n":"x","t":"e"}]}')
         with mock.patch("openai.resources.chat.completions.Completions.create", return_value=reply) as create:
             found = {e.skill.name: e.source for e in extract_skills("Automated reports for the finance team.")}
-        self.assertEqual(found, {"Python": "implicit", "Excel": "explicit"})
+        self.assertEqual(found, {"Python": "implicit", "Supply Chain Planning": "explicit", "Excel": "explicit"})
+        self.assertEqual(Skill.objects.get(name="Supply Chain Planning").discipline, "business")
         kwargs = create.call_args.kwargs
         self.assertEqual(kwargs["model"], "gpt-4o-mini")
         self.assertEqual(kwargs["max_tokens"], 300)
@@ -356,3 +359,49 @@ class NewUserRobustnessTests(Base):
         admin = User.objects.create_superuser("root", "r@x.com", "pw")
         self.client.force_login(admin)
         self.assertNotContains(self.client.get(reverse("list")), "Analyze & Verify Skills")
+
+
+@override_settings(AGENTROUTER_API_KEY="k", AGENTROUTER_BASE_URL="https://llm.test/v1")
+class QuizGenerationTests(Base):
+    QUIZ = json.dumps({"q": [
+        {"s": "Forecasting", "p": f"Question number {i} about demand forecasting?", "c": ["A", "B", "C", "D"], "a": i % 4}
+        for i in range(8)
+    ] + [{"s": "Bad", "p": "short", "c": ["A"], "a": 5}]})
+
+    def setUp(self):
+        self.new_skill = Skill.objects.create(name="Supply Chain Planning", slug="supply-chain-planning", discipline="business")
+
+    def test_start_generates_quiz_for_skill_without_items(self):
+        ss = self._claim(skill=self.new_skill)
+        self.client.force_login(self.student_user)
+        with mock.patch("openai.resources.chat.completions.Completions.create", return_value=_llm_reply(self.QUIZ)):
+            self.assertContains(self.client.get(reverse("skills_hub")), "Start challenge")
+            resp = self.client.post(reverse("skills_challenge_start", args=[ss.pk]))
+        attempt = ss.attempts.get()
+        self.assertRedirects(resp, reverse("skills_challenge", args=[attempt.token]), fetch_redirect_response=False)
+        self.assertEqual(self.new_skill.items.count(), 8)
+        item = self.new_skill.items.first()
+        self.assertEqual(item.time_limit_seconds, 45)
+        self.assertIn(item.correct_index, range(4))
+        page = self.client.get(resp.url)
+        self.assertContains(page, 'data-role="begin" disabled')
+        payload = self.client.post(reverse("skills_api_next", args=[attempt.token])).json()
+        self.assertEqual(payload["item"]["remaining_seconds"], 45)
+
+    def test_generation_failure_redirects_with_message(self):
+        ss = self._claim(skill=self.new_skill)
+        self.client.force_login(self.student_user)
+        with mock.patch("openai.resources.chat.completions.Completions.create", side_effect=TimeoutError()):
+            resp = self.client.post(reverse("skills_challenge_start", args=[ss.pk]), follow=True)
+        self.assertContains(resp, "prepare a challenge")
+        self.assertFalse(ss.attempts.exists())
+
+    def test_seeded_skill_is_topped_up_not_duplicated(self):
+        before = self.skill.items.count()
+        with mock.patch("openai.resources.chat.completions.Completions.create", return_value=_llm_reply(self.QUIZ)):
+            from .quizgen import ensure_challenge_items
+            total = ensure_challenge_items(self.skill)
+            again = ensure_challenge_items(self.skill)
+        self.assertGreaterEqual(total, self.skill.challenge_length)
+        self.assertEqual(total, again)
+        self.assertGreater(total, before)
