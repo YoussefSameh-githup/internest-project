@@ -1,7 +1,7 @@
 {% extends 'internship/base.html' %}
 {% load static i18n %}
 
-{% block title %}Internest — {% trans "Your career journey starts here" %}{% endblock %}
+{% block title %}Internest — {% trans "Verified student talent marketplace" %}{% endblock %}
 
 {% block content %}
 
@@ -10,17 +10,24 @@
         <div class="hero__inner">
             <div class="fade-up">
                 <span class="eyebrow hero__eyebrow">
-                    <i class="bi bi-stars"></i> {% trans "Smart matching system for students and companies" %}
+                    <i class="bi bi-stars"></i> {% trans "Students work · Startups hire · Universities prove outcomes" %}
                 </span>
 
                 <h1>
-                    {% trans "Your career journey starts from" %}
-                    <span class="hero__highlight">{% trans "one place" %}</span>
+                    {% trans "Real work with real startups," %}
+                    <span class="hero__highlight">{% trans "verified by your skills" %}</span>
                 </h1>
 
                 <p class="hero__lead">
-                    {% trans "Discover real internship opportunities, apply with your unified profile in one click, and level up your skills with verified courses and tasks from top partners." %}
+                    {% trans "Internships, gigs, freelance projects and part-time roles you can do while you study. Prove your skills with AI-powered tests, earn verified experience badges, and follow a personal roadmap to close your skill gaps." %}
                 </p>
+
+                <ul class="hero__tags" aria-label="{% trans 'Opportunity types' %}">
+                    <li><i class="bi bi-mortarboard"></i> {% trans "Internships" %}</li>
+                    <li><i class="bi bi-lightning-charge"></i> {% trans "Gigs" %}</li>
+                    <li><i class="bi bi-laptop"></i> {% trans "Freelance projects" %}</li>
+                    <li><i class="bi bi-clock-history"></i> {% trans "Part-time roles" %}</li>
+                </ul>
 
                 <div class="hero__cta">
                     <a href="{% url 'login_or_signup' %}" class="btn btn--accent btn--lg">
@@ -92,46 +99,46 @@
 <section class="section" id="features">
     <div class="container">
         <div class="text-center" style="max-width: 720px; margin-inline: auto; margin-bottom: var(--space-12);">
-            <span class="eyebrow">{% trans "Your complete career platform" %}</span>
-            <h2 class="section-title mt-3">{% trans "Everything a university student needs in one place" %}</h2>
-            <p class="text-muted">{% trans "From finding your first internship, to building a strong CV, to a structured learning path — all from a single interface." %}</p>
+            <span class="eyebrow">{% trans "For students · Always free" %}</span>
+            <h2 class="section-title mt-3">{% trans "Turn what you can do into proof employers trust" %}</h2>
+            <p class="text-muted">{% trans "From your first gig to your first job: verified skills, real work history and a clear view of your market readiness." %}</p>
         </div>
 
         <div class="feature-grid">
             <div class="feature fade-up">
-                <div class="feature__icon"><i class="bi bi-search"></i></div>
-                <h3>{% trans "Smart opportunity filtering" %}</h3>
-                <p>{% trans "Filter internships by major, location, and company. Expired opportunities disappear automatically — no manual work needed." %}</p>
+                <div class="feature__icon"><i class="bi bi-briefcase"></i></div>
+                <h3>{% trans "Internships, gigs & part-time roles" %}</h3>
+                <p>{% trans "Real work with real startups — internships, short gigs, freelance projects and part-time roles that fit around your studies." %}</p>
             </div>
 
             <div class="feature fade-up delay-1">
-                <div class="feature__icon"><i class="bi bi-file-earmark-person"></i></div>
-                <h3>{% trans "Smart unified profile" %}</h3>
-                <p>{% trans "Build one CV and profile, then apply to every opportunity in one click. Partners see your full profile when it is 100% complete." %}</p>
+                <div class="feature__icon"><i class="bi bi-cpu"></i></div>
+                <h3>{% trans "AI skill analysis" %}</h3>
+                <p>{% trans "Upload your CV or LinkedIn export and our AI maps both your stated and your hidden skills in seconds." %}</p>
             </div>
 
             <div class="feature fade-up delay-2">
-                <div class="feature__icon"><i class="bi bi-mortarboard"></i></div>
-                <h3>{% trans "Verified courses" %}</h3>
-                <p>{% trans "Enroll in real courses from verified partners and earn points that lift you up the Golden List." %}</p>
+                <div class="feature__icon"><i class="bi bi-shield-check"></i></div>
+                <h3>{% trans "Skill tests that verify every claim" %}</h3>
+                <p>{% trans "Short, timed and proctored tests turn the skills on your CV into proof, with your percentile among peers." %}</p>
             </div>
 
             <div class="feature fade-up">
-                <div class="feature__icon"><i class="bi bi-trophy"></i></div>
-                <h3>{% trans "Gamification system" %}</h3>
-                <p>{% trans "Short tasks test your knowledge and reward you with points. The higher your score, the higher your rank among top students." %}</p>
+                <div class="feature__icon"><i class="bi bi-patch-check"></i></div>
+                <h3>{% trans "Verified experience badges" %}</h3>
+                <p>{% trans "Every passed test and completed project becomes a badge on your profile that startups can trust at a glance." %}</p>
             </div>
 
             <div class="feature fade-up delay-1">
-                <div class="feature__icon"><i class="bi bi-patch-check"></i></div>
-                <h3>{% trans "Verified partners" %}</h3>
-                <p>{% trans "Every partner is verified before they can post an opportunity. The blue checkmark is your guarantee." %}</p>
+                <div class="feature__icon"><i class="bi bi-signpost-split"></i></div>
+                <h3>{% trans "Personal skill-gap roadmap" %}</h3>
+                <p>{% trans "See exactly which topics to improve next and get matching courses from our partners and top learning platforms." %}</p>
             </div>
 
             <div class="feature fade-up delay-2">
-                <div class="feature__icon"><i class="bi bi-bell"></i></div>
-                <h3>{% trans "Opportunity notifications" %}</h3>
-                <p>{% trans "As soon as a new opportunity matching your major is posted, you receive a notification straight to your inbox." %}</p>
+                <div class="feature__icon"><i class="bi bi-cursor"></i></div>
+                <h3>{% trans "One-click apply & tracking" %}</h3>
+                <p>{% trans "Apply with your verified profile in one click, get a CV tailored to each role, and track every application in one place." %}</p>
             </div>
         </div>
     </div>
@@ -142,21 +149,21 @@
         <div class="text-center" style="max-width: 720px; margin-inline: auto; margin-bottom: var(--space-12);">
             <span class="eyebrow eyebrow--accent">{% trans "3 simple steps" %}</span>
             <h2 class="section-title mt-3">{% trans "How does it work?" %}</h2>
-            <p class="text-muted">{% trans "Minutes away from the world of opportunities." %}</p>
+            <p class="text-muted">{% trans "From sign-up to your first paid task in three steps." %}</p>
         </div>
 
         <div class="steps">
             <div class="step fade-up">
-                <h3>{% trans "Register your account" %}</h3>
-                <p>{% trans "Sign up with your email in less than a minute, and fill out your profile just once." %}</p>
+                <h3>{% trans "Build your verified profile" %}</h3>
+                <p>{% trans "Sign up free with your university email, upload your CV or LinkedIn, and let our AI analyze your skills." %}</p>
             </div>
             <div class="step fade-up delay-1">
-                <h3>{% trans "Discover opportunities" %}</h3>
-                <p>{% trans "Browse partner internships and courses, filter by your major, and find the right fit." %}</p>
+                <h3>{% trans "Prove your skills" %}</h3>
+                <p>{% trans "Take short AI-generated tests to turn claimed skills into verified badges — and get a roadmap for any gaps." %}</p>
             </div>
             <div class="step fade-up delay-2">
-                <h3>{% trans "Apply and grow your network" %}</h3>
-                <p>{% trans "Apply in one click, get notifications on your application status, and earn points from tasks and courses." %}</p>
+                <h3>{% trans "Get real work" %}</h3>
+                <p>{% trans "Apply in one click to internships, gigs and part-time roles with startups that hire by verified skill." %}</p>
             </div>
         </div>
     </div>
@@ -168,17 +175,17 @@
             <div>
                 <span class="eyebrow hero__eyebrow">{% trans "Are you a university student?" %}</span>
                 <h2 style="font-size: clamp(1.75rem, 3vw, var(--text-4xl)); margin-top: var(--space-4);">
-                    {% trans "Take the first step in your career journey today" %}
+                    {% trans "Start building verified experience today" %}
                 </h2>
                 <p style="color: rgba(255,255,255,0.85); font-size: var(--text-lg); margin-bottom: var(--space-6);">
-                    {% trans "Create your unified profile, browse the latest opportunities, and join thousands of students who started their future on Internest." %}
+                    {% trans "Work with real startups while you study and graduate with proof of what you can do — not just a certificate." %}
                 </p>
                 <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
                     <a href="{% url 'login_or_signup' %}" class="btn btn--accent btn--lg">
                         {% trans "Get started" %} <i class="bi bi-arrow-left-short"></i>
                     </a>
                     <a href="{% url 'list' %}" class="btn btn--white btn--lg">
-                        {% trans "Browse internships now" %}
+                        {% trans "Browse opportunities" %}
                     </a>
                 </div>
             </div>
@@ -199,75 +206,44 @@
     </div>
 </section>
 
-<section class="section" style="background-color: var(--white); border-top: 1px solid var(--color-border);">
+<section class="section" id="partners" style="background-color: var(--white); border-top: 1px solid var(--color-border);">
     <div class="container">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12); align-items: center;">
-            <div>
-                <span class="eyebrow eyebrow--accent">{% trans "Company or university?" %}</span>
-                <h2 class="section-title mt-3">{% trans "Meet the best pre-screened students" %}</h2>
-                <p class="text-muted" style="font-size: var(--text-lg);">
-                    {% trans "Internest connects you with verified university students whose profiles are complete and who have the points and skills you need. Get review-ready files instead of drowning in hundreds of CVs." %}
-                </p>
-                <ul style="list-style: none; padding: 0; display: grid; gap: var(--space-3); margin-bottom: var(--space-6);">
-                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-success"></i> {% trans "Only 100% complete student profiles" %}</li>
-                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-success"></i> {% trans "Golden List of top-performing students" %}</li>
-                    <li class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-success"></i> {% trans "Manually pre-screened inbox from Internest" %}</li>
+        <div class="text-center" style="max-width: 720px; margin-inline: auto; margin-bottom: var(--space-12);">
+            <span class="eyebrow eyebrow--accent">{% trans "Startups & universities" %}</span>
+            <h2 class="section-title mt-3">{% trans "One marketplace, three winners" %}</h2>
+            <p class="text-muted">{% trans "Students get real work, startups get verified talent, and universities get provable outcomes." %}</p>
+        </div>
+
+        <div class="audience-grid">
+            <article class="card audience-card" id="startups">
+                <span class="eyebrow">{% trans "For startups" %}</span>
+                <h3 class="mt-3">{% trans "Hire verified student talent — fast and affordable" %}</h3>
+                <ul class="audience-card__list">
+                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "Pre-tested students — no CV guesswork" %}</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "Direct founder-to-student channel" %}</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "Cheaper and faster than a full-time hire, an agency or an AI tool" %}</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "Choose by verified skill and interest — and discover future co-founders" %}</li>
                 </ul>
+                <p class="audience-card__note"><i class="bi bi-gift"></i> {% trans "Launch offer: the first 20 founding startups get Pro free for 3 months." %}</p>
                 <a href="{% url 'contact_partner' %}" class="btn btn--primary btn--lg">
-                    {% trans "Request a verified partner code" %} <i class="bi bi-arrow-left-short"></i>
+                    {% trans "Join as a startup" %} <i class="bi bi-arrow-left-short"></i>
                 </a>
-            </div>
+            </article>
 
-            <div aria-hidden="true">
-                <svg viewBox="0 0 480 400" xmlns="http://www.w3.org/2000/svg" style="width: 100%;">
-                    <defs>
-                        <linearGradient id="partnerBg" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0" stop-color="#e0eaff"/>
-                            <stop offset="1" stop-color="#f1f6ff"/>
-                        </linearGradient>
-                    </defs>
-                    <rect x="0" y="0" width="480" height="400" rx="22" fill="url(#partnerBg)"/>
-
-                    {# Header bar #}
-                    <rect x="32" y="32" width="416" height="56" rx="14" fill="#ffffff"/>
-                    <circle cx="64" cy="60" r="14" fill="#1d3a8a"/>
-                    <rect x="88" y="50" width="140" height="9" rx="4" fill="#0f172a"/>
-                    <rect x="88" y="64" width="90" height="7" rx="3" fill="#94a3b8"/>
-                    <rect x="380" y="50" width="50" height="22" rx="11" fill="#f59e0b"/>
-
-                    {# Stat cards #}
-                    <rect x="32" y="104" width="125" height="74" rx="14" fill="#ffffff"/>
-                    <rect x="48" y="120" width="32" height="6" rx="3" fill="#94a3b8"/>
-                    <rect x="48" y="138" width="50" height="22" rx="4" fill="#1d3a8a"/>
-
-                    <rect x="166" y="104" width="125" height="74" rx="14" fill="#ffffff"/>
-                    <rect x="182" y="120" width="32" height="6" rx="3" fill="#94a3b8"/>
-                    <rect x="182" y="138" width="50" height="22" rx="4" fill="#16a34a"/>
-
-                    <rect x="300" y="104" width="148" height="74" rx="14" fill="#ffffff"/>
-                    <rect x="316" y="120" width="42" height="6" rx="3" fill="#94a3b8"/>
-                    <rect x="316" y="138" width="62" height="22" rx="4" fill="#f59e0b"/>
-
-                    {# Student rows #}
-                    <rect x="32" y="194" width="416" height="58" rx="14" fill="#ffffff"/>
-                    <circle cx="60" cy="223" r="18" fill="#dbeafe"/>
-                    <rect x="86" y="212" width="120" height="9" rx="4" fill="#0f172a"/>
-                    <rect x="86" y="226" width="180" height="7" rx="3" fill="#94a3b8"/>
-                    <rect x="370" y="214" width="60" height="22" rx="11" fill="#dcfce7"/>
-
-                    <rect x="32" y="262" width="416" height="58" rx="14" fill="#ffffff"/>
-                    <circle cx="60" cy="291" r="18" fill="#fef3c7"/>
-                    <rect x="86" y="280" width="100" height="9" rx="4" fill="#0f172a"/>
-                    <rect x="86" y="294" width="160" height="7" rx="3" fill="#94a3b8"/>
-                    <rect x="370" y="282" width="60" height="22" rx="11" fill="#dcfce7"/>
-
-                    <rect x="32" y="330" width="416" height="58" rx="14" fill="#ffffff"/>
-                    <circle cx="60" cy="359" r="18" fill="#dbeafe"/>
-                    <rect x="86" y="348" width="140" height="9" rx="4" fill="#0f172a"/>
-                    <rect x="86" y="362" width="120" height="7" rx="3" fill="#94a3b8"/>
-                    <rect x="370" y="350" width="60" height="22" rx="11" fill="#fef3c7"/>
-                </svg>
-            </div>
+            <article class="card audience-card" id="universities">
+                <span class="eyebrow">{% trans "For universities" %}</span>
+                <h3 class="mt-3">{% trans "Prove your students' outcomes" %}</h3>
+                <ul class="audience-card__list">
+                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "NAQAAE-ready reports: skills, practical hours and projects per cohort" %}</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "One-click dashboard with skill maps and market readiness" %}</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "Guaranteed training opportunities through our startup network" %}</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "A dedicated partnership manager, from pilot to annual contract" %}</li>
+                </ul>
+                <p class="audience-card__note"><i class="bi bi-award"></i> {% trans "Our students train with real startups — a reputation and recruitment edge." %}</p>
+                <a href="{% url 'contact_partner' %}" class="btn btn--outline btn--lg">
+                    {% trans "Become a partner university" %} <i class="bi bi-arrow-left-short"></i>
+                </a>
+            </article>
         </div>
     </div>
 </section>

@@ -1,3 +1,4 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Internest 1.0\n"
@@ -12,199 +13,337 @@ msgstr ""
 # Languages
 msgid "Arabic"
 msgstr "العربية"
+
 msgid "English"
 msgstr "الإنجليزية"
+
 msgid "German"
 msgstr "الألمانية"
+
 msgid "French"
 msgstr "الفرنسية"
 
 # Navbar
 msgid "Smart opportunity and internship platform"
 msgstr "منصة الفرص والتدريب الذكية"
+
 msgid "Dashboard"
 msgstr "لوحة التحكم"
+
 msgid "Company profile"
 msgstr "ملف الشركة"
+
 msgid "Internships"
-msgstr "التدريبات"
+msgstr "تدريبات"
+
 msgid "Courses"
 msgstr "الكورسات"
+
 msgid "Tasks"
 msgstr "التاسكات"
+
 msgid "My applications"
 msgstr "طلباتي"
+
 msgid "My profile"
 msgstr "ملفي"
+
 msgid "Platform"
 msgstr "المنصة"
+
 msgid "How it works"
 msgstr "كيف نعمل"
+
 msgid "For partners"
 msgstr "للشركاء"
+
 msgid "Get started"
 msgstr "ابدأ مجاناً"
+
 msgid "Partner login"
 msgstr "دخول الشركاء"
+
 msgid "Add content"
 msgstr "إضافة محتوى"
+
 msgid "Logout"
 msgstr "خروج"
+
 msgid "Open menu"
 msgstr "فتح القائمة"
 
 # Footer
-msgid "Smart matching system between university students and companies. We connect you with real internship opportunities, verified courses, and a professional community that builds your future."
-msgstr "نظام الربط الذكي بين الطلاب الجامعيين والشركات. نوصلك بفرص تدريب حقيقية، كورسات معتمدة، ومجتمع مهني يبني مستقبلك."
+msgid ""
+"Smart matching system between university students and companies. We connect "
+"you with real internship opportunities, verified courses, and a professional"
+" community that builds your future."
+msgstr ""
+"نظام الربط الذكي بين الطلاب الجامعيين والشركات. نوصلك بفرص تدريب حقيقية، "
+"كورسات معتمدة، ومجتمع مهني يبني مستقبلك."
+
 msgid "For students"
 msgstr "للطلاب"
+
 msgid "Browse internships"
 msgstr "تصفح التدريبات"
+
 msgid "Tasks & points"
 msgstr "التاسكات والنقاط"
+
 msgid "Create account"
 msgstr "إنشاء حساب"
+
 msgid "Join as partner"
 msgstr "انضم كشريك"
+
 msgid "Company guide"
 msgstr "دليل الشركة"
+
 msgid "About Internest"
 msgstr "عن Internest"
+
 msgid "Privacy policy"
 msgstr "سياسة الخصوصية"
+
 msgid "Terms & conditions"
 msgstr "الشروط والأحكام"
+
 msgid "Contact us"
 msgstr "تواصل معنا"
+
 msgid "All rights reserved."
 msgstr "جميع الحقوق محفوظة."
+
 msgid "Built with care for ambitious students."
 msgstr "صُمم بكل حب للطلاب الطموحين."
 
 # Landing - hero
 msgid "Smart matching system for students and companies"
 msgstr "نظام الربط الذكي للطلاب والشركات"
+
 msgid "Your career journey starts from"
 msgstr "رحلتك المهنية تبدأ من"
+
 msgid "one place"
 msgstr "مكان واحد"
-msgid "Discover real internship opportunities, apply with your unified profile in one click, and level up your skills with verified courses and tasks from top partners."
-msgstr "اكتشف فرص تدريب حقيقية، قدّم بملفك الموحد بضغطة، وارفع مهاراتك بكورسات وتاسكات معتمدة من أكبر الشركاء."
+
+msgid ""
+"Discover real internship opportunities, apply with your unified profile in "
+"one click, and level up your skills with verified courses and tasks from top"
+" partners."
+msgstr ""
+"اكتشف فرص تدريب حقيقية، قدّم بملفك الموحد بضغطة، وارفع مهاراتك بكورسات "
+"وتاسكات معتمدة من أكبر الشركاء."
+
 msgid "Create your free account"
 msgstr "أنشئ حسابك مجاناً"
+
 msgid "Your career journey starts here"
 msgstr "رحلتك المهنية تبدأ من هنا"
+
 msgid "Unified CV"
 msgstr "CV موحّد"
 
 # Landing - features
 msgid "Your complete career platform"
 msgstr "منصتك المهنية الشاملة"
+
 msgid "Everything a university student needs in one place"
 msgstr "كل اللي يحتاجه الطالب الجامعي في مكان واحد"
-msgid "From finding your first internship, to building a strong CV, to a structured learning path — all from a single interface."
-msgstr "من البحث عن أول تدريب، لبناء CV قوي، لمسار تعلم منظم — كله من واجهة واحدة."
+
+msgid ""
+"From finding your first internship, to building a strong CV, to a structured"
+" learning path — all from a single interface."
+msgstr ""
+"من البحث عن أول تدريب، لبناء CV قوي، لمسار تعلم منظم — كله من واجهة واحدة."
+
 msgid "Smart opportunity filtering"
 msgstr "تصفية ذكية للفرص"
-msgid "Filter internships by major, location, and company. Expired opportunities disappear automatically — no manual work needed."
-msgstr "فلتر التدريبات بالتخصص والموقع والشركة. الفرص المنتهية بتختفي تلقائياً، فمش هتتعب نفسك."
+
+msgid ""
+"Filter internships by major, location, and company. Expired opportunities "
+"disappear automatically — no manual work needed."
+msgstr ""
+"فلتر التدريبات بالتخصص والموقع والشركة. الفرص المنتهية بتختفي تلقائياً، فمش "
+"هتتعب نفسك."
+
 msgid "Smart unified profile"
 msgstr "ملف موحّد ذكي"
-msgid "Build one CV and profile, then apply to every opportunity in one click. Partners see your full profile when it is 100% complete."
-msgstr "اعمل CV واحد + ملف، وقدّم على كل الفرص بضغطة. الشركاء بيشوفوا ملفك كامل لو الإكمال 100%."
+
+msgid ""
+"Build one CV and profile, then apply to every opportunity in one click. "
+"Partners see your full profile when it is 100% complete."
+msgstr ""
+"اعمل CV واحد + ملف، وقدّم على كل الفرص بضغطة. الشركاء بيشوفوا ملفك كامل لو "
+"الإكمال 100%."
+
 msgid "Verified courses"
 msgstr "كورسات معتمدة"
-msgid "Enroll in real courses from verified partners and earn points that lift you up the Golden List."
-msgstr "اشترك في كورسات حقيقية من شركاء معتمدين، واكسب نقاط بترفعك في الـ Golden List."
+
+msgid ""
+"Enroll in real courses from verified partners and earn points that lift you "
+"up the Golden List."
+msgstr ""
+"اشترك في كورسات حقيقية من شركاء معتمدين، واكسب نقاط بترفعك في الـ Golden "
+"List."
+
 msgid "Gamification system"
 msgstr "نظام Gamification"
-msgid "Short tasks test your knowledge and reward you with points. The higher your score, the higher your rank among top students."
-msgstr "تاسكات قصيرة بتختبر فهمك وبتديك نقاط. كل ما نقاطك تعلى، كل ما تتقدم في ترتيب أفضل الطلاب."
+
+msgid ""
+"Short tasks test your knowledge and reward you with points. The higher your "
+"score, the higher your rank among top students."
+msgstr ""
+"تاسكات قصيرة بتختبر فهمك وبتديك نقاط. كل ما نقاطك تعلى، كل ما تتقدم في ترتيب"
+" أفضل الطلاب."
+
 msgid "Verified partners"
 msgstr "شركاء موثقين"
-msgid "Every partner is verified before they can post an opportunity. The blue checkmark is your guarantee."
-msgstr "كل شريك بيمر بمراجعة قبل ما يقدر ينشر فرصة. علامة الصح الزرقاء هي ضمانتك."
+
+msgid ""
+"Every partner is verified before they can post an opportunity. The blue "
+"checkmark is your guarantee."
+msgstr ""
+"كل شريك بيمر بمراجعة قبل ما يقدر ينشر فرصة. علامة الصح الزرقاء هي ضمانتك."
+
 msgid "Opportunity notifications"
 msgstr "إشعارات الفرص"
-msgid "As soon as a new opportunity matching your major is posted, you receive a notification straight to your inbox."
-msgstr "أول ما فرصة جديدة تنزل من شريك بتناسب تخصصك، هتوصلك على إيميلك مباشرة."
+
+msgid ""
+"As soon as a new opportunity matching your major is posted, you receive a "
+"notification straight to your inbox."
+msgstr ""
+"أول ما فرصة جديدة تنزل من شريك بتناسب تخصصك، هتوصلك على إيميلك مباشرة."
 
 # Landing - steps
 msgid "3 simple steps"
 msgstr "3 خطوات بسيطة"
+
 msgid "How does it work?"
 msgstr "إزاي بتشتغل؟"
+
 msgid "Minutes away from the world of opportunities."
 msgstr "دقايق وانت داخل عالم الفرص."
+
 msgid "Register your account"
 msgstr "سجّل حسابك"
-msgid "Sign up with your email in less than a minute, and fill out your profile just once."
+
+msgid ""
+"Sign up with your email in less than a minute, and fill out your profile "
+"just once."
 msgstr "سجّل بإيميلك في أقل من دقيقة، واملا ملفك الشخصي مرة واحدة بس."
+
 msgid "Discover opportunities"
 msgstr "اكتشف الفرص"
-msgid "Browse partner internships and courses, filter by your major, and find the right fit."
+
+msgid ""
+"Browse partner internships and courses, filter by your major, and find the "
+"right fit."
 msgstr "تصفح تدريبات وكورسات الشركاء، فلتر بتخصصك، وشوف اللي يناسبك."
+
 msgid "Apply and grow your network"
 msgstr "قدّم وكبّر شبكتك"
-msgid "Apply in one click, get notifications on your application status, and earn points from tasks and courses."
-msgstr "قدّم بضغطة، استلم إشعارات بحالة طلبك، واكسب نقاط من التاسكات والكورسات."
+
+msgid ""
+"Apply in one click, get notifications on your application status, and earn "
+"points from tasks and courses."
+msgstr ""
+"قدّم بضغطة، استلم إشعارات بحالة طلبك، واكسب نقاط من التاسكات والكورسات."
 
 # Landing - CTAs
 msgid "Are you a university student?"
 msgstr "أنت طالب جامعي؟"
+
 msgid "Take the first step in your career journey today"
 msgstr "خد أول خطوة في رحلتك المهنية النهاردة"
-msgid "Create your unified profile, browse the latest opportunities, and join thousands of students who started their future on Internest."
-msgstr "أنشئ ملفك الموحد، تصفح أحدث الفرص، وانضم لآلاف الطلاب اللي بدأوا مستقبلهم من Internest."
+
+msgid ""
+"Create your unified profile, browse the latest opportunities, and join "
+"thousands of students who started their future on Internest."
+msgstr ""
+"أنشئ ملفك الموحد، تصفح أحدث الفرص، وانضم لآلاف الطلاب اللي بدأوا مستقبلهم من"
+" Internest."
+
 msgid "Browse internships now"
 msgstr "تصفح التدريبات الآن"
+
 msgid "Company or university?"
 msgstr "شركة أو جامعة؟"
+
 msgid "Meet the best pre-screened students"
 msgstr "قابل أفضل الطلاب المُفرَزين"
-msgid "Internest connects you with verified university students whose profiles are complete and who have the points and skills you need. Get review-ready files instead of drowning in hundreds of CVs."
-msgstr "Internest بيوصلك بطلاب جامعيين موثوقين، ملفاتهم مكتملة، وعندهم النقاط والمهارات اللي بتحتاجها. خد ملفات جاهزة للمراجعة بدل ما تغرق في مئات الـ CVs."
+
+msgid ""
+"Internest connects you with verified university students whose profiles are "
+"complete and who have the points and skills you need. Get review-ready files"
+" instead of drowning in hundreds of CVs."
+msgstr ""
+"Internest بيوصلك بطلاب جامعيين موثوقين، ملفاتهم مكتملة، وعندهم النقاط "
+"والمهارات اللي بتحتاجها. خد ملفات جاهزة للمراجعة بدل ما تغرق في مئات الـ "
+"CVs."
+
 msgid "Only 100% complete student profiles"
 msgstr "ملفات طلاب 100% مكتملة فقط"
+
 msgid "Golden List of top-performing students"
 msgstr "Golden List بأعلى الطلاب أداءً"
+
 msgid "Manually pre-screened inbox from Internest"
 msgstr "صندوق وارد مُفرز يدوياً من Internest"
+
 msgid "Request a verified partner code"
 msgstr "اطلب كود شريك معتمد"
 
 # List page
 msgid "Internship opportunities"
 msgstr "فرص التدريب"
+
 msgid "All summer opportunities in one place"
 msgstr "كل الفرص الصيفية في مكان واحد"
+
 msgid "Search, filter, and apply with your unified profile on Internest."
 msgstr "ابحث، فلتر، وقدّم بسهولة بملفك الموحد على Internest."
+
 msgid "Search by job title or company..."
 msgstr "ابحث عن مسمى وظيفي أو شركة..."
+
 msgid "All majors"
 msgstr "كل التخصصات"
+
 msgid "Search"
 msgstr "ابحث"
+
 msgid "opportunities available"
 msgstr "فرصة متاحة"
+
 msgid "Clear filters"
 msgstr "إلغاء الفلترة"
+
 msgid "Premium"
 msgstr "متميز"
+
 msgid "Details"
 msgstr "التفاصيل"
+
 msgid "Apply"
 msgstr "قدّم"
+
 msgid "No matching opportunities right now"
 msgstr "لا توجد فرص مطابقة حالياً"
-msgid "Try editing your search keyword or clearing filters — new opportunities are posted weekly."
-msgstr "جرب تعدل كلمة البحث أو شيل الفلتر — وكمان فيه فرص جديدة بتنزل أسبوعياً."
+
+msgid ""
+"Try editing your search keyword or clearing filters — new opportunities are "
+"posted weekly."
+msgstr ""
+"جرب تعدل كلمة البحث أو شيل الفلتر — وكمان فيه فرص جديدة بتنزل أسبوعياً."
+
 msgid "Show all opportunities"
 msgstr "عرض كل الفرص"
+
 #, python-format
 msgid "for \"%(q)s\""
 msgstr "للبحث \"%(q)s\""
+
 #, python-format
 msgid "Ends %(d)s"
 msgstr "ينتهي %(d)s"
@@ -212,333 +351,527 @@ msgstr "ينتهي %(d)s"
 # Detail page
 msgid "Back to list"
 msgstr "العودة للقائمة"
+
 msgid "Expired"
 msgstr "منتهية"
+
 msgid "Active"
 msgstr "نشطة"
+
 msgid "Verified account"
 msgstr "حساب موثق"
+
 msgid "Opportunity description"
 msgstr "وصف الفرصة"
+
 msgid "Opportunity details"
 msgstr "تفاصيل الفرصة"
+
 msgid "Location"
 msgstr "الموقع"
+
 msgid "Required majors"
 msgstr "التخصصات المطلوبة"
+
 msgid "Application deadline"
 msgstr "آخر موعد للتقديم"
+
 msgid "Apply to this opportunity"
 msgstr "قدّم على هذه الفرصة"
+
 msgid "Apply with your unified profile"
 msgstr "قدّم بملفك الموحد"
+
 msgid "Register first to apply"
 msgstr "سجّل أولاً للتقديم"
-msgid "Apply with a unified profile — no need to upload a CV for every opportunity."
+
+msgid ""
+"Apply with a unified profile — no need to upload a CV for every opportunity."
 msgstr "التقديم بملف موحد، بدون رفع CV لكل فرصة لوحدها."
+
 msgid "This opportunity is no longer accepting applications."
 msgstr "هذه الفرصة لم تعد متاحة للتقديم."
+
 msgid "About the company"
 msgstr "عن الشركة"
+
 msgid "Official website"
 msgstr "الموقع الرسمي"
 
 # Auth
 msgid "Sign in or create an account"
 msgstr "سجّل دخولك أو أنشئ حساب"
+
 msgid "Start your future"
 msgstr "ابدأ مستقبلك"
+
 msgid "Your first step toward a real internship"
 msgstr "خطوتك الأولى نحو أول تدريب حقيقي"
-msgid "Join thousands of students who built their unified professional profile on Internest."
+
+msgid ""
+"Join thousands of students who built their unified professional profile on "
+"Internest."
 msgstr "انضم لآلاف الطلاب اللي بنوا ملفهم المهني الموحد على Internest."
+
 msgid "Unified profile"
 msgstr "ملف موحد"
+
 msgid "Exclusive opportunities"
 msgstr "فرص حصرية"
+
 msgid "Welcome 👋"
 msgstr "أهلاً بك 👋"
+
 msgid "Choose the sign-in method that suits you to reach your workspace."
 msgstr "اختر طريقة الدخول اللي تناسبك للوصول إلى منصتك."
+
 msgid "Sign in"
 msgstr "تسجيل الدخول"
+
 msgid "Create a new account"
 msgstr "إنشاء حساب جديد"
+
 msgid "or"
 msgstr "أو"
+
 msgid "Sign in with Google (coming soon)"
 msgstr "الدخول بحساب Google (قريباً)"
+
 msgid "Are you a partner?"
 msgstr "هل أنت شريك؟"
+
 msgid "Welcome back"
 msgstr "أهلاً بعودتك"
+
 msgid "Your career is one step away"
 msgstr "مستقبلك المهني فاضل خطوة"
-msgid "Sign in and pick up where you left off — your saved opportunities and applications are waiting."
+
+msgid ""
+"Sign in and pick up where you left off — your saved opportunities and "
+"applications are waiting."
 msgstr "ادخل وكمل من حيث انتهيت — فرصك المحفوظة وطلباتك في انتظارك."
+
 msgid "Enter your credentials to access your account."
 msgstr "أدخل بياناتك للوصول إلى حسابك."
+
 msgid "Username or password is incorrect. Please try again."
 msgstr "اسم المستخدم أو كلمة المرور غير صحيحة. حاول مرة أخرى."
+
 msgid "Username"
 msgstr "اسم المستخدم"
+
 msgid "Password"
 msgstr "كلمة المرور"
+
 msgid "Don't have an account?"
 msgstr "مالكش حساب؟"
+
 msgid "Sign up free"
 msgstr "سجّل الآن مجاناً"
+
 msgid "30 seconds and you're in"
 msgstr "30 ثانية وحسابك جاهز"
+
 msgid "Your place in the world of opportunities is waiting"
 msgstr "مكانك في عالم الفرص في انتظارك"
-msgid "Unified profile, hundreds of opportunities, verified courses, and points that lift you up the Golden List."
+
+msgid ""
+"Unified profile, hundreds of opportunities, verified courses, and points "
+"that lift you up the Golden List."
 msgstr "ملف موحد، مئات الفرص، كورسات معتمدة، ونقاط بترفعك في الـ Golden List."
+
 msgid "Create a new account 🚀"
 msgstr "إنشاء حساب جديد 🚀"
+
 msgid "Join the largest student professional community in the region."
 msgstr "انضم لأكبر مجتمع طلابي مهني في المنطقة."
+
 msgid "Already have an account?"
 msgstr "عندك حساب بالفعل؟"
+
 msgid "Signed out"
 msgstr "تم تسجيل الخروج"
+
 msgid "See you soon 👋"
 msgstr "إلى اللقاء 👋"
-msgid "You have been securely signed out. We hope to see you back soon with new opportunities."
+
+msgid ""
+"You have been securely signed out. We hope to see you back soon with new "
+"opportunities."
 msgstr "تم تسجيل خروجك بأمان. نتمنى أن نراك قريباً مع فرص جديدة."
+
 msgid "Sign in again"
 msgstr "تسجيل الدخول مجدداً"
+
 msgid "Back to home"
 msgstr "العودة للرئيسية"
+
 msgid "Partner gateway"
 msgstr "بوابة الشركاء"
+
 msgid "Sign in and meet the talents you're looking for"
 msgstr "ادخل وقابل المواهب اللي بتدور عليها"
-msgid "A complete dashboard, a pre-screened applicant inbox, and one-click opportunity publishing."
+
+msgid ""
+"A complete dashboard, a pre-screened applicant inbox, and one-click "
+"opportunity publishing."
 msgstr "لوحة تحكم كاملة، صندوق وارد بملفات مفرَزة، ونشر فرص بضغطة واحدة."
+
 msgid "Partner sign in 🤝"
 msgstr "دخول الشركاء 🤝"
+
 msgid "Enter the partner credentials approved by Internest."
 msgstr "أدخل بيانات الشريك المعتمدة من Internest."
+
 msgid "The username assigned to your company"
 msgstr "اسم المستخدم المعيّن لشركتك"
+
 msgid "Secret partner code"
 msgstr "رمز الشريك السري"
+
 msgid "The code you received from Internest"
 msgstr "الرمز اللي وصلك من Internest"
-msgid "This code was sent to your company email once your partnership was approved."
+
+msgid ""
+"This code was sent to your company email once your partnership was approved."
 msgstr "الكود ده وصلك على بريد شركتك بعد اعتماد الانضمام."
+
 msgid "Enter partner dashboard"
 msgstr "دخول لوحة الشريك"
+
 msgid "Interested in becoming a partner?"
 msgstr "مهتم تبقى شريك؟"
 
 # Profile (student)
 msgid "Manage your unified profile and points"
 msgstr "إدارة ملفك الموحد ونقاطك"
-msgid "Everything you edit here is shown to partners when you apply to an opportunity."
+
+msgid ""
+"Everything you edit here is shown to partners when you apply to an "
+"opportunity."
 msgstr "كل اللي تعدله هنا بيظهر للشركاء لما تقدّم على فرصة."
+
 msgid "Email verification required."
 msgstr "مطلوب توثيق البريد الإلكتروني."
+
 msgid "We sent a 6-digit code to your unverified email(s)."
 msgstr "بعتنا كود من 6 أرقام لإيميلاتك غير الموثقة."
+
 msgid "Verify now"
 msgstr "وثّق دلوقتي"
+
 msgid "Account information"
 msgstr "معلومات الحساب"
+
 msgid "Personal email"
-msgstr "البريد الشخصي"
+msgstr "البريد الإلكتروني الشخصي"
+
 msgid "Verified"
 msgstr "موثق"
+
 msgid "Not verified"
 msgstr "غير موثق"
+
 msgid "Unverified"
 msgstr "غير موثق"
+
 msgid "University email"
 msgstr "البريد الجامعي"
+
 msgid "Phone number"
 msgstr "رقم الهاتف"
+
 msgid "University"
 msgstr "الجامعة"
+
 msgid "Major"
 msgstr "التخصص"
+
 msgid "CV"
 msgstr "السيرة الذاتية"
+
 msgid "View CV"
 msgstr "عرض CV"
+
 msgid "Not uploaded"
 msgstr "غير مرفق"
+
 msgid "Profile completion"
 msgstr "اكتمال الملف"
+
 msgid "Complete to unlock applying"
 msgstr "أكمل لتفعيل التقديم"
+
 msgid "Ready to apply"
 msgstr "جاهز للتقديم"
+
 msgid "Performance points"
 msgstr "نقاط الأداء"
+
 msgid "Earn points"
 msgstr "اكسب نقاط"
+
 msgid "Study level"
 msgstr "المستوى الدراسي"
+
 msgid "Edit information"
 msgstr "تعديل البيانات"
+
 msgid "PDF / DOC / DOCX — max size 5 MB"
 msgstr "PDF / DOC / DOCX — أقصى حجم 5 ميجابايت"
+
 msgid "JPG / PNG / WEBP — max size 5 MB"
 msgstr "JPG / PNG / WEBP — أقصى حجم 5 ميجابايت"
+
 msgid "Save changes"
 msgstr "حفظ التعديلات"
 
 # Applications
 msgid "Track your applications"
 msgstr "متابعة طلبات التقديم"
+
 msgid "Every internship you've applied to and its current status."
 msgstr "كل التدريبات اللي قدّمت عليها وحالة كل واحد."
+
 msgid "Opportunity"
 msgstr "الفرصة"
+
 msgid "Company"
 msgstr "الشركة"
+
 msgid "Applied on"
 msgstr "تاريخ التقديم"
+
 msgid "Deadline"
 msgstr "الموعد النهائي"
+
 msgid "Status"
 msgstr "الحالة"
+
 msgid "Forwarded to partner"
 msgstr "محول للشريك"
+
 msgid "Rejected"
 msgstr "مرفوض"
+
 msgid "Under review"
 msgstr "قيد المراجعة"
+
 msgid "You haven't applied to any opportunity yet"
 msgstr "لم تقدّم على أي فرصة بعد"
-msgid "As soon as you apply to an opportunity, you'll find it here with its current status."
+
+msgid ""
+"As soon as you apply to an opportunity, you'll find it here with its current"
+" status."
 msgstr "أول ما تقدّم على فرصة، هتلاقيها هنا مع حالتها الحالية."
+
 msgid "Application sent"
 msgstr "تم التقديم"
+
 msgid "Application sent successfully 🎉"
 msgstr "تم التقديم بنجاح 🎉"
-msgid "Your application has reached our review queue. If your profile qualifies, it will be forwarded to the company and you'll be notified of any updates."
-msgstr "وصل طلبك للمراجعة. هيتم تحويلك للشركة لو ملفك تأهل، وهتوصلك إشعارات بأي تحديث."
+
+msgid ""
+"Your application has reached our review queue. If your profile qualifies, it"
+" will be forwarded to the company and you'll be notified of any updates."
+msgstr ""
+"وصل طلبك للمراجعة. هيتم تحويلك للشركة لو ملفك تأهل، وهتوصلك إشعارات بأي "
+"تحديث."
+
 msgid "Track my applications"
 msgstr "متابعة طلباتي"
+
 msgid "Browse more opportunities"
 msgstr "تصفّح فرص أخرى"
+
 msgid "Complete your profile to apply"
 msgstr "أكمل ملفك للتقديم"
+
 msgid "Complete your profile first"
 msgstr "أكمل ملفك أولاً"
+
 msgid "The opportunity:"
 msgstr "الفرصة:"
+
 msgid "Complete my profile now"
 msgstr "أكمل ملفي الآن"
 
 # Partner contact
 msgid "Partner program"
 msgstr "برنامج الشركاء"
+
 msgid "Internest Partnership: building a guaranteed career path"
 msgstr "شراكة Internest: بناء مسار مهني مضمون"
-msgid "We offer a smart matching and screening system that gives your company access to the highest quality of qualified university students, saving you hundreds of hours of manual screening."
-msgstr "نقدّم نظام ربط وفرز ذكي يضمن لشركتك أعلى جودة من الطلاب الجامعيين المؤهلين، ويوفر عليك مئات الساعات في الفرز اليدوي."
+
+msgid ""
+"We offer a smart matching and screening system that gives your company "
+"access to the highest quality of qualified university students, saving you "
+"hundreds of hours of manual screening."
+msgstr ""
+"نقدّم نظام ربط وفرز ذكي يضمن لشركتك أعلى جودة من الطلاب الجامعيين المؤهلين، "
+"ويوفر عليك مئات الساعات في الفرز اليدوي."
+
 msgid "100% pre-screened students"
 msgstr "طلاب مفرَزون 100%"
-msgid "You only receive student files whose profiles are 100% complete — no half-empty CVs."
+
+msgid ""
+"You only receive student files whose profiles are 100% complete — no half-"
+"empty CVs."
 msgstr "وصلك بس ملفات الطلاب اللي ملفهم مكتمل بنسبة 100% — لا CVs نص فاضية."
+
 msgid "Golden List"
-msgstr "Golden List"
-msgid "Access the students with the highest performance scores from verified tasks and courses."
+msgstr "القائمة الذهبية"
+
+msgid ""
+"Access the students with the highest performance scores from verified tasks "
+"and courses."
 msgstr "وصول للطلاب اللي عندهم أعلى نقاط أداء من التاسكات والكورسات المعتمدة."
+
 msgid "Secure direct contracting"
 msgstr "تعاقد مباشر آمن"
-msgid "An official contracting system with partner KYC verification and a public Verified badge for students."
+
+msgid ""
+"An official contracting system with partner KYC verification and a public "
+"Verified badge for students."
 msgstr "نظام تعاقد رسمي مع توثيق ملف الشريك (KYC) وعلامة موثوق ظاهرة للطلاب."
+
 msgid "Request to join"
 msgstr "اطلب الانضمام"
+
 msgid "Ready to start the partnership?"
 msgstr "جاهز تبدأ الشراكة؟"
-msgid "To obtain a secret partner code, reach out to us via the official email and our team will respond within 24 hours."
-msgstr "للحصول على كود الشريك السري، تواصل معنا عبر البريد الإلكتروني الرسمي وفريقنا هيرد عليك في ٢٤ ساعة."
+
+msgid ""
+"To obtain a secret partner code, reach out to us via the official email and "
+"our team will respond within 24 hours."
+msgstr ""
+"للحصول على كود الشريك السري، تواصل معنا عبر البريد الإلكتروني الرسمي وفريقنا"
+" هيرد عليك في ٢٤ ساعة."
+
 msgid "I am a partner with a code"
 msgstr "أنا شريك ولدي كود"
 
 # Splash
 msgid "Welcome to Internest"
 msgstr "مرحباً بك في Internest"
+
 msgid "Start your career from"
 msgstr "ابدأ مسيرتك المهنية من"
-msgid "Smart matching system between university students and companies. Choose your path to continue:"
+
+msgid ""
+"Smart matching system between university students and companies. Choose your"
+" path to continue:"
 msgstr "نظام الربط الذكي بين الطلاب الجامعيين والشركات. اختر مسارك للمتابعة:"
+
 msgid "I am a student"
 msgstr "أنا طالب"
+
 msgid "Browse internships and courses and apply with your unified profile."
 msgstr "تصفح التدريبات والكورسات وقدّم بملفك الموحد."
+
 msgid "Start my journey"
 msgstr "ابدأ رحلتي"
+
 msgid "I am a partner"
 msgstr "أنا شريك"
+
 msgid "A company or university looking for pre-screened, verified talent."
 msgstr "شركة أو جامعة تبحث عن مواهب مفرَزة وموثوقة."
+
 msgid "Contact us about partnership"
 msgstr "تواصل بخصوص الشراكة"
 
 # Tasks / courses
 msgid "Gamification"
-msgstr "Gamification"
+msgstr "التحفيز بالنقاط"
+
 msgid "Earn points, climb the ranks"
 msgstr "اكسب نقاط، ارفع ترتيبك"
-msgid "Short tasks that test your knowledge — every task rewards you with points that lift you up the Golden List."
-msgstr "تاسكات قصيرة بتختبر فهمك — كل تاسك بيكسبك نقاط بترفعك في الـ Golden List."
+
+msgid ""
+"Short tasks that test your knowledge — every task rewards you with points "
+"that lift you up the Golden List."
+msgstr ""
+"تاسكات قصيرة بتختبر فهمك — كل تاسك بيكسبك نقاط بترفعك في الـ Golden List."
+
 #, python-format
 msgid "+%(p)s points"
 msgstr "+%(p)s نقطة"
+
 msgid "Quick"
 msgstr "سريع"
+
 msgid "Start"
 msgstr "ابدأ"
+
 msgid "Great work! You completed every available task"
 msgstr "برافو! خلصت كل التاسكات المتاحة"
+
 msgid "Follow us for new tasks landing soon."
 msgstr "تابعنا للمزيد من التاسكات الجديدة قريباً."
+
 msgid "Browse courses"
 msgstr "شوف الكورسات"
+
 msgid "Back to tasks"
 msgstr "العودة للتاسكات"
+
 msgid "Task"
 msgstr "تاسك"
+
 msgid "Submit answers"
 msgstr "إنهاء وإرسال الإجابات"
+
 msgid "Task result"
 msgstr "نتيجة المهمة"
+
 msgid "Well done! 🎉"
 msgstr "أحسنت! 🎉"
+
 #, python-format
 msgid "You completed the task \"%(t)s\""
 msgstr "أكملت تاسك \"%(t)s\""
+
 msgid "You earned"
 msgstr "حصلت على"
+
 #, python-format
 msgid "out of %(t)s points"
 msgstr "من %(t)s نقطة"
-msgid "Points have been added to your balance and your Golden List rank is updated."
+
+msgid ""
+"Points have been added to your balance and your Golden List rank is updated."
 msgstr "تمت إضافة النقاط لرصيدك وتحديث ترتيبك في الـ Golden List."
+
 msgid "Another task"
 msgstr "تاسك تاني"
+
 msgid "View my profile"
 msgstr "عرض ملفي"
+
 msgid "Partner courses"
 msgstr "كورسات الشركاء"
-msgid "Courses from real experts that earn you Gamification points and strengthen your CV."
+
+msgid ""
+"Courses from real experts that earn you Gamification points and strengthen "
+"your CV."
 msgstr "كورسات من خبراء حقيقيين، بتكسبك نقاط Gamification وبتقوي CV بتاعك."
+
 msgid "EGP"
 msgstr "ج.م"
+
 msgid "Watch"
 msgstr "شاهد"
+
 msgid "Enroll"
 msgstr "اشترك"
+
 msgid "No courses available right now"
 msgstr "لا توجد كورسات متاحة حالياً"
+
 msgid "Partners add new courses regularly. Check back soon to see the latest."
 msgstr "الشركاء بيضيفوا كورسات جديدة باستمرار. عُد قريباً للاطلاع على الجديد."
+
 msgid "Try tasks"
 msgstr "جرّب التاسكات"
 
@@ -546,113 +879,169 @@ msgstr "جرّب التاسكات"
 #, python-format
 msgid "Checkout: %(t)s"
 msgstr "إتمام شراء: %(t)s"
+
 msgid "Back to courses"
 msgstr "العودة للكورسات"
+
 msgid "Checkout"
 msgstr "إتمام الشراء"
+
 msgid "Review the details before confirming your purchase."
 msgstr "راجع التفاصيل قبل تأكيد الشراء."
+
 msgid "Order summary"
 msgstr "ملخص الطلب"
+
 msgid "Verified course"
 msgstr "كورس معتمد"
+
 msgid "Discount code"
 msgstr "كود الخصم"
+
 msgid "Have a discount code? Enter it here..."
 msgstr "عندك كود خصم؟ ادخله هنا..."
+
 msgid "Discount applied successfully"
 msgstr "تم تطبيق الكود بنجاح"
+
 msgid "Payment method"
 msgstr "طريقة الدفع"
-msgid "This is a payment simulation. The final release will integrate real payment gateways."
-msgstr "هذه محاكاة لعملية الدفع. في النسخة النهائية هنربط بوابات الدفع الحقيقية."
+
+msgid ""
+"This is a payment simulation. The final release will integrate real payment "
+"gateways."
+msgstr ""
+"هذه محاكاة لعملية الدفع. في النسخة النهائية هنربط بوابات الدفع الحقيقية."
+
 msgid "Invoice"
 msgstr "الفاتورة"
+
 msgid "Original price"
 msgstr "السعر الأصلي"
+
 #, python-format
 msgid "Discount (%(c)s)"
 msgstr "الخصم (%(c)s)"
+
 msgid "Total"
 msgstr "الإجمالي"
+
 msgid "Confirm purchase"
 msgstr "تأكيد الشراء"
+
 msgid "Secure and fully protected payment"
 msgstr "دفع آمن ومحمي بالكامل"
+
 msgid "Apply"
 msgstr "تطبيق"
+
 msgid "Purchase successful"
 msgstr "تم الشراء بنجاح"
+
 msgid "Purchase successful 🎉"
 msgstr "تم الشراء بنجاح 🎉"
+
 #, python-format
 msgid "Thank you for enrolling in \"%(t)s\""
 msgstr "شكراً على اشتراكك في \"%(t)s\""
+
 msgid "Gamification points"
 msgstr "نقاط Gamification"
+
 msgid "You can start the course right now."
 msgstr "يمكنك الآن البدء في الكورس مباشرة."
+
 msgid "Start the course now"
 msgstr "ابدأ الكورس الآن"
+
 msgid "Other courses"
 msgstr "كورسات أخرى"
 
 # Partner dashboard
 msgid "Partner dashboard"
 msgstr "لوحة تحكم الشريك"
+
 msgid "Under review / incomplete"
 msgstr "قيد المراجعة / غير مكتمل"
+
 msgid "Profile settings"
 msgstr "إعدادات الملف"
+
 #, python-format
 msgid "Profile is incomplete (%(s)s%%)."
 msgstr "الملف غير مكتمل (%(s)s%%)."
+
 msgid "You cannot submit requests until your profile reaches 100%."
 msgstr "لا يمكنك إرسال طلبات حتى يكتمل ملفك بنسبة 100%."
+
 msgid "Complete now"
 msgstr "إكمال الآن"
+
 msgid "Published opportunities"
 msgstr "فرصة منشورة"
+
 msgid "Applicant files"
 msgstr "ملف متقدم"
+
 msgid "Submitted courses"
 msgstr "كورس مقدّم"
+
 msgid "Add opportunity"
 msgstr "إضافة فرصة"
+
 msgid "Paused"
 msgstr "موقوفة"
+
 msgid "Applicants"
 msgstr "المتقدمون"
+
 msgid "You haven't published any opportunity yet"
 msgstr "لم تنشر أي فرصة بعد"
+
 msgid "Start by publishing your first internship to reach our students."
 msgstr "ابدأ بنشر أول فرصة تدريب للوصول لطلابنا."
+
 msgid "Add a new opportunity"
 msgstr "أضف فرصة جديدة"
+
 msgid "Applicant inbox"
 msgstr "صندوق وارد ملفات المتقدمين"
-msgid "Files of students approved by Internest and forwarded to you appear here."
-msgstr "هنا تظهر ملفات الطلاب اللي تمت الموافقة عليهم من Internest وتحويلهم لك."
+
+msgid ""
+"Files of students approved by Internest and forwarded to you appear here."
+msgstr ""
+"هنا تظهر ملفات الطلاب اللي تمت الموافقة عليهم من Internest وتحويلهم لك."
+
 msgid "Student"
 msgstr "الطالب"
+
 msgid "Applied to"
 msgstr "تقدم على"
+
 msgid "Forwarded on"
 msgstr "تاريخ الإرسال"
+
 msgid "No applicant files yet"
 msgstr "لا توجد ملفات بعد"
+
 msgid "Pre-screened student files forwarded to you will appear here."
 msgstr "هنا هتلاقي ملفات الطلاب اللي اتفرزوا وتم تحويلهم لك."
+
 msgid "Internship submissions under review"
 msgstr "طلبات تدريب قيد المراجعة"
+
 msgid "Approved"
 msgstr "تمت الموافقة"
+
 msgid "Pending"
 msgstr "قيد المراجعة"
+
 msgid "No submissions under review."
 msgstr "لا توجد طلبات قيد المراجعة."
+
 msgid "No submitted courses."
 msgstr "لا توجد كورسات مقدّمة."
+
 #, python-format
 msgid "+%(p)s points • %(d)s"
 msgstr "+%(p)s نقطة • %(d)s"
@@ -660,77 +1049,1119 @@ msgstr "+%(p)s نقطة • %(d)s"
 # Partner submit
 msgid "Add new content"
 msgstr "إضافة محتوى جديد"
+
 msgid "Back to dashboard"
 msgstr "العودة للوحة التحكم"
+
 msgid "What would you like to add?"
 msgstr "ماذا تريد أن تضيف؟"
+
 msgid "Choose the type of content you want to offer to students."
 msgstr "اختر نوع المحتوى اللي تقدمه للطلاب."
+
 msgid "Internship opportunity"
 msgstr "فرصة تدريب"
-msgid "Submit a summer internship opportunity that attracts top students via the smart screening system."
+
+msgid ""
+"Submit a summer internship opportunity that attracts top students via the "
+"smart screening system."
 msgstr "قدّم فرصة تدريب صيفي تستقطب أفضل الطلاب من خلال نظام الفرز الذكي."
+
 msgid "Start submission"
 msgstr "ابدأ التقديم"
+
 msgid "Educational course"
 msgstr "كورس تعليمي"
-msgid "A course that rewards students with Gamification points and lifts their Golden List rank."
+
+msgid ""
+"A course that rewards students with Gamification points and lifts their "
+"Golden List rank."
 msgstr "كورس بيكسب الطلاب نقاط Gamification وبيرفع ترتيبهم في Golden List."
+
 msgid "Submit internship opportunity"
 msgstr "تقديم فرصة تدريب"
+
 msgid "Back"
 msgstr "العودة"
+
 msgid "New internship opportunity"
 msgstr "فرصة تدريب جديدة"
+
 msgid "Submit an internship opportunity for review"
 msgstr "قدّم فرصة تدريب للمراجعة"
-msgid "Your submission is reviewed by the Internest team before it goes live to students."
+
+msgid ""
+"Your submission is reviewed by the Internest team before it goes live to "
+"students."
 msgstr "طلبك هيراجع من فريق Internest قبل ما يظهر للطلاب."
+
 msgid "Duration is computed automatically from the publish date."
 msgstr "المدة بتتحسب تلقائياً من تاريخ النشر."
+
 msgid "Example: CS, Engineering, Marketing"
 msgstr "مثال: CS, Engineering, Marketing"
-msgid "Write a clear description of responsibilities and requirements. Details attract better students."
+
+msgid ""
+"Write a clear description of responsibilities and requirements. Details "
+"attract better students."
 msgstr "اكتب وصف واضح للمسؤوليات والمتطلبات. التفاصيل بتجذب طلاب أحسن."
+
 msgid "Submit for review"
 msgstr "إرسال للمراجعة"
+
 msgid "Submit new course"
 msgstr "تقديم كورس جديد"
+
 msgid "New course"
 msgstr "كورس جديد"
+
 msgid "Submit a course for review"
 msgstr "قدّم كورس تعليمي للمراجعة"
-msgid "Approved courses are shown to students and reward them with Gamification points."
+
+msgid ""
+"Approved courses are shown to students and reward them with Gamification "
+"points."
 msgstr "الكورسات المعتمدة بتظهر للطلاب وبتديهم نقاط Gamification."
+
 msgid "Gamification points awarded to students upon completion."
 msgstr "نقاط الـ Gamification اللي بياخدها الطالب عند الإكمال."
+
 msgid "YouTube link or course platform URL."
 msgstr "رابط YouTube أو منصة الكورس."
 
 # Partner profile
 msgid "Partner profile"
 msgstr "ملف الشريك"
+
 msgid "Partner profile and verification settings"
 msgstr "ملف الشريك ونظام التوثيق"
-msgid "All information shown to students about your opportunities and public profile."
+
+msgid ""
+"All information shown to students about your opportunities and public "
+"profile."
 msgstr "كل المعلومات اللي بتظهر للطلاب على فرصك ومنصتك العامة."
+
 msgid "Contact information"
 msgstr "معلومات التواصل"
+
 msgid "Official email"
-msgstr "البريد الرسمي"
+msgstr "البريد الإلكتروني الرسمي"
+
 msgid "Website"
 msgstr "الموقع"
+
 msgid "Partner profile completion"
 msgstr "اكتمال ملف الشريك"
+
 msgid "All features unlocked"
 msgstr "كل الميزات متاحة"
+
 msgid "Complete your profile to unlock all features"
 msgstr "أكمل الملف لفتح كل الميزات"
+
 msgid "Edit company information (KYC)"
 msgstr "تعديل بيانات الشركة (KYC)"
+
 msgid "University / academic institution"
 msgstr "جامعة / جهة أكاديمية"
+
 msgid "PNG / JPG / SVG — max size 5 MB"
 msgstr "PNG / JPG / SVG — أقصى حجم 5 ميجابايت"
+
 msgid "View current logo"
 msgstr "عرض الشعار الحالي"
+
+msgid "Welcome back, %(company)s!"
+msgstr "أهلاً بعودتك، شريكنا %(company)s!"
+
+msgid "Incorrect password."
+msgstr "كلمة المرور غير صحيحة."
+
+msgid "Invalid partner details. Check your username and partner code."
+msgstr "بيانات الشريك غير صحيحة. تأكد من اسم المستخدم والرمز السري."
+
+msgid "You have been logged out."
+msgstr "تم تسجيل خروجك بنجاح."
+
+msgid ""
+"You are signed in as a partner, so you were taken to the partner dashboard."
+msgstr "أنت مسجل كشريك. تم توجيهك إلى لوحة الشريك."
+
+msgid "Your profile was updated."
+msgstr "تم تحديث ملفك الشخصي بنجاح!"
+
+msgid "This feature is available to students only."
+msgstr "هذه الميزة متاحة للطلاب فقط."
+
+msgid "You applied to %(title)s."
+msgstr "تم التقديم بنجاح على %(title)s!"
+
+msgid "You have already applied to %(title)s."
+msgstr "لقد قمت بالتقديم على %(title)s مسبقاً."
+
+msgid ""
+"Your profile must be 100% complete to apply. Complete it and try again."
+msgstr ""
+"يجب إكمال ملفك الشخصي بنسبة 100% للتقديم على هذه الفرصة. أكمل ملفك ثم عُد "
+"للمحاولة."
+
+msgid "You are not a registered partner."
+msgstr "أنت لست شريكاً مسجلاً."
+
+msgid "Partner details updated."
+msgstr "تم تحديث بيانات الشريك بنجاح!"
+
+msgid "You are not allowed to access the partner dashboard."
+msgstr "أنت غير مصرح لك بالوصول إلى لوحة الشريك."
+
+msgid "About %(n)s months"
+msgstr "حوالي %(n)s أشهر"
+
+msgid "About %(n)s weeks"
+msgstr "حوالي %(n)s أسابيع"
+
+msgid "%(n)s days left"
+msgstr "%(n)s أيام متبقية"
+
+msgid "You are not registered as a partner."
+msgstr "أنت غير مسجل كشريك."
+
+msgid "Your partner profile must be 100% complete to post opportunities."
+msgstr "يجب إكمال ملف الشريك بنسبة 100% لإرسال طلبات التدريب."
+
+msgid "The deadline must be after today."
+msgstr "تاريخ الموعد النهائي يجب أن يكون بعد اليوم الحالي."
+
+msgid "Your opportunity was submitted for review."
+msgstr "تم إرسال طلب التدريب للمراجعة بنجاح!"
+
+msgid "Something went wrong while saving. Please try again."
+msgstr "حدث خطأ أثناء الحفظ. حاول مرة أخرى."
+
+msgid "Please correct the errors in the form."
+msgstr "الرجاء تصحيح الأخطاء في النموذج."
+
+msgid "Your partner profile must be 100% complete to submit courses."
+msgstr "يجب إكمال ملف الشريك بنسبة 100% لإرسال طلبات الكورسات."
+
+msgid "Your course was submitted for review."
+msgstr "تم إرسال طلب الكورس للمراجعة بنجاح!"
+
+msgid "You are not allowed to access this page."
+msgstr "أنت غير مصرح لك بالوصول لهذه الصفحة."
+
+msgid "Tasks are available to students only."
+msgstr "التاسكات متاحة للطلاب فقط."
+
+msgid "You have already completed this task."
+msgstr "لقد أكملت هذا التاسك من قبل."
+
+msgid "Well done! You completed the task and earned %(points)s points."
+msgstr "أحسنت! لقد أكملت المهمة وحصلت على %(points)s نقطة."
+
+msgid "Courses are available to students only."
+msgstr "الكورسات متاحة للطلاب فقط."
+
+msgid "You have already purchased this course."
+msgstr "لقد قمت بشراء هذا الكورس من قبل."
+
+msgid "Discount applied! New price: %(price)s EGP"
+msgstr "تم تطبيق الخصم بنجاح! السعر الجديد %(price)s ج.م"
+
+msgid "This code is invalid or has expired."
+msgstr "هذا الكود غير صالح أو منتهي الصلاحية."
+
+msgid "Course purchased! The points were added to your account."
+msgstr "تم شراء الكورس بنجاح! تمت إضافة النقاط لحسابك."
+
+msgid "Personal email (required)"
+msgstr "البريد الإلكتروني الشخصي (مطلوب)"
+
+msgid "University email (optional)"
+msgstr "البريد الإلكتروني الجامعي (اختياري)"
+
+msgid "CV file"
+msgstr "ملف السيرة الذاتية (CV)"
+
+msgid "Profile picture"
+msgstr "صورة الملف الشخصي"
+
+msgid "Company / organization name"
+msgstr "اسم الشركة/الجهة"
+
+msgid "Partner code"
+msgstr "الكود السري للشريك"
+
+msgid "Official logo"
+msgstr "شعار الشركة/الجهة (الرسمي)"
+
+msgid "Academic institution?"
+msgstr "هل هي جهة أكاديمية؟"
+
+msgid "Official phone"
+msgstr "رقم التواصل الرسمي"
+
+msgid "Facebook URL"
+msgstr "رابط Facebook"
+
+msgid "Twitter URL"
+msgstr "رابط Twitter"
+
+msgid "Instagram URL"
+msgstr "رابط Instagram"
+
+msgid "We'll send opportunity notifications to this email."
+msgstr "سيتم استخدام هذا الإيميل لإشعارات التدريب."
+
+msgid "LinkedIn URL"
+msgstr "رابط LinkedIn"
+
+msgid "New opportunity"
+msgstr "فرصة جديدة"
+
+msgid "A new opportunity is waiting for you"
+msgstr "فرصة جديدة في انتظارك"
+
+msgid "Hi"
+msgstr "مرحباً"
+
+msgid "A new opportunity that may suit you was just posted on Internest."
+msgstr "تمت إضافة فرصة جديدة على Internest قد تناسبك."
+
+msgid "Posted by"
+msgstr "مقدّمة من"
+
+msgid "View details and apply"
+msgstr "عرض التفاصيل والتقديم"
+
+msgid ""
+"Apply in one click with your verified Internest profile. Don't miss it!"
+msgstr "قدّم بضغطة واحدة بملفك الموثّق على Internest. لا تفوّت الفرصة!"
+
+msgid "Best regards,"
+msgstr "مع تحيات،"
+
+msgid "The Internest team"
+msgstr "فريق Internest"
+
+msgid "You received this email because you are registered on Internest."
+msgstr "تلقيت هذا البريد لأنك مسجّل على منصة Internest."
+
+msgid ""
+"Internest — the verified student talent marketplace. Students get real work,"
+" startups hire verified talent, universities prove outcomes."
+msgstr ""
+"Internest — سوق المواهب الطلابية الموثّقة. الطلاب يحصلون على عمل حقيقي، "
+"والشركات الناشئة توظّف مواهب موثّقة، والجامعات تُثبت مخرجاتها."
+
+msgid "Verified student talent marketplace"
+msgstr "سوق المواهب الطلابية الموثّقة"
+
+msgid "For startups"
+msgstr "للشركات الناشئة"
+
+msgid "For universities"
+msgstr "للجامعات"
+
+msgid "Switch language"
+msgstr "تغيير اللغة"
+
+msgid "Analyze & Verify Skills"
+msgstr "حلّل مهاراتك ووثّقها"
+
+msgid "Close"
+msgstr "إغلاق"
+
+msgid "Browse opportunities"
+msgstr "تصفّح الفرص"
+
+msgid "For startups & universities"
+msgstr "للشركات الناشئة والجامعات"
+
+msgid "Students work · Startups hire · Universities prove outcomes"
+msgstr "الطلاب يعملون · الشركات الناشئة توظّف · الجامعات تُثبت مخرجاتها"
+
+msgid "Real work with real startups,"
+msgstr "عمل حقيقي مع شركات ناشئة حقيقية،"
+
+msgid "verified by your skills"
+msgstr "موثّق بمهاراتك"
+
+msgid ""
+"Internships, gigs, freelance projects and part-time roles you can do while "
+"you study. Prove your skills with AI-powered tests, earn verified experience"
+" badges, and follow a personal roadmap to close your skill gaps."
+msgstr ""
+"تدريبات، ومهام قصيرة، ومشاريع حرة، ووظائف بدوام جزئي تناسب دراستك. أثبت "
+"مهاراتك باختبارات مدعومة بالذكاء الاصطناعي، واحصل على شارات خبرة موثّقة، "
+"واتبع خطة شخصية لسدّ فجوات مهاراتك."
+
+msgid "Opportunity types"
+msgstr "أنواع الفرص"
+
+msgid "Gigs"
+msgstr "مهام قصيرة"
+
+msgid "Freelance projects"
+msgstr "مشاريع حرة"
+
+msgid "Part-time roles"
+msgstr "وظائف بدوام جزئي"
+
+msgid "For students · Always free"
+msgstr "للطلاب · مجاناً دائماً"
+
+msgid "Turn what you can do into proof employers trust"
+msgstr "حوّل ما تجيده إلى دليل يثق به أصحاب العمل"
+
+msgid ""
+"From your first gig to your first job: verified skills, real work history "
+"and a clear view of your market readiness."
+msgstr ""
+"من أول مهمة إلى أول وظيفة: مهارات موثّقة، وسجل عمل حقيقي، ورؤية واضحة لمدى "
+"جاهزيتك لسوق العمل."
+
+msgid "Internships, gigs & part-time roles"
+msgstr "تدريبات ومهام ووظائف بدوام جزئي"
+
+msgid ""
+"Real work with real startups — internships, short gigs, freelance projects "
+"and part-time roles that fit around your studies."
+msgstr ""
+"عمل حقيقي مع شركات ناشئة حقيقية — تدريبات، ومهام قصيرة، ومشاريع حرة، ووظائف "
+"بدوام جزئي تتوافق مع دراستك."
+
+msgid "AI skill analysis"
+msgstr "تحليل المهارات بالذكاء الاصطناعي"
+
+msgid ""
+"Upload your CV or LinkedIn export and our AI maps both your stated and your "
+"hidden skills in seconds."
+msgstr ""
+"ارفع سيرتك الذاتية أو ملف LinkedIn، وسيحدّد الذكاء الاصطناعي مهاراتك الظاهرة"
+" والضمنية في ثوانٍ."
+
+msgid "Skill tests that verify every claim"
+msgstr "اختبارات تتحقّق من كل مهارة تذكرها"
+
+msgid ""
+"Short, timed and proctored tests turn the skills on your CV into proof, with"
+" your percentile among peers."
+msgstr ""
+"اختبارات قصيرة ومؤقّتة ومراقَبة تحوّل مهارات سيرتك الذاتية إلى دليل، مع "
+"ترتيبك المئوي بين زملائك."
+
+msgid "Verified experience badges"
+msgstr "شارات خبرة موثّقة"
+
+msgid ""
+"Every passed test and completed project becomes a badge on your profile that"
+" startups can trust at a glance."
+msgstr ""
+"كل اختبار تجتازه ومشروع تُكمله يصبح شارة في ملفك تثق بها الشركات الناشئة من "
+"النظرة الأولى."
+
+msgid "Personal skill-gap roadmap"
+msgstr "خطة شخصية لسدّ فجوات المهارات"
+
+msgid ""
+"See exactly which topics to improve next and get matching courses from our "
+"partners and top learning platforms."
+msgstr ""
+"اعرف بالضبط ما الذي تحتاج لتحسينه، واحصل على كورسات مناسبة من شركائنا وأفضل "
+"منصات التعلّم."
+
+msgid "One-click apply & tracking"
+msgstr "تقديم بضغطة واحدة ومتابعة الطلبات"
+
+msgid ""
+"Apply with your verified profile in one click, get a CV tailored to each "
+"role, and track every application in one place."
+msgstr ""
+"قدّم بملفك الموثّق بضغطة واحدة، واحصل على سيرة ذاتية مخصّصة لكل دور، وتابع "
+"كل طلباتك في مكان واحد."
+
+msgid "From sign-up to your first paid task in three steps."
+msgstr "من التسجيل إلى أول مهمة مدفوعة في ثلاث خطوات."
+
+msgid "Build your verified profile"
+msgstr "ابنِ ملفك الموثّق"
+
+msgid ""
+"Sign up free with your university email, upload your CV or LinkedIn, and let"
+" our AI analyze your skills."
+msgstr ""
+"سجّل مجاناً ببريدك الجامعي، وارفع سيرتك الذاتية أو ملف LinkedIn، ودع الذكاء "
+"الاصطناعي يحلّل مهاراتك."
+
+msgid "Prove your skills"
+msgstr "أثبت مهاراتك"
+
+msgid ""
+"Take short AI-generated tests to turn claimed skills into verified badges — "
+"and get a roadmap for any gaps."
+msgstr ""
+"خُض اختبارات قصيرة يولّدها الذكاء الاصطناعي لتحويل مهاراتك المذكورة إلى "
+"شارات موثّقة — واحصل على خطة لأي فجوات."
+
+msgid "Get real work"
+msgstr "احصل على عمل حقيقي"
+
+msgid ""
+"Apply in one click to internships, gigs and part-time roles with startups "
+"that hire by verified skill."
+msgstr ""
+"قدّم بضغطة واحدة على تدريبات ومهام ووظائف بدوام جزئي مع شركات ناشئة توظّف "
+"على أساس المهارات الموثّقة."
+
+msgid "Start building verified experience today"
+msgstr "ابدأ بناء خبرتك الموثّقة اليوم"
+
+msgid ""
+"Work with real startups while you study and graduate with proof of what you "
+"can do — not just a certificate."
+msgstr ""
+"اعمل مع شركات ناشئة حقيقية أثناء دراستك وتخرّج ومعك دليل على ما تستطيع فعله "
+"— لا مجرد شهادة."
+
+msgid "Startups & universities"
+msgstr "الشركات الناشئة والجامعات"
+
+msgid "One marketplace, three winners"
+msgstr "سوق واحد، ثلاثة رابحين"
+
+msgid ""
+"Students get real work, startups get verified talent, and universities get "
+"provable outcomes."
+msgstr ""
+"الطلاب يحصلون على عمل حقيقي، والشركات الناشئة على مواهب موثّقة، والجامعات "
+"على مخرجات قابلة للإثبات."
+
+msgid "Hire verified student talent — fast and affordable"
+msgstr "وظّف مواهب طلابية موثّقة — بسرعة وبتكلفة أقل"
+
+msgid "Pre-tested students — no CV guesswork"
+msgstr "طلاب مختبَرون مسبقاً — بلا تخمين من السير الذاتية"
+
+msgid "Direct founder-to-student channel"
+msgstr "تواصل مباشر بين المؤسس والطالب"
+
+msgid "Cheaper and faster than a full-time hire, an agency or an AI tool"
+msgstr "أرخص وأسرع من موظف بدوام كامل أو وكالة أو أداة ذكاء اصطناعي"
+
+msgid ""
+"Choose by verified skill and interest — and discover future co-founders"
+msgstr "اختر حسب المهارة الموثّقة والاهتمام — واكتشف شركاء مؤسسين للمستقبل"
+
+msgid ""
+"Launch offer: the first 20 founding startups get Pro free for 3 months."
+msgstr ""
+"عرض الإطلاق: أول 20 شركة ناشئة مؤسِّسة تحصل على باقة Pro مجاناً لمدة 3 أشهر."
+
+msgid "Join as a startup"
+msgstr "انضم كشركة ناشئة"
+
+msgid "NAQAAE-ready reports: skills, practical hours and projects per cohort"
+msgstr ""
+"تقارير جاهزة للهيئة القومية لضمان جودة التعليم والاعتماد: المهارات والساعات "
+"العملية والمشاريع لكل دفعة"
+
+msgid "One-click dashboard with skill maps and market readiness"
+msgstr "لوحة متابعة بضغطة واحدة تعرض خرائط المهارات والجاهزية لسوق العمل"
+
+msgid "Guaranteed training opportunities through our startup network"
+msgstr "فرص تدريب مضمونة عبر شبكة شركائنا من الشركات الناشئة"
+
+msgid "A dedicated partnership manager, from pilot to annual contract"
+msgstr "مدير شراكة مخصّص، من المرحلة التجريبية إلى العقد السنوي"
+
+msgid ""
+"Our students train with real startups — a reputation and recruitment edge."
+msgstr ""
+"طلابنا يتدرّبون مع شركات ناشئة حقيقية — ميزة في السمعة واستقطاب الطلاب."
+
+msgid "Become a partner university"
+msgstr "انضم كجامعة شريكة"
+
+msgid "Opportunities"
+msgstr "الفرص"
+
+msgid "Internships, gigs & part-time roles with real startups"
+msgstr "تدريبات ومهام ووظائف بدوام جزئي مع شركات ناشئة حقيقية"
+
+msgid ""
+"Find real work that fits your studies and apply in one click with your "
+"verified profile."
+msgstr "اعثر على عمل حقيقي يناسب دراستك وقدّم بضغطة واحدة بملفك الموثّق."
+
+msgid "100%% pre-screened students"
+msgstr "طلاب مفرَزون 100%%"
+
+msgid ""
+"You only receive student files whose profiles are 100%% complete — no half-"
+"empty CVs."
+msgstr "لن تستلم إلا ملفات طلاب مكتملة بنسبة 100%% — بلا سير ذاتية ناقصة."
+
+msgid "You cannot submit requests until your profile reaches 100%%."
+msgstr "لا يمكنك إرسال طلبات حتى يكتمل ملفك بنسبة 100%%."
+
+msgid "Employability analytics"
+msgstr "تحليلات الجاهزية للتوظيف"
+
+msgid "Verified skills available on Internest Pro"
+msgstr "المهارات الموثّقة متاحة في باقة Internest Pro"
+
+msgid "Verified skills"
+msgstr "المهارات الموثّقة"
+
+msgid "Skill report"
+msgstr "تقرير المهارات"
+
+msgid "Internship, gig or part-time role"
+msgstr "تدريب أو مهمة أو وظيفة بدوام جزئي"
+
+msgid ""
+"Post an internship, gig, freelance project or part-time role and reach pre-"
+"verified students."
+msgstr ""
+"انشر تدريباً أو مهمة أو مشروعاً حراً أو وظيفة بدوام جزئي، وتواصل مع طلاب "
+"موثّقين مسبقاً."
+
+msgid "Your first step toward real work experience"
+msgstr "خطوتك الأولى نحو خبرة عمل حقيقية"
+
+msgid "This skill does not have a challenge yet."
+msgstr "لا يوجد اختبار لهذه المهارة حتى الآن."
+
+msgid "This skill is already verified."
+msgstr "هذه المهارة موثّقة بالفعل."
+
+msgid "Retest is available after the cooldown ends."
+msgstr "يمكنك إعادة الاختبار بعد انتهاء فترة الانتظار."
+
+msgid ""
+"Your previous session was abandoned. Retest is available after the cooldown "
+"ends."
+msgstr ""
+"تم ترك جلستك السابقة دون إكمال. يمكنك إعادة الاختبار بعد انتهاء فترة "
+"الانتظار."
+
+msgid "This session has ended."
+msgstr "انتهت هذه الجلسة."
+
+msgid "Out-of-order answer."
+msgstr "إجابة خارج الترتيب."
+
+msgid "No readable text found (scanned image PDFs are not supported)."
+msgstr "لم يتم العثور على نص قابل للقراءة (ملفات PDF المصوّرة غير مدعومة)."
+
+msgid ""
+"Could not read this file. Make sure it is a valid, non-encrypted PDF or "
+"DOCX."
+msgstr "تعذّرت قراءة الملف. تأكد أنه ملف PDF أو DOCX صالح وغير مشفّر."
+
+msgid "Unsupported file type. Upload a PDF or DOCX."
+msgstr "نوع الملف غير مدعوم. ارفع ملف PDF أو DOCX."
+
+msgid "CV (PDF or DOCX)"
+msgstr "السيرة الذاتية (PDF أو DOCX)"
+
+msgid "LinkedIn profile PDF export"
+msgstr "ملف LinkedIn بصيغة PDF"
+
+msgid "LinkedIn profile URL"
+msgstr "رابط ملف LinkedIn"
+
+msgid "Share my skill analytics with my university"
+msgstr "مشاركة تحليلات مهاراتي مع جامعتي"
+
+msgid "— Do not share —"
+msgstr "— عدم المشاركة —"
+
+msgid "Upload your CV, your LinkedIn PDF export, or add your LinkedIn URL."
+msgstr "ارفع سيرتك الذاتية أو ملف LinkedIn بصيغة PDF، أو أضف رابط LinkedIn."
+
+msgid "Enter a linkedin.com profile URL."
+msgstr "أدخل رابط ملف على linkedin.com."
+
+msgid "Computer Science & IT"
+msgstr "علوم الحاسب وتكنولوجيا المعلومات"
+
+msgid "Business & Finance"
+msgstr "إدارة الأعمال والمالية"
+
+msgid "Media & Design"
+msgstr "الإعلام والتصميم"
+
+msgid "Law"
+msgstr "القانون"
+
+msgid "Engineering"
+msgstr "الهندسة"
+
+msgid "Health Sciences"
+msgstr "العلوم الصحية"
+
+msgid "Transferable / Soft Skills"
+msgstr "المهارات العامة والشخصية"
+
+msgid "Easy"
+msgstr "سهل"
+
+msgid "Medium"
+msgstr "متوسط"
+
+msgid "Hard"
+msgstr "صعب"
+
+msgid "Explicit"
+msgstr "صريحة"
+
+msgid "Implicit (inferred)"
+msgstr "ضمنية (مستنتجة)"
+
+msgid "Claimed"
+msgstr "مذكورة"
+
+msgid "Skill lag detected"
+msgstr "تم رصد فجوة مهارية"
+
+msgid "Skill Lag Detected in %(areas)s"
+msgstr "تم رصد فجوة مهارية في %(areas)s"
+
+msgid "Close the gap in %(area)s and pass the %(skill)s retest"
+msgstr "سُدّ الفجوة في %(area)s واجتز إعادة اختبار %(skill)s"
+
+msgid "Advance your verified %(skill)s skill"
+msgstr "طوّر مهارة %(skill)s الموثّقة لديك"
+
+msgid "Advanced %(skill)s on %(provider)s"
+msgstr "%(skill)s للمستوى المتقدم على %(provider)s"
+
+msgid "%(area)s courses on %(provider)s"
+msgstr "كورسات %(area)s على %(provider)s"
+
+msgid "Daily analysis limit reached. Try again tomorrow."
+msgstr "وصلت إلى الحد اليومي للتحليل. حاول مرة أخرى غداً."
+
+msgid ""
+"LinkedIn URL saved. LinkedIn does not allow automated profile reading — "
+"upload the PDF export (LinkedIn profile → More → Save to PDF) to analyze it."
+msgstr ""
+"تم حفظ رابط LinkedIn. لا يسمح LinkedIn بقراءة الملفات آلياً — ارفع نسخة PDF "
+"(ملفك على LinkedIn ← المزيد ← حفظ بصيغة PDF) لتحليلها."
+
+msgid "You are not authorized to view this student's skill data."
+msgstr "غير مصرّح لك بعرض بيانات مهارات هذا الطالب."
+
+msgid "Available to verified partner universities only."
+msgstr "متاح للجامعات الشريكة الموثّقة فقط."
+
+msgid ""
+"Analysis complete: %(explicit)s explicit and %(inferred)s inferred skills "
+"found (%(new)s new). They are marked as Claimed until you verify them."
+msgstr ""
+"اكتمل التحليل: تم العثور على %(explicit)s مهارة صريحة و%(inferred)s مهارة "
+"مستنتجة (%(new)s جديدة). ستظل \"مذكورة\" حتى توثّقها."
+
+msgid "Connection problem. Retrying…"
+msgstr "مشكلة في الاتصال. جارٍ إعادة المحاولة…"
+
+msgid "Could not load the next question. Please refresh the page."
+msgstr "تعذّر تحميل السؤال التالي. يرجى تحديث الصفحة."
+
+msgid ""
+"Warning %(n)s of %(max)s: stay on this tab. The next time you leave, the "
+"session ends."
+msgstr ""
+"تحذير %(n)s من %(max)s: ابقَ في هذه الصفحة. إذا غادرتها مرة أخرى ستنتهي "
+"الجلسة."
+
+msgid ""
+"Please complete your basic profile first (university, major and study level)"
+" to analyze and verify your skills."
+msgstr ""
+"يرجى إكمال بياناتك الأساسية أولاً (الجامعة والتخصص والمستوى الدراسي) لتحليل "
+"مهاراتك وتوثيقها."
+
+msgid ""
+"We couldn't prepare a challenge for this skill right now. Please try again "
+"in a few minutes."
+msgstr "تعذّر تجهيز اختبار لهذه المهارة الآن. يرجى المحاولة بعد دقائق."
+
+msgid "Skill challenge"
+msgstr "اختبار المهارة"
+
+msgid "Proctored challenge"
+msgstr "اختبار مراقَب"
+
+msgid ""
+"Each question has its own timer (30–60 seconds). Unanswered questions are "
+"skipped automatically."
+msgstr ""
+"لكل سؤال مؤقّت خاص (30–60 ثانية). يتم تخطّي الأسئلة التي لا تُجاب تلقائياً."
+
+msgid "Copy, paste and right-click are disabled."
+msgstr "النسخ واللصق والنقر بالزر الأيمن معطّلة."
+
+msgid ""
+"Leaving this tab or window gives a warning. After 2 warnings the session "
+"ends."
+msgstr "مغادرة هذه الصفحة أو النافذة تعطيك تحذيراً. بعد تحذيرين تنتهي الجلسة."
+
+msgid "Written answers are checked for pasted or machine-generated text."
+msgstr ""
+"يتم فحص الإجابات المكتوبة للتأكد من خلوّها من النصوص الملصقة أو المولّدة "
+"آلياً."
+
+msgid "Type your answer…"
+msgstr "اكتب إجابتك…"
+
+msgid "Submit answer"
+msgstr "إرسال الإجابة"
+
+msgid "Verify Your Skills"
+msgstr "وثّق مهاراتك"
+
+msgid ""
+"Upload your CV or LinkedIn export. We detect your skills, then you prove "
+"them in a short timed challenge."
+msgstr ""
+"ارفع سيرتك الذاتية أو ملف LinkedIn. سنحدّد مهاراتك، ثم تُثبتها في اختبار "
+"قصير ومؤقّت."
+
+msgid "Analyze your CV or LinkedIn"
+msgstr "حلّل سيرتك الذاتية أو ملف LinkedIn"
+
+msgid "Analyze skills"
+msgstr "تحليل المهارات"
+
+msgid "Last analysis"
+msgstr "آخر تحليل"
+
+msgid "Verified skill badges"
+msgstr "شارات المهارات الموثّقة"
+
+msgid "Percentile"
+msgstr "الترتيب المئوي"
+
+msgid "Level-up courses"
+msgstr "كورسات للمستوى التالي"
+
+msgid "Upskilling paths"
+msgstr "مسارات تطوير المهارات"
+
+msgid "View learning path"
+msgstr "عرض مسار التعلّم"
+
+msgid "Retest available"
+msgstr "إعادة الاختبار متاحة في"
+
+msgid "Retake challenge"
+msgstr "إعادة الاختبار"
+
+msgid "Claimed skills — verify them"
+msgstr "المهارات المذكورة — وثّقها"
+
+msgid ""
+"Each challenge is timed (30–60 seconds per question). Copy/paste is disabled"
+" and leaving the tab more than twice ends the session."
+msgstr ""
+"كل اختبار مؤقّت (30–60 ثانية لكل سؤال). النسخ واللصق معطّلان، ومغادرة الصفحة"
+" أكثر من مرتين تُنهي الجلسة."
+
+msgid "Inferred"
+msgstr "مستنتجة"
+
+msgid "Start challenge"
+msgstr "ابدأ الاختبار"
+
+msgid "Challenge coming soon"
+msgstr "الاختبار قريباً"
+
+msgid "No claimed skills yet. Analyze your CV above to get started."
+msgstr "لا توجد مهارات مذكورة بعد. حلّل سيرتك الذاتية بالأعلى للبدء."
+
+msgid "Verified skills are an Internest Pro feature"
+msgstr "المهارات الموثّقة ميزة في باقة Internest Pro"
+
+msgid ""
+"Upgrade to Pro to see verified skill badges, scores and percentiles for "
+"candidates who apply to your opportunities."
+msgstr ""
+"اشترك في باقة Pro لترى شارات المهارات الموثّقة والدرجات والترتيب المئوي "
+"للمتقدّمين لفرصك."
+
+msgid "Contact us to upgrade"
+msgstr "تواصل معنا للترقية"
+
+msgid "University employability view"
+msgstr "عرض الجاهزية للتوظيف للجامعة"
+
+msgid "Skill"
+msgstr "المهارة"
+
+msgid "Discipline"
+msgstr "المجال"
+
+msgid "Score"
+msgstr "الدرجة"
+
+msgid "Verified on"
+msgstr "تاريخ التوثيق"
+
+msgid "No skills analyzed yet."
+msgstr "لم يتم تحليل أي مهارات بعد."
+
+msgid "Challenge result"
+msgstr "نتيجة الاختبار"
+
+msgid "Session ended"
+msgstr "انتهت الجلسة"
+
+msgid "The challenge window lost focus more than twice."
+msgstr "غادرتَ نافذة الاختبار أكثر من مرتين."
+
+msgid "Several answers did not look like they were typed during the session."
+msgstr "بعض الإجابات لم تبدُ مكتوبة أثناء الجلسة."
+
+msgid "The session was not completed in time."
+msgstr "لم تكتمل الجلسة في الوقت المحدد."
+
+msgid "You can retake this challenge on"
+msgstr "يمكنك إعادة هذا الاختبار في"
+
+msgid "Verified Skill Badge earned"
+msgstr "حصلت على شارة مهارة موثّقة"
+
+msgid "Your personalized upskilling path"
+msgstr "مسارك الشخصي لتطوير المهارات"
+
+msgid "Retest available in"
+msgstr "إعادة الاختبار متاحة بعد"
+
+msgid "How you compare"
+msgstr "مقارنتك بزملائك"
+
+msgid "of %(n)s students"
+msgstr "من بين %(n)s طالب"
+
+msgid "You are in the top %(p)s%% of students tested on %(skill)s."
+msgstr "أنت ضمن أفضل %(p)s%% من الطلاب الذين اختُبروا في %(skill)s."
+
+msgid "What to improve"
+msgstr "ما الذي تحتاج لتحسينه"
+
+msgid "ran out of time"
+msgstr "انتهى الوقت"
+
+msgid "Review %(topic)s (%(area)s) and practise easy-level problems on it."
+msgstr "راجِع %(topic)s (%(area)s) وتدرّب على مسائل سهلة فيه."
+
+msgid "Review %(topic)s (%(area)s) and practise hard-level problems on it."
+msgstr "راجِع %(topic)s (%(area)s) وتدرّب على مسائل صعبة فيه."
+
+msgid "Review %(topic)s (%(area)s) and practise medium-level problems on it."
+msgstr "راجِع %(topic)s (%(area)s) وتدرّب على مسائل متوسطة فيه."
+
+msgid "Level up next"
+msgstr "ارتقِ للمستوى التالي"
+
+msgid "Recommended courses"
+msgstr "كورسات مقترحة"
+
+msgid "Internest partner"
+msgstr "شريك Internest"
+
+msgid "Open course"
+msgstr "فتح الكورس"
+
+msgid "Back to my skills"
+msgstr "العودة إلى مهاراتي"
+
+msgid "Student employability analytics"
+msgstr "تحليلات جاهزية الطلاب للتوظيف"
+
+msgid "students who chose to share their verified skills with you."
+msgstr "الطلاب الذين اختاروا مشاركة مهاراتهم الموثّقة معكم."
+
+msgid "Affiliated students"
+msgstr "الطلاب المنتسبون"
+
+msgid "With ≥1 verified skill"
+msgstr "لديهم مهارة موثّقة واحدة على الأقل"
+
+msgid "Verified-skill employability rate"
+msgstr "نسبة الجاهزية للتوظيف بالمهارات الموثّقة"
+
+msgid "Skills overview"
+msgstr "نظرة عامة على المهارات"
+
+msgid "Skill lag"
+msgstr "فجوة مهارية"
+
+msgid "Avg. percentile"
+msgstr "متوسط الترتيب المئوي"
+
+msgid "No data yet."
+msgstr "لا توجد بيانات بعد."
+
+msgid "Students"
+msgstr "الطلاب"
+
+msgid "Upskilling"
+msgstr "تطوير المهارات"
+
+msgid "Report"
+msgstr "التقرير"
+
+msgid "No affiliated students yet."
+msgstr "لا يوجد طلاب منتسبون بعد."
+
+msgid "Skill Intelligence"
+msgstr "ذكاء المهارات"
+
+msgid "Verified badges: %(n)s"
+msgstr "الشارات الموثّقة: %(n)s"
+
+msgid "Claimed: %(n)s"
+msgstr "المذكورة: %(n)s"
+
+msgid "Upskilling paths: %(n)s"
+msgstr "مسارات التطوير: %(n)s"
+
+msgid "Manage skills"
+msgstr "إدارة المهارات"
+
+msgid ""
+"Badges and scores are visible only to you, your partner university, and "
+"Internest Pro employers you applied to."
+msgstr ""
+"الشارات والدرجات تظهر لك فقط، ولجامعتك الشريكة، ولأصحاب العمل المشتركين في "
+"Internest Pro الذين تقدّمت إليهم."
+
+msgid "personal email"
+msgstr "بريدك الإلكتروني الشخصي"
+
+msgid "university email"
+msgstr "بريدك الإلكتروني الجامعي"
+
+msgid "Internest — Verify your %(label)s"
+msgstr "Internest — وثّق %(label)s"
+
+msgid "This email is already in use by another account."
+msgstr "هذا البريد مستخدم بالفعل في حساب آخر."
+
+msgid "Personal and university emails must be different."
+msgstr "يجب أن يختلف البريد الشخصي عن البريد الجامعي."
+
+msgid "This email is already registered."
+msgstr "هذا البريد مسجّل بالفعل."
+
+msgid "The verification code must be 6 digits."
+msgstr "يجب أن يتكوّن رمز التحقق من 6 أرقام."
+
+msgid "Email verification is only available for student accounts."
+msgstr "توثيق البريد متاح لحسابات الطلاب فقط."
+
+msgid "All your emails are already verified."
+msgstr "جميع بريدك الإلكتروني موثّق بالفعل."
+
+msgid "Add the email to your profile first."
+msgstr "أضف البريد الإلكتروني إلى ملفك أولاً."
+
+msgid "Please verify your personal email before applying."
+msgstr "يرجى توثيق بريدك الشخصي قبل التقديم."
+
+msgid "Account created. We sent a verification code to your personal email."
+msgstr "تم إنشاء الحساب. أرسلنا رمز تحقق إلى بريدك الشخصي."
+
+msgid "No active verification code. Request a new one."
+msgstr "لا يوجد رمز تحقق فعّال. اطلب رمزاً جديداً."
+
+msgid "This code has expired. Please request a new one."
+msgstr "انتهت صلاحية هذا الرمز. يرجى طلب رمز جديد."
+
+msgid "Too many incorrect attempts. Please request a new code."
+msgstr "محاولات خاطئة كثيرة. يرجى طلب رمز جديد."
+
+msgid "Incorrect code. Please try again."
+msgstr "رمز غير صحيح. حاول مرة أخرى."
+
+msgid "Email verified successfully ✅"
+msgstr "تم توثيق البريد بنجاح ✅"
+
+msgid "Verify your Internest email"
+msgstr "وثّق بريدك على Internest"
+
+msgid "Email verification"
+msgstr "توثيق البريد الإلكتروني"
+
+msgid "Hello"
+msgstr "مرحباً"
+
+msgid ""
+"Thanks for joining Internest. To activate your account and start applying to"
+" opportunities, please confirm your %(label)s with the one-time code below."
+msgstr ""
+"شكراً لانضمامك إلى Internest. لتفعيل حسابك والبدء في التقديم على الفرص، يرجى"
+" توثيق %(label)s باستخدام الرمز المؤقت أدناه."
+
+msgid "Verification code"
+msgstr "رمز التحقق"
+
+msgid "This code expires in %(n)s minutes."
+msgstr "تنتهي صلاحية هذا الرمز خلال %(n)s دقيقة."
+
+msgid "Enter it on the verification page to confirm your email."
+msgstr "أدخله في صفحة التحقق لتوثيق بريدك."
+
+msgid ""
+"If you did not create an Internest account, you can safely ignore this email"
+" — your address will not be added without verification."
+msgstr ""
+"إذا لم تُنشئ حساباً على Internest فيمكنك تجاهل هذا البريد — لن يُضاف عنوانك "
+"دون توثيق."
+
+msgid ""
+"This is an automated message from Internest. Please do not reply directly to"
+" this email."
+msgstr "هذه رسالة آلية من Internest. يرجى عدم الرد عليها مباشرة."
+
+msgid "Verify your email"
+msgstr "وثّق بريدك الإلكتروني"
+
+msgid ""
+"For your security, we need to confirm the email addresses on your Internest "
+"account."
+msgstr ""
+"لحماية حسابك، نحتاج إلى توثيق عناوين البريد المرتبطة بحسابك على Internest."
+
+msgid "Enter the 6-digit code we sent you."
+msgstr "أدخل الرمز المكوّن من 6 أرقام الذي أرسلناه إليك."
+
+msgid "Which email are you verifying?"
+msgstr "أي بريد تريد توثيقه؟"
+
+msgid "6-digit code"
+msgstr "رمز من 6 أرقام"
+
+msgid "Verify"
+msgstr "توثيق"
+
+msgid "Resend code to %(label)s (%(email)s)"
+msgstr "إعادة إرسال الرمز إلى %(label)s (%(email)s)"
+
+msgid ""
+"Codes expire after 30 minutes. After 5 incorrect attempts, request a new "
+"one."
+msgstr ""
+"تنتهي صلاحية الرموز بعد 30 دقيقة. بعد 5 محاولات خاطئة اطلب رمزاً جديداً."
+
+msgid ""
+"The verified student talent marketplace: students get real work and verified"
+" experience, startups hire pre-tested talent, and universities prove their "
+"outcomes."
+msgstr ""
+"سوق المواهب الطلابية الموثّقة: الطلاب يحصلون على عمل حقيقي وخبرة موثّقة، "
+"والشركات الناشئة توظّف مواهب مختبَرة مسبقاً، والجامعات تُثبت مخرجاتها."

@@ -55,5 +55,6 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{{ js_i18n|json_script:"skills-i18n" }}
 <script src="{% static 'skills/challenge.js' %}"></script>
 {% endblock %}

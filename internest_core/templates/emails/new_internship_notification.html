@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+{% load i18n %}{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
 <head>
     <meta charset="UTF-8">
     <title>{{ internship_title }} — Internest</title>
@@ -10,51 +10,51 @@
 
         <div style="padding: 32px; background: linear-gradient(135deg, #0b1e4d 0%, #1d3a8a 50%, #2746a8 100%); color: #ffffff; text-align: center;">
             <div style="display: inline-block; padding: 6px 14px; background-color: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; font-size: 12px; font-weight: 700; margin-bottom: 16px; letter-spacing: 0.04em;">
-                ✨ فرصة جديدة
+                ✨ {% trans "New opportunity" %}
             </div>
             <h1 style="margin: 0; font-size: 26px; font-weight: 800; line-height: 1.3;">
-                فرصة تدريب جديدة في انتظارك
+                {% trans "A new opportunity is waiting for you" %}
             </h1>
         </div>
 
         <div style="padding: 40px 32px;">
             <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.7; color: #334155;">
-                مرحباً 👋،
+                {% trans "Hi" %} 👋,
             </p>
             <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.7; color: #334155;">
-                يسرنا أن نعلمك بإضافة فرصة تدريب جديدة على منصة Internest قد تناسبك.
+                {% trans "A new opportunity that may suit you was just posted on Internest." %}
             </p>
 
             <div style="padding: 24px; background-color: #f1f6ff; border: 1px solid #e0eaff; border-radius: 14px; margin-bottom: 28px;">
                 <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">
-                    الفرصة
+                    {% trans "Opportunity" %}
                 </p>
                 <h2 style="margin: 0 0 12px 0; font-size: 22px; font-weight: 800; color: #0b1e4d; line-height: 1.3;">
                     {{ internship_title }}
                 </h2>
                 <p style="margin: 0; font-size: 14px; color: #475569;">
-                    مقدّمة من <strong style="color: #0f172a;">{{ partner_name }}</strong>
+                    {% trans "Posted by" %} <strong style="color: #0f172a;">{{ partner_name }}</strong>
                 </p>
             </div>
 
             <div style="text-align: center; margin-bottom: 32px;">
                 <a href="{{ internship_url }}"
                    style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #1a1206; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 16px; box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.6);">
-                    عرض التفاصيل والتقديم ←
+                    {% trans "View details and apply" %} →
                 </a>
             </div>
 
             <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #64748b; text-align: center;">
-                التقديم بضغطة واحدة بملفك الموحد على Internest. لا تفوّت الفرصة 🚀
+                {% trans "Apply in one click with your verified Internest profile. Don't miss it!" %} 🚀
             </p>
         </div>
 
         <div style="padding: 24px; background-color: #f8fafc; text-align: center; border-top: 1px solid #e2e8f0;">
             <p style="margin: 0 0 6px 0; font-size: 13px; color: #475569;">
-                مع تحيات فريق <strong style="color: #0b1e4d;">Internest</strong>
+                {% trans "Best regards," %} <strong style="color: #0b1e4d;">{% trans "The Internest team" %}</strong>
             </p>
             <p style="margin: 0; font-size: 11px; color: #94a3b8;">
-                تلقيت هذا البريد لأنك مسجّل على منصة Internest.
+                {% trans "You received this email because you are registered on Internest." %}
             </p>
         </div>
 

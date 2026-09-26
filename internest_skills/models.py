@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext, gettext_lazy as _
 
 from internest_core.models import PartnerProfile, StudentProfile
 
@@ -15,13 +16,13 @@ def _split_csv(value):
 
 
 class Discipline(models.TextChoices):
-    COMPUTING = "computing", "Computer Science & IT"
-    BUSINESS = "business", "Business & Finance"
-    MEDIA = "media", "Media & Design"
-    LAW = "law", "Law"
-    ENGINEERING = "engineering", "Engineering"
-    HEALTH = "health", "Health Sciences"
-    GENERAL = "general", "Transferable / Soft Skills"
+    COMPUTING = "computing", _("Computer Science & IT")
+    BUSINESS = "business", _("Business & Finance")
+    MEDIA = "media", _("Media & Design")
+    LAW = "law", _("Law")
+    ENGINEERING = "engineering", _("Engineering")
+    HEALTH = "health", _("Health Sciences")
+    GENERAL = "general", _("Transferable / Soft Skills")
 
 
 class Skill(models.Model):
@@ -92,7 +93,7 @@ class ChallengeItem(models.Model):
         help_text='Case only: list of concept groups; each group is a list of accepted terms, e.g. [["npv","net present value"],["discount"]].',
     )
     DIFFICULTY_EASY, DIFFICULTY_MEDIUM, DIFFICULTY_HARD = "easy", "medium", "hard"
-    DIFFICULTY_CHOICES = [(DIFFICULTY_EASY, "Easy"), (DIFFICULTY_MEDIUM, "Medium"), (DIFFICULTY_HARD, "Hard")]
+    DIFFICULTY_CHOICES = [(DIFFICULTY_EASY, _("Easy")), (DIFFICULTY_MEDIUM, _("Medium")), (DIFFICULTY_HARD, _("Hard"))]
     DIFFICULTY_ORDER = {DIFFICULTY_EASY: 0, DIFFICULTY_MEDIUM: 1, DIFFICULTY_HARD: 2}
 
     difficulty = models.CharField(max_length=6, choices=DIFFICULTY_CHOICES, default=DIFFICULTY_MEDIUM)
@@ -149,12 +150,12 @@ class SkillProfile(models.Model):
 class StudentSkill(models.Model):
     SOURCE_EXPLICIT = "explicit"
     SOURCE_IMPLICIT = "implicit"
-    SOURCE_CHOICES = [(SOURCE_EXPLICIT, "Explicit"), (SOURCE_IMPLICIT, "Implicit (inferred)")]
+    SOURCE_CHOICES = [(SOURCE_EXPLICIT, _("Explicit")), (SOURCE_IMPLICIT, _("Implicit (inferred)"))]
 
     STATUS_CLAIMED = "claimed"
     STATUS_VERIFIED = "verified"
     STATUS_LAG = "lag"
-    STATUS_CHOICES = [(STATUS_CLAIMED, "Claimed"), (STATUS_VERIFIED, "Verified"), (STATUS_LAG, "Skill lag detected")]
+    STATUS_CHOICES = [(STATUS_CLAIMED, _("Claimed")), (STATUS_VERIFIED, _("Verified")), (STATUS_LAG, _("Skill lag detected"))]
 
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="skills")
     skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name="student_skills")
@@ -189,7 +190,7 @@ class StudentSkill(models.Model):
     @property
     def status_label(self):
         if self.status == self.STATUS_LAG and self.lag_sub_skills:
-            return "Skill Lag Detected in " + ", ".join(s["name"] for s in self.lag_sub_skills)
+            return gettext("Skill Lag Detected in %(areas)s") % {"areas": ", ".join(s["name"] for s in self.lag_sub_skills)}
         return self.get_status_display()
 
     def start_cooldown(self):

@@ -7,9 +7,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0b1e4d">
-    <meta name="description" content="Internest - نظام الربط الذكي بين الشركات والطلاب الجامعيين. تدريبات، كورسات، وفرص حقيقية لمستقبلك المهني.">
+    <meta name="description" content="{% trans 'Internest — the verified student talent marketplace. Students get real work, startups hire verified talent, universities prove outcomes.' %}">
 
-    <title>{% block title %}Internest — {% trans "Smart opportunity and internship platform" %}{% endblock title %}</title>
+    <title>{% block title %}Internest — {% trans "Verified student talent marketplace" %}{% endblock title %}</title>
 
     <link rel="icon" type="image/jpeg" href="{% static 'img/internest_logo.jpg' %}">
 
@@ -55,38 +55,26 @@
                         <li><a href="{% url 'profile' %}" class="nav__link"><i class="bi bi-person-circle"></i> {% trans "My profile" %}</a></li>
                     {% endif %}
                 {% else %}
-                    <li><a href="#features" class="nav__link">{% trans "Platform" %}</a></li>
-                    <li><a href="#how-it-works" class="nav__link">{% trans "How it works" %}</a></li>
-                    <li><a href="{% url 'contact_partner' %}" class="nav__link">{% trans "For partners" %}</a></li>
+                    <li><a href="{% url 'landing' %}#features" class="nav__link">{% trans "For students" %}</a></li>
+                    <li><a href="{% url 'landing' %}#startups" class="nav__link">{% trans "For startups" %}</a></li>
+                    <li><a href="{% url 'landing' %}#universities" class="nav__link">{% trans "For universities" %}</a></li>
+                    <li><a href="{% url 'landing' %}#how-it-works" class="nav__link">{% trans "How it works" %}</a></li>
                 {% endif %}
             </ul>
 
             <div class="nav__cta">
-                {# Language switcher #}
-                <div class="lang-switcher" id="langSwitcher">
-                    <button type="button" class="lang-switcher__toggle" aria-haspopup="true" aria-expanded="false">
-                        <i class="bi bi-globe2"></i>
-                        <span>{{ LANGUAGE_CODE|upper }}</span>
-                        <i class="bi bi-chevron-down" style="font-size: 12px;"></i>
+                {# AR ⇄ EN toggle: posts the other language to Django's set_language view #}
+                {% if LANGUAGE_CODE == "ar" %}{% get_language_info for "en" as other_lang %}{% else %}{% get_language_info for "ar" as other_lang %}{% endif %}
+                <form action="{% url 'set_language' %}" method="post" class="lang-switcher" style="margin: 0;">
+                    {% csrf_token %}
+                    <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                    <input name="language" type="hidden" value="{{ other_lang.code }}">
+                    <button type="submit" class="lang-switcher__toggle" lang="{{ other_lang.code }}"
+                            aria-label="{% trans 'Switch language' %}: {{ other_lang.name_local }}">
+                        <i class="bi bi-translate"></i>
+                        <span>{{ other_lang.name_local }}</span>
                     </button>
-                    <div class="lang-switcher__menu" role="menu">
-                        {% get_available_languages as LANGUAGES %}
-                        {% for lang_code, lang_name in LANGUAGES %}
-                            <form action="{% url 'set_language' %}" method="post" style="margin: 0;">
-                                {% csrf_token %}
-                                <input name="next" type="hidden" value="{{ request.get_full_path }}">
-                                <input name="language" type="hidden" value="{{ lang_code }}">
-                                <button type="submit"
-                                        class="lang-switcher__option {% if lang_code == LANGUAGE_CODE %}is-active{% endif %}"
-                                        role="menuitem">
-                                    <span class="lang-switcher__code">{{ lang_code|upper }}</span>
-                                    <span class="lang-switcher__name">{{ lang_name }}</span>
-                                    {% if lang_code == LANGUAGE_CODE %}<i class="bi bi-check2" style="margin-inline-start: auto;"></i>{% endif %}
-                                </button>
-                            </form>
-                        {% endfor %}
-                    </div>
-                </div>
+                </form>
 
                 {% if user.is_authenticated %}
                     {% if has_partner_profile %}
@@ -125,28 +113,28 @@
                 <div class="flash flash--{{ cls }}">
                     <span class="flash__icon"><i class="bi {{ icon }}"></i></span>
                     <span class="flash__body">{{ message }}</span>
-                    <button class="flash__close" aria-label="إغلاق"><i class="bi bi-x"></i></button>
+                    <button class="flash__close" aria-label="{% trans 'Close' %}"><i class="bi bi-x"></i></button>
                 </div>
                 {% endwith %}
                 {% elif message.tags == 'error' or message.tags == 'danger' %}{% with icon='bi-x-circle-fill' cls='error' %}
                 <div class="flash flash--{{ cls }}">
                     <span class="flash__icon"><i class="bi {{ icon }}"></i></span>
                     <span class="flash__body">{{ message }}</span>
-                    <button class="flash__close" aria-label="إغلاق"><i class="bi bi-x"></i></button>
+                    <button class="flash__close" aria-label="{% trans 'Close' %}"><i class="bi bi-x"></i></button>
                 </div>
                 {% endwith %}
                 {% elif message.tags == 'warning' %}{% with icon='bi-exclamation-triangle-fill' cls='warning' %}
                 <div class="flash flash--{{ cls }}">
                     <span class="flash__icon"><i class="bi {{ icon }}"></i></span>
                     <span class="flash__body">{{ message }}</span>
-                    <button class="flash__close" aria-label="إغلاق"><i class="bi bi-x"></i></button>
+                    <button class="flash__close" aria-label="{% trans 'Close' %}"><i class="bi bi-x"></i></button>
                 </div>
                 {% endwith %}
                 {% else %}{% with icon='bi-info-circle-fill' cls='info' %}
                 <div class="flash flash--{{ cls }}">
                     <span class="flash__icon"><i class="bi {{ icon }}"></i></span>
                     <span class="flash__body">{{ message }}</span>
-                    <button class="flash__close" aria-label="إغلاق"><i class="bi bi-x"></i></button>
+                    <button class="flash__close" aria-label="{% trans 'Close' %}"><i class="bi bi-x"></i></button>
                 </div>
                 {% endwith %}{% endif %}
             {% endfor %}
@@ -166,7 +154,7 @@
                         <span>INTERNEST</span>
                     </a>
                     <p class="footer__tagline">
-                        {% trans "Smart matching system between university students and companies. We connect you with real internship opportunities, verified courses, and a professional community that builds your future." %}
+                        {% trans "The verified student talent marketplace: students get real work and verified experience, startups hire pre-tested talent, and universities prove their outcomes." %}
                     </p>
                     <div class="footer__socials">
                         <a href="#" class="footer__social" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
@@ -179,7 +167,7 @@
                 <div>
                     <h4 class="footer__heading">{% trans "For students" %}</h4>
                     <ul class="footer__list">
-                        <li><a href="{% url 'list' %}">{% trans "Browse internships" %}</a></li>
+                        <li><a href="{% url 'list' %}">{% trans "Browse opportunities" %}</a></li>
                         <li><a href="{% url 'course_list' %}">{% trans "Courses" %}</a></li>
                         <li><a href="{% url 'task_list' %}">{% trans "Tasks & points" %}</a></li>
                         <li><a href="{% url 'login_or_signup' %}">{% trans "Create account" %}</a></li>
@@ -187,7 +175,7 @@
                 </div>
 
                 <div>
-                    <h4 class="footer__heading">{% trans "For partners" %}</h4>
+                    <h4 class="footer__heading">{% trans "For startups & universities" %}</h4>
                     <ul class="footer__list">
                         <li><a href="{% url 'contact_partner' %}">{% trans "Join as partner" %}</a></li>
                         <li><a href="{% url 'partner_login' %}">{% trans "Partner login" %}</a></li>
@@ -235,21 +223,6 @@
             if (!nav || !toggle) return;
             toggle.addEventListener('click', function() {
                 nav.classList.toggle('is-open');
-            });
-        })();
-
-        // Language switcher dropdown
-        (function() {
-            var sw = document.getElementById('langSwitcher');
-            if (!sw) return;
-            var btn = sw.querySelector('.lang-switcher__toggle');
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                sw.classList.toggle('is-open');
-                btn.setAttribute('aria-expanded', sw.classList.contains('is-open'));
-            });
-            document.addEventListener('click', function(e) {
-                if (!sw.contains(e.target)) sw.classList.remove('is-open');
             });
         })();
 

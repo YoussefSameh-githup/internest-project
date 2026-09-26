@@ -68,9 +68,15 @@
                     {% for t in attempt.improvement_topics %}
                         <li>
                             <strong>{{ t.topic }}</strong>
-                            <span class="badge {% if t.difficulty == 'easy' %}badge--danger{% elif t.difficulty == 'hard' %}badge--info{% else %}badge--accent{% endif %}">{{ t.difficulty|capfirst }}</span>
+                            <span class="badge {% if t.difficulty == 'easy' %}badge--danger{% elif t.difficulty == 'hard' %}badge--info{% else %}badge--accent{% endif %}">
+                                {% if t.difficulty == 'easy' %}{% trans "Easy" %}{% elif t.difficulty == 'hard' %}{% trans "Hard" %}{% else %}{% trans "Medium" %}{% endif %}
+                            </span>
                             {% if t.reason == 'timed_out' %}<span class="text-muted" style="font-size: var(--text-xs);">({% trans "ran out of time" %})</span>{% endif %}
-                            <div class="text-muted" style="font-size: var(--text-sm);">{{ t.action }}</div>
+                            <div class="text-muted" style="font-size: var(--text-sm);">
+                                {% if t.difficulty == 'easy' %}{% blocktrans with topic=t.topic area=t.sub_skill %}Review {{ topic }} ({{ area }}) and practise easy-level problems on it.{% endblocktrans %}
+                                {% elif t.difficulty == 'hard' %}{% blocktrans with topic=t.topic area=t.sub_skill %}Review {{ topic }} ({{ area }}) and practise hard-level problems on it.{% endblocktrans %}
+                                {% else %}{% blocktrans with topic=t.topic area=t.sub_skill %}Review {{ topic }} ({{ area }}) and practise medium-level problems on it.{% endblocktrans %}{% endif %}
+                            </div>
                         </li>
                     {% endfor %}
                 </ol>

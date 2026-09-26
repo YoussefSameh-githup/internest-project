@@ -129,7 +129,7 @@ body {
     line-height: 1.65;
     color: var(--color-text);
     background-color: var(--color-bg);
-    direction: rtl;
+    /* Direction comes from <html dir="rtl|ltr"> (set per language in base.html). */
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -1542,4 +1542,43 @@ input[type="checkbox"], input[type="radio"] {
 @media print {
     .nav, .footer, .flash-stack { display: none !important; }
     body { background: var(--white); }
+}
+
+/* ---------- Direction-aware icons ----------
+   Templates use "forward/back" arrows drawn for RTL (Arabic default).
+   Mirror them in LTR so they always point in the reading direction. */
+[dir="ltr"] .bi-arrow-left-short,
+[dir="ltr"] .bi-arrow-right-short,
+[dir="ltr"] .bi-arrow-left,
+[dir="ltr"] .bi-arrow-right,
+[dir="ltr"] .bi-chevron-left,
+[dir="ltr"] .bi-chevron-right {
+    display: inline-block;
+    transform: scaleX(-1);
+}
+
+/* ---------- Landing: opportunity tags & audience cards ---------- */
+.hero__tags {
+    list-style: none; padding: 0; margin: var(--space-6) 0 0;
+    display: flex; flex-wrap: wrap; gap: var(--space-2);
+}
+.hero__tags li {
+    display: inline-flex; align-items: center; gap: var(--space-2);
+    padding: var(--space-1) var(--space-3); border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12); color: var(--white);
+    font-size: var(--text-sm); font-weight: 600;
+}
+.audience-grid { display: grid; gap: var(--space-6); grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.audience-card { display: flex; flex-direction: column; align-items: flex-start; }
+.audience-card__list { list-style: none; padding: 0; margin: var(--space-4) 0; display: grid; gap: var(--space-3); }
+.audience-card__list li { display: flex; gap: var(--space-3); align-items: flex-start; }
+.audience-card__note {
+    margin-top: auto; margin-bottom: var(--space-5); padding: var(--space-3) var(--space-4);
+    border-radius: 10px; background: var(--accent-100); color: var(--accent-700); font-size: var(--text-sm);
+}
+
+/* Latin typeface for English (Inter is already loaded in base.html). */
+html[dir="ltr"] {
+    --font-display: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    --font-body:    'Inter', 'Segoe UI', system-ui, sans-serif;
 }

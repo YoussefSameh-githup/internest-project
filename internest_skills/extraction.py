@@ -9,6 +9,7 @@ from dataclasses import dataclass
 
 from django.db import IntegrityError, transaction
 from django.utils.text import slugify
+from django.utils.translation import gettext as _
 
 from .llm import chat_json, llm_enabled
 from .models import Skill, StudentSkill
@@ -41,14 +42,14 @@ def read_document_text(uploaded_file) -> str:
                     parts.extend(cell.text for cell in row.cells)
             text = "\n".join(parts)
         else:
-            raise ExtractionError("Unsupported file type. Upload a PDF or DOCX.")
+            raise ExtractionError(_("Unsupported file type. Upload a PDF or DOCX."))
     except ExtractionError:
         raise
     except Exception as exc:
-        raise ExtractionError("Could not read this file. Make sure it is a valid, non-encrypted PDF or DOCX.") from exc
+        raise ExtractionError(_("Could not read this file. Make sure it is a valid, non-encrypted PDF or DOCX.")) from exc
     text = text[:MAX_TEXT_CHARS]
     if len(text.strip()) < 40:
-        raise ExtractionError("No readable text found (scanned image PDFs are not supported).")
+        raise ExtractionError(_("No readable text found (scanned image PDFs are not supported)."))
     return text
 
 

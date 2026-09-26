@@ -10,6 +10,7 @@ from django.http import Http404, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
 from internest_core.models import StudentProfile
@@ -43,7 +44,7 @@ def student_gate(api=False):
             if missing_profile_fields(student):
                 if api:
                     return JsonResponse({"error": "profile_incomplete", "profile_url": reverse("profile")}, status=403)
-                messages.warning(request, "Please complete your basic profile first (university, major and study level) to analyze and verify your skills.")
+                messages.warning(request, _("Please complete your basic profile first (university, major and study level) to analyze and verify your skills."))
                 return redirect("profile")
             request.student = student
             return view(request, *args, **kwargs)
@@ -61,7 +62,7 @@ def _skills_with_challenge_flag(qs):
 @student_gate()
 def skills_hub(request):
     student = request.student
-    skill_profile, _ = SkillProfile.objects.get_or_create(student=student)
+    skill_profile, _created = SkillProfile.objects.get_or_create(student=student)
 
     if request.method == "POST":
         form = SkillSourceForm(request.POST, request.FILES)
@@ -100,7 +101,7 @@ def _handle_extraction(request, student, skill_profile, data):
     files = [f for f in (data.get("cv_file"), data.get("linkedin_pdf")) if f]
     if files and skill_profile.extraction_count_today >= MAX_EXTRACTIONS_PER_DAY:
         skill_profile.save()
-        messages.error(request, "Daily analysis limit reached. Try again tomorrow.")
+        messages.error(request, _("Daily analysis limit reached. Try again tomorrow."))
         return
 
     if files:
@@ -117,14 +118,15 @@ def _handle_extraction(request, student, skill_profile, data):
         explicit = sum(1 for e in extracted if e.source == StudentSkill.SOURCE_EXPLICIT)
         messages.success(
             request,
-            f"Analysis complete: {explicit} explicit and {len(extracted) - explicit} inferred skills found "
-            f"({created} new). They are marked as Claimed until you verify them.",
+            _("Analysis complete: %(explicit)s explicit and %(inferred)s inferred skills found (%(new)s new). "
+              "They are marked as Claimed until you verify them.")
+            % {"explicit": explicit, "inferred": len(extracted) - explicit, "new": created},
         )
     else:
         messages.info(
             request,
-            "LinkedIn URL saved. LinkedIn does not allow automated profile reading — upload the PDF export "
-            "(LinkedIn profile → More → Save to PDF) to analyze it.",
+            _("LinkedIn URL saved. LinkedIn does not allow automated profile reading — upload the PDF export "
+              "(LinkedIn profile → More → Save to PDF) to analyze it."),
         )
     skill_profile.save()
 
@@ -146,7 +148,7 @@ def challenge_start(request, student_skill_id):
             attempt = engine.start_attempt(ss, item_ids=item_ids)
         except engine.ChallengeError as exc:
             if can_start and item_ids is None:
-                exc = "We couldn't prepare a challenge for this skill right now. Please try again in a few minutes."
+                exc = _("We couldn't prepare a challenge for this skill right now. Please try again in a few minutes.")
             messages.warning(request, str(exc))
             return redirect("skills_hub")
     return redirect("skills_challenge", token=attempt.token)
@@ -160,7 +162,17 @@ def challenge_run(request, token):
     if not attempt.is_active:
         return redirect("skills_result", token=attempt.token)
     context = get_user_context(request)
-    context.update({"attempt": attempt, "skill": attempt.student_skill.skill})
+    context.update({
+        "attempt": attempt,
+        "skill": attempt.student_skill.skill,
+        # Strings the challenge script shows; %(n)s / %(max)s are filled in client-side.
+        "js_i18n": {
+            "easy": _("Easy"), "medium": _("Medium"), "hard": _("Hard"),
+            "retrying": _("Connection problem. Retrying…"),
+            "load_failed": _("Could not load the next question. Please refresh the page."),
+            "focus_warning": _("Warning %(n)s of %(max)s: stay on this tab. The next time you leave, the session ends."),
+        },
+    })
     return render(request, "skills/challenge.html", context)
 
 
@@ -274,7 +286,7 @@ def student_skill_report(request, student_id):
             context = get_user_context(request)
             context["student"] = student
             return render(request, "skills/pro_required.html", context, status=403)
-        return HttpResponseForbidden("You are not authorized to view this student's skill data.")
+        return HttpResponseForbidden(_("You are not authorized to view this student's skill data."))
     context = get_user_context(request)
     context.update({
         "student": student,
@@ -288,7 +300,7 @@ def student_skill_report(request, student_id):
 def university_dashboard(request):
     partner = _get_partner_profile(request.user)
     if not is_verified_university(partner):
-        return HttpResponseForbidden("Available to verified partner universities only.")
+        return HttpResponseForbidden(_("Available to verified partner universities only."))
     students = StudentProfile.objects.filter(skill_profile__partner_university=partner).select_related("user")
     total_students = students.count()
     verified_qs = StudentSkill.objects.filter(student__in=students, status=StudentSkill.STATUS_VERIFIED)

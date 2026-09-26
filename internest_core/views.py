@@ -11,6 +11,7 @@ from django.db.models import F
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from .email_helpers import issue_and_send_verification as _issue_and_send_verification
 from .models import (
@@ -124,7 +125,7 @@ def signup(request):
 
             messages.success(
                 request,
-                "Account created. We sent a verification code to your personal email.",
+                _("Account created. We sent a verification code to your personal email."),
             )
             return redirect("verify_email")
     else:
@@ -139,17 +140,17 @@ def verify_email_view(request):
     """Display pending OTPs for the user and accept code submissions."""
     profile = _get_student_profile(request.user)
     if profile is None:
-        messages.error(request, "Email verification is only available for student accounts.")
+        messages.error(request, _("Email verification is only available for student accounts."))
         return redirect("home_redirect")
 
     pending = []
     if profile.personal_email and not profile.is_personal_email_verified:
-        pending.append((EmailVerification.EMAIL_TYPE_PERSONAL, profile.personal_email, "Personal email"))
+        pending.append((EmailVerification.EMAIL_TYPE_PERSONAL, profile.personal_email, _("Personal email")))
     if profile.university_email and not profile.is_university_email_verified:
-        pending.append((EmailVerification.EMAIL_TYPE_UNIVERSITY, profile.university_email, "University email"))
+        pending.append((EmailVerification.EMAIL_TYPE_UNIVERSITY, profile.university_email, _("University email")))
 
     if not pending:
-        messages.success(request, "All your emails are already verified.")
+        messages.success(request, _("All your emails are already verified."))
         return redirect("profile")
 
     if request.method == "POST":
@@ -165,15 +166,15 @@ def verify_email_view(request):
                 .first()
             )
             if otp is None:
-                messages.error(request, "No active verification code. Request a new one.")
+                messages.error(request, _("No active verification code. Request a new one."))
             elif otp.is_expired:
-                messages.error(request, "This code has expired. Please request a new one.")
+                messages.error(request, _("This code has expired. Please request a new one."))
             elif otp.attempts >= 5:
-                messages.error(request, "Too many incorrect attempts. Please request a new code.")
+                messages.error(request, _("Too many incorrect attempts. Please request a new code."))
             elif otp.code != code:
                 otp.attempts = F("attempts") + 1
                 otp.save(update_fields=["attempts"])
-                messages.error(request, "Incorrect code. Please try again.")
+                messages.error(request, _("Incorrect code. Please try again."))
             else:
                 otp.mark_verified()
                 if email_type == EmailVerification.EMAIL_TYPE_PERSONAL:
@@ -183,7 +184,7 @@ def verify_email_view(request):
                 profile.save(update_fields=[
                     "personal_email_verified_at", "university_email_verified_at",
                 ])
-                messages.success(request, "Email verified successfully ✅")
+                messages.success(request, _("Email verified successfully ✅"))
                 return redirect("verify_email")
     else:
         form = OTPVerificationForm(initial={"email_type": pending[0][0]})
@@ -202,7 +203,7 @@ def resend_verification_view(request, email_type: str):
         return redirect("home_redirect")
     email = profile.personal_email if email_type == EmailVerification.EMAIL_TYPE_PERSONAL else profile.university_email
     if not email:
-        messages.error(request, "Add the email to your profile first.")
+        messages.error(request, _("Add the email to your profile first."))
         return redirect("profile")
     _issue_and_send_verification(request.user, email, email_type)
     messages.success(request, f"A new verification code was sent to {email}.")
@@ -237,12 +238,12 @@ def partner_code_login(request):
                 login(request, authenticated_user)
                 messages.success(
                     request,
-                    f"أهلاً بعودتك، شريكنا {partner_profile.company_name}!",
+                    _("Welcome back, %(company)s!") % {"company": partner_profile.company_name},
                 )
                 return redirect("partner_dashboard")
-            error_message = "كلمة المرور غير صحيحة."
+            error_message = _("Incorrect password.")
         else:
-            error_message = "بيانات الشريك غير صحيحة. تأكد من اسم المستخدم والرمز السري."
+            error_message = _("Invalid partner details. Check your username and partner code.")
 
     context = get_user_context(request)
     context.update({
@@ -255,7 +256,7 @@ def partner_code_login(request):
 
 def logout_view(request):
     logout(request)
-    messages.info(request, "تم تسجيل خروجك بنجاح.")
+    messages.info(request, _("You have been logged out."))
     return redirect("landing")
 
 
@@ -304,10 +305,10 @@ def internship_detail_view(request, pk):
 @login_required
 def profile_view(request):
     if _get_partner_profile(request.user) is not None:
-        messages.warning(request, "أنت مسجل كشريك. تم توجيهك إلى لوحة الشريك.")
+        messages.warning(request, _("You are signed in as a partner, so you were taken to the partner dashboard."))
         return redirect("partner_dashboard")
 
-    profile, _ = StudentProfile.objects.get_or_create(user=request.user)
+    profile, _created = StudentProfile.objects.get_or_create(user=request.user)
     if request.method == "POST":
         old_personal = profile.personal_email
         old_university = profile.university_email
@@ -329,7 +330,7 @@ def profile_view(request):
                         request.user, profile.university_email, EmailVerification.EMAIL_TYPE_UNIVERSITY,
                     )
             profile.calculate_completion()
-            messages.success(request, "تم تحديث ملفك الشخصي بنجاح!")
+            messages.success(request, _("Your profile was updated."))
             if profile.has_any_pending_email_verification:
                 return redirect("verify_email")
             return redirect("profile")
@@ -345,23 +346,23 @@ def profile_view(request):
 def apply_to_internship(request, internship_id):
     profile = _get_student_profile(request.user)
     if profile is None:
-        messages.error(request, "هذه الميزة متاحة للطلاب فقط.")
+        messages.error(request, _("This feature is available to students only."))
         return redirect("landing")
 
     internship = get_object_or_404(Internship, id=internship_id, is_active=True)
     if not profile.is_personal_email_verified:
-        messages.warning(request, "Please verify your personal email before applying.")
+        messages.warning(request, _("Please verify your personal email before applying."))
         return redirect("verify_email")
     if profile.profile_completion_score < 100:
         return redirect("apply_error", internship_id=internship_id)
 
     try:
         Application.objects.create(internship=internship, applicant=request.user)
-        messages.success(request, f"تم التقديم بنجاح على تدريب {internship.title}!")
+        messages.success(request, _("You applied to %(title)s.") % {"title": internship.title})
     except IntegrityError:
         messages.warning(
             request,
-            f"لقد قمت بالتقديم على تدريب {internship.title} مسبقاً.",
+            _("You have already applied to %(title)s.") % {"title": internship.title},
         )
     return redirect("application_success")
 
@@ -374,7 +375,7 @@ def apply_error(request, internship_id):
     internship = get_object_or_404(Internship, id=internship_id)
     context = get_user_context(request)
     context.update({
-        "message": "يجب إكمال ملفك الشخصي بنسبة 100% للتقديم على هذه الفرصة. أكمل ملفك ثم عُد للمحاولة.",
+        "message": _("Your profile must be 100% complete to apply. Complete it and try again."),
         "internship": internship,
         "internship_id": internship_id,
     })
@@ -384,7 +385,7 @@ def apply_error(request, internship_id):
 @login_required
 def my_applications_view(request):
     if _get_partner_profile(request.user) is not None:
-        messages.warning(request, "أنت مسجل كشريك. تم توجيهك إلى لوحة الشريك.")
+        messages.warning(request, _("You are signed in as a partner, so you were taken to the partner dashboard."))
         return redirect("partner_dashboard")
 
     applications = (
@@ -402,7 +403,7 @@ def my_applications_view(request):
 def partner_profile_view(request):
     partner_profile = _get_partner_profile(request.user)
     if partner_profile is None:
-        messages.error(request, "أنت لست شريكاً مسجلاً.")
+        messages.error(request, _("You are not a registered partner."))
         return redirect("landing")
 
     if request.method == "POST":
@@ -410,7 +411,7 @@ def partner_profile_view(request):
         if form.is_valid():
             partner_profile = form.save()
             partner_profile.calculate_completion()
-            messages.success(request, "تم تحديث بيانات الشريك بنجاح!")
+            messages.success(request, _("Partner details updated."))
             return redirect("partner_profile")
     else:
         form = PartnerProfileEditForm(instance=partner_profile)
@@ -424,7 +425,7 @@ def partner_profile_view(request):
 def partner_dashboard_view(request):
     partner_profile = _get_partner_profile(request.user)
     if partner_profile is None:
-        messages.error(request, "أنت غير مصرح لك بالوصول إلى لوحة الشريك.")
+        messages.error(request, _("You are not allowed to access the partner dashboard."))
         return redirect("landing")
 
     internship_submissions = (
@@ -464,23 +465,23 @@ def partner_dashboard_view(request):
 def _calc_duration_text(today, deadline):
     total_days = (deadline - today).days
     if total_days >= 30:
-        return f"{total_days // 30} أشهر تقريبًا"
+        return _("About %(n)s months") % {"n": total_days // 30}
     if total_days >= 7:
-        return f"{total_days // 7} أسابيع تقريبًا"
-    return f"{total_days} أيام متبقية"
+        return _("About %(n)s weeks") % {"n": total_days // 7}
+    return _("%(n)s days left") % {"n": total_days}
 
 
 @login_required
 def partner_submit_internship(request):
     partner_profile = _get_partner_profile(request.user)
     if partner_profile is None:
-        messages.error(request, "أنت غير مسجل كشريك.")
+        messages.error(request, _("You are not registered as a partner."))
         return redirect("landing")
 
     if partner_profile.profile_completion_score < 100:
         messages.error(
             request,
-            "يجب إكمال ملف الشريك بنسبة 100% لإرسال طلبات التدريب.",
+            _("Your partner profile must be 100% complete to post opportunities."),
         )
         return redirect("partner_profile")
 
@@ -491,7 +492,7 @@ def partner_submit_internship(request):
             deadline = form.cleaned_data["deadline"]
 
             if deadline <= today:
-                messages.error(request, "تاريخ الموعد النهائي يجب أن يكون بعد اليوم الحالي.")
+                messages.error(request, _("The deadline must be after today."))
                 context = get_user_context(request)
                 context["form"] = form
                 return render(request, "partner/submit_internship.html", context)
@@ -502,13 +503,13 @@ def partner_submit_internship(request):
             submission.duration = _calc_duration_text(today, deadline)
             try:
                 submission.save()
-                messages.success(request, "تم إرسال طلب التدريب للمراجعة بنجاح!")
+                messages.success(request, _("Your opportunity was submitted for review."))
                 return redirect("partner_dashboard")
             except Exception:
                 logger.exception("Failed to save partner internship submission")
-                messages.error(request, "حدث خطأ أثناء الحفظ. حاول مرة أخرى.")
+                messages.error(request, _("Something went wrong while saving. Please try again."))
         else:
-            messages.error(request, "الرجاء تصحيح الأخطاء في النموذج.")
+            messages.error(request, _("Please correct the errors in the form."))
     else:
         form = PartnerInternshipForm()
 
@@ -526,7 +527,7 @@ def partner_submit_course(request):
     if partner_profile.profile_completion_score < 100:
         messages.error(
             request,
-            "يجب إكمال ملف الشريك بنسبة 100% لإرسال طلبات الكورسات.",
+            _("Your partner profile must be 100% complete to submit courses."),
         )
         return redirect("partner_profile")
 
@@ -537,7 +538,7 @@ def partner_submit_course(request):
             submission.partner = partner_profile
             submission.status = "Pending"
             submission.save()
-            messages.success(request, "تم إرسال طلب الكورس للمراجعة بنجاح!")
+            messages.success(request, _("Your course was submitted for review."))
             return redirect("partner_dashboard")
     else:
         form = PartnerCourseForm()
@@ -551,7 +552,7 @@ def partner_submit_course(request):
 def partner_submit_choose_view(request):
     context = get_user_context(request)
     if not context.get("has_partner_profile"):
-        messages.error(request, "أنت غير مصرح لك بالوصول لهذه الصفحة.")
+        messages.error(request, _("You are not allowed to access this page."))
         return redirect("landing")
     return render(request, "partner/submit_choose.html", context)
 
@@ -560,7 +561,7 @@ def partner_submit_choose_view(request):
 def task_list_view(request):
     student_profile = _get_student_profile(request.user)
     if student_profile is None:
-        messages.warning(request, "التاسكات متاحة للطلاب فقط.")
+        messages.warning(request, _("Tasks are available to students only."))
         return redirect("home_redirect")
 
     completed_task_ids = StudentTaskRecord.objects.filter(
@@ -580,13 +581,13 @@ def task_list_view(request):
 def take_task_view(request, task_id):
     student_profile = _get_student_profile(request.user)
     if student_profile is None:
-        messages.warning(request, "التاسكات متاحة للطلاب فقط.")
+        messages.warning(request, _("Tasks are available to students only."))
         return redirect("home_redirect")
 
     task = get_object_or_404(GamificationTask, id=task_id, is_active=True)
 
     if StudentTaskRecord.objects.filter(student=student_profile, task=task).exists():
-        messages.warning(request, "لقد أكملت هذا التاسك من قبل.")
+        messages.warning(request, _("You have already completed this task."))
         return redirect("task_list")
 
     if request.method == "POST":
@@ -623,7 +624,7 @@ def take_task_view(request, task_id):
 
             messages.success(
                 request,
-                f"أحسنت! لقد أكملت التاسك وحصلت على {points_earned} نقطة.",
+                _("Well done! You completed the task and earned %(points)s points.") % {"points": points_earned},
             )
             return redirect(
                 "task_result",
@@ -654,7 +655,7 @@ def task_result_view(request, task_id, score, total_points):
 def course_list_view(request):
     student_profile = _get_student_profile(request.user)
     if student_profile is None:
-        messages.warning(request, "الكورسات متاحة للطلاب فقط.")
+        messages.warning(request, _("Courses are available to students only."))
         return redirect("home_redirect")
 
     courses = (
@@ -696,13 +697,13 @@ def _compute_final_price(course, discount_code_obj):
 def course_checkout_view(request, course_id):
     student_profile = _get_student_profile(request.user)
     if student_profile is None:
-        messages.warning(request, "الكورسات متاحة للطلاب فقط.")
+        messages.warning(request, _("Courses are available to students only."))
         return redirect("home_redirect")
 
     course = get_object_or_404(PartnerCourseSubmission, id=course_id, status="Approved")
 
     if StudentEnrollment.objects.filter(student=student_profile, course=course).exists():
-        messages.warning(request, "لقد قمت بشراء هذا الكورس من قبل.")
+        messages.warning(request, _("You have already purchased this course."))
         return redirect("course_list")
 
     def _lookup_valid_code(code_str):
@@ -729,10 +730,10 @@ def course_checkout_view(request, course_id):
                 final_price, _amount, _code_str = _compute_final_price(course, candidate)
                 messages.success(
                     request,
-                    f"تم تطبيق الخصم بنجاح! السعر الجديد {final_price:.2f} ج.م",
+                    _("Discount applied! New price: %(price)s EGP") % {"price": f"{final_price:.2f}"},
                 )
             else:
-                messages.error(request, "هذا الكود غير صالح أو منتهي الصلاحية.")
+                messages.error(request, _("This code is invalid or has expired."))
 
         elif "confirm_purchase" in request.POST:
             with transaction.atomic():
@@ -764,7 +765,7 @@ def course_checkout_view(request, course_id):
                         )
 
             request.session.pop(session_key, None)
-            messages.success(request, "تم شراء الكورس بنجاح! تمت إضافة النقاط لحسابك.")
+            messages.success(request, _("Course purchased! The points were added to your account."))
             return redirect("purchase_success", enrollment_id=enrollment.id)
 
     final_price, discount_amount, discount_code_str = _compute_final_price(course, discount_code_obj)

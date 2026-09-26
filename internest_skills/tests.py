@@ -10,7 +10,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
-from django.utils import timezone
+from django.utils import timezone, translation
 
 from internest_core.models import (
     Application, Internship, PartnerApplicantData, PartnerCourseSubmission, PartnerProfile, StudentProfile,
@@ -56,6 +56,11 @@ class Base(TestCase):
         cls.free = PartnerProfile.objects.create(user=cls.free_user, company_name="FreeCo", partner_code="F1")
 
         cls.skill = Skill.objects.get(slug="financial-analysis")
+
+    def setUp(self):
+        # Assertions below use the English source strings; the site default is Arabic.
+        translation.activate("en")
+        self.client.cookies["internest_lang"] = "en"
 
     def _claim(self, student=None, skill=None):
         return StudentSkill.objects.create(student=student or self.student, skill=skill or self.skill,
@@ -387,6 +392,7 @@ class QuizGenerationTests(Base):
     ] + [{"s": "Bad", "p": "short", "c": ["A"], "a": 5}]})
 
     def setUp(self):
+        super().setUp()
         self.new_skill = Skill.objects.create(name="Supply Chain Planning", slug="supply-chain-planning", discipline="business")
 
     def _start(self, ss):
@@ -511,3 +517,51 @@ class CVCompactionTests(TestCase):
         ])
         self.assertEqual(compact_cv_text(cv).splitlines(),
                          ["Jane Doe", "EXPERIENCE", "Built ETL in Python", "PROJECTS", "Chatbot"])
+
+
+class LLMClientConfigTests(TestCase):
+    def test_model_resolution(self):
+        from .llm import resolve_model
+        gemini = "https://generativelanguage.googleapis.com/v1beta/openai/"
+        with override_settings(SKILLS_LLM_MODEL="", AGENTROUTER_BASE_URL=gemini):
+            self.assertEqual(resolve_model(), "gemini-2.5-flash")
+        with override_settings(SKILLS_LLM_MODEL="", AGENTROUTER_BASE_URL="https://agentrouter.org/v1"):
+            self.assertEqual(resolve_model(), "gpt-4o-mini")
+        with override_settings(SKILLS_LLM_MODEL="custom-model", AGENTROUTER_BASE_URL=gemini):
+            self.assertEqual(resolve_model(), "custom-model")
+
+    @override_settings(AGENTROUTER_API_KEY="k", AGENTROUTER_BASE_URL="https://llm.test/v1")
+    def test_proxy_bypass_is_opt_in(self):
+        from .llm import _client
+        with override_settings(ENABLE_PROXY_BYPASS=False):
+            self.assertTrue(_client(5)._client._trust_env)
+        with override_settings(ENABLE_PROXY_BYPASS=True):
+            self.assertFalse(_client(5)._client._trust_env)
+
+    @override_settings(AGENTROUTER_API_KEY="k", SKILLS_LLM_MODEL="",
+                       AGENTROUTER_BASE_URL="https://generativelanguage.googleapis.com/v1beta/openai/")
+    def test_gemini_endpoint_sends_gemini_model(self):
+        from .llm import chat_json
+        with mock.patch("openai.resources.chat.completions.Completions.create",
+                        return_value=_llm_reply('{"ok": true}')) as create:
+            self.assertEqual(chat_json("s", "u", max_tokens=10), {"ok": True})
+        self.assertEqual(create.call_args.kwargs["model"], "gemini-2.5-flash")
+
+    @override_settings(AGENTROUTER_API_KEY="k", AGENTROUTER_BASE_URL="https://llm.test/v1")
+    def test_chat_json_max_tokens_defaults_to_1000(self):
+        from .llm import chat_json
+        with mock.patch("openai.resources.chat.completions.Completions.create",
+                        return_value=_llm_reply('{"ok": true}')) as create:
+            chat_json("s", "u")
+        self.assertEqual(create.call_args.kwargs["max_tokens"], 1000)
+
+
+_network_guard = mock.patch("httpx.Client.send", side_effect=AssertionError("Real HTTP call attempted during tests"))
+
+
+def setUpModule():
+    _network_guard.start()
+
+
+def tearDownModule():
+    _network_guard.stop()

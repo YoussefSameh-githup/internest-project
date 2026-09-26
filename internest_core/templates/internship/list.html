@@ -9,9 +9,9 @@
     <div class="container">
         <div class="page-header__inner">
             <div>
-                <span class="eyebrow"><i class="bi bi-briefcase"></i> {% trans "Internship opportunities" %}</span>
-                <h1 class="mt-3">{% trans "All summer opportunities in one place" %}</h1>
-                <p>{% trans "Search, filter, and apply with your unified profile on Internest." %}</p>
+                <span class="eyebrow"><i class="bi bi-briefcase"></i> {% trans "Opportunities" %}</span>
+                <h1 class="mt-3">{% trans "Internships, gigs & part-time roles with real startups" %}</h1>
+                <p>{% trans "Find real work that fits your studies and apply in one click with your verified profile." %}</p>
             </div>
         </div>
     </div>
@@ -70,7 +70,7 @@
                             <p class="listing-card__partner">
                                 {{ internship.partner.company_name }}
                                 {% if internship.partner.company_name in verified_partner_names %}
-                                    <i class="bi bi-patch-check-fill" style="color: var(--brand-500);" title="حساب موثق"></i>
+                                    <i class="bi bi-patch-check-fill" style="color: var(--brand-500);" title="{% trans 'Verified account' %}"></i>
                                 {% endif %}
                             </p>
                         </div>

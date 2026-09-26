@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
 
@@ -24,7 +25,7 @@ def _email_taken_by_another_profile(email: str, exclude_profile_pk=None) -> bool
 class ProfileForm(forms.ModelForm):
     # إضافة حقل الإيميل الشخصي كحقل منفصل (مطلوب)
     personal_email = forms.EmailField(
-        label='البريد الإلكتروني الشخصي (مطلوب)',
+        label=_("Personal email (required)"),
         max_length=254,
         required=True,
         widget=forms.EmailInput(attrs={'class': 'form-control'})
@@ -40,11 +41,11 @@ class ProfileForm(forms.ModelForm):
         ]
         
         labels = {
-            'university_email': 'البريد الإلكتروني الجامعي (اختياري)',
-            'university': 'الجامعة', 'major': 'التخصص',
-            'study_level': 'المستوى الدراسي', 'phone_number': 'رقم الهاتف',
-            'cv_file': 'ملف السيرة الذاتية (CV)', 'profile_picture': 'صورة الملف الشخصي',
-            'linkedin_url': 'رابط LinkedIn',
+            'university_email': _("University email (optional)"),
+            'university': _("University"), 'major': _("Major"),
+            'study_level': _("Study level"), 'phone_number': _("Phone number"),
+            'cv_file': _("CV file"), 'profile_picture': _("Profile picture"),
+            'linkedin_url': _("LinkedIn URL"),
         }
         
         widgets = {
@@ -67,13 +68,13 @@ class ProfileForm(forms.ModelForm):
     def clean_personal_email(self):
         email = self.cleaned_data.get('personal_email')
         if email and _email_taken_by_another_profile(email, exclude_profile_pk=self.instance.pk):
-            raise forms.ValidationError("This email is already in use by another account.")
+            raise forms.ValidationError(_("This email is already in use by another account."))
         return email
 
     def clean_university_email(self):
         email = self.cleaned_data.get('university_email')
         if email and _email_taken_by_another_profile(email, exclude_profile_pk=self.instance.pk):
-            raise forms.ValidationError("This email is already in use by another account.")
+            raise forms.ValidationError(_("This email is already in use by another account."))
         return email
 
     def clean(self):
@@ -81,7 +82,7 @@ class ProfileForm(forms.ModelForm):
         personal = (cleaned.get('personal_email') or '').strip().lower()
         university = (cleaned.get('university_email') or '').strip().lower()
         if personal and university and personal == university:
-            raise forms.ValidationError("Personal and university emails must be different.")
+            raise forms.ValidationError(_("Personal and university emails must be different."))
         return cleaned
 
     def save(self, commit=True):
@@ -102,12 +103,12 @@ class PartnerProfileEditForm(forms.ModelForm):
             'twitter_url', 'instagram_url'
         ]
         labels = {
-            'company_name': 'اسم الشركة/الجهة', 'partner_code': 'الكود السري للشريك',
-            'logo': 'شعار الشركة/الجهة (الرسمي)', 'is_academic': 'هل هي جهة أكاديمية؟',
-            'official_website': 'الموقع الرسمي', 'official_email': 'البريد الإلكتروني الرسمي',
-            'official_phone': 'رقم التواصل الرسمي', 'linkedin_url': 'رابط LinkedIn',
-            'facebook_url': 'رابط Facebook', 'twitter_url': 'رابط Twitter', 
-            'instagram_url': 'رابط Instagram',
+            'company_name': _("Company / organization name"), 'partner_code': _("Partner code"),
+            'logo': _("Official logo"), 'is_academic': _("Academic institution?"),
+            'official_website': _("Official website"), 'official_email': _("Official email"),
+            'official_phone': _("Official phone"), 'linkedin_url': _("LinkedIn URL"),
+            'facebook_url': _("Facebook URL"), 'twitter_url': _("Twitter URL"), 
+            'instagram_url': _("Instagram URL"),
         }
 
 # === 3. فورم تقديم تدريب (من الشريك) (PartnerInternshipForm) ===
@@ -154,10 +155,10 @@ class TaskQuizForm(forms.Form):
 # ---------------------------------
 class CustomStudentSignupForm(UserCreationForm):
     personal_email = forms.EmailField(
-        label='البريد الإلكتروني الشخصي',
+        label=_("Personal email"),
         max_length=254,
         required=True,
-        help_text='سيتم استخدام هذا الإيميل لإشعارات التدريب.'
+        help_text=_("We'll send opportunity notifications to this email.")
     )
 
     class Meta(UserCreationForm.Meta):
@@ -166,7 +167,7 @@ class CustomStudentSignupForm(UserCreationForm):
     def clean_personal_email(self):
         email = self.cleaned_data.get('personal_email')
         if email and _email_taken_by_another_profile(email):
-            raise forms.ValidationError("This email is already registered.")
+            raise forms.ValidationError(_("This email is already registered."))
         return email
 
 
@@ -192,5 +193,5 @@ class OTPVerificationForm(forms.Form):
     def clean_code(self):
         code = (self.cleaned_data.get('code') or '').strip()
         if not code.isdigit() or len(code) != 6:
-            raise forms.ValidationError("The verification code must be 6 digits.")
+            raise forms.ValidationError(_("The verification code must be 6 digits."))
         return code

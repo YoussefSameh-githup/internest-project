@@ -1,7 +1,7 @@
 {% extends 'internship/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Verify your email — Internest{% endblock %}
+{% block title %}{% trans "Verify your email" %} — Internest{% endblock %}
 
 {# Strict verification page: hide the global navbar so unverified users
    cannot reach internships, profile, dashboard, etc. via nav links. #}
@@ -15,10 +15,10 @@
                 <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--brand-100); display: inline-flex; align-items: center; justify-content: center; margin-bottom: var(--space-4);">
                     <i class="bi bi-envelope-check-fill" style="font-size: 36px; color: var(--brand-700);"></i>
                 </div>
-                <h1>Verify your email</h1>
+                <h1>{% trans "Verify your email" %}</h1>
                 <p class="text-muted">
-                    For your security, we need to confirm the email addresses on your Internest account.
-                    Enter the 6-digit code we sent you.
+                    {% trans "For your security, we need to confirm the email addresses on your Internest account." %}
+                    {% trans "Enter the 6-digit code we sent you." %}
                 </p>
             </div>
 
@@ -26,7 +26,7 @@
                 {% csrf_token %}
 
                 <div class="form-group">
-                    <label class="form-label">Which email are you verifying?</label>
+                    <label class="form-label">{% trans "Which email are you verifying?" %}</label>
                     <select name="email_type" class="form-control">
                         {% for code, email, label in pending %}
                             <option value="{{ code }}" {% if form.email_type.value == code %}selected{% endif %}>
@@ -37,28 +37,28 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="{{ form.code.id_for_label }}" class="form-label">6-digit code</label>
+                    <label for="{{ form.code.id_for_label }}" class="form-label">{% trans "6-digit code" %}</label>
                     {{ form.code }}
                     {% if form.code.errors %}<div class="form-error">{{ form.code.errors|striptags }}</div>{% endif %}
                 </div>
 
                 <button type="submit" class="btn btn--primary btn--lg btn--block">
-                    <i class="bi bi-check-circle-fill"></i> Verify
+                    <i class="bi bi-check-circle-fill"></i> {% trans "Verify" %}
                 </button>
             </form>
 
-            <div class="divider">Didn't receive it?</div>
+            <div class="divider">{% trans "Didn't receive it?" %}</div>
 
             <div style="display: flex; flex-direction: column; gap: var(--space-2);">
                 {% for code, email, label in pending %}
                     <a href="{% url 'resend_verification' code %}" class="btn btn--ghost btn--block">
-                        <i class="bi bi-arrow-clockwise"></i> Resend code to {{ label|lower }} ({{ email }})
+                        <i class="bi bi-arrow-clockwise"></i> {% blocktrans with label=label email=email %}Resend code to {{ label }} ({{ email }}){% endblocktrans %}
                     </a>
                 {% endfor %}
             </div>
 
             <p class="text-muted mt-6 text-center" style="font-size: var(--text-sm);">
-                Codes expire after 30 minutes. After 5 incorrect attempts, request a new one.
+                {% trans "Codes expire after 30 minutes. After 5 incorrect attempts, request a new one." %}
             </p>
         </div>
     </div>

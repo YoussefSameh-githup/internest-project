@@ -11,7 +11,18 @@
     prompt: $("prompt"), choices: $("choices"), text: $("text"), submit: $("submit"),
     code: $("code"), difficulty: $("difficulty")
   };
-  var DIFFICULTY = { easy: ["Easy", "badge--success"], medium: ["Medium", "badge--accent"], hard: ["Hard", "badge--danger"] };
+  var i18nEl = document.getElementById("skills-i18n");
+  var T = i18nEl ? JSON.parse(i18nEl.textContent) : {};
+  function t(key, fallback, vars) {
+    var s = T[key] || fallback;
+    Object.keys(vars || {}).forEach(function (k) { s = s.replace("%(" + k + ")s", vars[k]); });
+    return s;
+  }
+  var DIFFICULTY = {
+    easy: [t("easy", "Easy"), "badge--success"],
+    medium: [t("medium", "Medium"), "badge--accent"],
+    hard: [t("hard", "Hard"), "badge--danger"]
+  };
 
   var current = null, selectedChoice = null, tick = null, busy = false, running = false, finished = false;
   var telemetry, lastInputAt, lastFocusLossAt = 0;
@@ -49,7 +60,7 @@
     if (!payload) return;
     if (payload.error && !payload.item && !payload.result_url) {
       if (payload.profile_url) return window.location.assign(payload.profile_url);
-      return showWarning("Could not load the next question. Please refresh the page.");
+      return showWarning(t("load_failed", "Could not load the next question. Please refresh the page."));
     }
     if (payload.result_url && payload.state !== "active") return finish(payload.result_url);
     if (payload.item) render(payload.item);
@@ -132,7 +143,7 @@
     busy = true;
     post(root.dataset.nextUrl).then(handle).catch(function () {
       busy = false;
-      showWarning("Connection problem. Retrying…");
+      showWarning(t("retrying", "Connection problem. Retrying…"));
       setTimeout(next, 2000);
     });
   }
@@ -143,8 +154,8 @@
       if (!p) return;
       if (p.result_url && p.state !== "active") return finish(p.result_url);
       if (type === "tab_hidden" || type === "window_blur") {
-        showWarning("Warning " + p.focus_warnings + " of " + p.max_focus_warnings +
-          ": stay on this tab. The next time you leave, the session ends.");
+        showWarning(t("focus_warning", "Warning %(n)s of %(max)s: stay on this tab. The next time you leave, the session ends.",
+          { n: p.focus_warnings, max: p.max_focus_warnings }));
       }
     });
   }

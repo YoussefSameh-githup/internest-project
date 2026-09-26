@@ -97,7 +97,7 @@ def generate_items(skill, count=GENERATE_BATCH) -> list[ChallengeItem]:
         if cleaned["prompt"] in existing:
             items.append(existing[cleaned["prompt"]])
             continue
-        sub, _ = SubSkill.objects.get_or_create(
+        sub, _created = SubSkill.objects.get_or_create(
             skill=skill, name=cleaned["sub_skill"], defaults={"keywords": cleaned["topic"] or cleaned["sub_skill"]},
         )
         item = ChallengeItem.objects.create(

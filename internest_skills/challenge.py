@@ -6,6 +6,7 @@ from datetime import timedelta
 
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from .extraction import _normalize, _term_pattern
 from .integrity import analyze_typing
@@ -27,7 +28,7 @@ def _pick_items(skill):
         by_sub[item.sub_skill_id].append(item.id)
         difficulty_of[item.id] = ChallengeItem.DIFFICULTY_ORDER.get(item.difficulty, 1)
     if sum(len(v) for v in by_sub.values()) < 3:
-        raise ChallengeError("This skill does not have a challenge yet.")
+        raise ChallengeError(_("This skill does not have a challenge yet."))
     pools = list(by_sub.values())
     for pool in pools:
         random.shuffle(pool)
@@ -50,15 +51,15 @@ def _max_duration(attempt):
 def start_attempt(student_skill: StudentSkill, item_ids=None) -> ChallengeAttempt:
     """`item_ids` is a freshly generated live quiz; without it, questions come from the saved bank."""
     if student_skill.status == StudentSkill.STATUS_VERIFIED:
-        raise ChallengeError("This skill is already verified.")
+        raise ChallengeError(_("This skill is already verified."))
     if student_skill.in_cooldown:
-        raise ChallengeError("Retest is available after the cooldown ends.")
+        raise ChallengeError(_("Retest is available after the cooldown ends."))
     active = student_skill.attempts.filter(state=ChallengeAttempt.STATE_ACTIVE).first()
     if active:
         if timezone.now() - active.started_at <= _max_duration(active):
             return active
         terminate(active, "abandoned")
-        raise ChallengeError("Your previous session was abandoned. Retest is available after the cooldown ends.")
+        raise ChallengeError(_("Your previous session was abandoned. Retest is available after the cooldown ends."))
     return ChallengeAttempt.objects.create(student_skill=student_skill, item_ids=item_ids or _pick_items(student_skill.skill))
 
 
@@ -137,10 +138,10 @@ def _grade(item, choice_index, answer_text):
 
 def submit_answer(attempt, item_id, choice_index=None, answer_text="", typing_stats=None):
     if not attempt.is_active:
-        raise ChallengeError("This session has ended.")
+        raise ChallengeError(_("This session has ended."))
     item = _current_item(attempt)
     if item is None or item.id != item_id or attempt.current_served_at is None:
-        raise ChallengeError("Out-of-order answer.")
+        raise ChallengeError(_("Out-of-order answer."))
 
     now = timezone.now()
     elapsed = now - attempt.current_served_at

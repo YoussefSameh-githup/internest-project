@@ -124,8 +124,6 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGES = [
     ("ar", _("Arabic")),
     ("en", _("English")),
-    ("de", _("German")),
-    ("fr", _("French")),
 ]
 LOCALE_PATHS = [BASE_DIR / "locale"]
 LANGUAGE_CODE = "ar"
@@ -229,5 +227,8 @@ LOGGING = {
 # --- Skill extraction LLM (OpenAI-compatible via AgentRouter); regex fallback when unset ---
 AGENTROUTER_API_KEY = os.getenv("AGENTROUTER_API_KEY", "")  # secret: set in .env, never commit
 AGENTROUTER_BASE_URL = os.getenv("AGENTROUTER_BASE_URL", "https://agentrouter.org/v1")
-SKILLS_LLM_MODEL = env.str("SKILLS_LLM_MODEL", default="gpt-4o-mini")
+# Empty = auto: gemini-2.5-flash for googleapis.com endpoints, gpt-4o-mini otherwise.
+SKILLS_LLM_MODEL = env.str("SKILLS_LLM_MODEL", default="")
+# Off by default: PythonAnywhere free accounts must reach external APIs through the platform proxy.
+ENABLE_PROXY_BYPASS = env.bool("ENABLE_PROXY_BYPASS", default=False)
 SKILLS_LLM_TIMEOUT = env.float("SKILLS_LLM_TIMEOUT", default=15.0)

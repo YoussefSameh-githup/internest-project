@@ -5,6 +5,7 @@ from urllib.parse import quote_plus
 
 from django.db.models import Q
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
 from internest_core.models import PartnerCourseSubmission
 
@@ -42,18 +43,18 @@ def _level_up(student_skill):
         "provider_type": "internest_partner",
         "url": reverse("course_checkout", args=[c.id]),
         "price": str(c.price),
-        "expected_outcome": f"Advance your verified {skill.name} skill",
+        "expected_outcome": _("Advance your verified %(skill)s skill") % {"skill": skill.name},
     } for c in _partner_courses(terms=[skill.name] + [s.name for s in skill.sub_skills.all()])]
     if not recs:
         q = quote_plus(f"advanced {skill.name}")
         recs = [{
             "sub_skill": None,
-            "title": f"Advanced {skill.name} on {provider}",
+            "title": _("Advanced %(skill)s on %(provider)s") % {"skill": skill.name, "provider": provider},
             "provider": provider,
             "provider_type": "external_search",
             "url": pattern.format(q=q),
             "price": None,
-            "expected_outcome": f"Advance your verified {skill.name} skill",
+            "expected_outcome": _("Advance your verified %(skill)s skill") % {"skill": skill.name},
         } for provider, pattern in _EXTERNAL_SEARCH]
     return recs
 
@@ -63,7 +64,7 @@ def recommendations_for(student_skill) -> dict:
     sub_skills = SubSkill.objects.filter(id__in=gap_ids, skill=student_skill.skill)
     recs = _level_up(student_skill) if student_skill.status == "verified" else []
     for sub in sub_skills:
-        outcome = f"Close the gap in {sub.name} and pass the {student_skill.skill.name} retest"
+        outcome = _("Close the gap in %(area)s and pass the %(skill)s retest") % {"area": sub.name, "skill": student_skill.skill.name}
         partner = list(_partner_courses(sub))
         for c in partner:
             recs.append({
@@ -93,7 +94,7 @@ def recommendations_for(student_skill) -> dict:
             for provider, pattern in _EXTERNAL_SEARCH:
                 recs.append({
                     "sub_skill": sub.name,
-                    "title": f"{sub.name} courses on {provider}",
+                    "title": _("%(area)s courses on %(provider)s") % {"area": sub.name, "provider": provider},
                     "provider": provider,
                     "provider_type": "external_search",
                     "url": pattern.format(q=q),

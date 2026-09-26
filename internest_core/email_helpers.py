@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from .models import EmailVerification
 
@@ -12,12 +13,12 @@ logger = logging.getLogger(__name__)
 
 
 def send_verification_email(user, otp: EmailVerification) -> bool:
-    label = "personal" if otp.email_type == EmailVerification.EMAIL_TYPE_PERSONAL else "university"
-    subject = f"Internest — Verify your {label} email"
+    label = _("personal email") if otp.email_type == EmailVerification.EMAIL_TYPE_PERSONAL else _("university email")
+    subject = _("Internest — Verify your %(label)s") % {"label": label}
     context = {
         "user": user,
         "code": otp.code,
-        "email_type_label": label.title(),
+        "email_type_label": label,
         "expires_minutes": int((otp.expires_at - timezone.now()).total_seconds() // 60) or 30,
     }
     html_body = render_to_string("emails/verification_email.html", context)
