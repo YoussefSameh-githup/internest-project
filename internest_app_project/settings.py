@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "internest_skills.apps.InternestSkillsConfig",
     "internest_lounge.apps.InternestLoungeConfig",
     "internest_campus.apps.InternestCampusConfig",
+    "internest_startups.apps.InternestStartupsConfig",
 ]
 
 SITE_ID = 1
@@ -86,6 +87,8 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # Internest: lock unverified students on the verify-email page.
     "internest_core.middleware.EmailVerificationGateMiddleware",
+    # Startups must complete their company profile before using the dashboard.
+    "internest_startups.gate.CompanyProfileGateMiddleware",
 ]
 
 ROOT_URLCONF = "internest_app_project.urls"

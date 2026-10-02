@@ -54,6 +54,9 @@ class Base(TestCase):
         EmployerSubscription.objects.create(partner=cls.pro, plan=EmployerSubscription.PLAN_PRO)
         cls.free_user = User.objects.create_user("free", password="pw")
         cls.free = PartnerProfile.objects.create(user=cls.free_user, company_name="FreeCo", partner_code="F1")
+        from internest_startups.models import CompanyProfile  # startups must have completed onboarding
+        for partner in (cls.pro, cls.free):
+            CompanyProfile.objects.create(partner=partner, industry="software", founded_year=2022, description="Test startup")
 
         cls.skill = Skill.objects.get(slug="financial-analysis")
 

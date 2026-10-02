@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from internest_skills.matching import skill_match, verified_skill_ids
+from internest_startups.gate import can_post_opportunities
 
 from .email_helpers import issue_and_send_verification as _issue_and_send_verification
 from .models import (
@@ -500,6 +501,10 @@ def partner_submit_internship(request):
         messages.error(request, _("You are not registered as a partner."))
         return redirect("landing")
 
+    if not can_post_opportunities(partner_profile):
+        messages.error(request, _("Your startup must be verified before you can post opportunities."))
+        return redirect("partner_dashboard")
+
     if partner_profile.profile_completion_score < 100:
         messages.error(
             request,
@@ -547,6 +552,10 @@ def partner_submit_course(request):
     if partner_profile is None:
         return redirect("landing")
 
+    if not can_post_opportunities(partner_profile):
+        messages.error(request, _("Your startup must be verified before you can post opportunities."))
+        return redirect("partner_dashboard")
+
     if partner_profile.profile_completion_score < 100:
         messages.error(
             request,
@@ -577,6 +586,9 @@ def partner_submit_choose_view(request):
     if not context.get("has_partner_profile"):
         messages.error(request, _("You are not allowed to access this page."))
         return redirect("landing")
+    if not can_post_opportunities(context["partner_profile_obj"]):
+        messages.error(request, _("Your startup must be verified before you can post opportunities."))
+        return redirect("partner_dashboard")
     return render(request, "partner/submit_choose.html", context)
 
 

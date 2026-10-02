@@ -2452,3 +2452,128 @@ msgid ""
 "Vote for your campus, share your card, and help your classmates reach 500 "
 "votes."
 msgstr "صوّت لكليتك، وشارك بطاقتك، وساعد زملاءك للوصول إلى 500 صوت."
+
+msgid "Your startup must be verified before you can post opportunities."
+msgstr "يجب توثيق شركتك الناشئة قبل أن تتمكّن من نشر الفرص."
+
+msgid ""
+"Your verification request is under review. You will be notified within 24 "
+"hours."
+msgstr "طلبك قيد المراجعة، وسيتم الرد عليك وتوثيق حسابك خلال 24 ساعة."
+
+msgid ""
+"Posting opportunities and the Founders Lounge unlock as soon as your startup"
+" is verified."
+msgstr "سيتم فتح نشر الفرص وصالة المؤسسين فور توثيق شركتك."
+
+msgid "Full name"
+msgstr "الاسم الكامل"
+
+msgid "Work email"
+msgstr "البريد الإلكتروني للعمل"
+
+msgid "Confirm password"
+msgstr "تأكيد كلمة المرور"
+
+msgid "Company name"
+msgstr "اسم الشركة"
+
+msgid "Website (optional)"
+msgstr "رابط الويبسايت (اختياري)"
+
+msgid "Industry / field"
+msgstr "مجال عمل الشركة"
+
+msgid "Founded year"
+msgstr "عمر الشركة / سنة التأسيس"
+
+msgid "Brief company description"
+msgstr "وصف مختصر عن الشركة"
+
+msgid "An account with this email already exists."
+msgstr "يوجد حساب مسجّل بهذا البريد بالفعل."
+
+msgid "The two passwords do not match."
+msgstr "كلمتا المرور غير متطابقتين."
+
+msgid ""
+"Add at least one social media link (LinkedIn, Facebook, Twitter or "
+"Instagram)."
+msgstr ""
+"أضف رابطاً واحداً على الأقل لحسابات التواصل الاجتماعي (LinkedIn أو Facebook "
+"أو Twitter أو Instagram)."
+
+msgid "The founded year cannot be in the future."
+msgstr "لا يمكن أن تكون سنة التأسيس في المستقبل."
+
+msgid "Software & SaaS"
+msgstr "البرمجيات و SaaS"
+
+msgid "Fintech"
+msgstr "التكنولوجيا المالية"
+
+msgid "E-commerce & Retail"
+msgstr "التجارة الإلكترونية والتجزئة"
+
+msgid "Education"
+msgstr "التعليم"
+
+msgid "Health"
+msgstr "الصحة"
+
+msgid "Marketing & Media"
+msgstr "التسويق والإعلام"
+
+msgid "Logistics & Mobility"
+msgstr "اللوجستيات والتنقل"
+
+msgid "Other"
+msgstr "أخرى"
+
+msgid "Account created! Tell us about your company to continue."
+msgstr "تم إنشاء الحساب! أخبرنا عن شركتك للمتابعة."
+
+msgid "This page is for startup accounts."
+msgstr "هذه الصفحة مخصّصة لحسابات الشركات الناشئة."
+
+msgid "Company profile saved."
+msgstr "تم حفظ بيانات الشركة."
+
+msgid "Thanks! Your company profile was submitted for verification."
+msgstr "شكراً! تم إرسال بيانات شركتك للتوثيق."
+
+msgid "Company information"
+msgstr "بيانات الشركة"
+
+msgid "Step 2 of 2"
+msgstr "الخطوة 2 من 2"
+
+msgid ""
+"Required before you can use your startup dashboard. Our team reviews it to "
+"verify your startup."
+msgstr "مطلوبة قبل استخدام لوحة تحكم شركتك. سيراجعها فريقنا لتوثيق شركتك."
+
+msgid "Online presence"
+msgstr "التواجد على الإنترنت"
+
+msgid "At least one social media link is required."
+msgstr "مطلوب رابط واحد على الأقل لحسابات التواصل الاجتماعي."
+
+msgid "Submit for verification"
+msgstr "إرسال للتوثيق"
+
+msgid "Register your startup"
+msgstr "سجّل شركتك الناشئة"
+
+msgid ""
+"Create your founder account, tell us about your company, and start hiring "
+"verified student talent once we verify you."
+msgstr ""
+"أنشئ حساب المؤسس، وأخبرنا عن شركتك، وابدأ توظيف مواهب طلابية موثّقة بمجرد "
+"توثيقك."
+
+msgid "Create startup account"
+msgstr "إنشاء حساب الشركة"
+
+msgid "Log in with your email"
+msgstr "سجّل الدخول ببريدك الإلكتروني"

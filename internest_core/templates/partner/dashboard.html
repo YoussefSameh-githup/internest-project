@@ -43,6 +43,18 @@
     </div>
 </section>
 
+{% if not partner.is_academic and not partner.is_fully_verified %}
+<section class="section-sm" style="padding-bottom: 0;">
+    <div class="container">
+        <div class="alert alert-warning pending-verification" role="status">
+            <i class="bi bi-hourglass-split"></i>
+            <strong>{% trans "Your verification request is under review. You will be notified within 24 hours." %}</strong>
+            <div style="font-size: var(--text-sm);">{% trans "Posting opportunities and the Founders Lounge unlock as soon as your startup is verified." %}</div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <section class="section-sm">
     <div class="container">
 

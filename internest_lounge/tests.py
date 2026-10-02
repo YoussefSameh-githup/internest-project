@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.utils import translation
 
 from internest_core.models import PartnerProfile, StudentProfile
+from internest_startups.models import CompanyProfile
 
 from .models import LoungeComment, LoungeFlag, LoungePost, Visibility
 
@@ -14,8 +15,10 @@ BLOCKED = "This space is strictly reserved for verified startup founders."
 
 def _partner(username, verified=True, academic=False):
     user = User.objects.create_user(username, password="pw")
-    PartnerProfile.objects.create(user=user, company_name=f"{username} Co", partner_code=f"code-{username}",
-                                  is_fully_verified=verified, is_academic=academic)
+    partner = PartnerProfile.objects.create(user=user, company_name=f"{username} Co", partner_code=f"code-{username}",
+                                            is_fully_verified=verified, is_academic=academic)
+    if not academic:  # startups must have completed onboarding to reach partner pages
+        CompanyProfile.objects.create(partner=partner, industry="software", founded_year=2022, description="Test startup")
     return user
 
 
