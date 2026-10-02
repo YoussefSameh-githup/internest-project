@@ -11,6 +11,8 @@ from .models import (
     EmailVerification,
 )
 from django.db import IntegrityError
+
+from internest_skills.models import Skill
 from django.utils.html import format_html 
 
 @admin.register(StudentProfile)
@@ -91,8 +93,17 @@ class PartnerProfileAdmin(admin.ModelAdmin):
 
 # --- تسجيل النماذج المخصصة ---
 
+class InternshipRequiredSkillInline(admin.TabularInline):
+    """Market Readiness Gate: skills students must have verified (≥80%) to apply."""
+    model = Skill.opportunities.through
+    extra = 1
+    verbose_name = "Required skill"
+    verbose_name_plural = "Required skills (students need ≥80% verified to apply)"
+
+
 @admin.register(Internship)
 class InternshipAdmin(admin.ModelAdmin):
+    inlines = [InternshipRequiredSkillInline]
     list_display = ('title', 'partner', 'deadline', 'is_premium', 'is_active') 
     list_filter = ('partner__company_name', 'is_premium', 'is_active')
     search_fields = ('title', 'description', 'partner__company_name')
@@ -114,7 +125,7 @@ class PartnerInternshipSubmissionAdmin(admin.ModelAdmin):
         
         for submission in queryset.filter(status='Pending'): 
             try:
-                Internship.objects.create(
+                internship = Internship.objects.create(
                     partner=submission.partner, 
                     title=submission.title,
                     description=submission.description,
@@ -124,6 +135,7 @@ class PartnerInternshipSubmissionAdmin(admin.ModelAdmin):
                     is_premium=True,
                     is_active=True 
                 )
+                internship.required_skills.set(submission.required_skills.all())
                 
                 submission.status = 'Approved'
                 submission.save()

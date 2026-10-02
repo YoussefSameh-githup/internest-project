@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path("app/skills/", views.skills_hub, name="skills_hub"),
     path("app/skills/<int:student_skill_id>/start/", views.challenge_start, name="skills_challenge_start"),
+    path("app/skills/test/<int:skill_id>/", views.challenge_start_for_skill, name="skills_challenge_start_for_skill"),
     path("app/skills/challenge/<uuid:token>/", views.challenge_run, name="skills_challenge"),
     path("app/skills/challenge/<uuid:token>/result/", views.challenge_result, name="skills_result"),
     path("api/skills/challenge/<uuid:token>/next/", views.api_next, name="skills_api_next"),

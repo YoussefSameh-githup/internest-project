@@ -113,6 +113,20 @@ class PartnerProfileEditForm(forms.ModelForm):
 
 # === 3. فورم تقديم تدريب (من الشريك) (PartnerInternshipForm) ===
 class PartnerInternshipForm(forms.ModelForm):
+    # Market Readiness Gate: students need ≥80% of these verified to apply.
+    required_skills = forms.ModelMultipleChoiceField(
+        queryset=None,
+        required=False,
+        label=_("Required skills"),
+        help_text=_("Students must have at least 80% of these skills verified to apply. Hold Ctrl/Cmd to select several."),
+        widget=forms.SelectMultiple(attrs={"class": "form-control", "size": 8}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from internest_skills.models import Skill  # skills app depends on core; import lazily
+        self.fields["required_skills"].queryset = Skill.objects.filter(is_active=True).order_by("name")
+
     class Meta:
         model = PartnerInternshipSubmission
         # 🛑 التعديل النهائي: حذف 'duration' ليتم حسابه تلقائياً

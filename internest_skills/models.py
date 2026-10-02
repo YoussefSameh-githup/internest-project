@@ -6,7 +6,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy as _
 
-from internest_core.models import PartnerProfile, StudentProfile
+from internest_core.models import Internship, PartnerInternshipSubmission, PartnerProfile, StudentProfile
 
 RETEST_COOLDOWN_DAYS = 14
 
@@ -40,6 +40,9 @@ class Skill(models.Model):
     challenge_length = models.PositiveSmallIntegerField(default=10, validators=[MinValueValidator(3), MaxValueValidator(30)])
     pass_threshold = models.PositiveSmallIntegerField(default=70, validators=[MinValueValidator(1), MaxValueValidator(100)])
     is_active = models.BooleanField(default=True)
+    # Market Readiness Gate: skills an opportunity requires (Internship.required_skills).
+    opportunities = models.ManyToManyField(Internship, blank=True, related_name="required_skills")
+    opportunity_submissions = models.ManyToManyField(PartnerInternshipSubmission, blank=True, related_name="required_skills")
 
     class Meta:
         ordering = ["discipline", "name"]

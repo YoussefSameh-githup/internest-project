@@ -93,9 +93,15 @@
                         </span>
                         <div class="btn-group">
                             <a href="{% url 'internship_detail' internship.id %}" class="btn btn--ghost btn--sm">{% trans "Details" %}</a>
-                            <a href="{% url 'apply' internship.id %}" class="btn btn--primary btn--sm">
-                                {% trans "Apply" %} <i class="bi bi-arrow-left-short"></i>
-                            </a>
+                            {% if internship.match_score < 80 %}
+                                <a href="{% url 'internship_detail' internship.id %}" class="btn btn--outline btn--sm" title="{% trans 'Skill Gap Detected' %}">
+                                    <i class="bi bi-lock-fill"></i> {% blocktrans with score=internship.match_score %}Match {{ score }}%{% endblocktrans %}
+                                </a>
+                            {% else %}
+                                <a href="{% url 'apply' internship.id %}" class="btn btn--primary btn--sm">
+                                    {% trans "Apply" %} <i class="bi bi-arrow-left-short"></i>
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </article>

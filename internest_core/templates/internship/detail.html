@@ -70,9 +70,50 @@
             <aside class="card" style="position: sticky; top: calc(var(--navbar-height) + var(--space-4));">
                 <h4 class="mb-4">{% trans "Apply to this opportunity" %}</h4>
                 {% if not internship.is_expired and internship.is_active %}
-                    {% if user.is_authenticated %}
+                    {% if match %}
+                        <div class="match-badge {% if match.unlocked %}match-badge--ok{% else %}match-badge--locked{% endif %} mb-3">
+                            <i class="bi {% if match.unlocked %}bi-unlock-fill{% else %}bi-lock-fill{% endif %}"></i>
+                            {% if match.unlocked %}
+                                {% blocktrans with score=match.score %}Your Skill Match: {{ score }}% — Unlocked{% endblocktrans %}
+                            {% else %}
+                                {% blocktrans with score=match.score %}Your Skill Match: {{ score }}% — Locked{% endblocktrans %}
+                            {% endif %}
+                        </div>
+                        {% if match.required %}
+                            <div class="progress mb-3"><div class="progress__bar {% if match.unlocked %}progress__bar--success{% endif %}" style="width: {{ match.score }}%;"></div></div>
+                        {% endif %}
+                    {% endif %}
+
+                    {% if user.is_authenticated and match and not match.unlocked %}
+                        <button type="button" class="btn btn--accent btn--lg btn--block mb-3" disabled aria-disabled="true">
+                            <i class="bi bi-lock-fill"></i> {% trans "Apply Now" %}
+                        </button>
+                        <div class="alert alert-warning">
+                            <strong><i class="bi bi-exclamation-triangle-fill"></i> {% trans "Skill Gap Detected" %}</strong>
+                            <p class="mb-2" style="font-size: var(--text-sm);">
+                                {% blocktrans with threshold=match.threshold %}Pass the missing skill tests to reach {{ threshold }}% and unlock applying.{% endblocktrans %}
+                            </p>
+                            <ul class="skill-gap-list">
+                                {% for skill, record in match.missing %}
+                                    <li>
+                                        <span class="fw-bold">{{ skill.name }}</span>
+                                        {% if record and record.in_cooldown %}
+                                            <span class="text-muted" style="font-size: var(--text-xs);">
+                                                <i class="bi bi-hourglass-split"></i> {% trans "Retest available" %}: {{ record.cooldown_until|date:"Y/m/d" }}
+                                            </span>
+                                        {% else %}
+                                            <form method="post" action="{% url 'skills_challenge_start_for_skill' skill.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn--primary btn--sm"><i class="bi bi-stopwatch"></i> {% trans "Take skill test" %}</button>
+                                            </form>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% elif user.is_authenticated %}
                         <a href="{% url 'apply' internship.id %}" class="btn btn--accent btn--lg btn--block mb-3">
-                            <i class="bi bi-send-fill"></i> {% trans "Apply with your unified profile" %}
+                            <i class="bi bi-send-fill"></i> {% trans "Apply Now" %}
                         </a>
                     {% else %}
                         <a href="{% url 'login_or_signup' %}" class="btn btn--primary btn--lg btn--block mb-3">

@@ -565,3 +565,83 @@ def setUpModule():
 
 def tearDownModule():
     _network_guard.stop()
+
+
+class MarketReadinessGateTests(Base):
+    """A student needs ≥80% of an opportunity's required skills verified to apply."""
+
+    def setUp(self):
+        super().setUp()
+        # Log in first: the login signal resets email verification, so mark it verified afterwards.
+        self.client.force_login(self.student_user)
+        StudentProfile.objects.filter(pk=self.student.pk).update(
+            personal_email="stud@example.com", personal_email_verified_at=timezone.now(), profile_completion_score=100,
+        )
+        self.student.refresh_from_db()
+        self.required = list(Skill.objects.filter(slug__in=["python", "sql", "excel", "financial-analysis", "project-management"]))
+        self.internship = Internship.objects.create(
+            partner=self.pro, title="Data Gig", description="d", location="Cairo",
+            required_majors="any", deadline=timezone.now().date() + timedelta(days=30),
+        )
+        self.internship.required_skills.set(self.required)
+
+    def _verify(self, n):
+        for skill in self.required[:n]:
+            StudentSkill.objects.create(student=self.student, skill=skill, source="explicit", status=StudentSkill.STATUS_VERIFIED)
+
+    def test_match_ratio_and_threshold(self):
+        from .matching import skill_match
+        self._verify(3)
+        m = skill_match(self.student, self.internship)
+        self.assertEqual((m.score, m.unlocked, len(m.missing)), (60, False, 2))
+        self._verify_more = StudentSkill.objects.create(
+            student=self.student, skill=self.required[3], source="explicit", status=StudentSkill.STATUS_VERIFIED)
+        m = skill_match(self.student, self.internship)
+        self.assertEqual((m.score, m.unlocked), (80, True))
+
+    def test_claimed_or_lagging_skills_do_not_count(self):
+        from .matching import skill_match
+        for skill, status in zip(self.required, ["claimed", "lag", "claimed", "lag", "claimed"]):
+            StudentSkill.objects.create(student=self.student, skill=skill, source="explicit", status=status)
+        self.assertEqual(skill_match(self.student, self.internship).score, 0)
+
+    def test_below_80_is_blocked_and_nothing_is_saved(self):
+        self._verify(3)
+        resp = self.client.get(reverse("apply", args=[self.internship.id]))
+        self.assertRedirects(resp, reverse("internship_detail", args=[self.internship.pk]), fetch_redirect_response=False)
+        self.assertFalse(Application.objects.filter(internship=self.internship).exists())
+        page = self.client.get(resp.url)
+        self.assertContains(page, "Your Skill Match: 60% — Locked")
+        self.assertContains(page, "You need at least 80%")
+        self.assertContains(page, "disabled")
+        self.assertContains(page, "Skill Gap Detected")
+        for skill in self.required[3:]:
+            self.assertContains(page, reverse("skills_challenge_start_for_skill", args=[skill.id]))
+        self.assertNotContains(page, reverse("apply", args=[self.internship.id]))
+
+    def test_at_80_can_apply(self):
+        self._verify(4)
+        page = self.client.get(reverse("internship_detail", args=[self.internship.pk]))
+        self.assertContains(page, "Your Skill Match: 80% — Unlocked")
+        self.assertContains(page, reverse("apply", args=[self.internship.id]))
+        resp = self.client.get(reverse("apply", args=[self.internship.id]))
+        self.assertRedirects(resp, reverse("application_success"), fetch_redirect_response=False)
+        self.assertTrue(Application.objects.filter(internship=self.internship, applicant=self.student_user).exists())
+
+    def test_list_card_is_locked_below_threshold(self):
+        self._verify(1)
+        resp = self.client.get(reverse("list"))
+        self.assertContains(resp, "Match 20%")
+        self.assertNotContains(resp, reverse("apply", args=[self.internship.id]))
+
+    def test_opportunity_without_required_skills_is_not_gated(self):
+        self.internship.required_skills.clear()
+        resp = self.client.get(reverse("apply", args=[self.internship.id]))
+        self.assertRedirects(resp, reverse("application_success"), fetch_redirect_response=False)
+
+    def test_take_test_link_claims_skill_and_starts_challenge(self):
+        skill = self.required[0]
+        resp = self.client.post(reverse("skills_challenge_start_for_skill", args=[skill.id]))
+        ss = StudentSkill.objects.get(student=self.student, skill=skill)
+        attempt = ss.attempts.get()
+        self.assertRedirects(resp, reverse("skills_challenge", args=[attempt.token]), fetch_redirect_response=False)

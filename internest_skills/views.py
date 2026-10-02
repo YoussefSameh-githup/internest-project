@@ -20,7 +20,7 @@ from . import challenge as engine
 from .extraction import ExtractionError, extract_skills, read_document_text, save_claimed_skills
 from .forms import SkillSourceForm
 from .llm import llm_enabled
-from .models import ChallengeAttempt, ChallengeItem, SkillProfile, StudentSkill
+from .models import ChallengeAttempt, ChallengeItem, Skill, SkillProfile, StudentSkill
 from .permissions import is_verified_university, missing_profile_fields, skill_view_role, student_for
 from .quizgen import quiz_item_ids_for
 from .recommendations import recommendations_for
@@ -152,6 +152,18 @@ def challenge_start(request, student_skill_id):
             messages.warning(request, str(exc))
             return redirect("skills_hub")
     return redirect("skills_challenge", token=attempt.token)
+
+
+@student_gate()
+@require_POST
+def challenge_start_for_skill(request, skill_id):
+    """Entry point from an opportunity's skill gap: claim the required skill if needed, then test it."""
+    skill = get_object_or_404(Skill, pk=skill_id, is_active=True)
+    ss, _created = StudentSkill.objects.get_or_create(
+        student=request.student, skill=skill,
+        defaults={"source": StudentSkill.SOURCE_EXPLICIT, "evidence": ""},
+    )
+    return challenge_start(request, ss.pk)
 
 
 @student_gate()

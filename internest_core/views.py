@@ -13,6 +13,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from internest_skills.matching import skill_match, verified_skill_ids
+
 from .email_helpers import issue_and_send_verification as _issue_and_send_verification
 from .models import (
     Internship, StudentProfile, Application,
@@ -269,6 +271,7 @@ def internship_list(request):
         Internship.objects
         .filter(is_active=True)
         .select_related("partner")
+        .prefetch_related("required_skills")
         .order_by("-deadline")
     )
 
@@ -282,6 +285,13 @@ def internship_list(request):
         .filter(is_fully_verified=True)
         .values_list("company_name", flat=True)
     )
+
+    student = _get_student_profile(request.user)
+    verified_ids = verified_skill_ids(student)
+    internships = list(internships)
+    for internship in internships:
+        required = {s.id for s in internship.required_skills.all()}
+        internship.match_score = 100 if not required else len(required & verified_ids) * 100 // len(required)
 
     context = get_user_context(request)
     context.update({
@@ -299,6 +309,9 @@ def internship_detail_view(request, pk):
     )
     context = get_user_context(request)
     context["internship"] = internship
+    student = _get_student_profile(request.user) if request.user.is_authenticated else None
+    if student is not None:
+        context["match"] = skill_match(student, internship)
     return render(request, "internship/detail.html", context)
 
 
@@ -355,6 +368,15 @@ def apply_to_internship(request, internship_id):
         return redirect("verify_email")
     if profile.profile_completion_score < 100:
         return redirect("apply_error", internship_id=internship_id)
+
+    match = skill_match(profile, internship)
+    if not match.unlocked:
+        messages.error(
+            request,
+            _("Your skill match is %(score)s%%. You need at least %(threshold)s%% of the required skills verified to apply.")
+            % {"score": match.score, "threshold": match.threshold},
+        )
+        return redirect("internship_detail", pk=internship.pk)
 
     try:
         Application.objects.create(internship=internship, applicant=request.user)
@@ -503,6 +525,7 @@ def partner_submit_internship(request):
             submission.duration = _calc_duration_text(today, deadline)
             try:
                 submission.save()
+                submission.required_skills.set(form.cleaned_data["required_skills"])
                 messages.success(request, _("Your opportunity was submitted for review."))
                 return redirect("partner_dashboard")
             except Exception:

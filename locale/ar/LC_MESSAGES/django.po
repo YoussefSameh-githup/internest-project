@@ -2165,3 +2165,43 @@ msgid ""
 msgstr ""
 "سوق المواهب الطلابية الموثّقة: الطلاب يحصلون على عمل حقيقي وخبرة موثّقة، "
 "والشركات الناشئة توظّف مواهب مختبَرة مسبقاً، والجامعات تُثبت مخرجاتها."
+
+msgid "Required skills"
+msgstr "المهارات المطلوبة"
+
+msgid ""
+"Students must have at least 80% of these skills verified to apply. Hold "
+"Ctrl/Cmd to select several."
+msgstr ""
+"يجب أن يكون لدى الطالب 80% على الأقل من هذه المهارات موثّقة ليتمكّن من "
+"التقديم. اضغط Ctrl/Cmd لاختيار أكثر من مهارة."
+
+msgid ""
+"Your skill match is %(score)s%%. You need at least %(threshold)s%% of the "
+"required skills verified to apply."
+msgstr ""
+"نسبة تطابق مهاراتك %(score)s%%. تحتاج إلى توثيق %(threshold)s%% على الأقل من"
+" المهارات المطلوبة لتتمكّن من التقديم."
+
+msgid "Your Skill Match: %(score)s%% — Unlocked"
+msgstr "تطابق مهاراتك: %(score)s%% — متاح للتقديم"
+
+msgid "Your Skill Match: %(score)s%% — Locked"
+msgstr "تطابق مهاراتك: %(score)s%% — مُقفل"
+
+msgid "Apply Now"
+msgstr "قدّم الآن"
+
+msgid "Skill Gap Detected"
+msgstr "تم رصد فجوة مهارية"
+
+msgid ""
+"Pass the missing skill tests to reach %(threshold)s%% and unlock applying."
+msgstr ""
+"اجتز اختبارات المهارات الناقصة لتصل إلى %(threshold)s%% وتفتح التقديم."
+
+msgid "Take skill test"
+msgstr "ابدأ اختبار المهارة"
+
+msgid "Match %(score)s%%"
+msgstr "التطابق %(score)s%%"
