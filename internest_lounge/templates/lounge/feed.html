@@ -1,0 +1,88 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Founders Lounge" %} — Internest{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <span class="eyebrow"><i class="bi bi-cup-hot"></i> {% trans "Verified founders only" %}</span>
+        <h1 class="mt-3">{% trans "Founders Lounge" %}</h1>
+        <p>{% trans "Hire, ask for advice and find B2B partners with other verified startup founders." %}</p>
+    </div>
+</section>
+
+<section class="section-sm">
+    <div class="container lounge-layout">
+        <div>
+            <form method="post" class="card mb-5 lounge-composer">
+                {% csrf_token %}
+                <h3 class="mb-3">{% trans "Start a discussion" %}</h3>
+                {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+                <div class="form-group mb-3">
+                    <label class="form-label" for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}<div class="form-error">{{ form.title.errors|striptags }}</div>{% endif %}
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label" for="{{ form.body.id_for_label }}">{{ form.body.label }}</label>
+                    {{ form.body }}
+                    {% if form.body.errors %}<div class="form-error">{{ form.body.errors|striptags }}</div>{% endif %}
+                </div>
+                <div class="lounge-composer__footer">
+                    <div>
+                        <label class="form-label" for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
+                        {{ form.category }}
+                    </div>
+                    <button type="submit" class="btn btn--primary"><i class="bi bi-send"></i> {% trans "Publish" %}</button>
+                </div>
+                <p class="text-muted mt-3 mb-0" style="font-size: var(--text-xs);">
+                    <i class="bi bi-shield-check"></i> {% trans "Up to 3 posts per hour. Spam, crypto/quick-cash offers and messaging-app links are blocked or held for review." %}
+                </p>
+            </form>
+
+            {% for post in page %}
+                <article class="card mb-4 lounge-post {% if not post.is_visible %}lounge-post--hidden{% endif %}">
+                    <div class="lounge-post__meta">
+                        {% include "lounge/_author.html" with author=post.author %}
+                        <span class="text-muted">· {{ post.created_at|timesince }}</span>
+                        {% if post.category %}<span class="badge badge--accent">{{ post.get_category_display }}</span>{% endif %}
+                        {% if not post.is_visible %}<span class="badge badge--danger"><i class="bi bi-eye-slash"></i> {% trans "Waiting for admin review — only you can see this" %}</span>{% endif %}
+                    </div>
+                    <h3 class="mt-3 mb-2"><a href="{% url 'lounge_post' post.pk %}">{{ post.title }}</a></h3>
+                    <p class="lounge-post__body">{{ post.body|truncatechars:400|linebreaksbr }}</p>
+                    <div class="lounge-post__actions">
+                        {% if post.is_visible %}
+                            <form method="post" action="{% url 'lounge_upvote' post.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <button type="submit" class="btn btn--ghost btn--sm {% if post.pk in upvoted %}is-active{% endif %}" aria-pressed="{% if post.pk in upvoted %}true{% else %}false{% endif %}">
+                                    <i class="bi {% if post.pk in upvoted %}bi-hand-thumbs-up-fill{% else %}bi-hand-thumbs-up{% endif %}"></i> {{ post.upvote_count }}
+                                </button>
+                            </form>
+                        {% endif %}
+                        <a href="{% url 'lounge_post' post.pk %}" class="btn btn--ghost btn--sm"><i class="bi bi-chat"></i> {{ post.comment_count }}</a>
+                    </div>
+                </article>
+            {% empty %}
+                <div class="card text-center text-muted">{% trans "No discussions yet. Start the first one!" %}</div>
+            {% endfor %}
+
+            {% if page.has_other_pages %}
+                <nav class="flex justify-between mt-4">
+                    {% if page.has_previous %}<a class="btn btn--ghost btn--sm" href="?page={{ page.previous_page_number }}{% if active_tag %}&tag={{ active_tag }}{% endif %}">{% trans "Newer" %}</a>{% else %}<span></span>{% endif %}
+                    {% if page.has_next %}<a class="btn btn--ghost btn--sm" href="?page={{ page.next_page_number }}{% if active_tag %}&tag={{ active_tag }}{% endif %}">{% trans "Older" %}</a>{% endif %}
+                </nav>
+            {% endif %}
+        </div>
+
+        <aside class="card lounge-sidebar">
+            <h4 class="mb-3">{% trans "Browse by tag" %}</h4>
+            <a href="{% url 'lounge_feed' %}" class="lounge-tag {% if not active_tag %}is-active{% endif %}">{% trans "All discussions" %}</a>
+            {% for value, label in tags %}
+                <a href="?tag={{ value }}" class="lounge-tag {% if active_tag == value %}is-active{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </aside>
+    </div>
+</section>
+{% endblock %}

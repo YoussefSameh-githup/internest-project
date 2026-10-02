@@ -1594,3 +1594,23 @@ html[dir="ltr"] {
 .skill-gap-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-2); }
 .skill-gap-list li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
 .skill-gap-list form { margin: 0; }
+
+/* ---------- Founders Lounge ---------- */
+.lounge-layout { display: grid; gap: var(--space-6); grid-template-columns: minmax(0, 1fr) 260px; align-items: start; }
+@media (max-width: 900px) { .lounge-layout { grid-template-columns: 1fr; } .lounge-sidebar { order: -1; } }
+.lounge-composer__footer { display: flex; gap: var(--space-4); align-items: flex-end; justify-content: space-between; flex-wrap: wrap; }
+.lounge-post__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
+.lounge-author { display: inline-flex; align-items: center; gap: var(--space-2); }
+.lounge-verified { font-size: var(--text-xs); }
+.lounge-post__body { white-space: normal; overflow-wrap: anywhere; }
+.lounge-post__actions { display: flex; gap: var(--space-2); align-items: center; }
+.lounge-post__actions form { margin: 0; }
+.lounge-post__actions .is-active { color: var(--brand-700); font-weight: 700; }
+.lounge-post--hidden { opacity: 0.7; border-style: dashed; }
+.lounge-sidebar { position: sticky; top: calc(var(--navbar-height) + var(--space-4)); display: grid; gap: var(--space-2); }
+.lounge-tag { padding: var(--space-2) var(--space-3); border-radius: 8px; color: var(--color-text); }
+.lounge-tag.is-active, .lounge-tag:hover { background: var(--brand-100); color: var(--brand-700); }
+.lounge-comments { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
+.lounge-comments .lounge-comments { margin-top: var(--space-3); padding-inline-start: var(--space-5); border-inline-start: 2px solid var(--brand-100); }
+.lounge-comment { overflow-wrap: anywhere; }
+.lounge-reply summary { cursor: pointer; color: var(--brand-700); font-size: var(--text-sm); }

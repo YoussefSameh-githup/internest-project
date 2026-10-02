@@ -1,5 +1,5 @@
 {% extends 'internship/base.html' %}
-{% load static i18n skills_tags %}
+{% load static i18n skills_tags lounge_tags %}
 
 {% block title %}{% trans "Partner dashboard" %} — {{ partner.company_name }}{% endblock %}
 
@@ -32,6 +32,12 @@
                 <a href="{% url 'partner_profile' %}" class="btn btn--ghost btn--lg">
                     <i class="bi bi-gear"></i> {% trans "Profile settings" %}
                 </a>
+                {% is_lounge_member user as show_lounge %}
+                {% if show_lounge %}
+                    <a href="{% url 'lounge_feed' %}" class="btn btn--primary btn--lg">
+                        <i class="bi bi-cup-hot"></i> {% trans "Founders Lounge" %}
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>

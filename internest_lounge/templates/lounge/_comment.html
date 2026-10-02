@@ -1,0 +1,27 @@
+{% load i18n %}
+<li class="lounge-comment {% if comment.visibility != 'visible' %}lounge-post--hidden{% endif %}" id="c{{ comment.pk }}">
+    <div class="lounge-post__meta">
+        {% include "lounge/_author.html" with author=comment.author %}
+        <span class="text-muted">· {{ comment.created_at|timesince }}</span>
+        {% if comment.visibility != 'visible' %}<span class="badge badge--danger">{% trans "Waiting for admin review — only you can see this" %}</span>{% endif %}
+    </div>
+    <p class="mb-2">{{ comment.body|linebreaksbr }}</p>
+    {% if depth < max_depth and post.is_visible %}
+        <details class="lounge-reply">
+            <summary>{% trans "Reply" %}</summary>
+            <form method="post" action="{% url 'lounge_comment' post.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="parent_id" value="{{ comment.pk }}">
+                <textarea name="body" class="form-control" rows="2" maxlength="2000" required></textarea>
+                <button type="submit" class="btn btn--primary btn--sm mt-2">{% trans "Reply" %}</button>
+            </form>
+        </details>
+    {% endif %}
+    {% if comment.children %}
+        <ul class="lounge-comments">
+            {% for comment in comment.children %}
+                {% include "lounge/_comment.html" with comment=comment depth=depth|add:1 %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>

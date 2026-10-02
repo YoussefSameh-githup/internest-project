@@ -1,4 +1,4 @@
-{% load static i18n skills_tags %}
+{% load static i18n skills_tags lounge_tags %}
 {% get_current_language as LANGUAGE_CODE %}
 {% get_current_language_bidi as LANGUAGE_BIDI %}
 <!DOCTYPE html>
@@ -47,6 +47,10 @@
                     {% if has_partner_profile %}
                         <li><a href="{% url 'partner_dashboard' %}" class="nav__link"><i class="bi bi-grid-1x2"></i> {% trans "Dashboard" %}</a></li>
                         <li><a href="{% url 'partner_profile' %}" class="nav__link"><i class="bi bi-building"></i> {% trans "Company profile" %}</a></li>
+                        {% is_lounge_member user as show_lounge %}
+                        {% if show_lounge %}
+                            <li><a href="{% url 'lounge_feed' %}" class="nav__link"><i class="bi bi-cup-hot"></i> {% trans "Founders Lounge" %}</a></li>
+                        {% endif %}
                     {% else %}
                         <li><a href="{% url 'list' %}" class="nav__link"><i class="bi bi-briefcase"></i> {% trans "Internships" %}</a></li>
                         <li><a href="{% url 'course_list' %}" class="nav__link"><i class="bi bi-mortarboard"></i> {% trans "Courses" %}</a></li>

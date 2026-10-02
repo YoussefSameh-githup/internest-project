@@ -2205,3 +2205,146 @@ msgstr "ابدأ اختبار المهارة"
 
 msgid "Match %(score)s%%"
 msgstr "التطابق %(score)s%%"
+
+msgid "Founders Lounge"
+msgstr "صالة المؤسسين"
+
+msgid "Title"
+msgstr "العنوان"
+
+msgid "What would you like to discuss?"
+msgstr "ما الذي تريد مناقشته؟"
+
+msgid "Tag"
+msgstr "الوسم"
+
+msgid "Comment"
+msgstr "تعليق"
+
+msgid "No tag"
+msgstr "بدون وسم"
+
+msgid "Visible"
+msgstr "ظاهر"
+
+msgid "Hidden pending review"
+msgstr "مخفي بانتظار المراجعة"
+
+msgid "Removed by admin"
+msgstr "حذفه المشرف"
+
+msgid "Suspicious link"
+msgstr "رابط مشبوه"
+
+msgid "Duplicate text"
+msgstr "نص مكرر"
+
+msgid "Flagged by founders"
+msgstr "أبلغ عنه المؤسسون"
+
+msgid "#Hiring"
+msgstr "#توظيف"
+
+msgid "#Advice"
+msgstr "#نصيحة"
+
+msgid "#B2B_Partnership"
+msgstr "#شراكة_B2B"
+
+msgid "You are commenting too fast. Please try again later."
+msgstr "أنت تعلّق بسرعة كبيرة. يرجى المحاولة لاحقاً."
+
+msgid "Your message looks like spam (blocked keywords) and was not published."
+msgstr "تبدو رسالتك مزعجة (كلمات محظورة) ولم يتم نشرها."
+
+msgid "You can publish up to %(n)s posts per hour. Please try again later."
+msgstr "يمكنك نشر %(n)s منشورات كحد أقصى في الساعة. يرجى المحاولة لاحقاً."
+
+msgid "This space is strictly reserved for verified startup founders."
+msgstr "هذه المساحة مخصّصة حصرياً لمؤسسي الشركات الناشئة الموثّقة."
+
+msgid "Thanks for reporting. Our team will review it."
+msgstr "شكراً على الإبلاغ. سيراجعه فريقنا."
+
+msgid "Please write a comment first."
+msgstr "يرجى كتابة تعليق أولاً."
+
+msgid ""
+"Your comment contains a link that needs admin review before it appears."
+msgstr "يحتوي تعليقك على رابط يحتاج إلى مراجعة المشرف قبل ظهوره."
+
+msgid "You cannot report your own post."
+msgstr "لا يمكنك الإبلاغ عن منشورك."
+
+msgid "Thanks. The post is now hidden until an admin reviews it."
+msgstr "شكراً. تم إخفاء المنشور حتى يراجعه المشرف."
+
+msgid "You already reported this post."
+msgstr "لقد أبلغت عن هذا المنشور من قبل."
+
+msgid ""
+"Your post was received and is waiting for admin review before it appears."
+msgstr "تم استلام منشورك وهو بانتظار مراجعة المشرف قبل ظهوره."
+
+msgid "Your post is live."
+msgstr "تم نشر منشورك."
+
+msgid "Verified founders only"
+msgstr "للمؤسسين الموثّقين فقط"
+
+msgid ""
+"Hire, ask for advice and find B2B partners with other verified startup "
+"founders."
+msgstr "وظّف، واطلب النصيحة، وابحث عن شركاء B2B مع مؤسسين موثّقين آخرين."
+
+msgid "Start a discussion"
+msgstr "ابدأ نقاشاً"
+
+msgid "Publish"
+msgstr "نشر"
+
+msgid ""
+"Up to 3 posts per hour. Spam, crypto/quick-cash offers and messaging-app "
+"links are blocked or held for review."
+msgstr ""
+"حتى 3 منشورات في الساعة. يتم حظر الرسائل المزعجة وعروض العملات الرقمية "
+"والربح السريع وروابط تطبيقات المراسلة أو تعليقها للمراجعة."
+
+msgid "Waiting for admin review — only you can see this"
+msgstr "بانتظار مراجعة المشرف — أنت فقط من يراه"
+
+msgid "No discussions yet. Start the first one!"
+msgstr "لا توجد نقاشات بعد. ابدأ أول نقاش!"
+
+msgid "Newer"
+msgstr "الأحدث"
+
+msgid "Older"
+msgstr "الأقدم"
+
+msgid "Browse by tag"
+msgstr "تصفّح حسب الوسم"
+
+msgid "All discussions"
+msgstr "كل النقاشات"
+
+msgid "Reported"
+msgstr "تم الإبلاغ"
+
+msgid "Report this post to the moderators?"
+msgstr "هل تريد الإبلاغ عن هذا المنشور للمشرفين؟"
+
+msgid "Report post"
+msgstr "الإبلاغ عن المنشور"
+
+msgid "Comments"
+msgstr "التعليقات"
+
+msgid "No comments yet."
+msgstr "لا توجد تعليقات بعد."
+
+msgid "Verified startup"
+msgstr "شركة ناشئة موثّقة"
+
+msgid "Reply"
+msgstr "رد"

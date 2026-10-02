@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "anymail",  # SendGrid HTTP API backend (works on PythonAnywhere free tier)
     "internest_core.apps.InternestCoreConfig",
     "internest_skills.apps.InternestSkillsConfig",
+    "internest_lounge.apps.InternestLoungeConfig",
 ]
 
 SITE_ID = 1
