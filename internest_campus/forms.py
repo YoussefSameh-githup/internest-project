@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from .models import CampusDemandVote, normalize
 
 STUDENT_ID_RE = re.compile(r"^[A-Za-z0-9-]{4,20}$")
+DUPLICATE_VOTE_MESSAGE = _("Sorry, a vote has already been recorded with this student ID or account for this faculty.")
 
 
 class CampusVoteForm(forms.ModelForm):
@@ -56,10 +57,10 @@ class CampusVoteForm(forms.ModelForm):
         university = data.get("university_name")
         if not university:
             return data
-        key = normalize(university)
-        votes = CampusDemandVote.objects.filter(university_key=key)
-        if self.student is not None and votes.filter(student=self.student).exists():
-            raise forms.ValidationError(_("You have already voted for this university."))
-        if data.get("student_number") and votes.filter(student_number=data["student_number"]).exists():
-            raise forms.ValidationError(_("This student ID has already voted for this university."))
+        account_voted = self.student is not None and CampusDemandVote.objects.filter(student=self.student).exists()
+        id_used = bool(data.get("student_number")) and CampusDemandVote.objects.filter(
+            university_key=normalize(university), student_number=data["student_number"]
+        ).exists()
+        if account_voted or id_used:
+            raise forms.ValidationError(DUPLICATE_VOTE_MESSAGE)
         return data

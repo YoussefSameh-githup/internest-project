@@ -45,7 +45,7 @@ class CampusDemandVote(models.Model):
     class Meta:
         ordering = ["-created_at"]
         constraints = [
-            models.UniqueConstraint(fields=["student", "university_key"], name="one_vote_per_user_per_university"),
+            models.UniqueConstraint(fields=["student"], name="one_vote_per_student_account"),
             models.UniqueConstraint(fields=["student_number", "university_key"], name="one_vote_per_student_id_per_university"),
         ]
 

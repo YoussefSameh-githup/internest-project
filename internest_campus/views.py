@@ -9,7 +9,7 @@ from django.utils.translation import gettext as _
 
 from internest_core.views import _get_partner_profile, _get_student_profile, get_user_context
 
-from .forms import CampusVoteForm
+from .forms import DUPLICATE_VOTE_MESSAGE, CampusVoteForm
 from .models import CAMPAIGN_GOAL, CampusDemandVote
 
 
@@ -45,8 +45,8 @@ def campus_vote(request):
             try:
                 with transaction.atomic():
                     vote.save()
-            except IntegrityError:
-                messages.error(request, _("You have already voted for this university."))
+            except IntegrityError:  # race between the form check and the insert
+                messages.error(request, DUPLICATE_VOTE_MESSAGE)
                 return redirect("campus_vote")
             messages.success(request, _("Your vote is in! Share your campaign card to reach 500 votes."))
             return redirect(f"{reverse('campus_vote')}?{urlencode({'card': vote.referral_code})}")

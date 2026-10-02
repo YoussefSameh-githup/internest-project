@@ -240,14 +240,9 @@
                     <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "A dedicated partnership manager, from pilot to annual contract" %}</li>
                 </ul>
                 <p class="audience-card__note"><i class="bi bi-award"></i> {% trans "Our students train with real startups — a reputation and recruitment edge." %}</p>
-                <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
-                    <a href="{% url 'contact_partner' %}" class="btn btn--outline btn--lg">
-                        {% trans "Become a partner university" %} <i class="bi bi-arrow-left-short"></i>
-                    </a>
-                    <a href="{% url 'campus_vote' %}?open=1" class="btn btn--accent btn--lg">
-                        <i class="bi bi-hand-index-thumb"></i> {% trans "Bring Internest to My Campus" %}
-                    </a>
-                </div>
+                <a href="{% url 'contact_partner' %}" class="btn btn--outline btn--lg">
+                    {% trans "Become a partner university" %} <i class="bi bi-arrow-left-short"></i>
+                </a>
             </article>
         </div>
     </div>

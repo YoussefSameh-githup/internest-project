@@ -2577,3 +2577,9 @@ msgstr "إنشاء حساب الشركة"
 
 msgid "Log in with your email"
 msgstr "سجّل الدخول ببريدك الإلكتروني"
+
+msgid ""
+"Sorry, a vote has already been recorded with this student ID or account for "
+"this faculty."
+msgstr ""
+"عفواً، تم تسجيل صوت بهذا الرقم الجامعي أو الحساب من قبل في هذه الكلية."

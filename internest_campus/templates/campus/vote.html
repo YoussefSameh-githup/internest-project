@@ -10,9 +10,11 @@
         <span class="eyebrow"><i class="bi bi-megaphone"></i> {% trans "Student campaign" %}</span>
         <h1 class="mt-3">{% trans "Bring Internest to My Campus" %}</h1>
         <p>{% blocktrans with goal=goal %}When {{ goal }} students from a faculty vote, we take the request to the dean together.{% endblocktrans %}</p>
-        <button type="button" class="btn btn--accent btn--lg mt-4" data-campus-open="vote-dialog">
-            <i class="bi bi-hand-index-thumb"></i> {% trans "Bring Internest to My Campus" %}
-        </button>
+        {% if can_vote %}
+            <button type="button" class="btn btn--accent btn--lg mt-4" data-campus-open="vote-dialog">
+                <i class="bi bi-hand-index-thumb"></i> {% trans "Bring Internest to My Campus" %}
+            </button>
+        {% endif %}
     </div>
 </section>
 

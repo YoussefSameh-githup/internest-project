@@ -11,6 +11,7 @@ from .forms import CampusVoteForm
 from .models import CampusDemandVote
 
 URL = "/universities/vote/"
+DUPLICATE_EN = "Sorry, a vote has already been recorded with this student ID or account for this faculty."
 VALID = {"university_name": "Ain Shams University", "faculty_name": "Computer Science",
          "department": "Information Systems", "student_number": "20210345"}
 
@@ -70,19 +71,33 @@ class CampusVoteTests(TestCase):
         self.assertFalse(CampusDemandVote.objects.exists())
 
     # --- duplicate prevention --------------------------------------------
-    def test_one_vote_per_user_per_university(self):
+    def test_one_vote_per_student_account_anywhere(self):
         self.vote(self.alice)
-        resp = self.vote(self.alice, university_name="  ain   SHAMS university ", student_number="99999999")
-        self.assertContains(resp, "You have already voted for this university.")
+        for overrides in ({"university_name": "  ain   SHAMS university ", "student_number": "99999999"},
+                          {"university_name": "Cairo University", "student_number": "99999999"}):
+            resp = self.vote(self.alice, **overrides)
+            self.assertContains(resp, DUPLICATE_EN)
         self.assertEqual(CampusDemandVote.objects.count(), 1)
-        self.vote(self.alice, university_name="Cairo University", student_number="99999999")
-        self.assertEqual(CampusDemandVote.objects.count(), 2)
 
-    def test_one_vote_per_student_id_per_university(self):
+    def test_student_number_cannot_be_reused_in_same_university(self):
         self.vote(self.alice)
-        resp = self.vote(self.bob)  # different account, same student ID
-        self.assertContains(resp, "This student ID has already voted for this university.")
+        resp = self.vote(self.bob, faculty_name="Engineering")  # other account, same ID, same university
+        self.assertContains(resp, DUPLICATE_EN)
         self.assertEqual(CampusDemandVote.objects.count(), 1)
+
+    def test_duplicate_message_in_arabic(self):
+        self.vote(self.alice)
+        self.client.cookies["internest_lang"] = "ar"
+        resp = self.vote(self.alice)
+        self.assertContains(resp, "عفواً، تم تسجيل صوت بهذا الرقم الجامعي أو الحساب من قبل في هذه الكلية.")
+
+    def test_database_enforces_one_vote_per_account(self):
+        from django.db import IntegrityError, transaction
+        self.vote(self.alice)
+        first = CampusDemandVote.objects.get()
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            CampusDemandVote.objects.create(student=first.student, university_name="Cairo University",
+                                            faculty_name="Law", department="Law", student_number="11112222")
 
     # --- referral links ---------------------------------------------------
     def test_referral_link_generation_and_tracking(self):
@@ -113,13 +128,25 @@ class CampusVoteTests(TestCase):
         initial = self.client.get(URL).context["form"].initial
         self.assertEqual((initial["university_name"], initial["department"]), ("Ain Shams University", "Information Systems"))
 
-    def test_cta_on_student_profile_and_landing(self):
+    def test_cta_only_on_student_dashboard(self):
         self.client.force_login(self.alice)
         self.assertContains(self.client.get(reverse("profile")), f"{URL}?open=1")
         self.client.logout()  # also clears cookies
-        self.client.cookies["internest_lang"] = "en"
-        self.assertContains(self.client.get(reverse("landing")), "Bring Internest to My Campus")
+        for lang, text in (("en", "Bring Internest to My Campus"), ("ar", "طالب بنسخة تجريبية لكليتك")):
+            self.client.cookies["internest_lang"] = lang
+            landing = self.client.get(reverse("landing"))
+            self.assertNotContains(landing, text)
+            self.assertNotContains(landing, URL)
+            # Guests opening a shared link get the login prompt, not the CTA button.
+            self.assertNotContains(self.client.get(URL), 'data-campus-open="vote-dialog"')
 
-    def test_arabic_button_text(self):
+    def test_startup_does_not_see_cta(self):
+        user = User.objects.create_user("acme2", password="pw")
+        PartnerProfile.objects.create(user=user, company_name="Acme2", partner_code="A2", is_academic=True)
+        self.client.force_login(user)
+        self.assertNotContains(self.client.get(URL), 'data-campus-open="vote-dialog"')
+
+    def test_arabic_button_text_on_student_profile(self):
+        self.client.force_login(self.alice)
         self.client.cookies["internest_lang"] = "ar"
-        self.assertContains(self.client.get(URL), "طالب بنسخة تجريبية لكليتك")
+        self.assertContains(self.client.get(reverse("profile")), "طالب بنسخة تجريبية لكليتك")
