@@ -133,6 +133,13 @@ class PartnerProfile(models.Model):
     profile_completion_score = models.IntegerField(default=0, verbose_name="نسبة الإكمال (%)")
 
     def calculate_completion(self):
+        if not self.is_academic:
+            # Startups: self-service completion from their own fields, independent of admin verification.
+            from internest_startups.completion import startup_completion  # startups app depends on core
+            self.profile_completion_score = startup_completion(self)
+            self.save()
+            return
+
         # 1. حساب النسبة بناءً على البيانات التي يملأها الشريك
         required_fields = [self.official_phone, self.official_email, self.official_website, self.linkedin_url, self.logo]
         completed_fields = sum(1 for field in required_fields if field)

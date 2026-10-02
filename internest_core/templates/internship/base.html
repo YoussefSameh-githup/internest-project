@@ -96,7 +96,7 @@
                         <i class="bi bi-box-arrow-right"></i> {% trans "Logout" %}
                     </a>
                 {% else %}
-                    <a href="{% url 'partner_login' %}" class="btn btn--ghost btn--sm">{% trans "Partner login" %}</a>
+                    <a href="{% url 'login' %}" class="btn btn--ghost btn--sm">{% trans "Partner login" %}</a>
                     <a href="{% url 'login_or_signup' %}" class="btn btn--primary btn--sm">
                         {% trans "Get started" %} <i class="bi bi-arrow-left-short"></i>
                     </a>
@@ -182,7 +182,7 @@
                     <h4 class="footer__heading">{% trans "For startups & universities" %}</h4>
                     <ul class="footer__list">
                         <li><a href="{% url 'contact_partner' %}">{% trans "Join as partner" %}</a></li>
-                        <li><a href="{% url 'partner_login' %}">{% trans "Partner login" %}</a></li>
+                        <li><a href="{% url 'login' %}">{% trans "Partner login" %}</a></li>
                         <li><a href="#">{% trans "Company guide" %}</a></li>
                         <li><a href="mailto:partnerships@internest.com">partnerships@internest.com</a></li>
                     </ul>

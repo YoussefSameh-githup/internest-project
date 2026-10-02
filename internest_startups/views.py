@@ -11,7 +11,8 @@ from django.utils.translation import gettext as _
 from internest_core.models import PartnerProfile
 from internest_core.views import get_user_context
 
-from .forms import PLACEHOLDER_PREFIX, CompanyIdentityForm, CompanyProfileForm, StartupSignupForm
+from .completion import PLACEHOLDER_PREFIX
+from .forms import CompanyIdentityForm, CompanyProfileForm, StartupSignupForm
 from .gate import startup_partner
 
 
@@ -27,12 +28,11 @@ def startup_register(request):
                 username=data["email"], email=data["email"], password=data["password1"],
                 first_name=first[:150], last_name=last[:150],
             )
-            # Placeholder name until the company profile step; partner_code is kept for the legacy partner login.
+            # Placeholder name until the company profile step; partner_code is required by the model but unused in the UI.
             PartnerProfile.objects.create(
                 user=user,
                 company_name=f"{PLACEHOLDER_PREFIX}{secrets.token_hex(6)}",
                 partner_code=secrets.token_urlsafe(9),
-                official_email=data["email"],
             )
         login(request, user, backend="django.contrib.auth.backends.ModelBackend")
         messages.success(request, _("Account created! Tell us about your company to continue."))
@@ -50,7 +50,7 @@ def company_profile(request):
         return redirect("home_redirect")
     existing = getattr(partner, "company_profile", None)
     identity = CompanyIdentityForm(request.POST or None, instance=partner)
-    details = CompanyProfileForm(request.POST or None, instance=existing)
+    details = CompanyProfileForm(request.POST or None, instance=existing, company_email=request.POST.get("official_email"))
     if request.method == "POST" and identity.is_valid() and details.is_valid():
         with transaction.atomic():
             identity.save()

@@ -41,10 +41,6 @@
                         <p class="fw-bold mt-2 mb-0"><i class="bi bi-envelope"></i> {{ partner_profile.official_email|default:"-" }}</p>
                     </div>
                     <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "Phone number" %}</span>
-                        <p class="fw-bold mt-2 mb-0"><i class="bi bi-telephone"></i> {{ partner_profile.official_phone|default:"-" }}</p>
-                    </div>
-                    <div>
                         <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "Website" %}</span>
                         <p class="fw-bold mt-2 mb-0">
                             <i class="bi bi-globe"></i>
@@ -87,26 +83,8 @@
                         {{ form.company_name }}
                     </div>
                     <div class="form-group">
-                        <label for="{{ form.partner_code.id_for_label }}" class="form-label">{{ form.partner_code.label }}</label>
-                        {{ form.partner_code }}
-                        <small class="form-help">{{ form.partner_code.help_text }}</small>
-                    </div>
-
-                    <div class="form-group form-group--full">
-                        <label class="form-label">{{ form.is_academic.label }}</label>
-                        <label class="flex items-center gap-3" style="padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer;">
-                            {{ form.is_academic }}
-                            <span>{% trans "University / academic institution" %}</span>
-                        </label>
-                    </div>
-
-                    <div class="form-group">
                         <label for="{{ form.official_email.id_for_label }}" class="form-label">{{ form.official_email.label }}</label>
                         {{ form.official_email }}
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.official_phone.id_for_label }}" class="form-label">{{ form.official_phone.label }}</label>
-                        {{ form.official_phone }}
                     </div>
                     <div class="form-group">
                         <label for="{{ form.official_website.id_for_label }}" class="form-label">{{ form.official_website.label }}</label>

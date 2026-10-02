@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.db.models import F
@@ -14,7 +14,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from internest_skills.matching import skill_match, verified_skill_ids
-from internest_startups.gate import can_post_opportunities
+from internest_startups.gate import posting_block_reason
 
 from .email_helpers import issue_and_send_verification as _issue_and_send_verification
 from .models import (
@@ -218,43 +218,8 @@ def contact_partner_view(request):
 
 
 def partner_code_login(request):
-    error_message = None
-    username = ""
-    partner_code = ""
-    if request.method == "POST":
-        username = request.POST.get("username", "").strip()
-        partner_code = request.POST.get("partner_code", "").strip()
-        password = request.POST.get("password", "")
-
-        partner_profile = PartnerProfile.objects.filter(
-            user__username__iexact=username,
-            partner_code=partner_code,
-        ).first()
-
-        if partner_profile is not None:
-            authenticated_user = authenticate(
-                request,
-                username=partner_profile.user.username,
-                password=password,
-            )
-            if authenticated_user is not None:
-                login(request, authenticated_user)
-                messages.success(
-                    request,
-                    _("Welcome back, %(company)s!") % {"company": partner_profile.company_name},
-                )
-                return redirect("partner_dashboard")
-            error_message = _("Incorrect password.")
-        else:
-            error_message = _("Invalid partner details. Check your username and partner code.")
-
-    context = get_user_context(request)
-    context.update({
-        "error_message": error_message,
-        "username_val": username,
-        "partner_code_val": partner_code,
-    })
-    return render(request, "registration/partner_login.html", context)
+    """Retired: partners now sign in with the standard email/password login."""
+    return redirect("login")
 
 
 def logout_view(request):
@@ -428,6 +393,8 @@ def partner_profile_view(request):
     if partner_profile is None:
         messages.error(request, _("You are not a registered partner."))
         return redirect("landing")
+    if not partner_profile.is_academic:
+        return redirect("startup_company_profile")  # startups have a single profile page
 
     if request.method == "POST":
         form = PartnerProfileEditForm(request.POST, request.FILES, instance=partner_profile)
@@ -501,16 +468,10 @@ def partner_submit_internship(request):
         messages.error(request, _("You are not registered as a partner."))
         return redirect("landing")
 
-    if not can_post_opportunities(partner_profile):
-        messages.error(request, _("Your startup must be verified before you can post opportunities."))
+    block = posting_block_reason(partner_profile)
+    if block:
+        messages.error(request, block)
         return redirect("partner_dashboard")
-
-    if partner_profile.profile_completion_score < 100:
-        messages.error(
-            request,
-            _("Your partner profile must be 100% complete to post opportunities."),
-        )
-        return redirect("partner_profile")
 
     if request.method == "POST":
         form = PartnerInternshipForm(request.POST)
@@ -552,16 +513,10 @@ def partner_submit_course(request):
     if partner_profile is None:
         return redirect("landing")
 
-    if not can_post_opportunities(partner_profile):
-        messages.error(request, _("Your startup must be verified before you can post opportunities."))
+    block = posting_block_reason(partner_profile)
+    if block:
+        messages.error(request, block)
         return redirect("partner_dashboard")
-
-    if partner_profile.profile_completion_score < 100:
-        messages.error(
-            request,
-            _("Your partner profile must be 100% complete to submit courses."),
-        )
-        return redirect("partner_profile")
 
     if request.method == "POST":
         form = PartnerCourseForm(request.POST)
@@ -586,8 +541,9 @@ def partner_submit_choose_view(request):
     if not context.get("has_partner_profile"):
         messages.error(request, _("You are not allowed to access this page."))
         return redirect("landing")
-    if not can_post_opportunities(context["partner_profile_obj"]):
-        messages.error(request, _("Your startup must be verified before you can post opportunities."))
+    block = posting_block_reason(context["partner_profile_obj"])
+    if block:
+        messages.error(request, block)
         return redirect("partner_dashboard")
     return render(request, "partner/submit_choose.html", context)
 

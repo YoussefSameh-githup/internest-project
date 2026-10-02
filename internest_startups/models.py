@@ -28,6 +28,7 @@ class CompanyProfile(models.Model):
     industry = models.CharField(max_length=20, choices=INDUSTRY_CHOICES)
     founded_year = models.PositiveSmallIntegerField(validators=[MinValueValidator(1950), MaxValueValidator(2100)])
     description = models.TextField(max_length=1000)
+    founder_email = models.EmailField(blank=True, verbose_name="Founder official email")
     submitted_at = models.DateTimeField(auto_now_add=True)
     verified_at = models.DateTimeField(null=True, blank=True)
 

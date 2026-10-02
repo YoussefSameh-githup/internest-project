@@ -1,5 +1,6 @@
 """Startup onboarding gates: mandatory company profile, and verification before posting."""
 from django.shortcuts import redirect
+from django.utils.translation import gettext as _
 from django.urls import Resolver404, resolve
 
 from internest_core.models import PartnerProfile
@@ -26,9 +27,24 @@ def needs_company_profile(partner) -> bool:
     return partner is not None and not hasattr(partner, "company_profile")
 
 
+def posting_block_reason(partner):
+    """Publish gate. Startups need BOTH (A) admin verification and (B) a 100% complete profile.
+    Returns a user-facing error, or None when posting is allowed."""
+    if partner is None:
+        return _("You are not registered as a partner.")
+    if partner.is_academic:  # universities keep their existing flow
+        return None if partner.profile_completion_score >= 100 else _(
+            "Your partner profile must be 100% complete to post opportunities.")
+    if not partner.is_fully_verified:
+        return _("Your startup is under review. You can post opportunities once an admin verifies it (within 24 hours).")
+    if partner.profile_completion_score < 100:
+        return _("Your profile is %(score)s%% complete. Complete it to 100%% to post opportunities.") % {
+            "score": partner.profile_completion_score}
+    return None
+
+
 def can_post_opportunities(partner) -> bool:
-    """Startups must be admin-verified; universities keep their existing flow."""
-    return partner is not None and (partner.is_academic or partner.is_fully_verified)
+    return posting_block_reason(partner) is None
 
 
 class CompanyProfileGateMiddleware:

@@ -97,10 +97,10 @@ class ProfileForm(forms.ModelForm):
 class PartnerProfileEditForm(forms.ModelForm):
     class Meta:
         model = PartnerProfile
+        # partner_code, is_academic and official_phone are admin-managed / retired from the partner UI.
         fields = [
-            'company_name', 'partner_code', 'logo', 'is_academic', 'official_website',
-            'official_email', 'official_phone', 'linkedin_url', 'facebook_url',
-            'twitter_url', 'instagram_url'
+            'company_name', 'logo', 'official_website', 'official_email',
+            'linkedin_url', 'facebook_url', 'twitter_url', 'instagram_url',
         ]
         labels = {
             'company_name': _("Company / organization name"), 'partner_code': _("Partner code"),

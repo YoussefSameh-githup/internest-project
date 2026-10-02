@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from internest_core.models import PartnerProfile
 
+from .completion import PLACEHOLDER_PREFIX
 from .models import CompanyProfile
 
 _input = {"class": "form-control"}
@@ -41,10 +42,11 @@ class CompanyIdentityForm(forms.ModelForm):
 
     class Meta:
         model = PartnerProfile
-        fields = ["company_name", "official_website", "linkedin_url", "facebook_url", "twitter_url", "instagram_url"]
+        fields = ["company_name", "official_email", "official_website", "linkedin_url", "facebook_url", "twitter_url", "instagram_url"]
         labels = {
             "company_name": _("Company name"),
-            "official_website": _("Website (optional)"),
+            "official_email": _("Company official email"),
+            "official_website": _("Website"),
             "linkedin_url": _("LinkedIn URL"),
             "facebook_url": _("Facebook URL"),
             "twitter_url": _("Twitter URL"),
@@ -53,11 +55,13 @@ class CompanyIdentityForm(forms.ModelForm):
         widgets = {f: forms.URLInput(attrs={**_input, "placeholder": "https://", "dir": "ltr"})
                    for f in ["official_website", "linkedin_url", "facebook_url", "twitter_url", "instagram_url"]}
         widgets["company_name"] = forms.TextInput(attrs=_input)
+        widgets["official_email"] = forms.EmailInput(attrs={**_input, "placeholder": "contact@company.com", "dir": "ltr"})
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.company_name.startswith(PLACEHOLDER_PREFIX):
             self.initial["company_name"] = ""
+        self.fields["official_email"].required = True
 
     def clean(self):
         data = super().clean()
@@ -69,8 +73,9 @@ class CompanyIdentityForm(forms.ModelForm):
 class CompanyProfileForm(forms.ModelForm):
     class Meta:
         model = CompanyProfile
-        fields = ["industry", "founded_year", "description"]
+        fields = ["industry", "founded_year", "description", "founder_email"]
         labels = {
+            "founder_email": _("Founder official email"),
             "industry": _("Industry / field"),
             "founded_year": _("Founded year"),
             "description": _("Brief company description"),
@@ -79,7 +84,19 @@ class CompanyProfileForm(forms.ModelForm):
             "industry": forms.Select(attrs={"class": "form-select"}),
             "founded_year": forms.NumberInput(attrs={**_input, "min": 1950}),
             "description": forms.Textarea(attrs={**_input, "rows": 4, "maxlength": 1000}),
+            "founder_email": forms.EmailInput(attrs={**_input, "placeholder": "founder@company.com", "dir": "ltr"}),
         }
+
+    def __init__(self, *args, company_email=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["founder_email"].required = True
+        self.company_email = (company_email or "").lower()
+
+    def clean_founder_email(self):
+        email = self.cleaned_data["founder_email"].strip().lower()
+        if self.company_email and email == self.company_email:
+            raise forms.ValidationError(_("The founder email must be different from the company email."))
+        return email
 
     def clean_founded_year(self):
         year = self.cleaned_data["founded_year"]
@@ -88,4 +105,3 @@ class CompanyProfileForm(forms.ModelForm):
         return year
 
 
-PLACEHOLDER_PREFIX = "__pending__"

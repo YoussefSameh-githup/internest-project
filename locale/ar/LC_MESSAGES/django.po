@@ -2459,7 +2459,7 @@ msgstr "يجب توثيق شركتك الناشئة قبل أن تتمكّن م�
 msgid ""
 "Your verification request is under review. You will be notified within 24 "
 "hours."
-msgstr "طلبك قيد المراجعة، وسيتم الرد عليك وتوثيق حسابك خلال 24 ساعة."
+msgstr "جاري المراجعة وسيتم الرد خلال 24 ساعة"
 
 msgid ""
 "Posting opportunities and the Founders Lounge unlock as soon as your startup"
@@ -2583,3 +2583,23 @@ msgid ""
 "this faculty."
 msgstr ""
 "عفواً، تم تسجيل صوت بهذا الرقم الجامعي أو الحساب من قبل في هذه الكلية."
+
+msgid "Company official email"
+msgstr "الإيميل الرسمي للشركة"
+
+msgid "Founder official email"
+msgstr "الإيميل الرسمي للمؤسس"
+
+msgid "The founder email must be different from the company email."
+msgstr "يجب أن يختلف إيميل المؤسس عن إيميل الشركة."
+
+msgid ""
+"Your startup is under review. You can post opportunities once an admin "
+"verifies it (within 24 hours)."
+msgstr ""
+"جاري المراجعة وسيتم الرد خلال 24 ساعة. يمكنك نشر الفرص بعد توثيق حسابك."
+
+msgid ""
+"Your profile is %(score)s%% complete. Complete it to 100%% to post "
+"opportunities."
+msgstr "ملفك مكتمل بنسبة %(score)s%%. أكمله إلى 100%% لتتمكّن من نشر الفرص."
