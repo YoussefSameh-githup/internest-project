@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-APPS = ["internest_core", "internest_skills", "internest_lounge", "internest_app_project"]
+APPS = ["internest_core", "internest_skills", "internest_lounge", "internest_campus", "internest_app_project"]
 LANGS = ["ar", "en"]
 GETTEXT_FUNCS = {"_", "gettext", "gettext_lazy", "pgettext", "pgettext_lazy", "ngettext", "ngettext_lazy"}
 

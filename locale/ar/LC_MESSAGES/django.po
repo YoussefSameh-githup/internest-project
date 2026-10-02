@@ -2348,3 +2348,107 @@ msgstr "شركة ناشئة موثّقة"
 
 msgid "Reply"
 msgstr "رد"
+
+msgid "Bring Internest to My Campus"
+msgstr "طالب بنسخة تجريبية لكليتك"
+
+msgid "University name"
+msgstr "اسم الجامعة"
+
+msgid "Faculty / College"
+msgstr "الكلية"
+
+msgid "Department"
+msgstr "القسم"
+
+msgid "Student ID"
+msgstr "الرقم الجامعي / رقم الكارنيه"
+
+msgid "Please enter a valid name."
+msgstr "يرجى إدخال اسم صحيح."
+
+msgid "Student ID must be 4–20 letters or digits."
+msgstr "يجب أن يتكوّن الرقم الجامعي من 4 إلى 20 حرفاً أو رقماً."
+
+msgid "You have already voted for this university."
+msgstr "لقد صوّتّ بالفعل لهذه الجامعة."
+
+msgid "This student ID has already voted for this university."
+msgstr "هذا الرقم الجامعي صوّت بالفعل لهذه الجامعة."
+
+msgid ""
+"I asked for our faculty to join Internest so we get connected with startups "
+"and jobs! Join me and add your vote so we pass 500 students and send the "
+"request to the dean: %(link)s"
+msgstr ""
+"أنا طلبت انضمام كليتنا لـ Internest لربطنا بالـ Startups والوظائف! انضم "
+"معايا وسجل صوتك عشان نعدي 500 طالب ونبعت الطلب للعميد: %(link)s"
+
+msgid "Please log in with a student account to vote."
+msgstr "يرجى تسجيل الدخول بحساب طالب للتصويت."
+
+msgid "Your vote is in! Share your campaign card to reach 500 votes."
+msgstr "تم تسجيل صوتك! شارك بطاقة الحملة لنصل إلى 500 صوت."
+
+msgid "Student campaign"
+msgstr "حملة طلابية"
+
+msgid ""
+"When %(goal)s students from a faculty vote, we take the request to the dean "
+"together."
+msgstr "عندما يصوّت %(goal)s طالب من كلية واحدة، نرفع الطلب للعميد معاً."
+
+msgid "Leading campuses"
+msgstr "الكليات الأعلى تصويتاً"
+
+msgid "No votes yet. Be the first to bring Internest to your campus!"
+msgstr "لا توجد أصوات بعد. كن أول من يطالب بـ Internest في كليته!"
+
+msgid "Join the campaign at %(university)s — %(faculty)s"
+msgstr "انضم إلى حملة %(university)s — %(faculty)s"
+
+msgid ""
+"Your student ID is only used to prevent duplicate votes and is never shown "
+"publicly."
+msgstr "يُستخدم رقمك الجامعي فقط لمنع تكرار التصويت ولا يظهر للعامة أبداً."
+
+msgid "Submit my vote"
+msgstr "سجّل صوتي"
+
+msgid "Log in or create a free student account to add your vote."
+msgstr "سجّل الدخول أو أنشئ حساب طالب مجاني لتضيف صوتك."
+
+msgid "Log in to vote"
+msgstr "سجّل الدخول للتصويت"
+
+msgid "Campus campaign"
+msgstr "حملة الكلية"
+
+msgid "Student #%(n)s demanding Internest at %(university)s — %(faculty)s!"
+msgstr "الطالب رقم %(n)s يطالب بـ Internest في %(university)s — %(faculty)s!"
+
+msgid "votes"
+msgstr "صوت"
+
+msgid "At %(goal)s votes we send the request to the dean."
+msgstr "عند %(goal)s صوت نرسل الطلب للعميد."
+
+msgid "Share your card"
+msgstr "شارك بطاقتك"
+
+msgid "Link copied!"
+msgstr "تم نسخ الرابط!"
+
+msgid "Copy link"
+msgstr "نسخ الرابط"
+
+msgid "Your invite link"
+msgstr "رابط الدعوة الخاص بك"
+
+msgid "Is your faculty not on Internest yet?"
+msgstr "كليتك لسه مش على Internest؟"
+
+msgid ""
+"Vote for your campus, share your card, and help your classmates reach 500 "
+"votes."
+msgstr "صوّت لكليتك، وشارك بطاقتك، وساعد زملاءك للوصول إلى 500 صوت."

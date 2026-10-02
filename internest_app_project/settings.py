@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "internest_core.apps.InternestCoreConfig",
     "internest_skills.apps.InternestSkillsConfig",
     "internest_lounge.apps.InternestLoungeConfig",
+    "internest_campus.apps.InternestCampusConfig",
 ]
 
 SITE_ID = 1

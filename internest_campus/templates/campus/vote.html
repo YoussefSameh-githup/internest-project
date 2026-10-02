@@ -1,0 +1,104 @@
+{% extends 'internship/base.html' %}
+{% load static i18n %}
+
+{% block title %}{% trans "Bring Internest to My Campus" %} — Internest{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'campus/campus.css' %}">{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <span class="eyebrow"><i class="bi bi-megaphone"></i> {% trans "Student campaign" %}</span>
+        <h1 class="mt-3">{% trans "Bring Internest to My Campus" %}</h1>
+        <p>{% blocktrans with goal=goal %}When {{ goal }} students from a faculty vote, we take the request to the dean together.{% endblocktrans %}</p>
+        <button type="button" class="btn btn--accent btn--lg mt-4" data-campus-open="vote-dialog">
+            <i class="bi bi-hand-index-thumb"></i> {% trans "Bring Internest to My Campus" %}
+        </button>
+    </div>
+</section>
+
+<section class="section-sm">
+    <div class="container">
+        <div class="card">
+            <h3 class="mb-4"><i class="bi bi-trophy"></i> {% trans "Leading campuses" %}</h3>
+            {% for row in leaderboard %}
+                <div class="campus-row">
+                    <div class="flex justify-between" style="gap: var(--space-3);">
+                        <span class="fw-bold">{{ row.university }} — {{ row.faculty }}</span>
+                        <span class="text-muted">{{ row.votes }} / {{ goal }}</span>
+                    </div>
+                    <div class="progress mt-2"><div class="progress__bar" style="width: {{ row.percent }}%;"></div></div>
+                </div>
+            {% empty %}
+                <p class="text-muted mb-0">{% trans "No votes yet. Be the first to bring Internest to your campus!" %}</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{# ---------------- Vote modal ---------------- #}
+<dialog id="vote-dialog" class="campus-dialog" {% if open_vote and not card_vote %}data-autoopen{% endif %}>
+    <form method="dialog" class="campus-dialog__close"><button aria-label="{% trans 'Close' %}"><i class="bi bi-x-lg"></i></button></form>
+    <h2 class="mb-2">{% trans "Bring Internest to My Campus" %}</h2>
+    {% if ref_vote %}
+        <p class="campus-ref"><i class="bi bi-people-fill"></i>
+            {% blocktrans with university=ref_vote.university_name faculty=ref_vote.faculty_name %}Join the campaign at {{ university }} — {{ faculty }}{% endblocktrans %}
+        </p>
+    {% endif %}
+
+    {% if can_vote %}
+        <form method="post" action="{% url 'campus_vote' %}" class="form" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="ref" value="{{ ref }}">
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<div class="form-error">{{ field.errors|striptags }}</div>{% endif %}
+                </div>
+            {% endfor %}
+            <p class="text-muted" style="font-size: var(--text-xs);"><i class="bi bi-lock-fill"></i> {% trans "Your student ID is only used to prevent duplicate votes and is never shown publicly." %}</p>
+            <button type="submit" class="btn btn--primary btn--lg btn--block"><i class="bi bi-check2-circle"></i> {% trans "Submit my vote" %}</button>
+        </form>
+    {% else %}
+        <p>{% trans "Log in or create a free student account to add your vote." %}</p>
+        <div class="flex" style="gap: var(--space-3); flex-wrap: wrap;">
+            <a href="{{ login_url }}" class="btn btn--primary">{% trans "Log in to vote" %}</a>
+            <a href="{% url 'signup' %}" class="btn btn--ghost">{% trans "Create account" %}</a>
+        </div>
+    {% endif %}
+</dialog>
+
+{# ---------------- Campaign card modal ---------------- #}
+{% if card_vote %}
+<dialog id="card-dialog" class="campus-dialog" data-autoopen>
+    <form method="dialog" class="campus-dialog__close"><button aria-label="{% trans 'Close' %}"><i class="bi bi-x-lg"></i></button></form>
+    <div class="campus-card">
+        <span class="campus-card__eyebrow"><i class="bi bi-megaphone-fill"></i> {% trans "Campus campaign" %}</span>
+        <p class="campus-card__headline">
+            {% blocktrans with n=card_vote.voter_number university=card_vote.university_name faculty=card_vote.faculty_name %}Student #{{ n }} demanding Internest at {{ university }} — {{ faculty }}!{% endblocktrans %}
+        </p>
+        <p class="campus-card__id">{% trans "Student ID" %}: <span dir="ltr">{{ card_vote.masked_student_id }}</span></p>
+        <div class="campus-card__count">
+            <strong>{{ card_vote.campus_votes }}</strong> / {{ goal }} {% trans "votes" %}
+        </div>
+        <div class="progress campus-card__progress"><div class="progress__bar" style="width: {{ card_vote.progress_percent }}%;"></div></div>
+        <p class="campus-card__note">{% blocktrans with goal=goal %}At {{ goal }} votes we send the request to the dean.{% endblocktrans %}</p>
+    </div>
+
+    <h4 class="mt-4 mb-3">{% trans "Share your card" %}</h4>
+    <div class="campus-share">
+        <a class="btn btn--success" href="{{ share.whatsapp }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> WhatsApp</a>
+        <a class="btn btn--primary" href="{{ share.telegram }}" target="_blank" rel="noopener"><i class="bi bi-telegram"></i> Telegram</a>
+        <button type="button" class="btn btn--ghost" data-campus-copy="{{ share.link }}" data-copied-label="{% trans 'Link copied!' %}">
+            <i class="bi bi-link-45deg"></i> <span>{% trans "Copy link" %}</span>
+        </button>
+    </div>
+    <input class="form-control mt-3" dir="ltr" readonly value="{{ share.link }}" aria-label="{% trans 'Your invite link' %}">
+</dialog>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'campus/campus.js' %}"></script>
+{% endblock %}
