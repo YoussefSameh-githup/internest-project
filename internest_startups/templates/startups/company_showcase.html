@@ -1,5 +1,5 @@
 {% extends 'internship/base.html' %}
-{% load i18n %}
+{% load i18n startup_tags %}
 
 {% block title %}{{ partner.company_name }} — Internest{% endblock %}
 
@@ -22,6 +22,7 @@
                     {% else %}
                         <span class="badge badge--accent"><i class="bi bi-hourglass-split"></i> {% trans "Pending verification" %}</span>
                     {% endif %}
+                    {% pro_badge partner %}
                     <span class="badge badge--info">{{ profile.get_industry_display }}</span>
                 </div>
                 <a href="{% url 'startup_company_profile_edit' %}" class="btn btn--primary">✏️ {% trans "Edit profile" %}</a>

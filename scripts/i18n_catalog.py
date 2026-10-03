@@ -29,11 +29,12 @@ def _templatize_msgids(path: Path):
     from django.utils.translation.template import templatize
 
     code = templatize(path.read_text(encoding="utf-8"), origin=str(path))
-    # templatize emits gettext(u'...') / ngettext(u'...', u'...', n)
-    for m in re.finditer(r"\bn?gettext\(\s*u?'((?:[^'\\]|\\.)*)'", code):
-        yield ast.literal_eval("'" + m.group(1) + "'")
-    for m in re.finditer(r"\bngettext\(\s*u?'(?:[^'\\]|\\.)*',\s*u?'((?:[^'\\]|\\.)*)'", code):
-        yield ast.literal_eval("'" + m.group(1) + "'")  # plural form
+    # templatize emits gettext(u'...') — or u"..." when the text contains an apostrophe.
+    literal = r"""u?('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")"""
+    for m in re.finditer(r"\bn?gettext\(\s*" + literal, code):
+        yield ast.literal_eval(m.group(1))
+    for m in re.finditer(r"\bngettext\(\s*" + literal + r",\s*" + literal, code):
+        yield ast.literal_eval(m.group(2))  # plural form
 
 
 def _python_msgids(path: Path):

@@ -1,4 +1,4 @@
-"""Lightweight server-side anti-spam for the Founders Lounge (no external services, no cache dependency)."""
+"""Lightweight server-side anti-spam for the Founders Network (no external services, no cache dependency)."""
 import hashlib
 import re
 from datetime import timedelta

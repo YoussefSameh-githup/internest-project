@@ -49,7 +49,7 @@
                         <li><a href="{% url 'partner_profile' %}" class="nav__link"><i class="bi bi-building"></i> {% trans "Company profile" %}</a></li>
                         {% is_lounge_member user as show_lounge %}
                         {% if show_lounge %}
-                            <li><a href="{% url 'lounge_feed' %}" class="nav__link"><i class="bi bi-cup-hot"></i> {% trans "Founders Lounge" %}</a></li>
+                            <li><a href="{% url 'lounge_feed' %}" class="nav__link"><i class="bi bi-cup-hot"></i> {% trans "Founders Network" %}</a></li>
                         {% endif %}
                     {% else %}
                         <li><a href="{% url 'list' %}" class="nav__link"><i class="bi bi-briefcase"></i> {% trans "Internships" %}</a></li>

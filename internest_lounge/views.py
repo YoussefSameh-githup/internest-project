@@ -1,15 +1,19 @@
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Q
+from datetime import timedelta
+
+from django.db.models import Case, Count, IntegerField, Q, Value, When
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from internest_core.views import get_user_context
+from internest_startups.tiers import is_pro
 
 from . import moderation
 from .forms import CommentForm, PostForm
@@ -17,6 +21,7 @@ from .models import FLAGS_TO_HIDE, HiddenReason, LoungeComment, LoungeFlag, Loun
 from .permissions import founders_only
 
 MAX_DEPTH = 4
+PRO_PRIORITY_WINDOW = timedelta(hours=72)
 
 
 def _visible_to(founder):
@@ -49,23 +54,37 @@ def lounge_feed(request):
             return redirect("lounge_feed")
 
     tag = request.GET.get("tag", "")
+    today = timezone.now().date()
+    is_pro_author = Q(author__subscription__plan="pro") & (
+        Q(author__subscription__valid_until__isnull=True) | Q(author__subscription__valid_until__gte=today)
+    )
     posts = (
         LoungePost.objects.filter(_visible_to(founder))
-        .select_related("author")
+        .select_related("author", "author__subscription")
         .annotate(
             upvote_count=Count("upvoters", distinct=True),
             comment_count=Count("comments", filter=Q(comments__visibility=Visibility.VISIBLE), distinct=True),
+            # Pro perk: fresh posts from Pro startups are pinned to the top of the feed.
+            pro_priority=Case(
+                When(is_pro_author & Q(created_at__gte=timezone.now() - PRO_PRIORITY_WINDOW), then=Value(1)),
+                default=Value(0), output_field=IntegerField(),
+            ),
         )
+        .order_by("-pro_priority", "-created_at")
     )
     if tag in dict(LoungePost.CATEGORY_CHOICES):
         posts = posts.filter(category=tag)
     page = Paginator(posts, 20).get_page(request.GET.get("page"))
     upvoted = set(founder.upvoted_lounge_posts.filter(pk__in=[p.pk for p in page]).values_list("pk", flat=True))
+    for post in page:
+        post.comment_tree = _comment_tree(post, founder)
 
     context = get_user_context(request)
     context.update({
         "form": form, "page": page, "upvoted": upvoted, "founder": founder,
         "tags": LoungePost.CATEGORY_CHOICES, "active_tag": tag,
+        "compose_open": request.method == "POST",  # reopen the modal when the form has errors
+        "viewer_is_pro": is_pro(founder), "max_depth": MAX_DEPTH,
     })
     return render(request, "lounge/feed.html", context)
 
@@ -73,7 +92,7 @@ def lounge_feed(request):
 def _comment_tree(post, founder):
     comments = list(
         post.comments.filter(Q(visibility=Visibility.VISIBLE) | Q(author=founder, visibility=Visibility.HIDDEN))
-        .select_related("author")
+        .select_related("author", "author__subscription")
     )
     by_parent = {}
     for c in comments:
@@ -88,7 +107,7 @@ def _comment_tree(post, founder):
 def post_detail(request, pk):
     founder = request.founder
     post = get_object_or_404(
-        LoungePost.objects.select_related("author").annotate(upvote_count=Count("upvoters")),
+        LoungePost.objects.select_related("author", "author__subscription").annotate(upvote_count=Count("upvoters")),
         Q(pk=pk) & _visible_to(founder),
     )
     context = get_user_context(request)

@@ -2645,3 +2645,172 @@ msgstr "تعديل البيانات"
 
 msgid "%(n)s years"
 msgstr "%(n)s سنة"
+
+msgid "Prove your students' outcomes"
+msgstr "أثبت مخرجات طلابك"
+
+msgid "Didn't receive it?"
+msgstr "لم يصلك الرمز؟"
+
+msgid "I'm ready — begin"
+msgstr "أنا جاهز — ابدأ"
+
+msgid "You're close. Focus on the areas below, then retake the challenge."
+msgstr "أنت قريب. ركّز على النقاط التالية ثم أعد الاختبار."
+
+msgid "You're on Internest Pro until %(date)s."
+msgstr "أنت مشترك في Internest Pro حتى %(date)s."
+
+msgid ""
+"Free accounts can publish %(n)s opportunity per month. You've reached this "
+"month's limit."
+msgstr "الحساب المجاني يتيح نشر %(n)s فرصة شهرياً، وقد وصلت إلى حد هذا الشهر."
+
+msgid "Founders Network"
+msgstr "شبكة رواد الأعمال"
+
+msgid ""
+"Posting opportunities and the Founders Network unlock as soon as your "
+"startup is verified."
+msgstr "سيتم فتح نشر الفرص وشبكة رواد الأعمال فور توثيق شركتك."
+
+msgid "Unlimited with Pro"
+msgstr "غير محدود مع Pro"
+
+msgid "%(used)s/%(limit)s used this month"
+msgstr "تم استخدام %(used)s/%(limit)s هذا الشهر"
+
+msgid "Direct Talent Search"
+msgstr "البحث المباشر عن المواهب"
+
+msgid "Coming soon"
+msgstr "قريباً"
+
+msgid "Upgrade to Internest Pro"
+msgstr "ترقية إلى Internest Pro"
+
+msgid "Share an idea or ask fellow founders for advice..."
+msgstr "شارك فكرة أو استشارة مع رؤساء الشركات..."
+
+msgid "Pinned by Internest Pro"
+msgstr "مثبّت بواسطة Internest Pro"
+
+msgid "%(n)s comments"
+msgstr "%(n)s تعليق"
+
+msgid "Write a comment…"
+msgstr "اكتب تعليقاً…"
+
+msgid "Pro perks"
+msgstr "مزايا Pro"
+
+msgid "Your new posts are pinned to the top of the feed for 72 hours."
+msgstr "منشوراتك الجديدة تُثبّت أعلى الصفحة لمدة 72 ساعة."
+
+msgid "Top-of-feed priority"
+msgstr "أولوية الظهور أعلى الصفحة"
+
+msgid "Direct talent search"
+msgstr "البحث المباشر عن المواهب"
+
+msgid "Awaiting payment"
+msgstr "بانتظار الدفع"
+
+msgid "Activated"
+msgstr "مفعّل"
+
+msgid "Cancelled"
+msgstr "ملغى"
+
+msgid "This promo code is invalid or has expired."
+msgstr "كود الخصم غير صالح أو منتهي الصلاحية."
+
+msgid "Promo code applied: %(percent)s%% off."
+msgstr "تم تطبيق كود الخصم: خصم %(percent)s%%."
+
+msgid ""
+"You already have a Pro request awaiting payment. Our team will contact you "
+"shortly."
+msgstr "لديك طلب Pro بانتظار الدفع بالفعل. سيتواصل معك فريقنا قريباً."
+
+msgid ""
+"Request received! Our team will contact you within 24 hours to complete "
+"payment and activate Pro."
+msgstr ""
+"تم استلام طلبك! سيتواصل معك فريقنا خلال 24 ساعة لإتمام الدفع وتفعيل Pro."
+
+msgid ""
+"Hire faster with unlimited posts, lower hiring fees and direct access to "
+"verified talent."
+msgstr ""
+"وظّف أسرع مع نشر غير محدود، ورسوم توظيف أقل، ووصول مباشر إلى المواهب "
+"الموثّقة."
+
+msgid ""
+"Your Pro request ($%(price)s) is awaiting payment. Our team will contact you"
+" within 24 hours."
+msgstr ""
+"طلب Pro الخاص بك (%(price)s$) بانتظار الدفع. سيتواصل معك فريقنا خلال 24 "
+"ساعة."
+
+msgid "Free"
+msgstr "مجاني"
+
+msgid "month"
+msgstr "شهر"
+
+msgid "%(n)s opportunity per month"
+msgstr "%(n)s فرصة شهرياً"
+
+msgid "Founders Network access"
+msgstr "الوصول إلى شبكة رواد الأعمال"
+
+msgid "Pre-tested student applicants"
+msgstr "متقدمون طلاب مختبَرون مسبقاً"
+
+msgid "15–20%% hiring fee"
+msgstr "رسوم توظيف 15–20%%"
+
+msgid "No direct talent search"
+msgstr "بدون بحث مباشر عن المواهب"
+
+msgid "Most popular"
+msgstr "الأكثر طلباً"
+
+msgid "Unlimited job posts"
+msgstr "نشر وظائف غير محدود"
+
+msgid "10%% hiring fee (instead of 15–20%%)"
+msgstr "رسوم توظيف 10%% (بدلاً من 15–20%%)"
+
+msgid "Pitching at campus events"
+msgstr "عرض شركتك في فعاليات الجامعات"
+
+msgid "Top-of-feed priority in Founders Network"
+msgstr "أولوية الظهور في شبكة رواد الأعمال"
+
+msgid "Gold Pro Verified badge"
+msgstr "شارة Pro الذهبية الموثّقة"
+
+msgid "Remove"
+msgstr "إزالة"
+
+msgid "Promo code"
+msgstr "كود الخصم"
+
+msgid "Internest Pro (1 month)"
+msgstr "Internest Pro (شهر واحد)"
+
+msgid "Discount"
+msgstr "الخصم"
+
+msgid "Subscribe now and unlock every feature"
+msgstr "اشترك الآن واستفد بكافة الميزات"
+
+msgid ""
+"No card needed now: our team contacts you to complete payment, then "
+"activates Pro."
+msgstr "لا حاجة لبطاقة الآن: سيتواصل معك فريقنا لإتمام الدفع ثم تفعيل Pro."
+
+msgid "Pro Verified"
+msgstr "Pro موثّق"

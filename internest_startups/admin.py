@@ -16,7 +16,7 @@ def approve_startups(modeladmin, request, queryset):
             profile.verified_at = timezone.now()
             profile.save(update_fields=["verified_at"])
             count += 1
-    modeladmin.message_user(request, f"{count} startup(s) verified. They can now post opportunities and use the Founders Lounge.", messages.SUCCESS)
+    modeladmin.message_user(request, f"{count} startup(s) verified. They can now post opportunities and use the Founders Network.", messages.SUCCESS)
 
 
 @admin.action(description="Revoke verification")
@@ -63,3 +63,48 @@ class PendingCompanyProfileAdmin(_Base):
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(partner__is_fully_verified=False).order_by("submitted_at")
+
+
+from django.db.models import F  # noqa: E402
+
+from .models import PromoCode, ProUpgradeRequest  # noqa: E402
+from .tiers import activate_pro  # noqa: E402
+
+
+@admin.register(PromoCode)
+class PromoCodeAdmin(admin.ModelAdmin):
+    list_display = ("code", "discount_percent", "is_active", "valid_until", "times_used", "max_uses")
+    list_filter = ("is_active",)
+    search_fields = ("code",)
+
+
+@admin.action(description="💳 Payment received → activate Pro")
+def activate_requests(modeladmin, request, queryset):
+    count = 0
+    for req in queryset.filter(status=ProUpgradeRequest.STATUS_PENDING).select_related("partner", "promo_code"):
+        activate_pro(req.partner, req.months)
+        req.status, req.activated_at = ProUpgradeRequest.STATUS_ACTIVE, timezone.now()
+        req.save(update_fields=["status", "activated_at"])
+        if req.promo_code_id:
+            PromoCode.objects.filter(pk=req.promo_code_id).update(times_used=F("times_used") + 1)
+        count += 1
+    modeladmin.message_user(request, f"{count} Pro subscription(s) activated.", messages.SUCCESS)
+
+
+@admin.action(description="Cancel selected requests")
+def cancel_requests(modeladmin, request, queryset):
+    queryset.filter(status=ProUpgradeRequest.STATUS_PENDING).update(status=ProUpgradeRequest.STATUS_CANCELLED)
+
+
+@admin.register(ProUpgradeRequest)
+class ProUpgradeRequestAdmin(admin.ModelAdmin):
+    list_display = ("partner", "status", "list_price", "promo_code", "discount_percent", "final_price", "pro_until", "created_at", "activated_at")
+    list_filter = ("status", "promo_code")
+    search_fields = ("partner__company_name", "partner__user__email")
+    readonly_fields = ("created_at", "activated_at")
+    actions = [activate_requests, cancel_requests]
+
+    @admin.display(description="Pro valid until")
+    def pro_until(self, obj):
+        sub = getattr(obj.partner, "subscription", None)
+        return sub.valid_until if sub and sub.plan == "pro" else "—"

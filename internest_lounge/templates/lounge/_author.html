@@ -1,4 +1,5 @@
-{% load i18n %}<span class="lounge-author">
+{% load startup_tags %}<span class="lounge-author">
+    {% include "lounge/_author_avatar.html" with author=author %}
     <span class="fw-bold">{{ author.company_name }}</span>
-    <span class="badge badge--primary lounge-verified"><i class="bi bi-patch-check-fill"></i> {% trans "Verified startup" %}</span>
+    {% pro_badge author %}
 </span>

@@ -150,7 +150,7 @@ class FeedFeatureTests(LoungeTestBase):
 
         page = self.client.get(reverse("lounge_post", args=[post.pk]))
         self.assertContains(page, "Great, DM me")
-        self.assertContains(page, "Verified startup", count=3)  # post + 2 comments
+        self.assertNotContains(page, "Pro Verified")  # Free accounts: clean name, no gold badge
 
     def test_tag_filter(self):
         self.post_as(self.founder, title="Need advice", body="pricing?", category="advice")

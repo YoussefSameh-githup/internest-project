@@ -1,0 +1,18 @@
+{% load i18n static %}
+<dialog id="upsell-dialog" class="upsell-dialog" {% if upsell_open %}data-autoopen{% endif %} aria-labelledby="upsell-title">
+    <form method="dialog" class="upsell-dialog__close"><button aria-label="{% trans 'Close' %}"><i class="bi bi-x-lg"></i></button></form>
+    <div class="upsell-dialog__crest">👑</div>
+    <h2 id="upsell-title">{% trans "Upgrade to Internest Pro" %}</h2>
+    {% if upsell_reason == "limit" %}
+        <p class="upsell-dialog__reason">{% blocktrans with n=free_posts_limit %}Free accounts can publish {{ n }} opportunity per month. You've reached this month's limit.{% endblocktrans %}</p>
+    {% endif %}
+    <ul class="upsell-benefits">
+        <li>♾️ {% trans "Unlimited job posts" %}</li>
+        <li>💸 {% trans "10% hiring fee (instead of 15–20%)" %}</li>
+        <li>🔍 {% trans "Direct talent search" %}</li>
+        <li>🎤 {% trans "Pitching at campus events" %}</li>
+        <li>⭐ {% trans "Top-of-feed priority in Founders Network" %}</li>
+    </ul>
+    <a href="{% url 'startup_upgrade' %}" class="btn btn--gold btn--lg btn--block">{% trans "Subscribe now and unlock every feature" %}</a>
+</dialog>
+<script src="{% static 'startups/upsell.js' %}" defer></script>

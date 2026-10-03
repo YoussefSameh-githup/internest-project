@@ -1,12 +1,12 @@
 {% extends 'internship/base.html' %}
 {% load i18n %}
 
-{% block title %}{{ post.title }} — {% trans "Founders Lounge" %}{% endblock %}
+{% block title %}{{ post.title }} — {% trans "Founders Network" %}{% endblock %}
 
 {% block content %}
 <section class="section-sm">
     <div class="container-narrow">
-        <a href="{% url 'lounge_feed' %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short"></i> {% trans "Founders Lounge" %}</a>
+        <a href="{% url 'lounge_feed' %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short"></i> {% trans "Founders Network" %}</a>
 
         <article class="card mb-5 lounge-post {% if not post.is_visible %}lounge-post--hidden{% endif %}">
             <div class="lounge-post__meta">

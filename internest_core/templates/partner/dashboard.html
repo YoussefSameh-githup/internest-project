@@ -1,5 +1,5 @@
 {% extends 'internship/base.html' %}
-{% load static i18n skills_tags lounge_tags %}
+{% load static i18n skills_tags lounge_tags startup_tags %}
 
 {% block title %}{% trans "Partner dashboard" %} — {{ partner.company_name }}{% endblock %}
 
@@ -11,7 +11,7 @@
             <div>
                 <span class="eyebrow"><i class="bi bi-grid-1x2"></i> {% trans "Partner dashboard" %}</span>
                 <h1 class="mt-3 mb-2">
-                    {{ partner.company_name }}
+                    {{ partner.company_name }} {% pro_badge partner %}
                     {% if partner.is_fully_verified %}
                         <i class="bi bi-patch-check-fill" style="color: var(--brand-500); font-size: 0.75em;" title="{% trans 'Verified account' %}"></i>
                     {% endif %}
@@ -38,7 +38,7 @@
         <div class="alert alert-warning pending-verification" role="status">
             <i class="bi bi-hourglass-split"></i>
             <strong>{% trans "Your verification request is under review. You will be notified within 24 hours." %}</strong>
-            <div style="font-size: var(--text-sm);">{% trans "Posting opportunities and the Founders Lounge unlock as soon as your startup is verified." %}</div>
+            <div style="font-size: var(--text-sm);">{% trans "Posting opportunities and the Founders Network unlock as soon as your startup is verified." %}</div>
         </div>
     </div>
 </section>
@@ -58,10 +58,12 @@
         {% if section == "overview" %}
         {% is_lounge_member user as show_lounge %}
         <nav class="action-grid mb-6" aria-label="{% trans 'Dashboard actions' %}">
-            <a href="{% url 'partner_submit_choose' %}" class="action-tile action-tile--primary {% if posting_block %}is-locked{% endif %}" {% if posting_block %}title="{{ posting_block }}"{% endif %}>
+            <a href="{% url 'partner_submit_choose' %}" class="action-tile action-tile--primary {% if posting_block %}is-locked{% endif %}" {% if posting_block %}title="{{ posting_block }}"{% elif quota_reached %}data-upsell{% endif %}>
                 <span class="action-tile__icon">{% if posting_block %}<i class="bi bi-lock-fill"></i>{% else %}➕{% endif %}</span>
                 <span class="action-tile__label">{% trans "Post Opportunity" %}</span>
-                {% if posting_block %}<span class="action-tile__hint">{% trans "Locked until verified and 100% complete" %}</span>{% endif %}
+                {% if posting_block %}<span class="action-tile__hint">{% trans "Locked until verified and 100% complete" %}</span>
+                {% elif is_pro %}<span class="action-tile__hint">♾️ {% trans "Unlimited with Pro" %}</span>
+                {% elif not partner.is_academic %}<span class="action-tile__hint">{% blocktrans with used=posts_this_month limit=free_posts_limit %}{{ used }}/{{ limit }} used this month{% endblocktrans %}</span>{% endif %}
             </a>
             <a href="{% url 'partner_dashboard_section' 'applicants' %}" class="action-tile">
                 <span class="action-tile__icon">📥</span>
@@ -76,8 +78,26 @@
             {% if show_lounge %}
                 <a href="{% url 'lounge_feed' %}" class="action-tile">
                     <span class="action-tile__icon">💬</span>
-                    <span class="action-tile__label">{% trans "Founders Lounge" %}</span>
+                    <span class="action-tile__label">{% trans "Founders Network" %}</span>
                 </a>
+            {% endif %}
+            {% if not partner.is_academic %}
+                {% if is_pro %}
+                    <div class="action-tile is-locked" aria-disabled="true">
+                        <span class="action-tile__icon">🔍</span>
+                        <span class="action-tile__label">{% trans "Direct Talent Search" %}</span>
+                        <span class="action-tile__hint">{% trans "Coming soon" %}</span>
+                    </div>
+                {% else %}
+                    <a href="{% url 'startup_upgrade' %}" class="action-tile" data-upsell>
+                        <span class="action-tile__icon">🔍</span>
+                        <span class="action-tile__label">{% trans "Direct Talent Search" %} <span class="pro-chip">PRO</span></span>
+                    </a>
+                    <a href="{% url 'startup_upgrade' %}" class="action-tile action-tile--gold">
+                        <span class="action-tile__icon">👑</span>
+                        <span class="action-tile__label">{% trans "Upgrade to Internest Pro" %}</span>
+                    </a>
+                {% endif %}
             {% endif %}
             <a href="{{ profile_url }}" class="action-tile">
                 <span class="action-tile__icon">✏️</span>
@@ -270,4 +290,5 @@
     </div>
 </section>
 
+{% if not partner.is_academic and not is_pro %}{% include "startups/_upsell_modal.html" %}{% endif %}
 {% endblock %}

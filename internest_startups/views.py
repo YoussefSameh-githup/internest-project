@@ -96,3 +96,66 @@ def company_profile_edit(request):
     context = get_user_context(request)
     context.update({"identity": identity, "details": details, "is_new": existing is None, "partner": partner})
     return render(request, "startups/company_profile.html", context)
+
+
+PROMO_SESSION_KEY = "pro_promo_code"
+
+
+def _session_promo(request):
+    from .models import PromoCode
+
+    code = request.session.get(PROMO_SESSION_KEY)
+    promo = PromoCode.objects.filter(code__iexact=code).first() if code else None
+    if promo is not None and not promo.is_valid():
+        request.session.pop(PROMO_SESSION_KEY, None)
+        promo = None
+    return promo
+
+
+@login_required
+def upgrade(request):
+    from .models import PromoCode, ProUpgradeRequest
+    from .tiers import FREE_POSTS_PER_MONTH, is_pro, quote
+
+    partner = _startup_or_redirect(request)
+    if partner is None:
+        return redirect("home_redirect")
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "apply":
+            code = request.POST.get("promo_code", "").strip()
+            promo = PromoCode.objects.filter(code__iexact=code).first()
+            if promo is None or not promo.is_valid():
+                messages.error(request, _("This promo code is invalid or has expired."))
+            else:
+                request.session[PROMO_SESSION_KEY] = promo.code
+                messages.success(request, _("Promo code applied: %(percent)s%% off.") % {"percent": promo.discount_percent})
+        elif action == "remove":
+            request.session.pop(PROMO_SESSION_KEY, None)
+        elif action == "subscribe":
+            if ProUpgradeRequest.objects.filter(partner=partner, status=ProUpgradeRequest.STATUS_PENDING).exists():
+                messages.info(request, _("You already have a Pro request awaiting payment. Our team will contact you shortly."))
+            else:
+                promo = _session_promo(request)
+                q = quote(promo)
+                ProUpgradeRequest.objects.create(
+                    partner=partner, list_price=q["list_price"], promo_code=promo,
+                    discount_percent=q["discount_percent"], final_price=q["final_price"],
+                )
+                request.session.pop(PROMO_SESSION_KEY, None)
+                messages.success(request, _("Request received! Our team will contact you within 24 hours to complete payment and activate Pro."))
+        return redirect("startup_upgrade")
+
+    promo = _session_promo(request)
+    context = get_user_context(request)
+    context.update({
+        "partner": partner,
+        "promo": promo,
+        "quote": quote(promo),
+        "is_pro": is_pro(partner),
+        "subscription": getattr(partner, "subscription", None),
+        "pending_request": ProUpgradeRequest.objects.filter(partner=partner, status=ProUpgradeRequest.STATUS_PENDING).first(),
+        "free_posts": FREE_POSTS_PER_MONTH,
+    })
+    return render(request, "startups/upgrade.html", context)

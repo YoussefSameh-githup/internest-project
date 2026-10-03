@@ -51,3 +51,47 @@ class PendingCompanyProfile(CompanyProfile):
         proxy = True
         verbose_name = "Pending verification"
         verbose_name_plural = "⏳ Pending verification"
+
+
+class PromoCode(models.Model):
+    code = models.CharField(max_length=30, unique=True)
+    discount_percent = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)])
+    is_active = models.BooleanField(default=True)
+    valid_until = models.DateField(null=True, blank=True)
+    max_uses = models.PositiveIntegerField(null=True, blank=True)
+    times_used = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.code} (-{self.discount_percent}%)"
+
+    def is_valid(self):
+        if not self.is_active:
+            return False
+        if self.valid_until and self.valid_until < timezone.now().date():
+            return False
+        return self.max_uses is None or self.times_used < self.max_uses
+
+
+class ProUpgradeRequest(models.Model):
+    """A startup's Pro checkout. Pro is activated by an admin once payment is received."""
+
+    STATUS_PENDING = "pending"
+    STATUS_ACTIVE = "activated"
+    STATUS_CANCELLED = "cancelled"
+    STATUS_CHOICES = [(STATUS_PENDING, _("Awaiting payment")), (STATUS_ACTIVE, _("Activated")), (STATUS_CANCELLED, _("Cancelled"))]
+
+    partner = models.ForeignKey(PartnerProfile, on_delete=models.CASCADE, related_name="pro_requests")
+    months = models.PositiveSmallIntegerField(default=1)
+    list_price = models.DecimalField(max_digits=8, decimal_places=2)
+    promo_code = models.ForeignKey(PromoCode, null=True, blank=True, on_delete=models.SET_NULL, related_name="requests")
+    discount_percent = models.PositiveSmallIntegerField(default=0)
+    final_price = models.DecimalField(max_digits=8, decimal_places=2)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+    activated_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.partner} · Pro × {self.months} ({self.get_status_display()})"

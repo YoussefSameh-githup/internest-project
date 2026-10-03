@@ -271,3 +271,134 @@ class ProfileShowcaseAndDashboardTests(OnboardingBase):
         self.client.post(reverse("partner_submit_internship"), OPPORTUNITY)
         page = self.client.get(reverse("partner_dashboard"))
         self.assertEqual(page.context["pending_count"], 1)
+
+
+class ProTierTests(OnboardingBase):
+    """BMC tier model: Free = 1 opportunity/month, Pro = unlimited; promo codes; gold badge only for Pro."""
+
+    def setUp(self):
+        super().setUp()
+        self.register()
+        self.submit_profile()
+        self.approve()
+
+    def _post(self, title="Frontend gig"):
+        return self.client.post(reverse("partner_submit_internship"), {**OPPORTUNITY, "title": title})
+
+    def _count(self):
+        return PartnerInternshipSubmission.objects.filter(partner=self.partner()).count()
+
+    def _make_pro(self):
+        from .tiers import activate_pro
+        activate_pro(self.partner())
+
+    # --- posting limits ---------------------------------------------------------
+    def test_free_tier_blocked_at_second_post_with_upsell(self):
+        self._post("First")
+        self.assertEqual(self._count(), 1)
+        resp = self._post("Second")
+        self.assertEqual(self._count(), 1)
+        self.assertEqual(resp.url, reverse("partner_dashboard") + "?upsell=limit")
+        page = self.client.get(resp.url)
+        self.assertContains(page, 'id="upsell-dialog"')
+        self.assertContains(page, "data-autoopen")
+        self.assertContains(page, "You've reached this month's limit")
+        self.assertContains(page, "Subscribe now and unlock every feature")
+        self.assertContains(page, "1/1 used this month")
+
+    def test_free_quota_resets_monthly_and_ignores_rejected(self):
+        from datetime import timedelta as td
+        self._post("Old")
+        PartnerInternshipSubmission.objects.update(submission_date=timezone.now() - td(days=40))
+        self._post("This month")
+        self.assertEqual(self._count(), 2)
+        PartnerInternshipSubmission.objects.filter(title="This month").update(status="Rejected")
+        self._post("Retry")
+        self.assertEqual(self._count(), 3)
+
+    def test_pro_tier_unlimited_posts(self):
+        self._make_pro()
+        for i in range(4):
+            self._post(f"Role {i}")
+        self.assertEqual(self._count(), 4)
+        page = self.client.get(reverse("partner_dashboard"))
+        self.assertNotContains(page, 'id="upsell-dialog"')
+        self.assertContains(page, "Unlimited with Pro")
+
+    # --- promo codes & checkout -------------------------------------------------
+    def test_promo_code_application_and_validation(self):
+        from .models import PromoCode
+        page = self.client.get(reverse("startup_upgrade"))
+        self.assertContains(page, "$100.00")
+        self.client.post(reverse("startup_upgrade"), {"action": "apply", "promo_code": "startup50"})
+        page = self.client.get(reverse("startup_upgrade"))
+        self.assertEqual(page.context["quote"]["final_price"], 50)
+        self.assertContains(page, "$50.00")
+        self.assertContains(page, "STARTUP50")
+
+        for code, setup in (("NOPE", None),
+                            ("OLD10", dict(discount_percent=10, valid_until=timezone.now().date() - timedelta(days=1))),
+                            ("USEDUP", dict(discount_percent=10, max_uses=1, times_used=1)),
+                            ("OFF", dict(discount_percent=10, is_active=False))):
+            if setup:
+                PromoCode.objects.create(code=code, **setup)
+            self.client.post(reverse("startup_upgrade"), {"action": "remove"})
+            resp = self.client.post(reverse("startup_upgrade"), {"action": "apply", "promo_code": code}, follow=True)
+            self.assertContains(resp, "This promo code is invalid or has expired.")
+            self.assertEqual(resp.context["quote"]["final_price"], 100)
+
+    def test_subscribe_creates_request_and_admin_activation_grants_pro(self):
+        from django.contrib.admin.sites import AdminSite
+        from .admin import ProUpgradeRequestAdmin, activate_requests
+        from .models import PromoCode, ProUpgradeRequest
+        self.client.post(reverse("startup_upgrade"), {"action": "apply", "promo_code": "EGYPT2026"})
+        self.client.post(reverse("startup_upgrade"), {"action": "subscribe"})
+        self.client.post(reverse("startup_upgrade"), {"action": "subscribe"})  # duplicate ignored
+        req = ProUpgradeRequest.objects.get()
+        self.assertEqual((req.final_price, req.discount_percent, req.promo_code.code, req.status), (80, 20, "EGYPT2026", "pending"))
+        from .tiers import is_pro
+        self.assertFalse(is_pro(self.partner()))  # no Pro before payment
+
+        request = RequestFactory().post("/admin/")
+        request.user = User.objects.get(username="root")
+        request.session = {}
+        request._messages = FallbackStorage(request)
+        activate_requests(ProUpgradeRequestAdmin(ProUpgradeRequest, AdminSite()), request, ProUpgradeRequest.objects.all())
+        partner = self.partner()
+        self.assertTrue(is_pro(partner))
+        self.assertEqual(partner.subscription.valid_until, timezone.now().date() + timedelta(days=30))
+        self.assertEqual(PromoCode.objects.get(code="EGYPT2026").times_used, 1)
+
+    # --- badges & Founders Network UI ------------------------------------------
+    def test_gold_badge_only_for_pro(self):
+        self.client.post(reverse("lounge_feed"), {"title": "Hello founders", "body": "First post here", "category": "advice"})
+        for url in (reverse("lounge_feed"), reverse("partner_dashboard"), reverse("startup_company_profile")):
+            self.assertNotContains(self.client.get(url), "Pro Verified", msg_prefix=url)
+        self._make_pro()
+        for url in (reverse("lounge_feed"), reverse("partner_dashboard"), reverse("startup_company_profile")):
+            self.assertContains(self.client.get(url), "👑 Pro Verified", msg_prefix=url)
+
+    def test_founders_network_feed_ui(self):
+        self.client.post(reverse("lounge_feed"), {"title": "Pricing advice", "body": "How do you price B2B SaaS?", "category": "advice"})
+        page = self.client.get(reverse("lounge_feed"))
+        self.assertContains(page, "Founders Network")
+        self.assertContains(page, "Share an idea or ask fellow founders for advice...")
+        self.assertContains(page, 'id="compose-dialog"')
+        self.assertNotContains(page, 'id="compose-dialog" class="compose-dialog" data-autoopen')
+        self.assertContains(page, 'class="comment-drawer"')
+        self.assertContains(page, 'class="tag-pill"')
+        resp = self.client.post(reverse("lounge_feed"), {"title": "", "body": ""})  # errors reopen the modal
+        self.assertContains(resp, "data-autoopen")
+        self.client.cookies["internest_lang"] = "ar"
+        self.assertContains(self.client.get(reverse("lounge_feed")), "شبكة رواد الأعمال")
+
+    def test_pro_posts_are_pinned_to_top(self):
+        from internest_lounge.models import LoungePost
+        other = User.objects.create_user("free2", password="pw")
+        free = PartnerProfile.objects.create(user=other, company_name="FreeCo2", partner_code="F2", is_fully_verified=True)
+        CompanyProfile.objects.create(partner=free, industry="software", founded_year=2022, description="x")
+        self._make_pro()
+        LoungePost.objects.create(author=self.partner(), title="Pro post", body="a", body_fingerprint="1")
+        LoungePost.objects.create(author=free, title="Newer free post", body="b", body_fingerprint="2")
+        titles = [p.title for p in self.client.get(reverse("lounge_feed")).context["page"]]
+        self.assertEqual(titles[0], "Pro post")

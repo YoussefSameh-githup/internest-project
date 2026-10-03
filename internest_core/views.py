@@ -16,6 +16,7 @@ from django.utils.translation import gettext as _
 
 from internest_skills.matching import skill_match, verified_skill_ids
 from internest_startups.gate import posting_block_reason
+from internest_startups.tiers import FREE_POSTS_PER_MONTH, is_pro, monthly_quota_reached, posts_this_month
 
 from .email_helpers import issue_and_send_verification as _issue_and_send_verification
 from .models import (
@@ -460,6 +461,12 @@ def partner_dashboard_view(request, section="overview"):
         "pending_count": pending_count,
         "applicant_count": received_applicants.count(),
         "posting_block": posting_block,
+        "is_pro": is_pro(partner_profile),
+        "quota_reached": monthly_quota_reached(partner_profile),
+        "posts_this_month": posts_this_month(partner_profile),
+        "free_posts_limit": FREE_POSTS_PER_MONTH,
+        "upsell_open": request.GET.get("upsell") == "limit",
+        "upsell_reason": request.GET.get("upsell", ""),
         "profile_url": reverse("partner_profile") if partner_profile.is_academic else reverse("startup_company_profile"),
         "profile_edit_url": reverse("partner_profile") if partner_profile.is_academic else reverse("startup_company_profile_edit"),
         "internship_submissions": internship_submissions,
@@ -490,6 +497,8 @@ def partner_submit_internship(request):
     if block:
         messages.error(request, block)
         return redirect("partner_dashboard")
+    if monthly_quota_reached(partner_profile):  # Free tier: 1 opportunity / month → upsell
+        return redirect(reverse("partner_dashboard") + "?upsell=limit")
 
     if request.method == "POST":
         form = PartnerInternshipForm(request.POST)
