@@ -275,10 +275,10 @@ class AccessControlTests(Base):
         self.assertContains(self.client.get(reverse("profile")), "Analyze & Verify Skills")
         self._forward(self.pro, self.student)
         self.client.force_login(self.pro_user)
-        self.assertContains(self.client.get(reverse("partner_dashboard")),
+        self.assertContains(self.client.get(reverse("partner_dashboard_section", args=["applicants"])),
                             reverse("skills_student_report", args=[self.student.pk]))
         self.client.force_login(self.free_user)
-        self.assertNotContains(self.client.get(reverse("partner_dashboard")),
+        self.assertNotContains(self.client.get(reverse("partner_dashboard_section", args=["applicants"])),
                                reverse("skills_student_report", args=[self.student.pk]))
 
     def test_recommendations_api_is_self_only(self):

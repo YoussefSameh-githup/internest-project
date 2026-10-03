@@ -42,8 +42,9 @@ class CompanyIdentityForm(forms.ModelForm):
 
     class Meta:
         model = PartnerProfile
-        fields = ["company_name", "official_email", "official_website", "linkedin_url", "facebook_url", "twitter_url", "instagram_url"]
+        fields = ["logo", "company_name", "official_email", "official_website", "linkedin_url", "facebook_url", "twitter_url", "instagram_url"]
         labels = {
+            "logo": _("Company logo"),
             "company_name": _("Company name"),
             "official_email": _("Company official email"),
             "official_website": _("Website"),
@@ -55,6 +56,7 @@ class CompanyIdentityForm(forms.ModelForm):
         widgets = {f: forms.URLInput(attrs={**_input, "placeholder": "https://", "dir": "ltr"})
                    for f in ["official_website", "linkedin_url", "facebook_url", "twitter_url", "instagram_url"]}
         widgets["company_name"] = forms.TextInput(attrs=_input)
+        widgets["logo"] = forms.ClearableFileInput(attrs={"accept": "image/png,image/jpeg,image/webp", "class": "logo-upload__input"})
         widgets["official_email"] = forms.EmailInput(attrs={**_input, "placeholder": "contact@company.com", "dir": "ltr"})
 
     def __init__(self, *args, **kwargs):

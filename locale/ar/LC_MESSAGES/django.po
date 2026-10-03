@@ -2603,3 +2603,45 @@ msgid ""
 "Your profile is %(score)s%% complete. Complete it to 100%% to post "
 "opportunities."
 msgstr "ملفك مكتمل بنسبة %(score)s%%. أكمله إلى 100%% لتتمكّن من نشر الفرص."
+
+msgid "Dashboard actions"
+msgstr "إجراءات لوحة التحكم"
+
+msgid "Post Opportunity"
+msgstr "إضافة فرصة جديدة"
+
+msgid "Locked until verified and 100%% complete"
+msgstr "مُقفل حتى التوثيق واكتمال الملف 100%%"
+
+msgid "Applicants Inbox"
+msgstr "صندوق المتقدمين"
+
+msgid "%(n)s applicants"
+msgstr "%(n)s متقدم"
+
+msgid "Pending Requests"
+msgstr "الفرص قيد المراجعة"
+
+msgid "Company Profile"
+msgstr "بيانات الشركة"
+
+msgid "Company logo"
+msgstr "شعار الشركة"
+
+msgid "Upload company logo"
+msgstr "رفع شعار الشركة"
+
+msgid "PNG, JPG or WEBP, up to 5 MB."
+msgstr "PNG أو JPG أو WEBP، حتى 5 ميجابايت."
+
+msgid "Cancel"
+msgstr "إلغاء"
+
+msgid "Pending verification"
+msgstr "قيد التوثيق"
+
+msgid "Edit profile"
+msgstr "تعديل البيانات"
+
+msgid "%(n)s years"
+msgstr "%(n)s سنة"

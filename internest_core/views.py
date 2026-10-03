@@ -10,6 +10,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
@@ -411,12 +412,17 @@ def partner_profile_view(request):
     return render(request, "partner/profile.html", context)
 
 
+DASHBOARD_SECTIONS = ("overview", "applicants", "pending")
+
+
 @login_required
-def partner_dashboard_view(request):
+def partner_dashboard_view(request, section="overview"):
     partner_profile = _get_partner_profile(request.user)
     if partner_profile is None:
         messages.error(request, _("You are not allowed to access the partner dashboard."))
         return redirect("landing")
+    if section not in DASHBOARD_SECTIONS:
+        raise Http404
 
     internship_submissions = (
         PartnerInternshipSubmission.objects
@@ -441,9 +447,21 @@ def partner_dashboard_view(request):
         .order_by("-forwarded_on")
     )
 
+    pending_count = (
+        internship_submissions.filter(status="Pending").count()
+        + course_submissions.filter(status="Pending").count()
+    )
+    posting_block = posting_block_reason(partner_profile)
+
     context = get_user_context(request)
     context.update({
         "partner": partner_profile,
+        "section": section,
+        "pending_count": pending_count,
+        "applicant_count": received_applicants.count(),
+        "posting_block": posting_block,
+        "profile_url": reverse("partner_profile") if partner_profile.is_academic else reverse("startup_company_profile"),
+        "profile_edit_url": reverse("partner_profile") if partner_profile.is_academic else reverse("startup_company_profile_edit"),
         "internship_submissions": internship_submissions,
         "course_submissions": course_submissions,
         "received_applicants": received_applicants,

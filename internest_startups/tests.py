@@ -1,9 +1,13 @@
+import io
+import shutil
+import tempfile
 from datetime import timedelta
 
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.contrib.messages.storage.fallback import FallbackStorage
-from django.test import RequestFactory, TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone, translation
 
@@ -32,7 +36,7 @@ class OnboardingBase(TestCase):
         return self.client.post(reverse("startup_register"), SIGNUP)
 
     def submit_profile(self, **overrides):
-        return self.client.post(reverse("startup_company_profile"), {**PROFILE, **overrides})
+        return self.client.post(reverse("startup_company_profile_edit"), {**PROFILE, **overrides})
 
     def partner(self):
         return PartnerProfile.objects.get(user__username="mona@startupx.io")
@@ -53,7 +57,7 @@ class StartupOnboardingTests(OnboardingBase):
 
     def test_self_registration_creates_logged_in_founder(self):
         resp = self.register()
-        self.assertRedirects(resp, reverse("startup_company_profile"), fetch_redirect_response=False)
+        self.assertRedirects(resp, reverse("startup_company_profile_edit"), fetch_redirect_response=False)
         partner = self.partner()
         self.assertEqual((partner.user.email, partner.user.first_name, partner.user.last_name), ("mona@startupx.io", "Mona", "Adel"))
         self.assertFalse(partner.is_fully_verified)
@@ -74,7 +78,7 @@ class StartupOnboardingTests(OnboardingBase):
     def test_dashboard_and_posting_redirect_until_profile_submitted(self):
         self.register()
         for name in ("partner_dashboard", "partner_submit_internship", "partner_submit_choose", "lounge_feed", "list"):
-            self.assertRedirects(self.client.get(reverse(name)), reverse("startup_company_profile"), fetch_redirect_response=False)
+            self.assertRedirects(self.client.get(reverse(name)), reverse("startup_company_profile_edit"), fetch_redirect_response=False)
 
     def test_profile_validation(self):
         self.register()
@@ -86,7 +90,7 @@ class StartupOnboardingTests(OnboardingBase):
     def test_profile_submission_unlocks_dashboard_with_pending_banner(self):
         self.register()
         resp = self.submit_profile()
-        self.assertRedirects(resp, reverse("partner_dashboard"), fetch_redirect_response=False)
+        self.assertRedirects(resp, reverse("startup_company_profile"), fetch_redirect_response=False)
         partner = self.partner()
         self.assertEqual(partner.company_name, "StartupX")
         self.assertEqual(partner.company_profile.founded_year, 2023)
@@ -147,7 +151,7 @@ class PublishGateAndFieldsTests(OnboardingBase):
         for form in (PartnerProfileEditForm(), CompanyIdentityForm(instance=self.partner()), CompanyProfileForm()):
             for name in ("partner_code", "is_academic", "official_phone"):
                 self.assertNotIn(name, form.fields)
-        page = self.client.get(reverse("startup_company_profile"))
+        page = self.client.get(reverse("startup_company_profile_edit"))
         for name in ("partner_code", "is_academic", "official_phone"):
             self.assertNotContains(page, f'name="{name}"')
         uni = User.objects.create_user("uni2", password="pw")
@@ -159,7 +163,7 @@ class PublishGateAndFieldsTests(OnboardingBase):
         self.assertRedirects(self.client.get(reverse("partner_login")), reverse("login"), fetch_redirect_response=False)
 
     def test_company_and_founder_emails_present_and_validated(self):
-        page = self.client.get(reverse("startup_company_profile"))
+        page = self.client.get(reverse("startup_company_profile_edit"))
         self.assertContains(page, 'name="official_email"')
         self.assertContains(page, 'name="founder_email"')
         for bad, msg in (({"founder_email": ""}, "This field is required."),
@@ -196,3 +200,74 @@ class PublishGateAndFieldsTests(OnboardingBase):
         self.assertEqual(self.partner().profile_completion_score, 100)
         self.assertTrue(self.partner().is_fully_verified)
         self.assertTrue(self._can_post()[0])
+
+
+class ProfileShowcaseAndDashboardTests(OnboardingBase):
+    def setUp(self):
+        super().setUp()
+        self.media = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.media, ignore_errors=True)
+        self.register()
+
+    def _png(self):
+        from PIL import Image
+        buf = io.BytesIO()
+        Image.new("RGB", (8, 8), "#1d3a8a").save(buf, "PNG")
+        return SimpleUploadedFile("logo.png", buf.getvalue(), content_type="image/png")
+
+    def test_new_startup_view_page_redirects_to_edit_form(self):
+        self.assertRedirects(self.client.get(reverse("startup_company_profile")),
+                             reverse("startup_company_profile_edit"), fetch_redirect_response=False)
+        page = self.client.get(reverse("startup_company_profile_edit"))
+        self.assertContains(page, '<form method="post" enctype="multipart/form-data"')
+        self.assertContains(page, 'name="logo"')
+
+    def test_saved_profile_renders_read_only_showcase(self):
+        self.submit_profile()
+        page = self.client.get(reverse("startup_company_profile"))
+        self.assertTemplateUsed(page, "startups/company_showcase.html")
+        for field in ("company_name", "official_email", "founder_email", "logo"):
+            self.assertNotContains(page, f'name="{field}"')  # no form inputs in view mode
+        self.assertNotContains(page, "<textarea")
+        for text in ("StartupX", "contact@startupx.io", "mona@startupx.io", "startupx.io", "LinkedIn", "2023", "Pending verification"):
+            self.assertContains(page, text)
+        self.assertContains(page, reverse("startup_company_profile_edit"))
+        self.approve()
+        self.assertContains(self.client.get(reverse("startup_company_profile")), "Verified startup")
+
+    def test_logo_upload_saves(self):
+        with override_settings(MEDIA_ROOT=self.media):
+            resp = self.client.post(reverse("startup_company_profile_edit"), {**PROFILE, "logo": self._png()})
+            self.assertRedirects(resp, reverse("startup_company_profile"), fetch_redirect_response=False)
+            partner = self.partner()
+            self.assertTrue(partner.logo.name.startswith("partner_logos/"))
+            self.assertTrue(partner.logo.storage.exists(partner.logo.name))
+            self.assertContains(self.client.get(reverse("startup_company_profile")), partner.logo.url)
+
+    def test_dashboard_action_tiles_route_to_sections(self):
+        self.submit_profile()
+        page = self.client.get(reverse("partner_dashboard"))
+        for url in (reverse("partner_submit_choose"), reverse("partner_dashboard_section", args=["applicants"]),
+                    reverse("partner_dashboard_section", args=["pending"]), reverse("startup_company_profile")):
+            self.assertContains(page, f'href="{url}"')
+        self.assertContains(page, "0 applicants")
+        self.assertNotContains(page, "Applicant inbox")  # sections are not dumped on the overview
+        self.assertNotContains(page, reverse("lounge_feed"))  # unverified: no lounge tile
+
+        applicants = self.client.get(reverse("partner_dashboard_section", args=["applicants"]))
+        self.assertContains(applicants, "Applicant inbox")
+        self.assertNotContains(applicants, "Internship submissions under review")
+        pending = self.client.get(reverse("partner_dashboard_section", args=["pending"]))
+        self.assertContains(pending, "Internship submissions under review")
+        self.assertNotContains(pending, "Applicant inbox")
+        self.assertEqual(self.client.get("/partner/dashboard/nope/").status_code, 404)
+
+        self.approve()
+        self.assertContains(self.client.get(reverse("partner_dashboard")), f'href="{reverse("lounge_feed")}"')
+
+    def test_pending_counter_counts_pending_requests(self):
+        self.submit_profile()
+        self.approve()
+        self.client.post(reverse("partner_submit_internship"), OPPORTUNITY)
+        page = self.client.get(reverse("partner_dashboard"))
+        self.assertEqual(page.context["pending_count"], 1)

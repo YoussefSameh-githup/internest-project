@@ -31,6 +31,7 @@ urlpatterns = [
     
     # 5. صفحات الشركاء
     path('partner/dashboard/', views.partner_dashboard_view, name='partner_dashboard'),
+    path('partner/dashboard/<slug:section>/', views.partner_dashboard_view, name='partner_dashboard_section'),
     path('partner/profile/', views.partner_profile_view, name='partner_profile'), 
     path('partner/submit/choose/', views.partner_submit_choose_view, name='partner_submit_choose'),
     path('partner/submit/internship/', views.partner_submit_internship, name='partner_submit_internship'),

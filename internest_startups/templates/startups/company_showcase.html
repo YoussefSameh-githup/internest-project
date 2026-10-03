@@ -1,0 +1,83 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{{ partner.company_name }} — Internest{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container-narrow">
+        <article class="card company-card">
+            <header class="company-card__header">
+                <div class="company-avatar">
+                    {% if partner.logo %}
+                        <img src="{{ partner.logo.url }}" alt="{{ partner.company_name }}">
+                    {% else %}
+                        <span aria-hidden="true">{{ partner.company_name|slice:":1"|upper }}</span>
+                    {% endif %}
+                </div>
+                <div class="company-card__title">
+                    <h1 class="mb-2">{{ partner.company_name }}</h1>
+                    {% if partner.is_fully_verified %}
+                        <span class="badge badge--success"><i class="bi bi-patch-check-fill"></i> {% trans "Verified startup" %}</span>
+                    {% else %}
+                        <span class="badge badge--accent"><i class="bi bi-hourglass-split"></i> {% trans "Pending verification" %}</span>
+                    {% endif %}
+                    <span class="badge badge--info">{{ profile.get_industry_display }}</span>
+                </div>
+                <a href="{% url 'startup_company_profile_edit' %}" class="btn btn--primary">✏️ {% trans "Edit profile" %}</a>
+            </header>
+
+            <p class="company-card__description">{{ profile.description|linebreaksbr }}</p>
+
+            <div class="company-grid">
+                <div class="company-grid__item">
+                    <span class="company-grid__label"><i class="bi bi-building"></i> {% trans "Company name" %}</span>
+                    <span class="company-grid__value">{{ partner.company_name }}</span>
+                </div>
+                <div class="company-grid__item">
+                    <span class="company-grid__label"><i class="bi bi-diagram-3"></i> {% trans "Industry / field" %}</span>
+                    <span class="company-grid__value">{{ profile.get_industry_display }}</span>
+                </div>
+                <div class="company-grid__item">
+                    <span class="company-grid__label"><i class="bi bi-calendar3"></i> {% trans "Founded year" %}</span>
+                    <span class="company-grid__value">{{ profile.founded_year }} · {% blocktrans with n=company_age %}{{ n }} years{% endblocktrans %}</span>
+                </div>
+                <div class="company-grid__item">
+                    <span class="company-grid__label"><i class="bi bi-envelope"></i> {% trans "Company official email" %}</span>
+                    <a class="company-grid__value" dir="ltr" href="mailto:{{ partner.official_email }}">{{ partner.official_email|default:"—" }}</a>
+                </div>
+                <div class="company-grid__item">
+                    <span class="company-grid__label"><i class="bi bi-person-badge"></i> {% trans "Founder official email" %}</span>
+                    <a class="company-grid__value" dir="ltr" href="mailto:{{ profile.founder_email }}">{{ profile.founder_email|default:"—" }}</a>
+                </div>
+                <div class="company-grid__item">
+                    <span class="company-grid__label"><i class="bi bi-globe2"></i> {% trans "Website" %}</span>
+                    {% if partner.official_website %}
+                        <a class="company-grid__value" dir="ltr" href="{{ partner.official_website }}" target="_blank" rel="noopener">{{ partner.official_website|cut:"https://"|cut:"http://" }}</a>
+                    {% else %}
+                        <span class="company-grid__value text-muted">—</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if socials %}
+                <div class="company-socials">
+                    {% for label, icon, url in socials %}
+                        <a href="{{ url }}" target="_blank" rel="noopener" class="social-badge"><i class="bi {{ icon }}"></i> {{ label }}</a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <footer class="company-card__footer">
+                <span class="text-muted">{% trans "Profile completion" %}</span>
+                <div class="progress"><div class="progress__bar {% if partner.profile_completion_score == 100 %}progress__bar--success{% endif %}" style="width: {{ partner.profile_completion_score }}%;"></div></div>
+                <strong>{{ partner.profile_completion_score }}%</strong>
+            </footer>
+        </article>
+
+        <div class="text-center mt-5">
+            <a href="{% url 'partner_dashboard' %}" class="btn btn--ghost"><i class="bi bi-grid-1x2"></i> {% trans "Back to dashboard" %}</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

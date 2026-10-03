@@ -25,20 +25,9 @@
                 </p>
             </div>
 
-            <div class="btn-group">
-                <a href="{% url 'partner_submit_choose' %}" class="btn btn--accent btn--lg">
-                    <i class="bi bi-plus-lg"></i> {% trans "Add content" %}
-                </a>
-                <a href="{% url 'partner_profile' %}" class="btn btn--ghost btn--lg">
-                    <i class="bi bi-gear"></i> {% trans "Profile settings" %}
-                </a>
-                {% is_lounge_member user as show_lounge %}
-                {% if show_lounge %}
-                    <a href="{% url 'lounge_feed' %}" class="btn btn--primary btn--lg">
-                        <i class="bi bi-cup-hot"></i> {% trans "Founders Lounge" %}
-                    </a>
-                {% endif %}
-            </div>
+            {% if section != "overview" %}
+                <a href="{% url 'partner_dashboard' %}" class="btn btn--ghost btn--lg"><i class="bi bi-arrow-right-short"></i> {% trans "Back to dashboard" %}</a>
+            {% endif %}
         </div>
     </div>
 </section>
@@ -62,32 +51,40 @@
             <div class="alert alert-warning fade-up mb-5">
                 <strong><i class="bi bi-exclamation-triangle-fill"></i> {% blocktrans with s=partner.profile_completion_score %}Profile is incomplete ({{ s }}%).{% endblocktrans %}</strong>
                 {% trans "You cannot submit requests until your profile reaches 100%." %}
-                <a href="{% url 'partner_profile' %}" class="fw-bold" style="margin-inline-start: var(--space-2);">{% trans "Complete now" %} ➔</a>
+                <a href="{{ profile_edit_url }}" class="fw-bold" style="margin-inline-start: var(--space-2);">{% trans "Complete now" %} ➔</a>
             </div>
         {% endif %}
 
-        <div class="metric-grid mb-6">
-            <div class="metric">
-                <div class="metric__icon"><i class="bi bi-briefcase-fill"></i></div>
-                <div class="metric__value">{{ published_internships|length }}</div>
-                <div class="metric__label">{% trans "Published opportunities" %}</div>
-            </div>
-            <div class="metric metric--accent">
-                <div class="metric__icon"><i class="bi bi-hourglass-split"></i></div>
-                <div class="metric__value">{{ internship_submissions|length }}</div>
-                <div class="metric__label">{% trans "Under review" %}</div>
-            </div>
-            <div class="metric metric--success">
-                <div class="metric__icon"><i class="bi bi-inbox-fill"></i></div>
-                <div class="metric__value">{{ received_applicants|length }}</div>
-                <div class="metric__label">{% trans "Applicant files" %}</div>
-            </div>
-            <div class="metric">
-                <div class="metric__icon" style="background: #fef3c7; color: var(--accent-700);"><i class="bi bi-mortarboard-fill"></i></div>
-                <div class="metric__value">{{ course_submissions|length }}</div>
-                <div class="metric__label">{% trans "Submitted courses" %}</div>
-            </div>
-        </div>
+        {% if section == "overview" %}
+        {% is_lounge_member user as show_lounge %}
+        <nav class="action-grid mb-6" aria-label="{% trans 'Dashboard actions' %}">
+            <a href="{% url 'partner_submit_choose' %}" class="action-tile action-tile--primary {% if posting_block %}is-locked{% endif %}" {% if posting_block %}title="{{ posting_block }}"{% endif %}>
+                <span class="action-tile__icon">{% if posting_block %}<i class="bi bi-lock-fill"></i>{% else %}➕{% endif %}</span>
+                <span class="action-tile__label">{% trans "Post Opportunity" %}</span>
+                {% if posting_block %}<span class="action-tile__hint">{% trans "Locked until verified and 100% complete" %}</span>{% endif %}
+            </a>
+            <a href="{% url 'partner_dashboard_section' 'applicants' %}" class="action-tile">
+                <span class="action-tile__icon">📥</span>
+                <span class="action-tile__label">{% trans "Applicants Inbox" %}</span>
+                <span class="action-tile__badge">{% blocktrans with n=applicant_count %}{{ n }} applicants{% endblocktrans %}</span>
+            </a>
+            <a href="{% url 'partner_dashboard_section' 'pending' %}" class="action-tile">
+                <span class="action-tile__icon">⏳</span>
+                <span class="action-tile__label">{% trans "Pending Requests" %}</span>
+                <span class="action-tile__badge">{{ pending_count }}</span>
+            </a>
+            {% if show_lounge %}
+                <a href="{% url 'lounge_feed' %}" class="action-tile">
+                    <span class="action-tile__icon">💬</span>
+                    <span class="action-tile__label">{% trans "Founders Lounge" %}</span>
+                </a>
+            {% endif %}
+            <a href="{{ profile_url }}" class="action-tile">
+                <span class="action-tile__icon">✏️</span>
+                <span class="action-tile__label">{% trans "Company Profile" %}</span>
+                <span class="action-tile__hint">{{ partner.profile_completion_score }}%</span>
+            </a>
+        </nav>
 
         <div class="card mb-6">
             <div class="flex items-center justify-between mb-4" style="flex-wrap: wrap; gap: var(--space-3);">
@@ -143,6 +140,9 @@
             {% endif %}
         </div>
 
+        {% endif %}
+
+        {% if section == "applicants" %}
         <div class="card mb-6">
             {% partner_is_pro partner as is_pro %}
             {% partner_is_verified_university partner as is_university %}
@@ -211,7 +211,10 @@
             {% endif %}
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6);">
+        {% endif %}
+
+        {% if section == "pending" %}
+        <div class="pending-grid">
             <div class="card">
                 <h4 class="mb-4"><i class="bi bi-hourglass text-primary"></i> {% trans "Internship submissions under review" %}</h4>
                 {% if internship_submissions %}
@@ -262,6 +265,7 @@
                 {% endif %}
             </div>
         </div>
+        {% endif %}
 
     </div>
 </section>

@@ -7,7 +7,8 @@ from internest_core.models import PartnerProfile
 
 # URL names a startup without a company profile may still reach.
 PROFILE_GATE_ALLOWED = frozenset({
-    "startup_company_profile", "logout", "set_language", "serve_media", "landing", "startup_register",
+    "startup_company_profile", "startup_company_profile_edit", "logout", "set_language", "serve_media", "landing",
+    "startup_register",
 })
 PROFILE_GATE_PREFIXES = ("/admin/", "/static/", "/i18n/", "/accounts/")
 
@@ -56,7 +57,7 @@ class CompanyProfileGateMiddleware:
     def __call__(self, request):
         partner = startup_partner(request.user)
         if needs_company_profile(partner) and not self._allowed(request.path_info):
-            return redirect("startup_company_profile")
+            return redirect("startup_company_profile_edit")
         return self.get_response(request)
 
     @staticmethod
