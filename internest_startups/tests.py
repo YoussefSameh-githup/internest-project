@@ -250,7 +250,7 @@ class ProfileShowcaseAndDashboardTests(OnboardingBase):
         for url in (reverse("partner_submit_choose"), reverse("partner_dashboard_section", args=["applicants"]),
                     reverse("partner_dashboard_section", args=["pending"]), reverse("startup_company_profile")):
             self.assertContains(page, f'href="{url}"')
-        self.assertContains(page, "0 applicants")
+        self.assertContains(page, '<span class="dash-card__count">0</span>', count=2)  # applicants + pending
         self.assertNotContains(page, "Applicant inbox")  # sections are not dumped on the overview
         self.assertNotContains(page, reverse("lounge_feed"))  # unverified: no lounge tile
 
@@ -402,3 +402,55 @@ class ProTierTests(OnboardingBase):
         LoungePost.objects.create(author=free, title="Newer free post", body="b", body_fingerprint="2")
         titles = [p.title for p in self.client.get(reverse("lounge_feed")).context["page"]]
         self.assertEqual(titles[0], "Pro post")
+
+
+class DashboardGridAndShowcaseDesignTests(OnboardingBase):
+    def setUp(self):
+        super().setUp()
+        self.register()
+        self.submit_profile()
+
+    def test_dashboard_renders_card_grid_with_icon_badges(self):
+        import re
+        page = self.client.get(reverse("partner_dashboard"))
+        html = page.content.decode()
+        self.assertContains(page, 'class="dash-grid')
+        cards = re.findall(r'class="dash-card[ "]', html)
+        self.assertGreaterEqual(len(cards), 5)
+        self.assertEqual(html.count('class="dash-card__icon '), len(cards))  # every card has a styled icon badge
+        for emoji in ("➕", "📥", "⏳", "💬", "✏️"):
+            self.assertNotIn(emoji, html.split('class="dash-grid')[1].split("</nav>")[0])
+        for title in ("Post Opportunity", "Applicants Inbox", "Pending Requests", "Company Profile", "Upgrade to Internest Pro"):
+            self.assertContains(page, title)
+        self.approve()
+        page = self.client.get(reverse("partner_dashboard"))
+        self.assertContains(page, f'href="{reverse("lounge_feed")}" class="dash-card"')
+        self.assertContains(page, "Founders Network")
+
+    def test_card_links_resolve(self):
+        from django.urls import resolve
+        self.approve()
+        html = self.client.get(reverse("partner_dashboard")).content.decode()
+        import re
+        nav = html.split('class="dash-grid')[1].split("</nav>")[0]
+        hrefs = re.findall(r'href="([^"]+)"', nav)
+        self.assertGreaterEqual(len(hrefs), 5)
+        for href in hrefs:
+            resolve(href)  # raises Resolver404 if a card points nowhere
+            self.assertIn(self.client.get(href).status_code, (200, 302), href)
+
+    def test_stylesheets_are_cache_busted(self):
+        import re
+        html = self.client.get(reverse("partner_dashboard")).content.decode()
+        self.assertRegex(html, r'/static/css/styles\.css\?v=[0-9a-f]{10}"')
+        self.assertRegex(html, r'/static/startups/startups\.css\?v=[0-9a-f]{10}"')
+
+    def test_showcase_has_cover_avatar_and_two_column_cards_with_svg_icons(self):
+        page = self.client.get(reverse("startup_company_profile"))
+        for cls in ("co-hero__cover", "co-hero__avatar", "co-hero__name", "co-hero__edit", "co-grid"):
+            self.assertContains(page, cls)
+        self.assertContains(page, 'class="co-card"', count=2)
+        self.assertContains(page, 'class="co-social co-social--linkedin"')
+        self.assertContains(page, '<svg class="svg-icon"', count=4)  # website, company email, founder email, LinkedIn
+        self.assertContains(page, "Contact & social")
+        self.assertContains(page, "About")

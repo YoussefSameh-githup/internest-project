@@ -1,8 +1,8 @@
 {% extends 'internship/base.html' %}
-{% load static i18n %}
+{% load static i18n asset_tags %}
 
 {% block title %}{% trans "Bring Internest to My Campus" %} — Internest{% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="{% static 'campus/campus.css' %}">{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% asset 'campus/campus.css' %}">{% endblock %}
 
 {% block content %}
 <section class="page-header">
@@ -102,5 +102,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="{% static 'campus/campus.js' %}"></script>
+<script src="{% asset 'campus/campus.js' %}"></script>
 {% endblock %}

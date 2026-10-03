@@ -1,5 +1,6 @@
 {% extends 'internship/base.html' %}
-{% load static i18n skills_tags lounge_tags startup_tags %}
+{% load static i18n skills_tags lounge_tags startup_tags asset_tags %}
+{% block extra_head %}<link rel="stylesheet" href="{% asset 'startups/startups.css' %}">{% endblock %}
 
 {% block title %}{% trans "Partner dashboard" %} — {{ partner.company_name }}{% endblock %}
 
@@ -57,52 +58,79 @@
 
         {% if section == "overview" %}
         {% is_lounge_member user as show_lounge %}
-        <nav class="action-grid mb-6" aria-label="{% trans 'Dashboard actions' %}">
-            <a href="{% url 'partner_submit_choose' %}" class="action-tile action-tile--primary {% if posting_block %}is-locked{% endif %}" {% if posting_block %}title="{{ posting_block }}"{% elif quota_reached %}data-upsell{% endif %}>
-                <span class="action-tile__icon">{% if posting_block %}<i class="bi bi-lock-fill"></i>{% else %}➕{% endif %}</span>
-                <span class="action-tile__label">{% trans "Post Opportunity" %}</span>
-                {% if posting_block %}<span class="action-tile__hint">{% trans "Locked until verified and 100% complete" %}</span>
-                {% elif is_pro %}<span class="action-tile__hint">♾️ {% trans "Unlimited with Pro" %}</span>
-                {% elif not partner.is_academic %}<span class="action-tile__hint">{% blocktrans with used=posts_this_month limit=free_posts_limit %}{{ used }}/{{ limit }} used this month{% endblocktrans %}</span>{% endif %}
+        <nav class="dash-grid mb-6" aria-label="{% trans 'Dashboard actions' %}">
+            <a href="{% url 'partner_submit_choose' %}" class="dash-card dash-card--primary {% if posting_block %}is-locked{% endif %}"
+               {% if posting_block %}title="{{ posting_block }}"{% elif quota_reached %}data-upsell{% endif %}>
+                <span class="dash-card__icon dash-card__icon--white"><i class="bi {% if posting_block %}bi-lock-fill{% else %}bi-plus-lg{% endif %}"></i></span>
+                <span class="dash-card__text">
+                    <span class="dash-card__title">{% trans "Post Opportunity" %}</span>
+                    <span class="dash-card__sub">
+                        {% if posting_block %}{% trans "Locked until verified and 100% complete" %}
+                        {% elif is_pro %}{% trans "Unlimited with Pro" %}
+                        {% elif partner.is_academic %}{% blocktrans with n=active_opportunities %}Active opportunities: {{ n }}{% endblocktrans %}
+                        {% else %}{% blocktrans with used=posts_this_month limit=free_posts_limit %}{{ used }}/{{ limit }} used this month{% endblocktrans %}{% endif %}
+                    </span>
+                </span>
+                <i class="bi bi-chevron-left dash-card__go" aria-hidden="true"></i>
             </a>
-            <a href="{% url 'partner_dashboard_section' 'applicants' %}" class="action-tile">
-                <span class="action-tile__icon">📥</span>
-                <span class="action-tile__label">{% trans "Applicants Inbox" %}</span>
-                <span class="action-tile__badge">{% blocktrans with n=applicant_count %}{{ n }} applicants{% endblocktrans %}</span>
+
+            <a href="{% url 'partner_dashboard_section' 'applicants' %}" class="dash-card">
+                <span class="dash-card__icon dash-card__icon--green"><i class="bi bi-inbox-fill"></i></span>
+                <span class="dash-card__text">
+                    <span class="dash-card__title">{% trans "Applicants Inbox" %}</span>
+                    <span class="dash-card__sub">{% trans "Pre-screened student files" %}</span>
+                </span>
+                <span class="dash-card__count">{{ applicant_count }}</span>
             </a>
-            <a href="{% url 'partner_dashboard_section' 'pending' %}" class="action-tile">
-                <span class="action-tile__icon">⏳</span>
-                <span class="action-tile__label">{% trans "Pending Requests" %}</span>
-                <span class="action-tile__badge">{{ pending_count }}</span>
+
+            <a href="{% url 'partner_dashboard_section' 'pending' %}" class="dash-card">
+                <span class="dash-card__icon dash-card__icon--amber"><i class="bi bi-hourglass-split"></i></span>
+                <span class="dash-card__text">
+                    <span class="dash-card__title">{% trans "Pending Requests" %}</span>
+                    <span class="dash-card__sub">{% trans "Opportunities and courses under review" %}</span>
+                </span>
+                <span class="dash-card__count">{{ pending_count }}</span>
             </a>
+
             {% if show_lounge %}
-                <a href="{% url 'lounge_feed' %}" class="action-tile">
-                    <span class="action-tile__icon">💬</span>
-                    <span class="action-tile__label">{% trans "Founders Network" %}</span>
+                <a href="{% url 'lounge_feed' %}" class="dash-card">
+                    <span class="dash-card__icon dash-card__icon--violet"><i class="bi bi-people-fill"></i></span>
+                    <span class="dash-card__text">
+                        <span class="dash-card__title">{% trans "Founders Network" %}</span>
+                        <span class="dash-card__sub">{% trans "Hire, get advice and find partners" %}</span>
+                    </span>
+                    <i class="bi bi-chevron-left dash-card__go" aria-hidden="true"></i>
                 </a>
             {% endif %}
+
             {% if not partner.is_academic %}
                 {% if is_pro %}
-                    <div class="action-tile is-locked" aria-disabled="true">
-                        <span class="action-tile__icon">🔍</span>
-                        <span class="action-tile__label">{% trans "Direct Talent Search" %}</span>
-                        <span class="action-tile__hint">{% trans "Coming soon" %}</span>
+                    <div class="dash-card is-locked" aria-disabled="true">
+                        <span class="dash-card__icon dash-card__icon--blue"><i class="bi bi-search"></i></span>
+                        <span class="dash-card__text">
+                            <span class="dash-card__title">{% trans "Direct Talent Search" %}</span>
+                            <span class="dash-card__sub">{% trans "Coming soon" %}</span>
+                        </span>
                     </div>
                 {% else %}
-                    <a href="{% url 'startup_upgrade' %}" class="action-tile" data-upsell>
-                        <span class="action-tile__icon">🔍</span>
-                        <span class="action-tile__label">{% trans "Direct Talent Search" %} <span class="pro-chip">PRO</span></span>
-                    </a>
-                    <a href="{% url 'startup_upgrade' %}" class="action-tile action-tile--gold">
-                        <span class="action-tile__icon">👑</span>
-                        <span class="action-tile__label">{% trans "Upgrade to Internest Pro" %}</span>
+                    <a href="{% url 'startup_upgrade' %}" class="dash-card dash-card--gold" data-upsell>
+                        <span class="dash-card__icon dash-card__icon--gold"><i class="bi bi-gem"></i></span>
+                        <span class="dash-card__text">
+                            <span class="dash-card__title">{% trans "Upgrade to Internest Pro" %} <span class="pro-chip">PRO</span></span>
+                            <span class="dash-card__sub">{% trans "Unlimited posts · direct talent search" %}</span>
+                        </span>
+                        <i class="bi bi-chevron-left dash-card__go" aria-hidden="true"></i>
                     </a>
                 {% endif %}
             {% endif %}
-            <a href="{{ profile_url }}" class="action-tile">
-                <span class="action-tile__icon">✏️</span>
-                <span class="action-tile__label">{% trans "Company Profile" %}</span>
-                <span class="action-tile__hint">{{ partner.profile_completion_score }}%</span>
+
+            <a href="{{ profile_url }}" class="dash-card">
+                <span class="dash-card__icon dash-card__icon--slate"><i class="bi bi-building-gear"></i></span>
+                <span class="dash-card__text">
+                    <span class="dash-card__title">{% trans "Company Profile" %}</span>
+                    <span class="dash-card__sub">{% blocktrans with p=partner.profile_completion_score %}{{ p }}% complete{% endblocktrans %}</span>
+                    <span class="dash-card__progress"><span style="width: {{ partner.profile_completion_score }}%;"></span></span>
+                </span>
             </a>
         </nav>
 

@@ -1,4 +1,4 @@
-{% load i18n static %}
+{% load i18n static asset_tags %}
 <dialog id="upsell-dialog" class="upsell-dialog" {% if upsell_open %}data-autoopen{% endif %} aria-labelledby="upsell-title">
     <form method="dialog" class="upsell-dialog__close"><button aria-label="{% trans 'Close' %}"><i class="bi bi-x-lg"></i></button></form>
     <div class="upsell-dialog__crest">👑</div>
@@ -15,4 +15,4 @@
     </ul>
     <a href="{% url 'startup_upgrade' %}" class="btn btn--gold btn--lg btn--block">{% trans "Subscribe now and unlock every feature" %}</a>
 </dialog>
-<script src="{% static 'startups/upsell.js' %}" defer></script>
+<script src="{% asset 'startups/upsell.js' %}" defer></script>

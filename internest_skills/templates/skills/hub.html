@@ -1,8 +1,8 @@
 {% extends 'internship/base.html' %}
-{% load static i18n %}
+{% load static i18n asset_tags %}
 
 {% block title %}{% trans "Verify Your Skills" %} — Internest{% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="{% static 'skills/skills.css' %}">{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% asset 'skills/skills.css' %}">{% endblock %}
 
 {% block content %}
 <section class="page-header">

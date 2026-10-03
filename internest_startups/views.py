@@ -59,11 +59,11 @@ def company_profile(request):
     profile = getattr(partner, "company_profile", None)
     if profile is None:
         return redirect("startup_company_profile_edit")
-    socials = [(label, icon, url) for label, icon, url in (
-        ("LinkedIn", "bi-linkedin", partner.linkedin_url),
-        ("Facebook", "bi-facebook", partner.facebook_url),
-        ("Twitter", "bi-twitter-x", partner.twitter_url),
-        ("Instagram", "bi-instagram", partner.instagram_url),
+    socials = [(key, label, url) for key, label, url in (
+        ("linkedin", "LinkedIn", partner.linkedin_url),
+        ("facebook", "Facebook", partner.facebook_url),
+        ("twitter", "X / Twitter", partner.twitter_url),
+        ("instagram", "Instagram", partner.instagram_url),
     ) if url]
     context = get_user_context(request)
     context.update({

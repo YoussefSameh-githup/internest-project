@@ -1615,44 +1615,6 @@ html[dir="ltr"] {
 .lounge-comment { overflow-wrap: anywhere; }
 .lounge-reply summary { cursor: pointer; color: var(--brand-700); font-size: var(--text-sm); }
 
-/* ---------- Partner dashboard: action tiles ---------- */
-.action-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
-.action-tile {
-    display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-5);
-    border-radius: 16px; background: var(--white); border: 1px solid var(--color-border);
-    color: var(--color-text); text-decoration: none; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
-}
-.action-tile:hover { transform: translateY(-2px); border-color: var(--brand-500); box-shadow: 0 10px 24px rgba(15, 23, 42, .08); color: var(--color-text); }
-.action-tile__icon { font-size: 1.6rem; line-height: 1; }
-.action-tile__label { font-weight: 800; }
-.action-tile__badge { align-self: flex-start; padding: 2px 10px; border-radius: 999px; background: var(--brand-100); color: var(--brand-700); font-size: var(--text-xs); font-weight: 700; }
-.action-tile__hint { font-size: var(--text-xs); opacity: .8; }
-.action-tile--primary { background: linear-gradient(135deg, #1d3a8a, #2746a8); color: #fff; border-color: transparent; }
-.action-tile--primary:hover { color: #fff; }
-.action-tile.is-locked { background: #f1f5f9; color: var(--color-text); }
-.pending-grid { display: grid; gap: var(--space-6); grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-
-/* ---------- Company showcase ---------- */
-.company-card { padding: clamp(24px, 4vw, 40px); }
-.company-card__header { display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap; }
-.company-card__title { flex: 1; min-width: 200px; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
-.company-card__title h1 { width: 100%; font-size: var(--text-3xl); }
-.company-avatar {
-    width: 96px; height: 96px; border-radius: 24px; overflow: hidden; flex-shrink: 0;
-    display: grid; place-items: center; background: linear-gradient(135deg, #1d3a8a, #f59e0b);
-    color: #fff; font-size: 2.5rem; font-weight: 800; box-shadow: 0 8px 20px rgba(15, 23, 42, .15);
-}
-.company-avatar img { width: 100%; height: 100%; object-fit: cover; background: #fff; }
-.company-card__description { margin: var(--space-6) 0; color: var(--gray-600, #475569); overflow-wrap: anywhere; }
-.company-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-.company-grid__item { padding: var(--space-4); border-radius: 12px; background: var(--color-bg); display: grid; gap: var(--space-1); min-width: 0; }
-.company-grid__label { font-size: var(--text-xs); color: var(--gray-500, #64748b); text-transform: uppercase; letter-spacing: .05em; }
-.company-grid__value { font-weight: 700; overflow-wrap: anywhere; }
-.company-socials { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-5); }
-.social-badge { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: 999px; background: var(--brand-100); color: var(--brand-700); font-weight: 700; font-size: var(--text-sm); }
-.social-badge:hover { background: var(--brand-700); color: #fff; }
-.company-card__footer { display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-3); align-items: center; margin-top: var(--space-6); }
-
 /* ---------- Logo upload ---------- */
 .logo-upload { display: flex; align-items: center; gap: var(--space-5); margin-bottom: var(--space-5); }
 .logo-upload__preview {
@@ -1676,7 +1638,6 @@ html[dir="ltr"] {
 .pro-chip { display: inline-block; padding: 0 6px; border-radius: 6px; background: #f59e0b; color: #fff; font-size: 10px; font-weight: 800; letter-spacing: .05em; vertical-align: middle; }
 .btn--gold { background: linear-gradient(135deg, #fbbf24, #d97706); color: #1f1300; font-weight: 800; border: 0; }
 .btn--gold:hover { filter: brightness(1.05); color: #1f1300; }
-.action-tile--gold { background: linear-gradient(135deg, #fffbeb, #fef3c7); border-color: #fcd34d; }
 .upsell-dialog, .compose-dialog {
     width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto;
     border: 0; border-radius: 20px; padding: var(--space-6); box-shadow: 0 24px 60px rgba(15, 23, 42, .3);

@@ -460,6 +460,7 @@ def partner_dashboard_view(request, section="overview"):
         "section": section,
         "pending_count": pending_count,
         "applicant_count": received_applicants.count(),
+        "active_opportunities": published_internships.filter(is_active=True, deadline__gte=timezone.now().date()).count(),
         "posting_block": posting_block,
         "is_pro": is_pro(partner_profile),
         "quota_reached": monthly_quota_reached(partner_profile),

@@ -2814,3 +2814,27 @@ msgstr "لا حاجة لبطاقة الآن: سيتواصل معك فريقنا 
 
 msgid "Pro Verified"
 msgstr "Pro موثّق"
+
+msgid "Active opportunities: %(n)s"
+msgstr "الفرص النشطة: %(n)s"
+
+msgid "Pre-screened student files"
+msgstr "ملفات طلاب مفرَزة مسبقاً"
+
+msgid "Opportunities and courses under review"
+msgstr "فرص وكورسات قيد المراجعة"
+
+msgid "Hire, get advice and find partners"
+msgstr "وظّف واستشر وابحث عن شركاء"
+
+msgid "Unlimited posts · direct talent search"
+msgstr "نشر غير محدود · بحث مباشر عن المواهب"
+
+msgid "%(p)s%% complete"
+msgstr "مكتمل بنسبة %(p)s%%"
+
+msgid "Contact & social"
+msgstr "التواصل والحسابات"
+
+msgid "About"
+msgstr "نبذة عن الشركة"
