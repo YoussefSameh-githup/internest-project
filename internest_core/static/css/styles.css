@@ -1645,3 +1645,6 @@ html[dir="ltr"] {
 .checkout-summary { display: grid; gap: var(--space-2); padding: var(--space-4); border-radius: 12px; background: var(--color-bg); margin-bottom: var(--space-4); }
 .checkout-summary > div { display: flex; justify-content: space-between; }
 .checkout-summary__total { font-weight: 800; font-size: var(--text-lg); border-top: 1px solid var(--color-border); padding-top: var(--space-2); }
+/* Keep the startup/university cards' buttons aligned whether or not a card has a note. */
+.audience-card__list { flex: 1; }
+.audience-card__note { margin-top: 0; }

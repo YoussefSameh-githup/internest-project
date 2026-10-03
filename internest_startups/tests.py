@@ -541,3 +541,40 @@ class LogoUploadTests(OnboardingBase):
         page = self.client.get(reverse("startup_company_profile"))
         self.assertContains(page, f'action="{reverse("startup_logo_update")}" enctype="multipart/form-data"')
         self.assertContains(page, "data-logo-input")
+
+
+class SelfServiceProfileUpdateTests(OnboardingBase):
+    def setUp(self):
+        super().setUp()
+        self.register()
+        self.submit_profile()
+        self.approve()
+
+    def test_social_website_description_updates_keep_verification(self):
+        resp = self.submit_profile(linkedin_url="https://linkedin.com/company/new", facebook_url="https://facebook.com/startupx",
+                                   instagram_url="https://instagram.com/startupx", official_website="https://new.startupx.io",
+                                   description="Updated description of what we do.")
+        self.assertEqual(resp.status_code, 302)
+        partner = self.partner()
+        self.assertTrue(partner.is_fully_verified)
+        self.assertEqual(partner.facebook_url, "https://facebook.com/startupx")
+        self.assertEqual(partner.company_profile.description, "Updated description of what we do.")
+        self.assertIsNone(partner.company_profile.identity_changed_at)
+
+    def test_company_name_change_keeps_access_but_flags_for_admin(self):
+        self.submit_profile(company_name="StartupX Labs")
+        partner = self.partner()
+        self.assertTrue(partner.is_fully_verified)
+        self.assertEqual(partner.company_name, "StartupX Labs")
+        self.assertIsNotNone(partner.company_profile.identity_changed_at)
+        self.assertEqual(partner.company_profile.previous_company_name, "StartupX")
+
+
+class LandingAndNavCleanupTests(OnboardingBase):
+    def test_removed_elements(self):
+        self.assertNotContains(self.client.get(reverse("landing")), "Launch offer")
+        self.register()
+        self.submit_profile()
+        self.assertNotContains(self.client.get(reverse("partner_dashboard")), 'class="btn btn--accent btn--sm"')  # navbar "Add content"
+        self.assertNotContains(self.client.get(reverse("partner_dashboard")), "Add content")
+        self.assertNotContains(self.client.get(reverse("startup_company_profile")), "Back to dashboard")

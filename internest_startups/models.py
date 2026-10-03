@@ -31,6 +31,9 @@ class CompanyProfile(models.Model):
     founder_email = models.EmailField(blank=True, verbose_name="Founder official email")
     submitted_at = models.DateTimeField(auto_now_add=True)
     verified_at = models.DateTimeField(null=True, blank=True)
+    # Set when a verified startup renames itself: verification stays, an admin can re-check identity.
+    identity_changed_at = models.DateTimeField(null=True, blank=True)
+    previous_company_name = models.CharField(max_length=200, blank=True)
 
     class Meta:
         verbose_name = "Company profile"

@@ -18,6 +18,7 @@ class PostForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["category"].choices = [("", _("No tag"))] + list(LoungePost.CATEGORY_CHOICES)
+        self.fields["title"].required = False
 
 
 class CommentForm(forms.ModelForm):

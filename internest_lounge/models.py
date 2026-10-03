@@ -1,9 +1,15 @@
+from datetime import timedelta
+
 from django.db import models
+from django.utils import timezone
+from django.utils.text import Truncator
 from django.utils.translation import gettext_lazy as _
 
 from internest_core.models import PartnerProfile
 
 FLAGS_TO_HIDE = 3
+EDIT_WINDOW = timedelta(minutes=5)
+DELETE_WINDOW = timedelta(minutes=15)
 
 
 class Visibility(models.TextChoices):
@@ -27,7 +33,7 @@ class LoungePost(models.Model):
     ]
 
     author = models.ForeignKey(PartnerProfile, on_delete=models.CASCADE, related_name="lounge_posts")
-    title = models.CharField(max_length=160)
+    title = models.CharField(max_length=160, blank=True)  # optional: body-only posts like LinkedIn/X
     body = models.TextField(max_length=5000)
     category = models.CharField(max_length=10, choices=CATEGORY_CHOICES, blank=True)
     body_fingerprint = models.CharField(max_length=64, db_index=True, editable=False)
@@ -40,11 +46,25 @@ class LoungePost(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return self.title
+        return self.display_title
+
+    @property
+    def display_title(self):
+        return self.title or Truncator(self.body).chars(60)
 
     @property
     def is_visible(self):
         return self.visibility == Visibility.VISIBLE
+
+    @property
+    def is_editable(self):
+        """Authors may edit for 5 minutes after posting."""
+        return timezone.now() - self.created_at <= EDIT_WINDOW
+
+    @property
+    def is_deletable(self):
+        """Authors may delete for 15 minutes after posting."""
+        return timezone.now() - self.created_at <= DELETE_WINDOW
 
 
 class LoungeComment(models.Model):

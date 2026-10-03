@@ -85,13 +85,18 @@ def company_profile_edit(request):
     identity = CompanyIdentityForm(request.POST or None, request.FILES or None, instance=partner)
     details = CompanyProfileForm(request.POST or None, instance=existing, company_email=request.POST.get("official_email"))
     if request.method == "POST" and identity.is_valid() and details.is_valid():
-        old_logo = PartnerProfile.objects.filter(pk=partner.pk).values_list("logo", flat=True).first()
+        old_logo, old_name = PartnerProfile.objects.filter(pk=partner.pk).values_list("logo", "company_name").first()
         with transaction.atomic():
             # Write only the fields on this form: never overwrite admin-managed flags such as is_fully_verified.
             company = identity.save(commit=False)
             company.save(update_fields=list(identity.Meta.fields))
             profile = details.save(commit=False)
             profile.partner = partner
+            # Social links, website, logo, description: self-service, verification untouched.
+            # Company name (core identity) on a verified account: keep access, flag for admin re-check.
+            if partner.is_fully_verified and existing is not None and old_name != partner.company_name:
+                profile.identity_changed_at = timezone.now()
+                profile.previous_company_name = old_name
             profile.save()
             partner.calculate_completion()
         _delete_replaced_logo(old_logo, partner)

@@ -1,0 +1,39 @@
+{% extends 'internship/base.html' %}
+{% load i18n asset_tags %}
+
+{% block title %}{% trans "Edit post" %} — {% trans "Founders Network" %}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% asset 'lounge/network.css' %}">{% endblock %}
+
+{% block content %}
+<section class="nw-page">
+    <div class="container nw-single">
+        <a href="{% url 'lounge_post' post.pk %}" class="nw-back"><i class="bi bi-arrow-right-short"></i> {% trans "Back to post" %}</a>
+        <div class="nw-card">
+            <div class="nw-compose-head">
+                {% include "lounge/_author_avatar.html" with author=founder %}
+                <div>
+                    <h2>{% trans "Edit post" %}</h2>
+                    <span class="nw-time">{% trans "You can edit a post for 5 minutes after publishing." %}</span>
+                </div>
+            </div>
+            <form method="post" class="nw-compose-form" novalidate>
+                {% csrf_token %}
+                <input type="text" name="title" maxlength="160" class="nw-compose-title" placeholder="{% trans 'Title (optional)' %}" value="{{ form.title.value|default:'' }}" aria-label="{% trans 'Title (optional)' %}">
+                <textarea name="body" rows="6" maxlength="5000" required class="nw-compose-body" aria-label="{% trans 'What would you like to discuss?' %}">{{ form.body.value|default:'' }}</textarea>
+                {% if form.body.errors %}<div class="form-error">{{ form.body.errors|striptags }}</div>{% endif %}
+                <fieldset class="nw-tag-picker">
+                    <legend>{% trans "Tag" %}</legend>
+                    <label><input type="radio" name="category" value="" {% if not form.category.value %}checked{% endif %}><span>{% trans "No tag" %}</span></label>
+                    {% for value, label in tags %}
+                        <label><input type="radio" name="category" value="{{ value }}" {% if form.category.value == value %}checked{% endif %}><span>{{ label }}</span></label>
+                    {% endfor %}
+                </fieldset>
+                <div class="nw-compose-foot">
+                    <a href="{% url 'lounge_post' post.pk %}" class="btn btn--ghost">{% trans "Cancel" %}</a>
+                    <button type="submit" class="btn btn--primary"><i class="bi bi-check2"></i> {% trans "Save changes" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

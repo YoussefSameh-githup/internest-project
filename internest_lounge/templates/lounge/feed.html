@@ -82,7 +82,7 @@
     <form method="post" class="nw-compose-form" novalidate>
         {% csrf_token %}
         {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
-        <input type="text" name="title" maxlength="160" required class="nw-compose-title" placeholder="{% trans 'Title' %}" value="{{ form.title.value|default:'' }}" aria-label="{% trans 'Title' %}">
+        <input type="text" name="title" maxlength="160" class="nw-compose-title" placeholder="{% trans 'Title (optional)' %}" value="{{ form.title.value|default:'' }}" aria-label="{% trans 'Title (optional)' %}">
         {% if form.title.errors %}<div class="form-error">{{ form.title.errors|striptags }}</div>{% endif %}
         <textarea name="body" rows="6" maxlength="5000" required class="nw-compose-body" placeholder="{% trans 'What would you like to discuss?' %}" aria-label="{% trans 'What would you like to discuss?' %}">{{ form.body.value|default:'' }}</textarea>
         {% if form.body.errors %}<div class="form-error">{{ form.body.errors|striptags }}</div>{% endif %}

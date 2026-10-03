@@ -130,3 +130,11 @@
 .nw-tag-picker input:checked + span { background: #1d3a8a; border-color: #1d3a8a; color: #fff; }
 .nw-tag-picker input:focus-visible + span { box-shadow: 0 0 0 3px rgba(129, 140, 248, .35); }
 .nw-compose-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; padding-top: var(--space-2); }
+
+/* Author-only edit (5 min) / delete (15 min) */
+.nw-inline-form { display: inline; margin: 0; }
+.nw-owner-action { border: 0; background: none; padding: 2px 6px; border-radius: 8px; font: inherit; font-size: .8rem; font-weight: 700; color: #475569; cursor: pointer; }
+.nw-owner-action:hover { background: #f1f5f9; color: #1d4ed8; }
+.nw-owner-action--danger:hover { color: #b91c1c; background: #fef2f2; }
+.nw-card__body:first-child, .nw-review + .nw-card__body { margin-top: var(--space-3); }
+.nw-card__head + .nw-card__body { margin-top: var(--space-4); }

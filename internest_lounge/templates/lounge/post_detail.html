@@ -1,7 +1,7 @@
 {% extends 'internship/base.html' %}
 {% load i18n asset_tags %}
 
-{% block title %}{{ post.title }} — {% trans "Founders Network" %}{% endblock %}
+{% block title %}{{ post.display_title }} — {% trans "Founders Network" %}{% endblock %}
 {% block extra_head %}<link rel="stylesheet" href="{% asset 'lounge/network.css' %}">{% endblock %}
 
 {% block content %}

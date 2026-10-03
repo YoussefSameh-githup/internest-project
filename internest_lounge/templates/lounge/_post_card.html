@@ -5,13 +5,23 @@
         <div class="nw-card__meta">
             {% if post.pro_priority %}<span class="nw-pin" title="{% trans 'Pinned by Internest Pro' %}"><i class="bi bi-pin-angle-fill"></i></span>{% endif %}
             {% if post.category %}<span class="nw-tag">{{ post.get_category_display }}</span>{% endif %}
-            <time class="nw-time" datetime="{{ post.created_at|date:'c' }}">{% blocktrans with t=post.created_at|timesince %}{{ t }} ago{% endblocktrans %}</time>
+            <a class="nw-time" href="{% url 'lounge_post' post.pk %}"><time datetime="{{ post.created_at|date:'c' }}">{% blocktrans with t=post.created_at|timesince %}{{ t }} ago{% endblocktrans %}</time></a>
+            {% if post.author_id == founder.pk %}
+                {% if post.is_editable %}<a class="nw-owner-action" href="{% url 'lounge_edit' post.pk %}"><i class="bi bi-pencil"></i> {% trans "Edit" %}</a>{% endif %}
+                {% if post.is_deletable %}
+                    <form method="post" action="{% url 'lounge_delete' post.pk %}" class="nw-inline-form"
+                          onsubmit="return confirm('{% trans "Delete this post? This cannot be undone." as delete_text %}{{ delete_text|escapejs }}');">
+                        {% csrf_token %}
+                        <button type="submit" class="nw-owner-action nw-owner-action--danger"><i class="bi bi-trash3"></i> {% trans "Delete" %}</button>
+                    </form>
+                {% endif %}
+            {% endif %}
         </div>
     </header>
 
     {% if not post.is_visible %}<p class="nw-review"><i class="bi bi-eye-slash"></i> {% trans "Waiting for admin review — only you can see this" %}</p>{% endif %}
 
-    <h3 class="nw-card__title">{% if detail %}{{ post.title }}{% else %}<a href="{% url 'lounge_post' post.pk %}">{{ post.title }}</a>{% endif %}</h3>
+    {% if post.title %}<h3 class="nw-card__title">{% if detail %}{{ post.title }}{% else %}<a href="{% url 'lounge_post' post.pk %}">{{ post.title }}</a>{% endif %}</h3>{% endif %}
     <div class="nw-card__body">{% if detail %}{{ post.body|linebreaksbr }}{% else %}{{ post.body|truncatechars:420|linebreaksbr }}{% endif %}</div>
 
     {% if post.is_visible %}
@@ -29,7 +39,7 @@
                 <span>{% blocktrans with n=post.comment_count %}{{ n }} comments{% endblocktrans %}</span>
             </button>
             <button type="button" class="nw-action" data-share-url="{{ request.scheme }}://{{ request.get_host }}{% url 'lounge_post' post.pk %}"
-                    data-share-title="{{ post.title }}" data-copied="{% trans 'Link copied!' %}">
+                    data-share-title="{{ post.display_title }}" data-copied="{% trans 'Link copied!' %}">
                 <i class="bi bi-share"></i> <span>{% trans "Share" %}</span>
             </button>
         </footer>

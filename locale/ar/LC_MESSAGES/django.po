@@ -2887,3 +2887,36 @@ msgid ""
 msgstr ""
 "وصلت للحد الأقصى للمشاركات المجانية (%(n)s منشورات/ساعة). ترقَّ إلى "
 "Internest Pro للحصول على نشر غير محدود وتفعيل شارة Pro الذهبية!"
+
+msgid "Post deleted."
+msgstr "تم حذف المنشور."
+
+msgid "Posts can only be edited within 5 minutes of publishing."
+msgstr "يمكن تعديل المنشور خلال 5 دقائق فقط من نشره."
+
+msgid "Posts can only be deleted within 15 minutes of publishing."
+msgstr "يمكن حذف المنشور خلال 15 دقيقة فقط من نشره."
+
+msgid "Post updated."
+msgstr "تم تحديث المنشور."
+
+msgid "Title (optional)"
+msgstr "العنوان (اختياري)"
+
+msgid "Edit post"
+msgstr "تعديل المنشور"
+
+msgid "Back to post"
+msgstr "العودة إلى المنشور"
+
+msgid "You can edit a post for 5 minutes after publishing."
+msgstr "يمكنك تعديل المنشور خلال 5 دقائق من نشره."
+
+msgid "Edit"
+msgstr "تعديل"
+
+msgid "Delete this post? This cannot be undone."
+msgstr "هل تريد حذف هذا المنشور؟ لا يمكن التراجع عن ذلك."
+
+msgid "Delete"
+msgstr "حذف"

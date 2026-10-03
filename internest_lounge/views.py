@@ -203,3 +203,52 @@ def flag_post(request, pk):
         return redirect("lounge_feed")
     messages.success(request, _("Thanks for reporting. Our team will review it."))
     return redirect("lounge_post", pk=post.pk)
+
+
+def _own_post_or_404(founder, pk):
+    return get_object_or_404(
+        LoungePost.objects.exclude(visibility=Visibility.REMOVED).select_related("author"), pk=pk, author=founder,
+    )
+
+
+@founders_only
+def edit_post(request, pk):
+    """Authors can edit within 5 minutes of posting; the same spam rules apply to the new text."""
+    founder = request.founder
+    post = _own_post_or_404(founder, pk)
+    if not post.is_editable:
+        messages.error(request, _("Posts can only be edited within 5 minutes of publishing."))
+        return redirect("lounge_post", pk=post.pk)
+    form = PostForm(request.POST or None, instance=post)
+    if request.method == "POST" and form.is_valid():
+        title, body = form.cleaned_data["title"], form.cleaned_data["body"]
+        try:
+            moderation.check_keywords(title, body)
+        except moderation.SpamRejected as exc:
+            messages.error(request, str(exc))
+        else:
+            post = form.save(commit=False)
+            post.body_fingerprint = moderation.fingerprint(body)
+            if post.hidden_reason != HiddenReason.FLAGS:  # never un-hide a post the community flagged
+                hide = moderation.SUSPICIOUS_LINK.search(title or "") or moderation.SUSPICIOUS_LINK.search(body)
+                post.visibility = Visibility.HIDDEN if hide else Visibility.VISIBLE
+                post.hidden_reason = HiddenReason.LINK_SPAM if hide else HiddenReason.NONE
+            post.save()
+            messages.success(request, _("Post updated."))
+            return redirect(reverse("lounge_post", args=[post.pk]))
+    context = get_user_context(request)
+    context.update({"form": form, "post": post, "founder": founder, "tags": LoungePost.CATEGORY_CHOICES})
+    return render(request, "lounge/post_edit.html", context)
+
+
+@founders_only
+@require_POST
+def delete_post(request, pk):
+    """Authors can delete within 15 minutes of posting."""
+    post = _own_post_or_404(request.founder, pk)
+    if not post.is_deletable:
+        messages.error(request, _("Posts can only be deleted within 15 minutes of publishing."))
+        return redirect("lounge_post", pk=post.pk)
+    post.delete()
+    messages.success(request, _("Post deleted."))
+    return redirect("lounge_feed")

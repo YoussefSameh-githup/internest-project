@@ -224,3 +224,77 @@ class FeedRenderingTests(LoungeTestBase):
         page = self.client.get(reverse("lounge_post", args=[post.pk]))
         self.assertContains(page, f'id="comments-{post.pk}"')
         self.assertNotContains(page, f'id="comments-{post.pk}" hidden')
+
+
+class PostEditingRulesTests(LoungeTestBase):
+    """Optional titles; authors may edit for 5 minutes and delete for 15 minutes."""
+
+    def _post(self, **kw):
+        self.post_as(self.founder, **kw)
+        return LoungePost.objects.latest("created_at")
+
+    def _age(self, post, minutes):
+        from datetime import timedelta
+        from django.utils import timezone
+        LoungePost.objects.filter(pk=post.pk).update(created_at=timezone.now() - timedelta(minutes=minutes))
+
+    def test_post_without_title(self):
+        resp = self.post_as(self.founder, title="", body="Just a quick thought for fellow founders.")
+        self.assertEqual(resp.status_code, 302)
+        post = LoungePost.objects.get()
+        self.assertEqual(post.title, "")
+        page = self.client.get(LOUNGE)
+        self.assertContains(page, "Just a quick thought for fellow founders.")
+        self.assertNotContains(page, '<h3 class="nw-card__title">')
+        self.assertContains(self.client.get(reverse("lounge_post", args=[post.pk])), "<title>Just a quick thought")
+
+    def test_edit_within_5_minutes(self):
+        post = self._post()
+        self._age(post, 4)
+        self.assertContains(self.client.get(LOUNGE), reverse("lounge_edit", args=[post.pk]))
+        resp = self.client.post(reverse("lounge_edit", args=[post.pk]), {"title": "", "body": "Edited text", "category": "advice"})
+        self.assertRedirects(resp, reverse("lounge_post", args=[post.pk]), fetch_redirect_response=False)
+        post.refresh_from_db()
+        self.assertEqual((post.title, post.body, post.category), ("", "Edited text", "advice"))
+
+    def test_edit_fails_after_5_minutes(self):
+        post = self._post(body="Original body")
+        self._age(post, 6)
+        self.assertNotContains(self.client.get(LOUNGE), reverse("lounge_edit", args=[post.pk]))
+        resp = self.client.post(reverse("lounge_edit", args=[post.pk]), {"body": "Too late"}, follow=True)
+        self.assertContains(resp, "Posts can only be edited within 5 minutes of publishing.")
+        post.refresh_from_db()
+        self.assertEqual(post.body, "Original body")
+
+    def test_edit_still_spam_filtered_and_link_hidden(self):
+        post = self._post()
+        self.client.post(reverse("lounge_edit", args=[post.pk]), {"body": "Buy crypto now"})
+        post.refresh_from_db()
+        self.assertNotIn("crypto", post.body)
+        self.client.post(reverse("lounge_edit", args=[post.pk]), {"body": "Join https://t.me/group"})
+        post.refresh_from_db()
+        self.assertEqual(post.visibility, Visibility.HIDDEN)
+
+    def test_delete_within_15_minutes(self):
+        post = self._post()
+        self._age(post, 14)
+        self.assertContains(self.client.get(LOUNGE), reverse("lounge_delete", args=[post.pk]))
+        resp = self.client.post(reverse("lounge_delete", args=[post.pk]))
+        self.assertRedirects(resp, LOUNGE, fetch_redirect_response=False)
+        self.assertFalse(LoungePost.objects.filter(pk=post.pk).exists())
+
+    def test_delete_fails_after_15_minutes(self):
+        post = self._post()
+        self._age(post, 16)
+        self.assertNotContains(self.client.get(LOUNGE), reverse("lounge_delete", args=[post.pk]))
+        resp = self.client.post(reverse("lounge_delete", args=[post.pk]), follow=True)
+        self.assertContains(resp, "Posts can only be deleted within 15 minutes of publishing.")
+        self.assertTrue(LoungePost.objects.filter(pk=post.pk).exists())
+
+    def test_only_author_can_edit_or_delete(self):
+        post = self._post()
+        self.client.force_login(self.peers[0])
+        self.assertEqual(self.client.get(reverse("lounge_edit", args=[post.pk])).status_code, 404)
+        self.assertEqual(self.client.post(reverse("lounge_delete", args=[post.pk])).status_code, 404)
+        self.assertNotContains(self.client.get(LOUNGE), reverse("lounge_edit", args=[post.pk]))
+        self.assertTrue(LoungePost.objects.filter(pk=post.pk).exists())

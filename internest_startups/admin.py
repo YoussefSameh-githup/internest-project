@@ -28,12 +28,17 @@ def revoke_verification(modeladmin, request, queryset):
     queryset.update(verified_at=None)
 
 
+@admin.action(description="Mark identity change as reviewed")
+def clear_identity_flag(modeladmin, request, queryset):
+    queryset.update(identity_changed_at=None, previous_company_name="")
+
+
 class _Base(admin.ModelAdmin):
-    list_display = ("company", "industry", "founded_year", "website", "owner_email", "verified", "submitted_at")
-    list_filter = ("partner__is_fully_verified", "industry")
+    list_display = ("company", "industry", "founded_year", "website", "owner_email", "verified", "identity_changed_at", "submitted_at")
+    list_filter = ("partner__is_fully_verified", "industry", ("identity_changed_at", admin.EmptyFieldListFilter))
     search_fields = ("partner__company_name", "partner__user__email", "description")
-    readonly_fields = ("submitted_at", "verified_at")
-    actions = [approve_startups, revoke_verification]
+    readonly_fields = ("submitted_at", "verified_at", "identity_changed_at", "previous_company_name")
+    actions = [approve_startups, revoke_verification, clear_identity_flag]
 
     @admin.display(ordering="partner__company_name", description="Company")
     def company(self, obj):
