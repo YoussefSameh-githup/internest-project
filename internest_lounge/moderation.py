@@ -36,12 +36,12 @@ def fingerprint(text: str) -> str:
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
 
-def check_post_rate(author):
+def post_rate_exceeded(author) -> bool:
+    """Free tier: max POSTS_PER_HOUR posts per rolling hour (Pro accounts are exempt; see views)."""
     from .models import LoungePost
 
     since = timezone.now() - timedelta(hours=1)
-    if LoungePost.objects.filter(author=author, created_at__gte=since).count() >= POSTS_PER_HOUR:
-        raise SpamRejected(_("You can publish up to %(n)s posts per hour. Please try again later.") % {"n": POSTS_PER_HOUR})
+    return LoungePost.objects.filter(author=author, created_at__gte=since).count() >= POSTS_PER_HOUR
 
 
 def check_comment_rate(author):

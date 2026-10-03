@@ -1,1 +1,1 @@
-<span class="lounge-author__avatar" aria-hidden="true">{% if author.logo %}<img src="{{ author.logo.url }}" alt="">{% else %}{{ author.company_name|slice:":1"|upper }}{% endif %}</span>
+<span class="nw-avatar" aria-hidden="true">{% if author.logo %}<img src="{{ author.logo.url }}" alt="" loading="lazy">{% else %}{{ author.company_name|slice:":1"|upper }}{% endif %}</span>

@@ -373,7 +373,8 @@ class ProTierTests(OnboardingBase):
     def test_gold_badge_only_for_pro(self):
         self.client.post(reverse("lounge_feed"), {"title": "Hello founders", "body": "First post here", "category": "advice"})
         for url in (reverse("lounge_feed"), reverse("partner_dashboard"), reverse("startup_company_profile")):
-            self.assertNotContains(self.client.get(url), "Pro Verified", msg_prefix=url)
+            self.assertNotContains(self.client.get(url), "👑 Pro Verified", msg_prefix=url)
+        self.assertContains(self.client.get(reverse("lounge_feed")), 'class="nw-verified"')  # free + verified → green check
         self._make_pro()
         for url in (reverse("lounge_feed"), reverse("partner_dashboard"), reverse("startup_company_profile")):
             self.assertContains(self.client.get(url), "👑 Pro Verified", msg_prefix=url)
@@ -385,8 +386,8 @@ class ProTierTests(OnboardingBase):
         self.assertContains(page, "Share an idea or ask fellow founders for advice...")
         self.assertContains(page, 'id="compose-dialog"')
         self.assertNotContains(page, 'id="compose-dialog" class="compose-dialog" data-autoopen')
-        self.assertContains(page, 'class="comment-drawer"')
-        self.assertContains(page, 'class="tag-pill"')
+        self.assertContains(page, 'class="nw-thread"')
+        self.assertContains(page, 'class="nw-tag"')
         resp = self.client.post(reverse("lounge_feed"), {"title": "", "body": ""})  # errors reopen the modal
         self.assertContains(resp, "data-autoopen")
         self.client.cookies["internest_lang"] = "ar"

@@ -5,6 +5,8 @@
     <h2 id="upsell-title">{% trans "Upgrade to Internest Pro" %}</h2>
     {% if upsell_reason == "limit" %}
         <p class="upsell-dialog__reason">{% blocktrans with n=free_posts_limit %}Free accounts can publish {{ n }} opportunity per month. You've reached this month's limit.{% endblocktrans %}</p>
+    {% elif upsell_reason == "hourly" %}
+        <p class="upsell-dialog__reason">{% blocktrans with n=hourly_limit %}You've reached the free posting limit ({{ n }} posts/hour). Upgrade to Internest Pro for unlimited posting and the gold Pro badge!{% endblocktrans %}</p>
     {% endif %}
     <ul class="upsell-benefits">
         <li>♾️ {% trans "Unlimited job posts" %}</li>

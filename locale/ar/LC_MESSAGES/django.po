@@ -2853,3 +2853,37 @@ msgstr "تعذّر تحديث الشعار. يرجى تجربة صورة أخر�
 
 msgid "Change logo"
 msgstr "تغيير الشعار"
+
+msgid "Trending tags"
+msgstr "الوسوم الرائجة"
+
+msgid "#All_discussions"
+msgstr "#كل_النقاشات"
+
+msgid "You're on Internest Pro"
+msgstr "أنت مشترك في Internest Pro"
+
+msgid "Unlimited posting"
+msgstr "نشر غير محدود"
+
+msgid "Upgrade to Pro"
+msgstr "ترقية إلى Pro"
+
+msgid "Unlimited posting with Pro"
+msgstr "نشر غير محدود مع Pro"
+
+msgid "Free accounts: up to %(n)s posts per hour"
+msgstr "الحساب المجاني: حتى %(n)s منشورات في الساعة"
+
+msgid "%(t)s ago"
+msgstr "منذ %(t)s"
+
+msgid "Share"
+msgstr "مشاركة"
+
+msgid ""
+"You've reached the free posting limit (%(n)s posts/hour). Upgrade to "
+"Internest Pro for unlimited posting and the gold Pro badge!"
+msgstr ""
+"وصلت للحد الأقصى للمشاركات المجانية (%(n)s منشورات/ساعة). ترقَّ إلى "
+"Internest Pro للحصول على نشر غير محدود وتفعيل شارة Pro الذهبية!"

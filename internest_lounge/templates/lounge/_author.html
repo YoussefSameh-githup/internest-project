@@ -1,5 +1,10 @@
-{% load startup_tags %}<span class="lounge-author">
+{% load i18n startup_tags %}<div class="nw-author">
     {% include "lounge/_author_avatar.html" with author=author %}
-    <span class="fw-bold">{{ author.company_name }}</span>
-    {% pro_badge author %}
-</span>
+    <div class="nw-author__text">
+        <div class="nw-author__line">
+            <span class="nw-author__company">{{ author.company_name }}</span>
+            {% if author|is_pro_partner %}{% pro_badge author %}{% elif author.is_fully_verified %}<span class="nw-verified" title="{% trans 'Verified startup' %}"><i class="bi bi-patch-check-fill"></i></span>{% endif %}
+        </div>
+        {% with name=author.user.get_full_name %}{% if name %}<span class="nw-author__person">{{ name }}</span>{% endif %}{% endwith %}
+    </div>
+</div>

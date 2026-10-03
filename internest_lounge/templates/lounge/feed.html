@@ -1,146 +1,106 @@
 {% extends 'internship/base.html' %}
-{% load i18n %}
+{% load i18n asset_tags %}
 
 {% block title %}{% trans "Founders Network" %} — Internest{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% asset 'lounge/network.css' %}">{% endblock %}
 
 {% block content %}
-<section class="section-sm">
-    <div class="container network-layout">
-        <div class="network-main">
-            <header class="network-header">
-                <h1 class="mb-1">{% trans "Founders Network" %}</h1>
-                <p class="text-muted mb-0">{% trans "Hire, ask for advice and find B2B partners with other verified startup founders." %}</p>
+<section class="nw-page">
+    <div class="container nw-layout">
+        <main class="nw-main">
+            <header class="nw-heading">
+                <h1>{% trans "Founders Network" %}</h1>
+                <p>{% trans "Hire, ask for advice and find B2B partners with other verified startup founders." %}</p>
             </header>
 
-            {# ---- Compose trigger ---- #}
-            <button type="button" class="compose-trigger" data-open-dialog="compose-dialog">
+            <button type="button" class="nw-composer" data-open-dialog="compose-dialog">
                 {% include "lounge/_author_avatar.html" with author=founder %}
-                <span>{% trans "Share an idea or ask fellow founders for advice..." %}</span>
-                <i class="bi bi-pencil-square"></i>
+                <span class="nw-composer__input">{% trans "Share an idea or ask fellow founders for advice..." %}</span>
+                <span class="nw-composer__icon"><i class="bi bi-pencil-square"></i></span>
             </button>
 
-            {# ---- Feed ---- #}
             {% for post in page %}
-                <article class="feed-card {% if not post.is_visible %}lounge-post--hidden{% endif %}" id="post-{{ post.pk }}">
-                    <div class="feed-card__head">
-                        {% include "lounge/_author.html" with author=post.author %}
-                        <span class="text-muted feed-card__time">· {{ post.created_at|timesince }}</span>
-                        {% if post.pro_priority %}<span class="feed-pin" title="{% trans 'Pinned by Internest Pro' %}">📌</span>{% endif %}
-                    </div>
-                    {% if not post.is_visible %}<span class="badge badge--danger mt-2"><i class="bi bi-eye-slash"></i> {% trans "Waiting for admin review — only you can see this" %}</span>{% endif %}
-                    <h3 class="feed-card__title"><a href="{% url 'lounge_post' post.pk %}">{{ post.title }}</a></h3>
-                    <p class="feed-card__body">{{ post.body|truncatechars:420|linebreaksbr }}</p>
-
-                    <div class="feed-card__bar">
-                        {% if post.is_visible %}
-                            <form method="post" action="{% url 'lounge_upvote' post.pk %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="next" value="{{ request.get_full_path }}#post-{{ post.pk }}">
-                                <button type="submit" class="bar-btn {% if post.pk in upvoted %}is-active{% endif %}" aria-pressed="{% if post.pk in upvoted %}true{% else %}false{% endif %}">
-                                    <i class="bi {% if post.pk in upvoted %}bi-hand-thumbs-up-fill{% else %}bi-hand-thumbs-up{% endif %}"></i> {{ post.upvote_count }}
-                                </button>
-                            </form>
-                        {% endif %}
-                        {% if post.category %}<span class="tag-pill">{{ post.get_category_display }}</span>{% endif %}
-                    </div>
-
-                    <details class="comment-drawer">
-                        <summary><i class="bi bi-chat"></i> {% blocktrans with n=post.comment_count %}{{ n }} comments{% endblocktrans %}</summary>
-                        <div class="comment-drawer__body">
-                            <ul class="lounge-comments">
-                                {% for comment in post.comment_tree %}
-                                    {% include "lounge/_comment.html" with comment=comment depth=1 %}
-                                {% empty %}
-                                    <li class="text-muted">{% trans "No comments yet." %}</li>
-                                {% endfor %}
-                            </ul>
-                            {% if post.is_visible %}
-                                <form method="post" action="{% url 'lounge_comment' post.pk %}" class="comment-drawer__form">
-                                    {% csrf_token %}
-                                    <textarea name="body" class="form-control" rows="1" maxlength="2000" required placeholder="{% trans 'Write a comment…' %}"></textarea>
-                                    <button type="submit" class="btn btn--primary btn--sm">{% trans "Comment" %}</button>
-                                </form>
-                            {% endif %}
-                        </div>
-                    </details>
-                </article>
+                {% include "lounge/_post_card.html" with post=post is_upvoted=post.is_upvoted detail=False %}
             {% empty %}
-                <div class="feed-card text-center text-muted">{% trans "No discussions yet. Start the first one!" %}</div>
+                <div class="nw-card nw-empty-state">
+                    <i class="bi bi-chat-square-text"></i>
+                    <p>{% trans "No discussions yet. Start the first one!" %}</p>
+                </div>
             {% endfor %}
 
             {% if page.has_other_pages %}
-                <nav class="flex justify-between mt-4">
+                <nav class="nw-pager">
                     {% if page.has_previous %}<a class="btn btn--ghost btn--sm" href="?page={{ page.previous_page_number }}{% if active_tag %}&tag={{ active_tag }}{% endif %}">{% trans "Newer" %}</a>{% else %}<span></span>{% endif %}
                     {% if page.has_next %}<a class="btn btn--ghost btn--sm" href="?page={{ page.next_page_number }}{% if active_tag %}&tag={{ active_tag }}{% endif %}">{% trans "Older" %}</a>{% endif %}
                 </nav>
             {% endif %}
-        </div>
+        </main>
 
-        <aside class="network-side">
-            <div class="feed-card">
-                <h4 class="mb-3">{% trans "Browse by tag" %}</h4>
-                <a href="{% url 'lounge_feed' %}" class="lounge-tag {% if not active_tag %}is-active{% endif %}">{% trans "All discussions" %}</a>
-                {% for value, label in tags %}
-                    <a href="?tag={{ value }}" class="lounge-tag {% if active_tag == value %}is-active{% endif %}">{{ label }}</a>
-                {% endfor %}
+        <aside class="nw-side">
+            <div class="nw-widget">
+                <h4 class="nw-widget__title">{% trans "Trending tags" %}</h4>
+                <div class="nw-pills">
+                    <a href="{% url 'lounge_feed' %}" class="nw-pill {% if not active_tag %}is-active{% endif %}">{% trans "#All_discussions" %}</a>
+                    {% for value, label in tags %}
+                        <a href="?tag={{ value }}" class="nw-pill {% if active_tag == value %}is-active{% endif %}">{{ label }}</a>
+                    {% endfor %}
+                </div>
             </div>
-            <div class="feed-card">
-                <h4 class="mb-3">{% trans "Pro perks" %}</h4>
+
+            <div class="nw-widget nw-widget--pro">
+                <div class="nw-widget__crest">👑</div>
                 {% if viewer_is_pro %}
-                    <p class="mb-0">📌 {% trans "Your new posts are pinned to the top of the feed for 72 hours." %}</p>
+                    <h4 class="nw-widget__title">{% trans "You're on Internest Pro" %}</h4>
+                    <ul class="nw-perks">
+                        <li><i class="bi bi-infinity"></i> {% trans "Unlimited posting" %}</li>
+                        <li><i class="bi bi-pin-angle"></i> {% trans "Your new posts are pinned to the top of the feed for 72 hours." %}</li>
+                    </ul>
                 {% else %}
-                    <a href="{% url 'startup_upgrade' %}" class="locked-feature" data-upsell>📌 {% trans "Top-of-feed priority" %} <span class="pro-chip">PRO</span></a>
-                    <a href="{% url 'startup_upgrade' %}" class="locked-feature" data-upsell>🔍 {% trans "Direct talent search" %} <span class="pro-chip">PRO</span></a>
+                    <h4 class="nw-widget__title">Internest Pro</h4>
+                    <ul class="nw-perks">
+                        <li><i class="bi bi-infinity"></i> {% trans "Unlimited posting" %}</li>
+                        <li><i class="bi bi-pin-angle"></i> {% trans "Top-of-feed priority" %}</li>
+                        <li><i class="bi bi-patch-check"></i> {% trans "Gold Pro Verified badge" %}</li>
+                        <li><i class="bi bi-search"></i> {% trans "Direct talent search" %}</li>
+                    </ul>
+                    <a href="{% url 'startup_upgrade' %}" class="btn btn--gold btn--block">{% trans "Upgrade to Pro" %}</a>
                 {% endif %}
             </div>
         </aside>
     </div>
 </section>
 
-{# ---- Compose modal ---- #}
 <dialog id="compose-dialog" class="compose-dialog" {% if compose_open %}data-autoopen{% endif %} aria-labelledby="compose-title">
     <form method="dialog" class="upsell-dialog__close"><button aria-label="{% trans 'Close' %}"><i class="bi bi-x-lg"></i></button></form>
-    <h2 id="compose-title" class="mb-4">{% trans "Start a discussion" %}</h2>
-    <form method="post" class="form" novalidate>
+    <div class="nw-compose-head">
+        {% include "lounge/_author_avatar.html" with author=founder %}
+        <div>
+            <h2 id="compose-title">{% trans "Start a discussion" %}</h2>
+            <span class="nw-time">{{ founder.company_name }}</span>
+        </div>
+    </div>
+    <form method="post" class="nw-compose-form" novalidate>
         {% csrf_token %}
         {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
-        <div class="form-group">
-            <label class="form-label" for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
-            {{ form.title }}
-            {% if form.title.errors %}<div class="form-error">{{ form.title.errors|striptags }}</div>{% endif %}
-        </div>
-        <div class="form-group">
-            <label class="form-label" for="{{ form.body.id_for_label }}">{{ form.body.label }}</label>
-            {{ form.body }}
-            {% if form.body.errors %}<div class="form-error">{{ form.body.errors|striptags }}</div>{% endif %}
-        </div>
-        <div class="lounge-composer__footer">
-            <div>
-                <label class="form-label" for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
-                {{ form.category }}
-            </div>
+        <input type="text" name="title" maxlength="160" required class="nw-compose-title" placeholder="{% trans 'Title' %}" value="{{ form.title.value|default:'' }}" aria-label="{% trans 'Title' %}">
+        {% if form.title.errors %}<div class="form-error">{{ form.title.errors|striptags }}</div>{% endif %}
+        <textarea name="body" rows="6" maxlength="5000" required class="nw-compose-body" placeholder="{% trans 'What would you like to discuss?' %}" aria-label="{% trans 'What would you like to discuss?' %}">{{ form.body.value|default:'' }}</textarea>
+        {% if form.body.errors %}<div class="form-error">{{ form.body.errors|striptags }}</div>{% endif %}
+        <fieldset class="nw-tag-picker">
+            <legend>{% trans "Tag" %}</legend>
+            <label><input type="radio" name="category" value="" {% if not form.category.value %}checked{% endif %}><span>{% trans "No tag" %}</span></label>
+            {% for value, label in tags %}
+                <label><input type="radio" name="category" value="{{ value }}" {% if form.category.value == value %}checked{% endif %}><span>{{ label }}</span></label>
+            {% endfor %}
+        </fieldset>
+        <div class="nw-compose-foot">
+            <span class="nw-time"><i class="bi bi-shield-check"></i> {% if viewer_is_pro %}{% trans "Unlimited posting with Pro" %}{% else %}{% blocktrans with n=hourly_limit %}Free accounts: up to {{ n }} posts per hour{% endblocktrans %}{% endif %}</span>
             <button type="submit" class="btn btn--primary"><i class="bi bi-send"></i> {% trans "Publish" %}</button>
         </div>
-        <p class="text-muted mt-3 mb-0" style="font-size: var(--text-xs);">
-            <i class="bi bi-shield-check"></i> {% trans "Up to 3 posts per hour. Spam, crypto/quick-cash offers and messaging-app links are blocked or held for review." %}
-        </p>
     </form>
 </dialog>
 
 {% if not viewer_is_pro %}{% include "startups/_upsell_modal.html" %}{% endif %}
 {% endblock %}
 
-{% block extra_scripts %}
-<script>
-(function () {
-  var d = document.getElementById("compose-dialog");
-  function open() { if (d.showModal) d.showModal(); else d.setAttribute("open", ""); }
-  document.querySelectorAll('[data-open-dialog="compose-dialog"]').forEach(function (b) { b.addEventListener("click", open); });
-  d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
-  if (d.hasAttribute("data-autoopen")) open();
-  // Keep a comment drawer open after posting a comment (#c123 anchors).
-  var hash = location.hash && document.querySelector(location.hash);
-  if (hash) { var drawer = hash.closest("details"); if (drawer) drawer.open = true; }
-})();
-</script>
-{% endblock %}
+{% block extra_scripts %}<script src="{% asset 'lounge/network.js' %}"></script>{% endblock %}

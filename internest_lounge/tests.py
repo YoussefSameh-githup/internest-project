@@ -91,8 +91,33 @@ class AntiSpamTests(LoungeTestBase):
             self.post_as(self.founder, title=f"Post {i}", body=f"Unique body number {i}")
         resp = self.post_as(self.founder, title="Post 4", body="Another unique body")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "You can publish up to 3 posts per hour")
+        # Free tier: 4th post in an hour is blocked and the gold upgrade modal opens.
+        self.assertTrue(resp.context["upsell_open"])
+        self.assertEqual(resp.context["upsell_reason"], "hourly")
+        self.assertContains(resp, 'id="upsell-dialog" class="upsell-dialog" data-autoopen')
+        self.assertContains(resp, "You've reached the free posting limit (3 posts/hour)")
         self.assertEqual(LoungePost.objects.filter(author=self.founder.partnerprofile).count(), 3)
+
+    def test_pro_bypasses_hourly_post_limit(self):
+        from internest_startups.tiers import activate_pro
+        activate_pro(self.founder.partnerprofile)
+        for i in range(6):
+            self.post_as(self.founder, title=f"Pro post {i}", body=f"Pro body number {i}")
+        self.assertEqual(LoungePost.objects.filter(author=self.founder.partnerprofile).count(), 6)
+
+    def test_pro_is_still_spam_filtered(self):
+        from internest_startups.tiers import activate_pro
+        activate_pro(self.founder.partnerprofile)
+        resp = self.post_as(self.founder, body="Invest in crypto now")
+        self.assertContains(resp, "looks like spam")
+        self.assertFalse(LoungePost.objects.exists())
+
+    def test_hourly_limit_message_in_arabic(self):
+        for i in range(3):
+            self.post_as(self.founder, title=f"Post {i}", body=f"Unique body number {i}")
+        self.client.cookies["internest_lang"] = "ar"
+        resp = self.post_as(self.founder, title="Post 4", body="Another unique body")
+        self.assertContains(resp, "وصلت للحد الأقصى للمشاركات المجانية (3 منشورات/ساعة)")
 
     def test_spam_keywords_are_rejected_before_saving(self):
         for body in ("Invest in crypto now", "Quick cash for founders!", "Best casino bonus", "ربح سريع مضمون"):
@@ -164,3 +189,38 @@ class FeedFeatureTests(LoungeTestBase):
         self.client.cookies["internest_lang"] = "ar"
         resp = self.client.get(LOUNGE, follow=True)
         self.assertContains(resp, "هذه المساحة مخصّصة حصرياً لمؤسسي الشركات الناشئة الموثّقة.")
+
+
+class FeedRenderingTests(LoungeTestBase):
+    def test_feed_cards_render_avatars_badges_and_actions(self):
+        from internest_startups.tiers import activate_pro
+        self.founder.first_name, self.founder.last_name = "Mona", "Adel"
+        self.founder.save()
+        self.post_as(self.founder, title="Hiring frontend", body="React role", category="hiring")
+        pro = self.peers[0]
+        activate_pro(pro.partnerprofile)
+        self.post_as(pro, title="Pro advice", body="Pricing tips", category="advice")
+        self.client.force_login(self.peers[1])
+        page = self.client.get(reverse("lounge_feed"))
+        html = page.content.decode()
+        self.assertEqual(html.count('<article class="nw-card'), 2)
+        self.assertGreaterEqual(html.count('class="nw-avatar"'), 3)  # 2 posts + composer
+        self.assertContains(page, "Mona Adel")
+        self.assertContains(page, "founder Co")
+        self.assertContains(page, "👑 Pro Verified", count=1)
+        self.assertContains(page, 'class="nw-verified"')
+        self.assertContains(page, "data-share-url=")
+        self.assertContains(page, "data-toggle-comments=")
+        self.assertContains(page, "#Hiring")
+        self.assertContains(page, "Trending tags")
+        self.assertContains(page, "nw-widget--pro")
+        self.assertRegex(html, r'/static/lounge/network\.css\?v=[0-9a-f]{10}')
+        # Pro posts are pinned first.
+        self.assertLess(html.index("Pro advice"), html.index("Hiring frontend"))
+
+    def test_post_detail_uses_card_with_open_thread(self):
+        self.post_as(self.founder)
+        post = LoungePost.objects.get()
+        page = self.client.get(reverse("lounge_post", args=[post.pk]))
+        self.assertContains(page, f'id="comments-{post.pk}"')
+        self.assertNotContains(page, f'id="comments-{post.pk}" hidden')

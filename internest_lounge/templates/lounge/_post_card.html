@@ -1,0 +1,55 @@
+{% load i18n %}
+<article class="nw-card {% if not post.is_visible %}nw-card--hidden{% endif %}" id="post-{{ post.pk }}">
+    <header class="nw-card__head">
+        {% include "lounge/_author.html" with author=post.author %}
+        <div class="nw-card__meta">
+            {% if post.pro_priority %}<span class="nw-pin" title="{% trans 'Pinned by Internest Pro' %}"><i class="bi bi-pin-angle-fill"></i></span>{% endif %}
+            {% if post.category %}<span class="nw-tag">{{ post.get_category_display }}</span>{% endif %}
+            <time class="nw-time" datetime="{{ post.created_at|date:'c' }}">{% blocktrans with t=post.created_at|timesince %}{{ t }} ago{% endblocktrans %}</time>
+        </div>
+    </header>
+
+    {% if not post.is_visible %}<p class="nw-review"><i class="bi bi-eye-slash"></i> {% trans "Waiting for admin review — only you can see this" %}</p>{% endif %}
+
+    <h3 class="nw-card__title">{% if detail %}{{ post.title }}{% else %}<a href="{% url 'lounge_post' post.pk %}">{{ post.title }}</a>{% endif %}</h3>
+    <div class="nw-card__body">{% if detail %}{{ post.body|linebreaksbr }}{% else %}{{ post.body|truncatechars:420|linebreaksbr }}{% endif %}</div>
+
+    {% if post.is_visible %}
+        <footer class="nw-actions">
+            <form method="post" action="{% url 'lounge_upvote' post.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}#post-{{ post.pk }}">
+                <button type="submit" class="nw-action {% if is_upvoted %}is-active{% endif %}" aria-pressed="{% if is_upvoted %}true{% else %}false{% endif %}">
+                    <i class="bi {% if is_upvoted %}bi-hand-thumbs-up-fill{% else %}bi-hand-thumbs-up{% endif %}"></i>
+                    <span>{{ post.upvote_count }}</span>
+                </button>
+            </form>
+            <button type="button" class="nw-action" data-toggle-comments="comments-{{ post.pk }}" aria-expanded="{% if detail %}true{% else %}false{% endif %}" aria-controls="comments-{{ post.pk }}">
+                <i class="bi bi-chat-dots"></i>
+                <span>{% blocktrans with n=post.comment_count %}{{ n }} comments{% endblocktrans %}</span>
+            </button>
+            <button type="button" class="nw-action" data-share-url="{{ request.scheme }}://{{ request.get_host }}{% url 'lounge_post' post.pk %}"
+                    data-share-title="{{ post.title }}" data-copied="{% trans 'Link copied!' %}">
+                <i class="bi bi-share"></i> <span>{% trans "Share" %}</span>
+            </button>
+        </footer>
+    {% endif %}
+
+    <section class="nw-thread" id="comments-{{ post.pk }}" {% if not detail %}hidden{% endif %}>
+        <ul class="nw-comments">
+            {% for comment in post.comment_tree %}
+                {% include "lounge/_comment.html" with comment=comment depth=1 %}
+            {% empty %}
+                <li class="nw-empty">{% trans "No comments yet." %}</li>
+            {% endfor %}
+        </ul>
+        {% if post.is_visible %}
+            <form method="post" action="{% url 'lounge_comment' post.pk %}" class="nw-reply-form">
+                {% csrf_token %}
+                {% include "lounge/_author_avatar.html" with author=founder %}
+                <textarea name="body" rows="1" maxlength="2000" required placeholder="{% trans 'Write a comment…' %}"></textarea>
+                <button type="submit" class="btn btn--primary btn--sm">{% trans "Comment" %}</button>
+            </form>
+        {% endif %}
+    </section>
+</article>

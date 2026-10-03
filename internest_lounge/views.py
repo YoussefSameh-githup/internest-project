@@ -31,27 +31,32 @@ def _visible_to(founder):
 @founders_only
 def lounge_feed(request):
     founder = request.founder
+    viewer_is_pro = is_pro(founder)
     form = PostForm(request.POST or None)
+    hourly_limit_hit = False
     if request.method == "POST" and form.is_valid():
         title, body = form.cleaned_data["title"], form.cleaned_data["body"]
-        try:
-            moderation.check_post_rate(founder)
-            moderation.check_keywords(title, body)
-        except moderation.SpamRejected as exc:
-            messages.error(request, str(exc))
+        if not viewer_is_pro and moderation.post_rate_exceeded(founder):
+            # Free tier: 3 posts/hour. Pro is unlimited → show the upgrade modal instead of a bare error.
+            hourly_limit_hit = True
         else:
-            reason = moderation.auto_hide_reason(title, body, moderation.recent_fingerprints())
-            post = form.save(commit=False)
-            post.author = founder
-            post.body_fingerprint = moderation.fingerprint(body)
-            if reason:
-                post.visibility, post.hidden_reason = Visibility.HIDDEN, reason
-            post.save()
-            if reason:
-                messages.warning(request, _("Your post was received and is waiting for admin review before it appears."))
+            try:
+                moderation.check_keywords(title, body)  # spam filters apply to every tier
+            except moderation.SpamRejected as exc:
+                messages.error(request, str(exc))
             else:
-                messages.success(request, _("Your post is live."))
-            return redirect("lounge_feed")
+                reason = moderation.auto_hide_reason(title, body, moderation.recent_fingerprints())
+                post = form.save(commit=False)
+                post.author = founder
+                post.body_fingerprint = moderation.fingerprint(body)
+                if reason:
+                    post.visibility, post.hidden_reason = Visibility.HIDDEN, reason
+                post.save()
+                if reason:
+                    messages.warning(request, _("Your post was received and is waiting for admin review before it appears."))
+                else:
+                    messages.success(request, _("Your post is live."))
+                return redirect("lounge_feed")
 
     tag = request.GET.get("tag", "")
     today = timezone.now().date()
@@ -60,7 +65,7 @@ def lounge_feed(request):
     )
     posts = (
         LoungePost.objects.filter(_visible_to(founder))
-        .select_related("author", "author__subscription")
+        .select_related("author", "author__user", "author__subscription")
         .annotate(
             upvote_count=Count("upvoters", distinct=True),
             comment_count=Count("comments", filter=Q(comments__visibility=Visibility.VISIBLE), distinct=True),
@@ -78,13 +83,16 @@ def lounge_feed(request):
     upvoted = set(founder.upvoted_lounge_posts.filter(pk__in=[p.pk for p in page]).values_list("pk", flat=True))
     for post in page:
         post.comment_tree = _comment_tree(post, founder)
+        post.is_upvoted = post.pk in upvoted
 
     context = get_user_context(request)
     context.update({
         "form": form, "page": page, "upvoted": upvoted, "founder": founder,
         "tags": LoungePost.CATEGORY_CHOICES, "active_tag": tag,
-        "compose_open": request.method == "POST",  # reopen the modal when the form has errors
-        "viewer_is_pro": is_pro(founder), "max_depth": MAX_DEPTH,
+        "compose_open": request.method == "POST" and not hourly_limit_hit,  # reopen the modal on form errors
+        "viewer_is_pro": viewer_is_pro, "max_depth": MAX_DEPTH,
+        "upsell_open": hourly_limit_hit, "upsell_reason": "hourly" if hourly_limit_hit else "",
+        "hourly_limit": moderation.POSTS_PER_HOUR,
     })
     return render(request, "lounge/feed.html", context)
 
@@ -92,7 +100,7 @@ def lounge_feed(request):
 def _comment_tree(post, founder):
     comments = list(
         post.comments.filter(Q(visibility=Visibility.VISIBLE) | Q(author=founder, visibility=Visibility.HIDDEN))
-        .select_related("author", "author__subscription")
+        .select_related("author", "author__user", "author__subscription")
     )
     by_parent = {}
     for c in comments:
@@ -107,14 +115,17 @@ def _comment_tree(post, founder):
 def post_detail(request, pk):
     founder = request.founder
     post = get_object_or_404(
-        LoungePost.objects.select_related("author", "author__subscription").annotate(upvote_count=Count("upvoters")),
+        LoungePost.objects.select_related("author", "author__user", "author__subscription").annotate(
+            upvote_count=Count("upvoters", distinct=True),
+            comment_count=Count("comments", filter=Q(comments__visibility=Visibility.VISIBLE), distinct=True),
+        ),
         Q(pk=pk) & _visible_to(founder),
     )
+    post.comment_tree = _comment_tree(post, founder)
     context = get_user_context(request)
     context.update({
         "post": post,
         "founder": founder,
-        "comments": _comment_tree(post, founder),
         "comment_form": CommentForm(),
         "upvoted": post.upvoters.filter(pk=founder.pk).exists(),
         "flagged": post.flags.filter(reporter=founder).exists(),

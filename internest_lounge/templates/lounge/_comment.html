@@ -1,27 +1,32 @@
 {% load i18n %}
-<li class="lounge-comment {% if comment.visibility != 'visible' %}lounge-post--hidden{% endif %}" id="c{{ comment.pk }}">
-    <div class="lounge-post__meta">
-        {% include "lounge/_author.html" with author=comment.author %}
-        <span class="text-muted">· {{ comment.created_at|timesince }}</span>
-        {% if comment.visibility != 'visible' %}<span class="badge badge--danger">{% trans "Waiting for admin review — only you can see this" %}</span>{% endif %}
+<li class="nw-comment {% if comment.visibility != 'visible' %}nw-card--hidden{% endif %}" id="c{{ comment.pk }}">
+    {% include "lounge/_author_avatar.html" with author=comment.author %}
+    <div class="nw-comment__main">
+        <div class="nw-comment__bubble">
+            <div class="nw-comment__head">
+                <span class="nw-author__company">{{ comment.author.company_name }}</span>
+                <span class="nw-time">{% blocktrans with t=comment.created_at|timesince %}{{ t }} ago{% endblocktrans %}</span>
+            </div>
+            {% if comment.visibility != 'visible' %}<p class="nw-review">{% trans "Waiting for admin review — only you can see this" %}</p>{% endif %}
+            <p class="nw-comment__body">{{ comment.body|linebreaksbr }}</p>
+        </div>
+        {% if depth < max_depth and post.is_visible %}
+            <details class="nw-reply">
+                <summary>{% trans "Reply" %}</summary>
+                <form method="post" action="{% url 'lounge_comment' post.pk %}" class="nw-reply-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="parent_id" value="{{ comment.pk }}">
+                    <textarea name="body" rows="1" maxlength="2000" required placeholder="{% trans 'Write a comment…' %}"></textarea>
+                    <button type="submit" class="btn btn--primary btn--sm">{% trans "Reply" %}</button>
+                </form>
+            </details>
+        {% endif %}
+        {% if comment.children %}
+            <ul class="nw-comments nw-comments--nested">
+                {% for comment in comment.children %}
+                    {% include "lounge/_comment.html" with comment=comment depth=depth|add:1 %}
+                {% endfor %}
+            </ul>
+        {% endif %}
     </div>
-    <p class="mb-2">{{ comment.body|linebreaksbr }}</p>
-    {% if depth < max_depth and post.is_visible %}
-        <details class="lounge-reply">
-            <summary>{% trans "Reply" %}</summary>
-            <form method="post" action="{% url 'lounge_comment' post.pk %}">
-                {% csrf_token %}
-                <input type="hidden" name="parent_id" value="{{ comment.pk }}">
-                <textarea name="body" class="form-control" rows="2" maxlength="2000" required></textarea>
-                <button type="submit" class="btn btn--primary btn--sm mt-2">{% trans "Reply" %}</button>
-            </form>
-        </details>
-    {% endif %}
-    {% if comment.children %}
-        <ul class="lounge-comments">
-            {% for comment in comment.children %}
-                {% include "lounge/_comment.html" with comment=comment depth=depth|add:1 %}
-            {% endfor %}
-        </ul>
-    {% endif %}
 </li>
