@@ -2838,3 +2838,18 @@ msgstr "التواصل والحسابات"
 
 msgid "About"
 msgstr "نبذة عن الشركة"
+
+msgid "Upload a PNG, JPG or WEBP image."
+msgstr "ارفع صورة بصيغة PNG أو JPG أو WEBP."
+
+msgid "The logo must be 5 MB or smaller."
+msgstr "يجب ألا يزيد حجم الشعار عن 5 ميجابايت."
+
+msgid "Logo updated."
+msgstr "تم تحديث الشعار."
+
+msgid "Could not update the logo. Please try another image."
+msgstr "تعذّر تحديث الشعار. يرجى تجربة صورة أخرى."
+
+msgid "Change logo"
+msgstr "تغيير الشعار"

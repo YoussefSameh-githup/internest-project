@@ -137,7 +137,7 @@ class PartnerProfile(models.Model):
             # Startups: self-service completion from their own fields, independent of admin verification.
             from internest_startups.completion import startup_completion  # startups app depends on core
             self.profile_completion_score = startup_completion(self)
-            self.save()
+            self.save(update_fields=["profile_completion_score"])
             return
 
         # 1. حساب النسبة بناءً على البيانات التي يملأها الشريك

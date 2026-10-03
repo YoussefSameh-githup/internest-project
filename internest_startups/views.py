@@ -6,6 +6,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
@@ -13,7 +16,7 @@ from internest_core.models import PartnerProfile
 from internest_core.views import get_user_context
 
 from .completion import PLACEHOLDER_PREFIX
-from .forms import CompanyIdentityForm, CompanyProfileForm, StartupSignupForm
+from .forms import CompanyIdentityForm, CompanyProfileForm, LogoForm, StartupSignupForm
 from .gate import startup_partner
 
 
@@ -82,12 +85,16 @@ def company_profile_edit(request):
     identity = CompanyIdentityForm(request.POST or None, request.FILES or None, instance=partner)
     details = CompanyProfileForm(request.POST or None, instance=existing, company_email=request.POST.get("official_email"))
     if request.method == "POST" and identity.is_valid() and details.is_valid():
+        old_logo = PartnerProfile.objects.filter(pk=partner.pk).values_list("logo", flat=True).first()
         with transaction.atomic():
-            identity.save()
+            # Write only the fields on this form: never overwrite admin-managed flags such as is_fully_verified.
+            company = identity.save(commit=False)
+            company.save(update_fields=list(identity.Meta.fields))
             profile = details.save(commit=False)
             profile.partner = partner
             profile.save()
             partner.calculate_completion()
+        _delete_replaced_logo(old_logo, partner)
         if existing is None and not partner.is_fully_verified:
             messages.success(request, _("Thanks! Your company profile was submitted for verification."))
         else:
@@ -159,3 +166,33 @@ def upgrade(request):
         "free_posts": FREE_POSTS_PER_MONTH,
     })
     return render(request, "startups/upgrade.html", context)
+
+
+def _delete_replaced_logo(old_name, partner):
+    if old_name and old_name != partner.logo.name:
+        storage = partner._meta.get_field("logo").storage
+        if storage.exists(old_name):
+            storage.delete(old_name)
+
+
+@login_required
+@require_POST
+def company_logo_update(request):
+    """Instant, self-service logo change. Verification status and other profile data stay untouched."""
+    partner = _startup_or_redirect(request)
+    if partner is None:
+        return redirect("home_redirect")
+    old_logo = partner.logo.name
+    form = LogoForm(request.POST, request.FILES, instance=partner)
+    if form.is_valid():
+        partner.logo = form.cleaned_data["logo"]
+        partner.save(update_fields=["logo"])  # stores the file; writes only the logo column
+        _delete_replaced_logo(old_logo, partner)
+        messages.success(request, _("Logo updated."))
+    else:
+        errors = [e for errs in form.errors.values() for e in errs]
+        messages.error(request, errors[0] if errors else _("Could not update the logo. Please try another image."))
+    nxt = request.POST.get("next", "")
+    if not url_has_allowed_host_and_scheme(nxt, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        nxt = reverse("startup_company_profile")
+    return redirect(nxt)

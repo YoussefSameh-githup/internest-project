@@ -1,3 +1,5 @@
+import secrets
+
 from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.models import User
@@ -37,6 +39,43 @@ class StartupSignupForm(forms.Form):
         return data
 
 
+LOGO_EXTENSIONS = ("jpg", "jpeg", "png", "webp")
+LOGO_MAX_BYTES = 5 * 1024 * 1024
+
+
+def clean_logo_upload(logo, partner):
+    """Validate an uploaded logo and give it a short, ASCII-safe name.
+
+    Phone/WhatsApp/Arabic filenames can be long or non-ASCII; renaming avoids storage path issues
+    (and the 100-char FileField limit) on the server.
+    """
+    if not logo or not hasattr(logo, "content_type"):  # unchanged / cleared
+        return logo
+    ext = logo.name.rsplit(".", 1)[-1].lower() if "." in logo.name else ""
+    if ext not in LOGO_EXTENSIONS:
+        raise forms.ValidationError(_("Upload a PNG, JPG or WEBP image."))
+    if logo.size > LOGO_MAX_BYTES:
+        raise forms.ValidationError(_("The logo must be 5 MB or smaller."))
+    logo.name = f"{partner.pk or 'new'}-{secrets.token_hex(4)}.{'jpg' if ext == 'jpeg' else ext}"
+    return logo
+
+
+class LogoForm(forms.ModelForm):
+    """Self-service logo change: saves instantly and never touches verification or other fields."""
+
+    class Meta:
+        model = PartnerProfile
+        fields = ["logo"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["logo"].required = True
+        self.fields["logo"].widget = forms.FileInput(attrs={"accept": "image/png,image/jpeg,image/webp"})
+
+    def clean_logo(self):
+        return clean_logo_upload(self.cleaned_data.get("logo"), self.instance)
+
+
 class CompanyIdentityForm(forms.ModelForm):
     """Company name, website and social links (stored on PartnerProfile)."""
 
@@ -64,6 +103,9 @@ class CompanyIdentityForm(forms.ModelForm):
         if self.instance.company_name.startswith(PLACEHOLDER_PREFIX):
             self.initial["company_name"] = ""
         self.fields["official_email"].required = True
+
+    def clean_logo(self):
+        return clean_logo_upload(self.cleaned_data.get("logo"), self.instance)
 
     def clean(self):
         data = super().clean()

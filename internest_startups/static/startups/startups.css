@@ -121,3 +121,13 @@ div.dash-card.is-locked:hover { transform: none; box-shadow: none; }
 .co-completion__head { display: flex; justify-content: space-between; font-size: .85rem; margin-bottom: 6px; color: #475569; }
 .co-completion__bar { height: 8px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }
 .co-completion__bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2746a8, #22c55e); }
+
+/* Instant logo change from the showcase */
+.co-hero__avatar-wrap { position: relative; margin: 0; flex-shrink: 0; }
+.co-hero__camera {
+  position: absolute; inset-block-end: 6px; inset-inline-end: 6px; width: 40px; height: 40px; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer; background: #1d3a8a; color: #fff;
+  border: 3px solid #fff; box-shadow: 0 4px 12px rgba(15, 23, 42, .25); transition: transform .15s ease;
+}
+.co-hero__camera:hover { transform: scale(1.08); }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

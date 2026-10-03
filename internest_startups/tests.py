@@ -226,8 +226,8 @@ class ProfileShowcaseAndDashboardTests(OnboardingBase):
         self.submit_profile()
         page = self.client.get(reverse("startup_company_profile"))
         self.assertTemplateUsed(page, "startups/company_showcase.html")
-        for field in ("company_name", "official_email", "founder_email", "logo"):
-            self.assertNotContains(page, f'name="{field}"')  # no form inputs in view mode
+        for field in ("company_name", "official_email", "founder_email"):
+            self.assertNotContains(page, f'name="{field}"')  # no profile form in view mode (only the instant logo upload)
         self.assertNotContains(page, "<textarea")
         for text in ("StartupX", "contact@startupx.io", "mona@startupx.io", "startupx.io", "LinkedIn", "2023", "Pending verification"):
             self.assertContains(page, text)
@@ -454,3 +454,89 @@ class DashboardGridAndShowcaseDesignTests(OnboardingBase):
         self.assertContains(page, '<svg class="svg-icon"', count=4)  # website, company email, founder email, LinkedIn
         self.assertContains(page, "Contact & social")
         self.assertContains(page, "About")
+
+
+class LogoUploadTests(OnboardingBase):
+    """Logo changes are instant and self-service: they never reset admin verification."""
+
+    def setUp(self):
+        super().setUp()
+        self.media = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.media, ignore_errors=True)
+        self.override = override_settings(MEDIA_ROOT=self.media)
+        self.override.enable()
+        self.addCleanup(self.override.disable)
+        self.register()
+        self.submit_profile()
+        self.approve()
+
+    def _image(self, name="logo.png", fmt="PNG", size=(16, 16)):
+        from PIL import Image
+        buf = io.BytesIO()
+        Image.new("RGB", size, "#2746a8").save(buf, fmt)
+        return SimpleUploadedFile(name, buf.getvalue(), content_type=f"image/{fmt.lower()}")
+
+    def test_logo_only_upload_saves_and_keeps_verification(self):
+        before = self.partner()
+        self.assertTrue(before.is_fully_verified)
+        resp = self.client.post(reverse("startup_logo_update"), {"logo": self._image()})
+        self.assertRedirects(resp, reverse("startup_company_profile"), fetch_redirect_response=False)
+        partner = self.partner()
+        self.assertTrue(partner.logo.name.startswith("partner_logos/"))
+        self.assertTrue(partner.logo.storage.exists(partner.logo.name))
+        self.assertTrue(partner.is_fully_verified)
+        self.assertEqual(partner.profile_completion_score, before.profile_completion_score)
+        self.assertContains(self.client.get(reverse("startup_company_profile")), partner.logo.url)
+
+    def test_full_profile_edit_with_logo_keeps_verification(self):
+        resp = self.client.post(reverse("startup_company_profile_edit"), {**PROFILE, "logo": self._image("x.jpg", "JPEG")})
+        self.assertEqual(resp.status_code, 302)
+        partner = self.partner()
+        self.assertTrue(partner.logo)
+        self.assertTrue(partner.is_fully_verified)
+
+    def test_long_or_arabic_filenames_get_safe_names(self):
+        for name in ("شعار الشركة النهائي.png", ("x" * 180) + ".png", "WhatsApp Image 2026-10-04 at 12.34.56 PM.png"):
+            resp = self.client.post(reverse("startup_logo_update"), {"logo": self._image(name)})
+            self.assertEqual(resp.status_code, 302, name)
+            logo = self.partner().logo.name
+            self.assertRegex(logo, r"^partner_logos/\d+-[0-9a-f]{8}\.png$")
+            self.assertLessEqual(len(logo), 100)
+
+    def test_replacing_logo_deletes_old_file(self):
+        self.client.post(reverse("startup_logo_update"), {"logo": self._image()})
+        first = self.partner().logo
+        storage, old = first.storage, first.name
+        self.client.post(reverse("startup_logo_update"), {"logo": self._image("new.png")})
+        self.assertFalse(storage.exists(old))
+        self.assertTrue(storage.exists(self.partner().logo.name))
+
+    def test_invalid_files_show_friendly_error_not_400(self):
+        too_big = SimpleUploadedFile("big.png", b"0" * (5 * 1024 * 1024 + 1), content_type="image/png")
+        for upload, message in ((SimpleUploadedFile("logo.svg", b"<svg/>", content_type="image/svg+xml"), "Upload a valid image"),
+                                (SimpleUploadedFile("notes.txt", b"hello", content_type="text/plain"), "Upload a valid image"),
+                                (self._image("anim.gif", "GIF"), "Upload a PNG, JPG or WEBP image."),
+                                (too_big, "The logo must be 5 MB or smaller."),
+                                (SimpleUploadedFile("fake.png", b"not an image", content_type="image/png"), "Upload a valid image")):
+            resp = self.client.post(reverse("startup_logo_update"), {"logo": upload}, follow=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertContains(resp, message)
+            self.assertFalse(self.partner().logo)
+            self.assertTrue(self.partner().is_fully_verified)
+
+    def test_logo_shows_in_founders_network(self):
+        self.client.post(reverse("startup_logo_update"), {"logo": self._image()})
+        self.client.post(reverse("lounge_feed"), {"title": "Hello", "body": "Logo test post", "category": "advice"})
+        self.assertContains(self.client.get(reverse("lounge_feed")), self.partner().logo.url)
+
+    def test_logo_endpoint_requires_post_and_csrf(self):
+        self.assertEqual(self.client.get(reverse("startup_logo_update")).status_code, 405)
+        from django.test import Client
+        strict = Client(enforce_csrf_checks=True)
+        strict.force_login(self.partner().user)
+        self.assertEqual(strict.post(reverse("startup_logo_update"), {"logo": self._image()}).status_code, 403)
+
+    def test_showcase_has_instant_logo_form(self):
+        page = self.client.get(reverse("startup_company_profile"))
+        self.assertContains(page, f'action="{reverse("startup_logo_update")}" enctype="multipart/form-data"')
+        self.assertContains(page, "data-logo-input")
