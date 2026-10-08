@@ -141,17 +141,36 @@ def challenge_start(request, student_skill_id):
     # Live quiz generation (network) happens outside the row lock; skipped when resuming or not eligible.
     can_start = ss.status != StudentSkill.STATUS_VERIFIED and not ss.in_cooldown
     if can_start and not ss.attempts.filter(state=ChallengeAttempt.STATE_ACTIVE).exists():
-        item_ids = quiz_item_ids_for(ss.skill)
-    with transaction.atomic():
-        ss = get_object_or_404(StudentSkill.objects.select_for_update().select_related("skill"), pk=student_skill_id, student=student)
         try:
+            item_ids = quiz_item_ids_for(ss.skill)  # AI quiz, else the saved bank
+        except Exception:
+            logger.exception("Preparing a quiz failed for skill %s", ss.skill_id)
+            item_ids = []
+        if not item_ids:
+            return _quiz_unavailable(request, ss)
+    try:
+        with transaction.atomic():
+            ss = get_object_or_404(StudentSkill.objects.select_for_update().select_related("skill"), pk=student_skill_id, student=student)
             attempt = engine.start_attempt(ss, item_ids=item_ids)
-        except engine.ChallengeError as exc:
-            if can_start and item_ids is None:
-                exc = _("We couldn't prepare a challenge for this skill right now. Please try again in a few minutes.")
-            messages.warning(request, str(exc))
-            return redirect("skills_hub")
+    except engine.ChallengeError as exc:  # cooldown, already verified, abandoned session
+        messages.warning(request, str(exc))
+        return redirect("skills_hub")
+    except Http404:
+        raise
+    except Exception:
+        logger.exception("Starting a challenge failed for student skill %s", student_skill_id)
+        return _quiz_unavailable(request, ss)
     return redirect("skills_challenge", token=attempt.token)
+
+
+def _quiz_unavailable(request, student_skill):
+    """Friendly 200 page when neither the AI nor the saved bank can supply a quiz."""
+    context = get_user_context(request)
+    context.update({
+        "skill": student_skill.skill,
+        "message": _("Not enough questions are available for this challenge right now. Please try again later."),
+    })
+    return render(request, "skills/challenge_unavailable.html", context)
 
 
 @student_gate()

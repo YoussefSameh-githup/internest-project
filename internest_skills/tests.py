@@ -436,12 +436,12 @@ class QuizGenerationTests(Base):
         self.assertIn("snippet", build_system_prompt(Skill(name="Cybersecurity", discipline="general")))
         self.assertIn("workplace scenarios", build_system_prompt(Skill.objects.get(slug="project-management")))
 
-    def test_generation_failure_redirects_with_message(self):
+    def test_generation_failure_without_saved_bank_shows_message(self):
         ss = self._claim(skill=self.new_skill)
         self.client.force_login(self.student_user)
         with mock.patch("openai.resources.chat.completions.Completions.create", side_effect=TimeoutError()):
-            resp = self.client.post(reverse("skills_challenge_start", args=[ss.pk]), follow=True)
-        self.assertContains(resp, "prepare a challenge")
+            resp = self.client.post(reverse("skills_challenge_start", args=[ss.pk]))
+        self.assertContains(resp, "Not enough questions are available for this challenge right now.")
         self.assertFalse(ss.attempts.exists())
 
     def test_live_quiz_is_primary_even_when_saved_questions_exist(self):

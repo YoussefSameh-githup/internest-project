@@ -3068,3 +3068,8 @@ msgstr "اضغط Ctrl/Cmd لاختيار أكثر من مهارة."
 
 msgid "e.g. Graphic Designer, then Enter"
 msgstr "مثال: Graphic Designer ثم Enter"
+
+msgid ""
+"Not enough questions are available for this challenge right now. Please try "
+"again later."
+msgstr "لا تتوفر أسئلة كافية لهذا الاختبار حالياً، يرجى المحاولة لاحقاً"

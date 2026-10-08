@@ -9,9 +9,10 @@ from .models import ChallengeItem, Discipline, SubSkill
 
 logger = logging.getLogger(__name__)
 
+QUIZ_LENGTH = 10  # questions per challenge (Skill.challenge_length defaults to this)
 MIN_ITEMS_TO_START = 3
-GENERATE_BATCH = 10
-MAX_TOKENS = 2800
+GENERATE_BATCH = QUIZ_LENGTH
+MAX_TOKENS = 6000  # room for 10 items with code snippets; Gemini 2.5 thinking tokens also count here
 
 TECHNICAL_DISCIPLINES = {Discipline.COMPUTING, Discipline.ENGINEERING}
 TECHNICAL_HINTS = ("python", "sql", "java", "javascript", "c++", "c#", "security", "cyber", "network", "data", "cloud",
@@ -82,7 +83,8 @@ def generate_items(skill, count=GENERATE_BATCH) -> list[ChallengeItem]:
     """Ask the LLM for `count` fresh questions and save them (they also become the offline fallback bank)."""
     existing_subs = list(skill.sub_skills.values_list("name", flat=True))
     user = (
-        f"Skill: {skill.name} ({skill.get_discipline_display()}). Questions: {count}. Write NEW questions."
+        f"Skill: {skill.name} ({skill.get_discipline_display()}). "
+        f"Write exactly {count} NEW, distinct questions; each tests a different point (no repeats or rewordings)."
         + (f" Prefer these sub-skills: {', '.join(existing_subs)}." if existing_subs else "")
     )
     data = chat_json(build_system_prompt(skill), user, max_tokens=MAX_TOKENS, timeout=60)
@@ -124,14 +126,28 @@ def live_quiz_item_ids(skill) -> list[int]:
         raise QuizGenerationError(str(exc)) from exc
     if len(items) < MIN_ITEMS_TO_START:
         raise QuizGenerationError(f"only {len(items)} usable questions generated")
+    missing = skill.challenge_length - len(items)
+    if missing > 0:  # the model returned fewer usable items: top up from the saved bank
+        items += list(skill.items.filter(is_active=True).exclude(id__in=[i.id for i in items]).order_by("?")[:missing])
     items.sort(key=lambda i: ChallengeItem.DIFFICULTY_ORDER.get(i.difficulty, 1))
     return [i.id for i in items]
 
 
-def quiz_item_ids_for(skill):
-    """Live quiz first; ONLY on failure return None so the engine falls back to the saved question bank."""
+def saved_quiz_item_ids(skill) -> list[int]:
+    """Questions from the saved bank (balanced across sub-skills, easy → hard); [] if there aren't enough."""
+    from .challenge import _pick_items
+
+    try:
+        return _pick_items(skill)
+    except Exception as exc:  # ChallengeError (bank too small) or anything unexpected
+        logger.warning("No saved quiz for skill %s: %s", skill.pk, exc)
+        return []
+
+
+def quiz_item_ids_for(skill) -> list[int]:
+    """Live AI quiz first; on ANY failure (proxy 403, timeout, bad output) the saved bank. [] = no quiz possible."""
     try:
         return live_quiz_item_ids(skill)
-    except LLM_ERRORS as exc:
-        logger.warning("Live quiz generation failed for skill %s (%s); using saved questions", skill.pk, exc)
-        return None
+    except (QuizGenerationError, Exception) as exc:
+        logger.warning("AI quiz generation failed for skill %s: %s. Falling back to saved items.", skill.pk, exc)
+        return saved_quiz_item_ids(skill)
