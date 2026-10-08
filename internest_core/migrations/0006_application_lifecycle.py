@@ -4,6 +4,8 @@ import django.core.validators
 import internest_core.models
 from django.db import migrations, models
 
+from internest_core.schema_repair import ensure_application_review_columns, ensure_email_verification_indexes
+
 
 OLD_TO_NEW = {
     "قيد المراجعة": "submitted",      # pending (not yet forwarded)
@@ -16,6 +18,14 @@ def map_statuses(apps, schema_editor):
     Application = apps.get_model("internest_core", "Application")
     for old, new in OLD_TO_NEW.items():
         Application.objects.filter(status=old).update(status=new)
+
+
+def rename_indexes_safely(apps, schema_editor):
+    ensure_email_verification_indexes(schema_editor)
+
+
+def add_review_columns_safely(apps, schema_editor):
+    ensure_application_review_columns(schema_editor, apps.get_model("internest_core", "Application"))
 
 
 def unmap_statuses(apps, schema_editor):
@@ -32,25 +42,37 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameIndex(
-            model_name='emailverification',
-            new_name='internest_c_user_id_5b72d0_idx',
-            old_name='intnst_evrf_user_type_verified_idx',
+        # Database side is idempotent: a production DB whose indexes/columns differ (or that already has the
+        # columns from a manual fix) must not abort this migration and leave the new columns missing.
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.RenameIndex(
+                    model_name='emailverification',
+                    new_name='internest_c_user_id_5b72d0_idx',
+                    old_name='intnst_evrf_user_type_verified_idx',
+                ),
+                migrations.RenameIndex(
+                    model_name='emailverification',
+                    new_name='internest_c_code_474897_idx',
+                    old_name='intnst_evrf_code_idx',
+                ),
+            ],
+            database_operations=[migrations.RunPython(rename_indexes_safely, migrations.RunPython.noop)],
         ),
-        migrations.RenameIndex(
-            model_name='emailverification',
-            new_name='internest_c_code_474897_idx',
-            old_name='intnst_evrf_code_idx',
-        ),
-        migrations.AddField(
-            model_name='application',
-            name='decided_at',
-            field=models.DateTimeField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name='application',
-            name='reviewed_at',
-            field=models.DateTimeField(blank=True, null=True),
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.AddField(
+                    model_name='application',
+                    name='decided_at',
+                    field=models.DateTimeField(blank=True, null=True),
+                ),
+                migrations.AddField(
+                    model_name='application',
+                    name='reviewed_at',
+                    field=models.DateTimeField(blank=True, null=True),
+                ),
+            ],
+            database_operations=[migrations.RunPython(add_review_columns_safely, migrations.RunPython.noop)],
         ),
         migrations.AlterField(
             model_name='application',
