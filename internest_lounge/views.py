@@ -75,7 +75,7 @@ def lounge_feed(request):
                 default=Value(0), output_field=IntegerField(),
             ),
         )
-        .order_by("-pro_priority", "-created_at")
+        .order_by("-pro_priority", "-created_at", "-pk")
     )
     if tag in dict(LoungePost.CATEGORY_CHOICES):
         posts = posts.filter(category=tag)

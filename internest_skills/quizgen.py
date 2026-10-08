@@ -2,7 +2,9 @@
 import logging
 import random
 
-from .llm import chat_json, llm_enabled
+from django.db import transaction
+
+from .llm import LLM_ERRORS, chat_json, llm_enabled
 from .models import ChallengeItem, Discipline, SubSkill
 
 logger = logging.getLogger(__name__)
@@ -116,8 +118,9 @@ def live_quiz_item_ids(skill) -> list[int]:
     if not llm_enabled():
         raise QuizGenerationError("LLM not configured")
     try:
-        items = generate_items(skill, count=skill.challenge_length)
-    except Exception as exc:
+        with transaction.atomic():  # savepoint: half-saved questions are rolled back on failure
+            items = generate_items(skill, count=skill.challenge_length)
+    except LLM_ERRORS as exc:
         raise QuizGenerationError(str(exc)) from exc
     if len(items) < MIN_ITEMS_TO_START:
         raise QuizGenerationError(f"only {len(items)} usable questions generated")
@@ -129,6 +132,6 @@ def quiz_item_ids_for(skill):
     """Live quiz first; ONLY on failure return None so the engine falls back to the saved question bank."""
     try:
         return live_quiz_item_ids(skill)
-    except QuizGenerationError:
-        logger.warning("Live quiz generation failed for skill %s; using saved questions", skill.pk, exc_info=True)
+    except LLM_ERRORS as exc:
+        logger.warning("Live quiz generation failed for skill %s (%s); using saved questions", skill.pk, exc)
         return None

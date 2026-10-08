@@ -1,10 +1,26 @@
-"""Shared OpenAI-compatible client (AgentRouter / Gemini) for skill extraction and quiz generation."""
-import json
+"""Shared OpenAI-compatible client (AgentRouter / Gemini) for skill extraction and quiz generation.
 
+Every failure (proxy 403s on PythonAnywhere, connection errors, timeouts, bad JSON) is raised as
+LLMUnavailable so callers can fall back to local logic; nothing here may turn into an HTTP 500.
+"""
+import json
+import logging
+
+import httpx
+import openai
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 GEMINI_DEFAULT_MODEL = "gemini-2.5-flash"
 OPENAI_DEFAULT_MODEL = "gpt-4o-mini"
+
+# Listed explicitly for readability; Exception also covers API status, timeout and parsing errors.
+LLM_ERRORS = (httpx.ProxyError, openai.APIConnectionError, RuntimeError, Exception)
+
+
+class LLMUnavailable(RuntimeError):
+    """The LLM could not produce a usable answer; use the local fallback."""
 
 
 def llm_enabled() -> bool:
@@ -37,15 +53,21 @@ def _client(timeout: float):
 
 
 def chat_json(system: str, user: str, max_tokens: int = 1000, timeout: float | None = None) -> dict:
-    """Single JSON-mode completion. Raises on any transport, API or parsing error."""
-    resp = _client(timeout or settings.SKILLS_LLM_TIMEOUT).chat.completions.create(
-        model=resolve_model(),
-        response_format={"type": "json_object"},
-        max_tokens=max_tokens,
-        temperature=0,
-        messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-    )
-    data = json.loads(resp.choices[0].message.content or "")
+    """Single JSON-mode completion. Raises LLMUnavailable on any transport, API or parsing error."""
+    if not llm_enabled():
+        raise LLMUnavailable("LLM not configured")
+    try:
+        resp = _client(timeout or settings.SKILLS_LLM_TIMEOUT).chat.completions.create(
+            model=resolve_model(),
+            response_format={"type": "json_object"},
+            max_tokens=max_tokens,
+            temperature=0,
+            messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+        )
+        data = json.loads(resp.choices[0].message.content or "")
+    except LLM_ERRORS as exc:
+        logger.warning("LLM call failed (%s: %s)", type(exc).__name__, exc)
+        raise LLMUnavailable(str(exc)) from exc
     if not isinstance(data, dict):
-        raise ValueError("LLM did not return a JSON object")
+        raise LLMUnavailable("LLM did not return a JSON object")
     return data

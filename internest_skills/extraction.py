@@ -11,7 +11,7 @@ from django.db import IntegrityError, transaction
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
-from .llm import chat_json, llm_enabled
+from .llm import LLM_ERRORS, chat_json, llm_enabled
 from .models import Skill, StudentSkill
 
 MAX_TEXT_CHARS = 200_000
@@ -92,9 +92,10 @@ def extract_skills(text: str, skills=None) -> list[ExtractedSkill]:
     skills = list(skills if skills is not None else Skill.objects.filter(is_active=True))
     if llm_enabled():
         try:
-            return extract_skills_llm(text, skills)
-        except Exception:
-            logger.warning("LLM skill extraction failed; using local matcher", exc_info=True)
+            with transaction.atomic():  # savepoint: a failed write never poisons the request's transaction
+                return extract_skills_llm(text, skills)
+        except LLM_ERRORS as exc:
+            logger.warning("LLM skill extraction failed (%s); using local matcher", type(exc).__name__)
     return extract_skills_local(text, skills)
 
 

@@ -114,6 +114,19 @@ _AI_PROMPT = (
 
 def relate_skill_ai(skill: Skill) -> int:
     """Ask the LLM which existing skills relate to `skill`; store them. Returns rows written (0 on failure)."""
+    from django.db import transaction
+
+    from .llm import LLM_ERRORS
+
+    try:
+        with transaction.atomic():
+            return _relate_skill_ai(skill)
+    except LLM_ERRORS as exc:
+        logger.warning("AI skill relation failed for %s (%s)", skill.pk, exc)
+        return 0
+
+
+def _relate_skill_ai(skill: Skill) -> int:
     from .llm import chat_json, llm_enabled
 
     if not llm_enabled():
@@ -122,11 +135,7 @@ def relate_skill_ai(skill: Skill) -> int:
     if not candidates:
         return 0
     by_name = {c.name.lower(): c for c in candidates}
-    try:
-        data = chat_json(_AI_PROMPT, f"TARGET: {skill.name}\nKNOWN: {', '.join(c.name for c in candidates)}", max_tokens=400)
-    except Exception:
-        logger.warning("AI skill relation failed for %s", skill.pk, exc_info=True)
-        return 0
+    data = chat_json(_AI_PROMPT, f"TARGET: {skill.name}\nKNOWN: {', '.join(c.name for c in candidates)}", max_tokens=400)
     written = 0
     for item in (data.get("r") or [])[:15]:
         if not isinstance(item, dict):
