@@ -78,3 +78,14 @@ class EmployerSubscriptionAdmin(admin.ModelAdmin):
     list_display = ("partner", "plan", "valid_until")
     list_filter = ("plan",)
     search_fields = ("partner__company_name",)
+
+
+from .models import SkillRelation  # noqa: E402
+
+
+@admin.register(SkillRelation)
+class SkillRelationAdmin(admin.ModelAdmin):
+    list_display = ("skill", "related", "weight", "source")
+    list_filter = ("source",)
+    search_fields = ("skill__name", "related__name")
+    autocomplete_fields = ("skill", "related")

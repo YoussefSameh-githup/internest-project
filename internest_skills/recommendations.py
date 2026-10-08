@@ -118,3 +118,26 @@ def recommendations_for(student_skill) -> dict:
         },
         "recommendations": recs,
     }
+
+
+def recommendations_for_student(student, limit=6) -> dict:
+    """Courses suggested from the student's tested skills (skill gaps first, then level-ups).
+
+    Internest partner courses are shown when any match; otherwise external search suggestions.
+    """
+    from .models import StudentSkill
+
+    tested = (
+        StudentSkill.objects.filter(student=student, status__in=[StudentSkill.STATUS_LAG, StudentSkill.STATUS_VERIFIED])
+        .select_related("skill")
+        .order_by("status")  # "lag" < "verified": skill gaps first
+    )
+    internal, external, seen = [], [], set()
+    for ss in tested:
+        for rec in recommendations_for(ss)["recommendations"]:
+            if rec["url"] in seen:
+                continue
+            seen.add(rec["url"])
+            rec = {**rec, "skill": ss.skill.name, "is_gap": ss.status == StudentSkill.STATUS_LAG}
+            (internal if rec["provider_type"] == "internest_partner" else external).append(rec)
+    return {"internal": internal[:limit], "external": [] if internal else external[:limit], "tested": tested.exists()}

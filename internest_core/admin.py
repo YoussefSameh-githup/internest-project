@@ -180,12 +180,12 @@ class PartnerCourseSubmissionAdmin(admin.ModelAdmin):
 
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('internship', 'applicant', 'application_date', 'status')
+    list_display = ('internship', 'applicant', 'application_date', 'status', 'reviewed_at', 'decided_at')
     list_filter = ('status', 'internship__partner__company_name')
     search_fields = ('internship__title', 'applicant__username')
     actions = ['approve_and_forward_applications']
     def approve_and_forward_applications(self, request, queryset):
-        pending_apps = queryset.filter(status='قيد المراجعة')
+        pending_apps = queryset.filter(status=Application.STATUS_SUBMITTED)
         forwarded_count = 0
         for app in pending_apps:
             try:
@@ -198,14 +198,14 @@ class ApplicationAdmin(admin.ModelAdmin):
                     internship=internship,
                     application=app
                 )
-                app.status = 'محول للشريك'
+                app.status = Application.STATUS_UNDER_REVIEW
                 app.save()
                 forwarded_count += 1
             except StudentProfile.DoesNotExist:
                 self.message_user(request, f"خطأ: الطالب {app.applicant.username} ليس له ملف شخصي.", messages.ERROR)
             except IntegrityError:
                 self.message_user(request, f"تنبيه: الطلب الخاص بـ {app.applicant.username} تم إرساله مسبقاً.", messages.WARNING)
-                app.status = 'محول للشريك' 
+                app.status = Application.STATUS_UNDER_REVIEW
                 app.save()
             except Exception as e:
                 self.message_user(request, f"حدث خطأ: {str(e)}", messages.ERROR)

@@ -7,6 +7,7 @@ from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5 MB
@@ -188,14 +189,29 @@ class Application(models.Model):
     internship = models.ForeignKey(Internship, on_delete=models.CASCADE)
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
     application_date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=50, default='قيد المراجعة', choices=[
-        ('قيد المراجعة', 'قيد المراجعة'),
-        ('محول للشريك', 'محول للشريك'), 
-        ('مرفوض', 'مرفوض')
-    ])
-    
+    # Empathy-driven lifecycle: students never see "rejected" — closed/declined shows as "fulfilled".
+    STATUS_SUBMITTED = "submitted"
+    STATUS_UNDER_REVIEW = "under_review"
+    STATUS_ACCEPTED = "accepted"
+    STATUS_FULFILLED = "fulfilled"
+    STATUS_CHOICES = [
+        (STATUS_SUBMITTED, _("Submitted")),
+        (STATUS_UNDER_REVIEW, _("Under review")),
+        (STATUS_ACCEPTED, _("Accepted")),
+        (STATUS_FULFILLED, _("Position filled")),
+    ]
+    status = models.CharField(max_length=50, default=STATUS_SUBMITTED, choices=STATUS_CHOICES)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    decided_at = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         unique_together = ('internship', 'applicant')
+
+    def mark_viewed(self):
+        """The startup opened the applicant's file: Submitted → Under review (never moves backwards)."""
+        if self.status == self.STATUS_SUBMITTED:
+            self.status, self.reviewed_at = self.STATUS_UNDER_REVIEW, timezone.now()
+            self.save(update_fields=["status", "reviewed_at"])
 
     def __str__(self):
         return f"Application by {self.applicant.username} for {self.internship.title}"

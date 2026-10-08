@@ -35,4 +35,6 @@ class Command(BaseCommand):
                 _, created = ChallengeItem.objects.update_or_create(skill=skill, prompt=prompt, defaults=defaults)
                 items_created += created
 
-        self.stdout.write(self.style.SUCCESS(f"Seeded {len(SKILLS)} skills, {items_created} new challenge items."))
+        from internest_skills.semantic import seed_relations
+        relations = seed_relations()
+        self.stdout.write(self.style.SUCCESS(f"Seeded {len(SKILLS)} skills, {items_created} new challenge items, {relations} new skill relations."))

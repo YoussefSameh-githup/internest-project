@@ -591,7 +591,7 @@ msgid "CV"
 msgstr "السيرة الذاتية"
 
 msgid "View CV"
-msgstr "عرض CV"
+msgstr "عرض السيرة الذاتية"
 
 msgid "Not uploaded"
 msgstr "غير مرفق"
@@ -2920,3 +2920,151 @@ msgstr "هل تريد حذف هذا المنشور؟ لا يمكن التراج�
 
 msgid "Delete"
 msgstr "حذف"
+
+msgid "Work location"
+msgstr "مكان العمل"
+
+msgid "Office address"
+msgstr "عنوان المكتب"
+
+msgid "Other skills"
+msgstr "مهارات أخرى"
+
+msgid ""
+"Type a skill that is not in the list and press Enter. Our AI links it to "
+"related skills students have verified."
+msgstr ""
+"اكتب مهارة غير موجودة في القائمة واضغط Enter. سيربطها الذكاء الاصطناعي "
+"بالمهارات القريبة التي وثّقها الطلاب."
+
+msgid "Online / remote"
+msgstr "أونلاين / عن بُعد"
+
+msgid "On-site / offline"
+msgstr "حضوري / من المكتب"
+
+msgid "Each skill must be 2–60 characters."
+msgstr "يجب أن تكون كل مهارة بين 2 و60 حرفاً."
+
+msgid "Add at most %(n)s custom skills."
+msgstr "أضف %(n)s مهارات إضافية كحد أقصى."
+
+msgid "Enter the office address for on-site opportunities."
+msgstr "أدخل عنوان المكتب للفرص الحضورية."
+
+msgid "e.g. Smart Village, Giza"
+msgstr "مثال: القرية الذكية، الجيزة"
+
+msgid "Submitted"
+msgstr "تم التقديم"
+
+msgid "Accepted"
+msgstr "مقبول"
+
+msgid "Position filled"
+msgstr "تم الاكتفاء"
+
+msgid "Applicant accepted. Their contact details are now visible to you."
+msgstr "تم قبول المتقدم. أصبحت بيانات التواصل معه ظاهرة لك."
+
+msgid ""
+"Opportunity closed. %(n)s pending applicants will see “Position filled”."
+msgstr "تم إغلاق الفرصة. سيظهر \"تم الاكتفاء\" لـ %(n)s من المتقدمين."
+
+msgid "The applicant will see this position as filled."
+msgstr "سيظهر للمتقدم \"تم الاكتفاء\"."
+
+msgid "Recommended for you"
+msgstr "مقترحة لك"
+
+msgid "Internest partner courses matched to your skill tests."
+msgstr "كورسات من شركاء Internest مطابقة لنتائج اختبارات مهاراتك."
+
+msgid ""
+"No partner course matches your skill tests yet, so here are trusted external"
+" courses."
+msgstr ""
+"لا يوجد كورس من شركائنا يطابق اختباراتك بعد، لذلك هذه كورسات خارجية موثوقة."
+
+msgid "Take a skill test to get course recommendations tailored to your gaps."
+msgstr "خُض اختبار مهارة لتحصل على كورسات مقترحة تناسب فجواتك."
+
+msgid "Online"
+msgstr "أونلاين"
+
+msgid "Location map"
+msgstr "خريطة الموقع"
+
+msgid "Already applied"
+msgstr "تم التقديم بالفعل"
+
+msgid "Apply now"
+msgstr "قدّم الآن"
+
+msgid "Applicant"
+msgstr "المتقدم"
+
+msgid "Applied to %(title)s"
+msgstr "تقدّم إلى %(title)s"
+
+msgid "Scores and percentiles are available on Internest Pro."
+msgstr "الدرجات والترتيب المئوي متاحة في باقة Internest Pro."
+
+msgid "Accepted — contact the student directly:"
+msgstr "تم القبول — تواصل مع الطالب مباشرة:"
+
+msgid "Accept"
+msgstr "قبول"
+
+msgid "Decline (shown as “Position filled”)"
+msgstr "اعتذار (يظهر للطالب \"تم الاكتفاء\")"
+
+msgid "Close this opportunity? Pending applicants will see “Position filled”."
+msgstr "إغلاق هذه الفرصة؟ سيظهر للمتقدمين \"تم الاكتفاء\"."
+
+msgid ""
+"Students who applied to your opportunities. Opening an applicant marks their"
+" application as under review."
+msgstr ""
+"الطلاب الذين تقدّموا لفرصك. فتح ملف المتقدم يحوّل حالة طلبه إلى \"قيد "
+"المراجعة\"."
+
+msgid "Open"
+msgstr "فتح"
+
+msgid "Applications to your opportunities will appear here."
+msgstr "ستظهر هنا الطلبات المقدّمة على فرصك."
+
+msgid "Post an opportunity"
+msgstr "إضافة فرصة جديدة"
+
+msgid ""
+"Internship, gig, freelance project or part-time role. The Internest team "
+"reviews it before it goes live."
+msgstr ""
+"تدريب أو مهمة أو مشروع حر أو وظيفة بدوام جزئي. يراجعها فريق Internest قبل "
+"نشرها."
+
+msgid "The basics"
+msgstr "الأساسيات"
+
+msgid ""
+"The map updates as you type. Students see this location on the opportunity "
+"page."
+msgstr "تتحدّث الخريطة أثناء الكتابة. سيرى الطلاب هذا الموقع في صفحة الفرصة."
+
+msgid ""
+"Students need at least 80%% skill match to apply. Related verified skills "
+"count too (e.g. Photoshop + Illustrator for Graphic Design)."
+msgstr ""
+"يحتاج الطالب إلى تطابق مهارات 80%% على الأقل للتقديم. تُحتسب المهارات "
+"الموثّقة القريبة أيضاً (مثل Photoshop وIllustrator لتصميم الجرافيك)."
+
+msgid "Choose from the list"
+msgstr "اختر من القائمة"
+
+msgid "Hold Ctrl/Cmd to select several."
+msgstr "اضغط Ctrl/Cmd لاختيار أكثر من مهارة."
+
+msgid "e.g. Graphic Designer, then Enter"
+msgstr "مثال: Graphic Designer ثم Enter"

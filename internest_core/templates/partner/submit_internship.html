@@ -1,95 +1,170 @@
 {% extends 'internship/base.html' %}
-{% load static i18n %}
+{% load static i18n asset_tags %}
 
-{% block title %}{% trans "Submit internship opportunity" %} — Internest{% endblock %}
-
-{% block extra_head %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var deadlineField = document.getElementById('id_deadline');
-        if (deadlineField) {
-            var d = new Date();
-            d.setDate(d.getDate() + 1);
-            var iso = d.toISOString().split('T')[0];
-            deadlineField.setAttribute('min', iso);
-        }
-    });
-</script>
-{% endblock %}
+{% block title %}{% trans "Post an opportunity" %} — Internest{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% asset 'startups/startups.css' %}">{% endblock %}
 
 {% block content %}
-
-<section class="page-header">
-    <div class="container">
-        <a href="{% url 'partner_submit_choose' %}" class="btn btn--ghost btn--sm mb-4">
-            <i class="bi bi-arrow-right-short"></i> {% trans "Back" %}
-        </a>
-        <span class="eyebrow"><i class="bi bi-briefcase"></i> {% trans "New internship opportunity" %}</span>
-        <h1 class="mt-3">{% trans "Submit an internship opportunity for review" %}</h1>
-        <p>{% trans "Your submission is reviewed by the Internest team before it goes live to students." %}</p>
-    </div>
-</section>
-
 <section class="section-sm">
-    <div class="container">
-        <div class="container-narrow" style="padding: 0;">
-            <div class="card fade-up">
-                <form method="POST" class="form">
-                    {% csrf_token %}
+    <div class="container opp-form-wrap">
+        <a href="{% url 'partner_submit_choose' %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short"></i> {% trans "Back" %}</a>
+        <header class="opp-form-head">
+            <span class="opp-form-head__icon"><i class="bi bi-briefcase-fill"></i></span>
+            <div>
+                <h1>{% trans "Post an opportunity" %}</h1>
+                <p>{% trans "Internship, gig, freelance project or part-time role. The Internest team reviews it before it goes live." %}</p>
+            </div>
+        </header>
 
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-                    {% endif %}
+        <form method="post" class="opp-form" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
 
-                    <div class="form-group">
-                        <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
-                        {{ form.title }}
-                        {% if form.title.errors %}<div class="form-error">{{ form.title.errors|striptags }}</div>{% endif %}
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="{{ form.location.id_for_label }}" class="form-label">{{ form.location.label }}</label>
-                            {{ form.location }}
-                            {% if form.location.errors %}<div class="form-error">{{ form.location.errors|striptags }}</div>{% endif %}
-                        </div>
-
-                        <div class="form-group">
-                            <label for="{{ form.deadline.id_for_label }}" class="form-label">{{ form.deadline.label }}</label>
-                            {{ form.deadline }}
-                            <small class="form-help">{% trans "Duration is computed automatically from the publish date." %}</small>
-                            {% if form.deadline.errors %}<div class="form-error">{{ form.deadline.errors|striptags }}</div>{% endif %}
-                        </div>
-                    </div>
-
+            {# ---- Basics ---- #}
+            <section class="opp-card">
+                <h2 class="opp-card__title"><span class="opp-step">1</span> {% trans "The basics" %}</h2>
+                <div class="form-group">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}<div class="form-error">{{ form.title.errors|striptags }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                    {{ form.description }}
+                    <small class="form-help">{% trans "Write a clear description of responsibilities and requirements. Details attract better students." %}</small>
+                    {% if form.description.errors %}<div class="form-error">{{ form.description.errors|striptags }}</div>{% endif %}
+                </div>
+                <div class="opp-grid-2">
                     <div class="form-group">
                         <label for="{{ form.required_majors.id_for_label }}" class="form-label">{{ form.required_majors.label }}</label>
                         {{ form.required_majors }}
                         <small class="form-help">{% trans "Example: CS, Engineering, Marketing" %}</small>
                         {% if form.required_majors.errors %}<div class="form-error">{{ form.required_majors.errors|striptags }}</div>{% endif %}
                     </div>
-
                     <div class="form-group">
-                        <label for="{{ form.required_skills.id_for_label }}" class="form-label">{{ form.required_skills.label }}</label>
-                        {{ form.required_skills }}
-                        <small class="form-help">{{ form.required_skills.help_text }}</small>
-                        {% if form.required_skills.errors %}<div class="form-error">{{ form.required_skills.errors|striptags }}</div>{% endif %}
+                        <label for="{{ form.deadline.id_for_label }}" class="form-label">{{ form.deadline.label }}</label>
+                        {{ form.deadline }}
+                        {% if form.deadline.errors %}<div class="form-error">{{ form.deadline.errors|striptags }}</div>{% endif %}
                     </div>
+                </div>
+            </section>
 
-                    <div class="form-group">
-                        <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
-                        {{ form.description }}
-                        <small class="form-help">{% trans "Write a clear description of responsibilities and requirements. Details attract better students." %}</small>
-                        {% if form.description.errors %}<div class="form-error">{{ form.description.errors|striptags }}</div>{% endif %}
+            {# ---- Location ---- #}
+            <section class="opp-card">
+                <h2 class="opp-card__title"><span class="opp-step">2</span> {{ form.location_mode.label }}</h2>
+                <div class="loc-switch" role="radiogroup">
+                    {% for radio in form.location_mode %}
+                        <label class="loc-option">
+                            {{ radio.tag }}
+                            <span class="loc-option__body">
+                                <i class="bi {% if radio.data.value == 'online' %}bi-wifi{% else %}bi-building{% endif %}"></i>
+                                {{ radio.choice_label }}
+                            </span>
+                        </label>
+                    {% endfor %}
+                </div>
+                <div class="loc-address" data-onsite {% if form.location_mode.value != "onsite" %}hidden{% endif %}>
+                    <label for="{{ form.address.id_for_label }}" class="form-label">{{ form.address.label }}</label>
+                    <div class="loc-search">
+                        <i class="bi bi-search"></i>
+                        {{ form.address }}
                     </div>
+                    {% if form.address.errors %}<div class="form-error">{{ form.address.errors|striptags }}</div>{% endif %}
+                    <iframe class="map-preview mt-3" data-map title="{% trans 'Location map' %}" loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"
+                            src="https://maps.google.com/maps?q={{ form.address.value|default:'Cairo, Egypt'|urlencode }}&output=embed"></iframe>
+                    <small class="form-help">{% trans "The map updates as you type. Students see this location on the opportunity page." %}</small>
+                </div>
+            </section>
 
-                    <button type="submit" class="btn btn--accent btn--lg mt-4">
-                        <i class="bi bi-send-fill"></i> {% trans "Submit for review" %}
-                    </button>
-                </form>
+            {# ---- Skills ---- #}
+            <section class="opp-card">
+                <h2 class="opp-card__title"><span class="opp-step">3</span> {% trans "Required skills" %}</h2>
+                <p class="text-muted" style="font-size: var(--text-sm);">
+                    <i class="bi bi-stars"></i> {% trans "Students need at least 80% skill match to apply. Related verified skills count too (e.g. Photoshop + Illustrator for Graphic Design)." %}
+                </p>
+                <div class="form-group">
+                    <label for="{{ form.required_skills.id_for_label }}" class="form-label">{% trans "Choose from the list" %}</label>
+                    {{ form.required_skills }}
+                    <small class="form-help">{% trans "Hold Ctrl/Cmd to select several." %}</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="custom-skill-input">{{ form.custom_skills.label }}</label>
+                    <div class="tag-input" data-tag-input>
+                        <span class="tag-input__chips" data-chips></span>
+                        <input type="text" id="custom-skill-input" maxlength="60" placeholder="{% trans 'e.g. Graphic Designer, then Enter' %}" autocomplete="off">
+                    </div>
+                    {{ form.custom_skills }}
+                    <small class="form-help">{{ form.custom_skills.help_text }}</small>
+                    {% if form.custom_skills.errors %}<div class="form-error">{{ form.custom_skills.errors|striptags }}</div>{% endif %}
+                </div>
+            </section>
+
+            <div class="opp-submit">
+                <button type="submit" class="btn btn--accent btn--lg"><i class="bi bi-send-fill"></i> {% trans "Submit for review" %}</button>
             </div>
-        </div>
+        </form>
     </div>
 </section>
+{% endblock %}
 
+{% block extra_scripts %}
+<script>
+(function () {
+  // Deadline: tomorrow at the earliest.
+  var deadline = document.getElementById("id_deadline");
+  if (deadline) { var d = new Date(); d.setDate(d.getDate() + 1); deadline.min = d.toISOString().split("T")[0]; }
+
+  // Online / on-site switch + live map preview.
+  var onsite = document.querySelector("[data-onsite]");
+  document.querySelectorAll('input[name="location_mode"]').forEach(function (r) {
+    r.addEventListener("change", function () { onsite.hidden = r.value !== "onsite" || !r.checked; });
+  });
+  var address = document.getElementById("id_address"), map = document.querySelector("[data-map]"), timer;
+  if (address && map) {
+    address.addEventListener("input", function () {
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        if (address.value.trim().length > 3) {
+          map.src = "https://maps.google.com/maps?q=" + encodeURIComponent(address.value.trim()) + "&output=embed";
+        }
+      }, 600);
+    });
+  }
+
+  // Custom skill tags → hidden comma-separated field.
+  var box = document.querySelector("[data-tag-input]");
+  if (!box) return;
+  var input = box.querySelector("input"), chips = box.querySelector("[data-chips]");
+  var hidden = document.getElementById("id_custom_skills");
+  var tags = (hidden.value || "").split(",").map(function (t) { return t.trim(); }).filter(Boolean);
+  function render() {
+    chips.innerHTML = "";
+    tags.forEach(function (t, i) {
+      var chip = document.createElement("span");
+      chip.className = "tag-chip";
+      chip.textContent = t;
+      var x = document.createElement("button");
+      x.type = "button"; x.setAttribute("aria-label", "×"); x.textContent = "×";
+      x.addEventListener("click", function () { tags.splice(i, 1); render(); });
+      chip.appendChild(x);
+      chips.appendChild(chip);
+    });
+    hidden.value = tags.join(",");
+  }
+  function add() {
+    var v = input.value.replace(/,/g, " ").trim();
+    if (v && tags.length < 10 && tags.map(function (t) { return t.toLowerCase(); }).indexOf(v.toLowerCase()) === -1) tags.push(v);
+    input.value = "";
+    render();
+  }
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); }
+    else if (e.key === "Backspace" && !input.value && tags.length) { tags.pop(); render(); }
+  });
+  input.form.addEventListener("submit", add);
+  box.addEventListener("click", function () { input.focus(); });
+  render();
+})();
+</script>
 {% endblock %}

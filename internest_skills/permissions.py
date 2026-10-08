@@ -1,5 +1,5 @@
 """RBAC for skill badges / analytics: self, affiliated partner university, Pro employers."""
-from internest_core.models import PartnerApplicantData, PartnerProfile, StudentProfile
+from internest_core.models import Application, PartnerProfile, StudentProfile
 
 ROLE_SELF = "self"
 ROLE_UNIVERSITY = "university"
@@ -71,7 +71,7 @@ def skill_view_role(user, student: StudentProfile):
             return ROLE_UNIVERSITY
         return None
     if is_pro_employer(partner):
-        # Pro employers see candidates that applied to them (forwarded by Internest).
-        if PartnerApplicantData.objects.filter(partner=partner, student=student).exists():
+        # Pro employers see candidates that applied to their opportunities.
+        if Application.objects.filter(internship__partner=partner, applicant_id=student.user_id).exists():
             return ROLE_EMPLOYER_PRO
     return None

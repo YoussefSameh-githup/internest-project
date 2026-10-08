@@ -12,9 +12,10 @@ from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from django.utils.translation import gettext as _
 
-from internest_skills.matching import skill_match, verified_skill_ids
+from internest_skills.matching import bulk_match_scores, skill_match
 from internest_startups.gate import posting_block_reason
 from internest_startups.tiers import FREE_POSTS_PER_MONTH, is_pro, monthly_quota_reached, posts_this_month
 
@@ -238,7 +239,7 @@ def internship_list(request):
     internships = (
         Internship.objects
         .filter(is_active=True)
-        .select_related("partner")
+        .select_related("partner", "partner__subscription")
         .prefetch_related("required_skills")
         .order_by("-deadline")
     )
@@ -255,14 +256,17 @@ def internship_list(request):
     )
 
     student = _get_student_profile(request.user)
-    verified_ids = verified_skill_ids(student)
+    applied_ids = set(
+        Application.objects.filter(applicant=request.user).values_list("internship_id", flat=True)
+    ) if student is not None else set()
     internships = list(internships)
+    scores = bulk_match_scores(internships, student)  # semantic coverage, same rule as the apply gate
     for internship in internships:
-        required = {s.id for s in internship.required_skills.all()}
-        internship.match_score = 100 if not required else len(required & verified_ids) * 100 // len(required)
+        internship.match_score = scores[internship.id]
 
     context = get_user_context(request)
     context.update({
+        "applied_ids": applied_ids,
         "internships": internships,
         "available_majors": ["CS", "Engineering", "Finance", "Marketing"],
         "verified_partner_names": verified_partner_names,
@@ -272,7 +276,7 @@ def internship_list(request):
 
 def internship_detail_view(request, pk):
     internship = get_object_or_404(
-        Internship.objects.select_related("partner"),
+        Internship.objects.select_related("partner", "partner__subscription"),
         pk=pk,
     )
     context = get_user_context(request)
@@ -280,6 +284,7 @@ def internship_detail_view(request, pk):
     student = _get_student_profile(request.user) if request.user.is_authenticated else None
     if student is not None:
         context["match"] = skill_match(student, internship)
+        context["already_applied"] = Application.objects.filter(internship=internship, applicant=request.user).exists()
     return render(request, "internship/detail.html", context)
 
 
@@ -336,6 +341,10 @@ def apply_to_internship(request, internship_id):
         return redirect("verify_email")
     if profile.profile_completion_score < 100:
         return redirect("apply_error", internship_id=internship_id)
+
+    if Application.objects.filter(internship=internship, applicant=request.user).exists():
+        messages.info(request, _("You have already applied to %(title)s.") % {"title": internship.title})
+        return redirect("internship_detail", pk=internship.pk)
 
     match = skill_match(profile, internship)
     if not match.unlocked:
@@ -441,11 +450,12 @@ def partner_dashboard_view(request, section="overview"):
         .filter(partner=partner_profile)
         .order_by("-submission_date")
     )
+    # All applications to this partner's opportunities (same source as the per-opportunity counts).
     received_applicants = (
-        PartnerApplicantData.objects
-        .filter(partner=partner_profile)
-        .select_related("student", "student__user", "internship")
-        .order_by("-forwarded_on")
+        Application.objects
+        .filter(internship__partner=partner_profile)
+        .select_related("applicant", "applicant__studentprofile", "internship")
+        .order_by("-application_date")
     )
 
     pending_count = (
@@ -519,7 +529,12 @@ def partner_submit_internship(request):
             submission.duration = _calc_duration_text(today, deadline)
             try:
                 submission.save()
-                submission.required_skills.set(form.cleaned_data["required_skills"])
+                skills, new_skills = form.all_required_skills()
+                submission.required_skills.set(skills)
+                if new_skills:  # link founder-defined skills to related ones students have (one AI call each)
+                    from internest_skills.semantic import relate_skill_ai
+                    for skill in new_skills:
+                        relate_skill_ai(skill)
                 messages.success(request, _("Your opportunity was submitted for review."))
                 return redirect("partner_dashboard")
             except Exception:
@@ -688,9 +703,12 @@ def course_list_view(request):
         .filter(student=student_profile)
         .values_list("course_id", flat=True)
     )
+    from internest_skills.recommendations import recommendations_for_student
+
     context = get_user_context(request)
     context["courses"] = courses
     context["enrolled_course_ids"] = enrolled_course_ids
+    context["recommended"] = recommendations_for_student(student_profile)
     return render(request, "internship/course_list.html", context)
 
 
@@ -813,3 +831,67 @@ def purchase_success_view(request, enrollment_id):
     context = get_user_context(request)
     context["enrollment"] = enrollment
     return render(request, "internship/purchase_success.html", context)
+
+
+def _partner_application_or_404(request, app_id):
+    partner = _get_partner_profile(request.user)
+    if partner is None:
+        raise Http404
+    app = get_object_or_404(
+        Application.objects.select_related("applicant", "applicant__studentprofile", "internship"),
+        pk=app_id, internship__partner=partner,
+    )
+    return partner, app
+
+
+@login_required
+def partner_applicant_view(request, app_id):
+    """Startup opens an applicant: the student's status moves Submitted → Under review."""
+    from internest_skills.permissions import is_pro_employer
+
+    partner, app = _partner_application_or_404(request, app_id)
+    app.mark_viewed()
+    student = getattr(app.applicant, "studentprofile", None)
+    context = get_user_context(request)
+    context.update({
+        "partner": partner, "app": app, "student": student,
+        "is_pro": is_pro_employer(partner),
+        "verified_skills": student.skills.filter(status="verified").select_related("skill") if student else [],
+    })
+    return render(request, "partner/applicant_detail.html", context)
+
+
+@login_required
+@require_POST
+def partner_applicant_decide(request, app_id):
+    partner, app = _partner_application_or_404(request, app_id)
+    decision = request.POST.get("decision")
+    if decision == "accept":
+        app.status = Application.STATUS_ACCEPTED
+        messages.success(request, _("Applicant accepted. Their contact details are now visible to you."))
+    elif decision == "fulfilled":
+        app.status = Application.STATUS_FULFILLED
+        messages.info(request, _("The applicant will see this position as filled."))
+    else:
+        return redirect("partner_applicant", app_id=app.pk)
+    app.decided_at = timezone.now()
+    app.save(update_fields=["status", "decided_at"])
+    return redirect("partner_applicant", app_id=app.pk)
+
+
+@login_required
+@require_POST
+def partner_close_opportunity(request, internship_id):
+    partner = _get_partner_profile(request.user)
+    if partner is None:
+        raise Http404
+    internship = get_object_or_404(Internship, pk=internship_id, partner=partner)
+    internship.is_active = False
+    internship.save(update_fields=["is_active"])
+    closed = (
+        Application.objects.filter(internship=internship)
+        .exclude(status=Application.STATUS_ACCEPTED)
+        .update(status=Application.STATUS_FULFILLED, decided_at=timezone.now())
+    )
+    messages.success(request, _("Opportunity closed. %(n)s pending applicants will see “Position filled”.") % {"n": closed})
+    return redirect("partner_dashboard")

@@ -1,5 +1,5 @@
 {% extends 'internship/base.html' %}
-{% load static i18n %}
+{% load static i18n startup_tags %}
 
 {% block title %}{% trans "Browse internships" %} — Internest{% endblock %}
 
@@ -56,7 +56,8 @@
 
         <div class="listing-grid">
             {% for internship in internships %}
-                <article class="listing-card {% if internship.is_premium %}listing-card--premium{% endif %} fade-up">
+                {% with pro=internship.partner|is_pro_partner %}
+                <article class="listing-card {% if pro %}listing-card--premium{% endif %} fade-up">
                     <div class="listing-card__head">
                         <div class="listing-card__avatar">
                             {% if internship.partner.logo %}
@@ -74,17 +75,15 @@
                                 {% endif %}
                             </p>
                         </div>
-                        {% if internship.is_premium %}
-                            <span class="badge badge--accent"><i class="bi bi-star-fill"></i> {% trans "Premium" %}</span>
-                        {% endif %}
+                        {% if pro %}<span class="pro-badge" title="Internest Pro">PRO</span>{% endif %}
                     </div>
 
                     <div class="listing-card__meta">
-                        <span class="badge badge--outline"><i class="bi bi-geo-alt"></i> {{ internship.location }}</span>
+                        <span class="badge badge--outline">{% if internship.location == "Online" %}<i class="bi bi-wifi"></i> {% trans "Online" %}{% else %}<i class="bi bi-geo-alt"></i> {{ internship.location }}{% endif %}</span>
                         <span class="badge badge--primary"><i class="bi bi-mortarboard"></i> {{ internship.required_majors }}</span>
                     </div>
 
-                    <p class="listing-card__desc">{{ internship.description|truncatewords:18 }}</p>
+                    <p class="listing-card__desc listing-card__desc--clamp">{{ internship.description }}</p>
 
                     <div class="listing-card__footer">
                         <span class="text-muted" style="font-size: var(--text-xs);">
@@ -93,18 +92,23 @@
                         </span>
                         <div class="btn-group">
                             <a href="{% url 'internship_detail' internship.id %}" class="btn btn--ghost btn--sm">{% trans "Details" %}</a>
-                            {% if internship.match_score < 80 %}
+                            {% if internship.pk in applied_ids %}
+                                <button type="button" class="btn btn--success btn--sm" disabled aria-disabled="true">
+                                    <i class="bi bi-check2-circle"></i> {% trans "Already applied" %}
+                                </button>
+                            {% elif internship.match_score < 80 %}
                                 <a href="{% url 'internship_detail' internship.id %}" class="btn btn--outline btn--sm" title="{% trans 'Skill Gap Detected' %}">
                                     <i class="bi bi-lock-fill"></i> {% blocktrans with score=internship.match_score %}Match {{ score }}%{% endblocktrans %}
                                 </a>
                             {% else %}
                                 <a href="{% url 'apply' internship.id %}" class="btn btn--primary btn--sm">
-                                    {% trans "Apply" %} <i class="bi bi-arrow-left-short"></i>
+                                    {% trans "Apply now" %} <i class="bi bi-arrow-left-short"></i>
                                 </a>
                             {% endif %}
                         </div>
                     </div>
                 </article>
+                {% endwith %}
             {% empty %}
                 <div class="empty-state" style="grid-column: 1 / -1;">
                     <div class="empty-state__icon"><i class="bi bi-search"></i></div>

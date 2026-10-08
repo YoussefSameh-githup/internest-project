@@ -1,17 +1,24 @@
-"""Market Readiness Gate: a student may apply only with ≥80% of an opportunity's required skills verified."""
+"""Market Readiness Gate: a student may apply only with ≥80% semantic coverage of an opportunity's required skills.
+
+Each required skill scores 1.0 when verified exactly, otherwise the combined relevance of the student's
+*related* verified skills (see semantic.py). The opportunity score is the average across required skills.
+"""
 from dataclasses import dataclass, field
 
-from .models import StudentSkill
+from .models import Skill, StudentSkill
+from .semantic import aggregate_score, relation_map
 
 MATCH_THRESHOLD = 80
+SKILL_COVERED = 0.8  # a single required skill counts as covered at ≥ 80% relevance
 
 
 @dataclass
 class SkillMatch:
-    score: int                                   # 0–100
+    score: int                                    # 0–100
     required: list = field(default_factory=list)  # Skill objects
-    matched: list = field(default_factory=list)
-    missing: list = field(default_factory=list)  # [(Skill, StudentSkill | None)]
+    matched: list = field(default_factory=list)   # covered (exactly or semantically)
+    missing: list = field(default_factory=list)   # [(Skill, StudentSkill | None)]
+    coverage: dict = field(default_factory=dict)  # {skill_id: 0–1}
 
     @property
     def unlocked(self) -> bool:
@@ -22,34 +29,38 @@ class SkillMatch:
         return MATCH_THRESHOLD
 
 
-def verified_skill_ids(student) -> set:
+def verified_skills(student) -> list:
     if student is None:
-        return set()
-    return set(
-        StudentSkill.objects.filter(student=student, status=StudentSkill.STATUS_VERIFIED).values_list("skill_id", flat=True)
-    )
+        return []
+    return list(Skill.objects.filter(student_skills__student=student, student_skills__status=StudentSkill.STATUS_VERIFIED))
 
 
-def skill_match(student, internship, verified_ids=None) -> SkillMatch:
-    """|verified ∩ required| / |required|. No required skills listed → nothing to gate (100%)."""
+def verified_skill_ids(student) -> set:
+    return {s.id for s in verified_skills(student)}
+
+
+def skill_match(student, internship, verified=None) -> SkillMatch:
     required = list(internship.required_skills.all())
     if not required:
         return SkillMatch(score=100)
-    if verified_ids is None:
-        verified_ids = verified_skill_ids(student)
-    matched = [s for s in required if s.id in verified_ids]
-    missing_skills = [s for s in required if s.id not in verified_ids]
+    if verified is None:
+        verified = verified_skills(student)
+    score, coverage = aggregate_score(required, verified)
+    matched = [s for s in required if coverage[s.id] >= SKILL_COVERED]
+    missing_skills = [s for s in required if coverage[s.id] < SKILL_COVERED]
     records = {}
     if student is not None and missing_skills:
-        records = {
-            ss.skill_id: ss
-            for ss in StudentSkill.objects.filter(student=student, skill__in=missing_skills)
-        }
-    # Floor, so 79.9% never rounds up into an unlock.
-    score = (len(matched) * 100) // len(required)
+        records = {ss.skill_id: ss for ss in StudentSkill.objects.filter(student=student, skill__in=missing_skills)}
     return SkillMatch(
-        score=score,
-        required=required,
-        matched=matched,
-        missing=[(s, records.get(s.id)) for s in missing_skills],
+        score=score, required=required, matched=matched,
+        missing=[(s, records.get(s.id)) for s in missing_skills], coverage=coverage,
     )
+
+
+def bulk_match_scores(internships, student) -> dict:
+    """{internship_id: score} for a page of opportunities with two queries total (list views)."""
+    verified = verified_skills(student)
+    required_by_opp = {i.id: list(i.required_skills.all()) for i in internships}  # use prefetch_related
+    all_ids = {s.id for skills in required_by_opp.values() for s in skills} | {v.id for v in verified}
+    weights = relation_map(all_ids)
+    return {opp_id: aggregate_score(req, verified, weights)[0] for opp_id, req in required_by_opp.items()}

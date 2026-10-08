@@ -112,30 +112,90 @@ class PartnerProfileEditForm(forms.ModelForm):
         }
 
 # === 3. فورم تقديم تدريب (من الشريك) (PartnerInternshipForm) ===
+ONLINE_LOCATION = "Online"
+MAX_CUSTOM_SKILLS = 10
+
+
 class PartnerInternshipForm(forms.ModelForm):
-    # Market Readiness Gate: students need ≥80% of these verified to apply.
-    required_skills = forms.ModelMultipleChoiceField(
-        queryset=None,
-        required=False,
-        label=_("Required skills"),
-        help_text=_("Students must have at least 80% of these skills verified to apply. Hold Ctrl/Cmd to select several."),
-        widget=forms.SelectMultiple(attrs={"class": "form-control", "size": 8}),
+    LOCATION_ONLINE, LOCATION_ONSITE = "online", "onsite"
+
+    location_mode = forms.ChoiceField(
+        choices=[(LOCATION_ONLINE, _("Online / remote")), (LOCATION_ONSITE, _("On-site / offline"))],
+        initial=LOCATION_ONLINE, required=False, widget=forms.RadioSelect, label=_("Work location"),
     )
+    address = forms.CharField(
+        required=False, max_length=100, label=_("Office address"),
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": _("e.g. Smart Village, Giza"), "autocomplete": "street-address"}),
+    )
+    # Market Readiness Gate: students need ≥80% coverage (exact or semantically related verified skills).
+    required_skills = forms.ModelMultipleChoiceField(
+        queryset=None, required=False, label=_("Required skills"),
+        widget=forms.SelectMultiple(attrs={"class": "form-control", "size": 6}),
+    )
+    custom_skills = forms.CharField(
+        required=False, label=_("Other skills"),
+        help_text=_("Type a skill that is not in the list and press Enter. Our AI links it to related skills students have verified."),
+        widget=forms.HiddenInput,
+    )
+
+    class Meta:
+        model = PartnerInternshipSubmission
+        fields = ['title', 'description', 'required_majors', 'deadline']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 6}),
+            'required_majors': forms.TextInput(attrs={'class': 'form-control'}),
+            'deadline': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         from internest_skills.models import Skill  # skills app depends on core; import lazily
         self.fields["required_skills"].queryset = Skill.objects.filter(is_active=True).order_by("name")
 
-    class Meta:
-        model = PartnerInternshipSubmission
-        # 🛑 التعديل النهائي: حذف 'duration' ليتم حسابه تلقائياً
-        fields = ['title', 'description', 'location', 'required_majors', 'deadline']
-        
-        # إضافة ويدجت التقويم لحقل الديدلاين
-        widgets = {
-            'deadline': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-        }
+    def clean_custom_skills(self):
+        names, seen = [], set()
+        for raw in (self.cleaned_data.get("custom_skills") or "").split(","):
+            name = " ".join(raw.split())
+            if not name or name.lower() in seen:
+                continue
+            if not 2 <= len(name) <= 60:
+                raise forms.ValidationError(_("Each skill must be 2–60 characters."))
+            seen.add(name.lower())
+            names.append(name)
+        if len(names) > MAX_CUSTOM_SKILLS:
+            raise forms.ValidationError(_("Add at most %(n)s custom skills.") % {"n": MAX_CUSTOM_SKILLS})
+        return names
+
+    def clean(self):
+        data = super().clean()
+        if (data.get("location_mode") or self.LOCATION_ONLINE) == self.LOCATION_ONSITE:
+            if not (data.get("address") or "").strip():
+                self.add_error("address", _("Enter the office address for on-site opportunities."))
+            else:
+                self.instance.location = data["address"].strip()
+        else:
+            self.instance.location = ONLINE_LOCATION
+        return data
+
+    def all_required_skills(self):
+        """Selected skills + custom ones (created on the fly). Returns (skills, newly_created)."""
+        from django.utils.text import slugify
+        from internest_skills.models import Skill
+
+        skills, created = list(self.cleaned_data.get("required_skills") or []), []
+        for name in self.cleaned_data.get("custom_skills") or []:
+            skill = Skill.objects.filter(name__iexact=name).first()
+            if skill is None:
+                base = slugify(name, allow_unicode=True)[:90] or "skill"
+                slug, n = base, 2
+                while Skill.objects.filter(slug=slug).exists():
+                    slug, n = f"{base}-{n}", n + 1
+                skill = Skill.objects.create(name=name, slug=slug, discipline="general", aliases=name)
+                created.append(skill)
+            if skill not in skills:
+                skills.append(skill)
+        return skills, created
 
 
 # === 4. فورم تقديم كورس (من الشريك) (PartnerCourseForm) ===

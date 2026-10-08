@@ -15,6 +15,31 @@
 
 <section class="section-sm">
     <div class="container">
+        {% if recommended.internal or recommended.external %}
+            <div class="card mb-6 rec-panel">
+                <h3 class="mb-1"><i class="bi bi-stars text-accent"></i> {% trans "Recommended for you" %}</h3>
+                <p class="text-muted mb-4" style="font-size: var(--text-sm);">
+                    {% if recommended.internal %}{% trans "Internest partner courses matched to your skill tests." %}
+                    {% else %}{% trans "No partner course matches your skill tests yet, so here are trusted external courses." %}{% endif %}
+                </p>
+                <div class="rec-grid">
+                    {% for rec in recommended.internal|default:recommended.external %}
+                        <a class="rec-item" href="{{ rec.url }}" {% if rec.provider_type != "internest_partner" %}target="_blank" rel="noopener"{% endif %}>
+                            <span class="rec-item__provider">{% if rec.provider_type == "internest_partner" %}<i class="bi bi-patch-check-fill"></i>{% else %}<i class="bi bi-box-arrow-up-left"></i>{% endif %} {{ rec.provider }}</span>
+                            <span class="rec-item__title">{{ rec.title }}</span>
+                            <span class="rec-item__why">{% if rec.is_gap %}<i class="bi bi-graph-up-arrow"></i>{% else %}<i class="bi bi-rocket-takeoff"></i>{% endif %} {{ rec.expected_outcome }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% elif not recommended.tested %}
+            <div class="card mb-6 rec-panel rec-panel--empty">
+                <i class="bi bi-lightbulb"></i>
+                <span>{% trans "Take a skill test to get course recommendations tailored to your gaps." %}</span>
+                <a href="{% url 'skills_hub' %}" class="btn btn--primary btn--sm">{% trans "Verify Your Skills" %}</a>
+            </div>
+        {% endif %}
+
         {% if courses %}
             <div class="listing-grid">
                 {% for course in courses %}

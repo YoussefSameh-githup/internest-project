@@ -39,13 +39,13 @@
                                 <td>{{ app.application_date|date:"Y/m/d" }}</td>
                                 <td>{{ app.internship.deadline|date:"Y/m/d" }}</td>
                                 <td>
-                                    {% if app.status == 'محول للشريك' %}
-                                        <span class="status-pill status-pill--approved"><i class="bi bi-check-circle-fill"></i> {% trans "Forwarded to partner" %}</span>
-                                    {% elif app.status == 'مرفوض' %}
-                                        <span class="status-pill status-pill--rejected"><i class="bi bi-x-circle-fill"></i> {% trans "Rejected" %}</span>
-                                    {% else %}
-                                        <span class="status-pill status-pill--pending"><i class="bi bi-hourglass-split"></i> {% trans "Under review" %}</span>
-                                    {% endif %}
+                                    <span class="app-status app-status--{{ app.status }}">
+                                        {% if app.status == "accepted" %}<i class="bi bi-check-circle-fill"></i>
+                                        {% elif app.status == "under_review" %}<i class="bi bi-eye"></i>
+                                        {% elif app.status == "fulfilled" %}<i class="bi bi-people"></i>
+                                        {% else %}<i class="bi bi-send-check"></i>{% endif %}
+                                        {{ app.get_status_display }}
+                                    </span>
                                 </td>
                             </tr>
                         {% endfor %}

@@ -274,11 +274,14 @@ class AccessControlTests(Base):
         self.client.force_login(self.student_user)
         self.assertContains(self.client.get(reverse("profile")), "Analyze & Verify Skills")
         self._forward(self.pro, self.student)
+        self._forward(self.free, self.student)
+        pro_app = Application.objects.get(internship__partner=self.pro)
+        free_app = Application.objects.get(internship__partner=self.free)
         self.client.force_login(self.pro_user)
-        self.assertContains(self.client.get(reverse("partner_dashboard_section", args=["applicants"])),
+        self.assertContains(self.client.get(reverse("partner_applicant", args=[pro_app.pk])),
                             reverse("skills_student_report", args=[self.student.pk]))
         self.client.force_login(self.free_user)
-        self.assertNotContains(self.client.get(reverse("partner_dashboard_section", args=["applicants"])),
+        self.assertNotContains(self.client.get(reverse("partner_applicant", args=[free_app.pk])),
                                reverse("skills_student_report", args=[self.student.pk]))
 
     def test_recommendations_api_is_self_only(self):
@@ -581,7 +584,9 @@ class MarketReadinessGateTests(Base):
             personal_email="stud@example.com", personal_email_verified_at=timezone.now(), profile_completion_score=100,
         )
         self.student.refresh_from_db()
-        self.required = list(Skill.objects.filter(slug__in=["python", "sql", "excel", "financial-analysis", "project-management"]))
+        # Five skills with no seeded relations between them → exact (non-semantic) ratios.
+        slugs = ["python", "legal-research", "video-editing", "digital-marketing", "project-management"]
+        self.required = sorted(Skill.objects.filter(slug__in=slugs), key=lambda s: slugs.index(s.slug))
         self.internship = Internship.objects.create(
             partner=self.pro, title="Data Gig", description="d", location="Cairo",
             required_majors="any", deadline=timezone.now().date() + timedelta(days=30),

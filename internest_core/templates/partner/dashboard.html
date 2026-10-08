@@ -151,6 +151,7 @@
                                 <th>{% trans "Deadline" %}</th>
                                 <th>{% trans "Status" %}</th>
                                 <th>{% trans "Applicants" %}</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -170,6 +171,15 @@
                                     <td>
                                         <strong style="color: var(--brand-700); font-size: var(--text-lg);">{{ internship.applicants_count }}</strong>
                                         <span class="text-muted" style="font-size: var(--text-xs);">{% trans "CV" %}</span>
+                                    </td>
+                                    <td>
+                                        {% if internship.is_active %}
+                                            <form method="post" action="{% url 'partner_close_opportunity' internship.pk %}" style="margin: 0;"
+                                                  onsubmit="return confirm('{% trans "Close this opportunity? Pending applicants will see “Position filled”." as close_text %}{{ close_text|escapejs }}');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn--ghost btn--sm"><i class="bi bi-door-closed"></i> {% trans "Close" %}</button>
+                                            </form>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -202,7 +212,7 @@
                     <span class="badge badge--accent"><i class="bi bi-gem"></i> {% trans "Verified skills available on Internest Pro" %}</span>
                 {% endif %}
             </div>
-            <p class="text-muted mb-5">{% trans "Files of students approved by Internest and forwarded to you appear here." %}</p>
+            <p class="text-muted mb-5">{% trans "Students who applied to your opportunities. Opening an applicant marks their application as under review." %}</p>
 
             {% if received_applicants %}
                 <div class="data-table-wrap" style="margin: 0; box-shadow: none;">
@@ -212,40 +222,30 @@
                                 <th>{% trans "Student" %}</th>
                                 <th>{% trans "Applied to" %}</th>
                                 <th>{% trans "Major" %}</th>
-                                <th>{% trans "Forwarded on" %}</th>
-                                <th>{% trans "CV" %}</th>
-                                <th>{% trans "Verified skills" %}</th>
+                                <th>{% trans "Applied on" %}</th>
+                                <th>{% trans "Status" %}</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for app in received_applicants %}
+                                {% with student=app.applicant.studentprofile %}
                                 <tr>
                                     <td>
-                                        <div class="fw-bold">{{ app.student.user.first_name }} {{ app.student.user.last_name }}</div>
-                                        <div class="text-muted" style="font-size: var(--text-xs);">{{ app.student.personal_email|default:app.student.user.email }}</div>
+                                        <div class="fw-bold">{{ app.applicant.get_full_name|default:app.applicant.username }}</div>
+                                        <div class="text-muted" style="font-size: var(--text-xs);">{{ student.university|default:"" }}</div>
                                     </td>
                                     <td>{{ app.internship.title }}</td>
-                                    <td>{{ app.student.major|default:"-" }}</td>
-                                    <td>{{ app.forwarded_on|date:"Y/m/d" }}</td>
+                                    <td>{{ student.major|default:"-" }}</td>
+                                    <td>{{ app.application_date|date:"Y/m/d" }}</td>
+                                    <td><span class="app-status app-status--{{ app.status }}">{{ app.get_status_display }}</span></td>
                                     <td>
-                                        {% if app.student.cv_file %}
-                                            <a href="{{ app.student.cv_file.url }}" target="_blank" class="btn btn--primary btn--sm">
-                                                <i class="bi bi-download"></i> {% trans "CV" %}
-                                            </a>
-                                        {% else %}
-                                            <span class="text-muted">-</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if is_pro %}
-                                            <a href="{% url 'skills_student_report' app.student.pk %}" class="btn btn--ghost btn--sm">
-                                                <i class="bi bi-patch-check"></i> {% trans "Skill report" %}
-                                            </a>
-                                        {% else %}
-                                            <span class="text-muted" title="Internest Pro"><i class="bi bi-lock-fill"></i></span>
-                                        {% endif %}
+                                        <a href="{% url 'partner_applicant' app.pk %}" class="btn btn--primary btn--sm">
+                                            <i class="bi bi-person-lines-fill"></i> {% trans "Open" %}
+                                        </a>
                                     </td>
                                 </tr>
+                                {% endwith %}
                             {% endfor %}
                         </tbody>
                     </table>
@@ -254,7 +254,7 @@
                 <div class="empty-state" style="padding: var(--space-8);">
                     <div class="empty-state__icon"><i class="bi bi-inbox"></i></div>
                     <h4>{% trans "No applicant files yet" %}</h4>
-                    <p>{% trans "Pre-screened student files forwarded to you will appear here." %}</p>
+                    <p>{% trans "Applications to your opportunities will appear here." %}</p>
                 </div>
             {% endif %}
         </div>

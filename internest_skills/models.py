@@ -43,6 +43,7 @@ class Skill(models.Model):
     # Market Readiness Gate: skills an opportunity requires (Internship.required_skills).
     opportunities = models.ManyToManyField(Internship, blank=True, related_name="required_skills")
     opportunity_submissions = models.ManyToManyField(PartnerInternshipSubmission, blank=True, related_name="required_skills")
+    relations_refreshed_at = models.DateTimeField(null=True, blank=True, editable=False)
 
     class Meta:
         ordering = ["discipline", "name"]
@@ -277,3 +278,23 @@ class EmployerSubscription(models.Model):
         if self.plan != self.PLAN_PRO:
             return False
         return self.valid_until is None or self.valid_until >= timezone.now().date()
+
+
+class SkillRelation(models.Model):
+    """Semantic relatedness between two skills (0–1), used by the Market Readiness Gate.
+
+    Stored once per pair (lookups check both directions). Sources: curated seed data, AI, or name heuristics.
+    """
+
+    SOURCE_CHOICES = [("seed", "Seed"), ("ai", "AI"), ("admin", "Admin")]
+
+    skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name="relations_out")
+    related = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name="relations_in")
+    weight = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default="admin")
+
+    class Meta:
+        unique_together = ("skill", "related")
+
+    def __str__(self):
+        return f"{self.skill} ↔ {self.related} ({self.weight:.2f})"
