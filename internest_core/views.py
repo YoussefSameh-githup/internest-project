@@ -316,6 +316,20 @@ def internship_detail_view(request, pk):
     return render(request, "internship/detail.html", context)
 
 
+def _talent_pool_eligible(profile):
+    """Has a verified skill or a score ≥ 80%. The profile must render even if skills tables are unavailable."""
+    from django.db import DatabaseError
+
+    from internest_startups.talent import qualifying_skills
+
+    try:
+        with transaction.atomic():
+            return qualifying_skills().filter(student=profile).exists()
+    except DatabaseError:
+        logger.exception("Could not check Talent Pool eligibility")
+        return False
+
+
 @login_required
 def profile_view(request):
     if _get_partner_profile(request.user) is not None:
@@ -351,13 +365,8 @@ def profile_view(request):
     else:
         form = ProfileForm(instance=profile)
 
-    from internest_startups.talent import qualifying_skills
-
     context = get_user_context(request)
-    context.update({
-        "profile": profile, "form": form,
-        "talent_pool_eligible": profile.pk is not None and qualifying_skills().filter(student=profile).exists(),
-    })
+    context.update({"profile": profile, "form": form, "talent_pool_eligible": _talent_pool_eligible(profile)})
     return render(request, "internship/profile.html", context)
 
 
