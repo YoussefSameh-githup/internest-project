@@ -3139,3 +3139,125 @@ msgstr ""
 
 msgid "Shortlist for interview"
 msgstr "تحويل لـ مرشح للمقابلة"
+
+msgid "Show me in the Talent Pool"
+msgstr "أظهرني في قاعدة المواهب (Talent Pool)"
+
+msgid "Startups invited you to apply"
+msgstr "شركات دعتك للتقديم"
+
+msgid "View & apply"
+msgstr "عرض والتقديم"
+
+msgid ""
+"Pro startups can find you by your verified skills and invite you to apply. "
+"They see your name, university, major, study year, bio and verified skills —"
+" never your phone, email or CV."
+msgstr ""
+"تستطيع شركات Pro إيجادك من خلال مهاراتك الموثّقة ودعوتك للتقديم. يرون اسمك "
+"وجامعتك وتخصصك وسنتك الدراسية ونبذتك ومهاراتك الموثّقة فقط — ولا يرون أبداً "
+"رقمك أو بريدك أو سيرتك الذاتية."
+
+msgid "Talent Pool"
+msgstr "قاعدة المواهب"
+
+msgid "Search verified students and invite them to apply"
+msgstr "ابحث عن طلاب بمهارات موثّقة وادعُهم للتقديم"
+
+msgid "Upgrade to Internest Pro to access the Talent Pool."
+msgstr "ترقية الحساب لباقة Pro مطلوبة للوصول لقاعدة بيانات المواهب"
+
+msgid "Choose one of your open opportunities."
+msgstr "اختر إحدى فرصك المفتوحة."
+
+msgid "You've reached today's limit of %(n)s invitations. Try again tomorrow."
+msgstr "وصلت للحد اليومي (%(n)s دعوة). حاول مرة أخرى غداً."
+
+msgid ""
+"Invitation sent. Contact details unlock once the student applies and you "
+"shortlist them."
+msgstr ""
+"تم إرسال الدعوة. تظهر بيانات التواصل عندما يتقدّم الطالب وترشّحه للمقابلة."
+
+msgid "This student was already invited to this opportunity."
+msgstr "تمت دعوة هذا الطالب لهذه الفرصة من قبل."
+
+msgid ""
+"Students who opted in, with verified skills or a skill score of 80%% or "
+"more. Contact details stay private until they apply and you shortlist them."
+msgstr ""
+"طلاب وافقوا على الظهور ولديهم مهارات موثّقة أو درجة 80%% فأكثر. تظل بيانات "
+"التواصل خاصة حتى يتقدّموا وترشّحهم للمقابلة."
+
+msgid "%(n)s invitations left today"
+msgstr "متبقٍ %(n)s دعوة اليوم"
+
+msgid "Search by name, skill, major or project…"
+msgstr "ابحث بالاسم أو المهارة أو التخصص أو المشروع…"
+
+msgid "All skills"
+msgstr "كل المهارات"
+
+msgid "Minimum score"
+msgstr "أقل درجة"
+
+msgid "Any score"
+msgstr "أي درجة"
+
+msgid "All universities"
+msgstr "كل الجامعات"
+
+msgid "Filter"
+msgstr "تصفية"
+
+msgid "Clear"
+msgstr "مسح"
+
+msgid "%(n)s candidates"
+msgstr "عدد المرشحين: %(n)s"
+
+msgid "Best skill score"
+msgstr "أعلى درجة مهارة"
+
+msgid "Contact details private"
+msgstr "بيانات التواصل خاصة"
+
+msgid "Invited"
+msgstr "تمت الدعوة"
+
+msgid "Invite to apply / contact"
+msgstr "دعوة للترشح/تواصل"
+
+msgid "Pages"
+msgstr "الصفحات"
+
+msgid "Previous"
+msgstr "السابق"
+
+msgid "Next"
+msgstr "التالي"
+
+msgid "No candidates match these filters yet. Try fewer filters."
+msgstr "لا يوجد مرشحون يطابقون هذه الفلاتر حالياً. جرّب فلاتر أقل."
+
+msgid "Invite to apply"
+msgstr "دعوة للتقديم"
+
+msgid "Message (optional)"
+msgstr "رسالة (اختياري)"
+
+msgid "Why this student is a good fit…"
+msgstr "لماذا هذا الطالب مناسب…"
+
+msgid ""
+"The student receives your invitation by email. Their CV and contact details "
+"unlock when they apply and you shortlist them for an interview."
+msgstr ""
+"يستلم الطالب دعوتك بالبريد الإلكتروني. تظهر سيرته الذاتية وبيانات تواصله "
+"عندما يتقدّم وترشّحه للمقابلة."
+
+msgid "Send invitation"
+msgstr "إرسال الدعوة"
+
+msgid "You need an open opportunity to invite students to."
+msgstr "تحتاج لفرصة مفتوحة لتدعو الطلاب إليها."

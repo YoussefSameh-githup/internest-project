@@ -12,12 +12,12 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from internest_core.models import PartnerProfile
+from internest_core.models import PartnerProfile, StudentProfile
 from internest_core.views import get_user_context
 
 from .completion import PLACEHOLDER_PREFIX
 from .forms import CompanyIdentityForm, CompanyProfileForm, LogoForm, StartupSignupForm
-from .gate import startup_partner
+from .gate import pro_company_required, startup_partner
 
 
 def startup_register(request):
@@ -201,3 +201,67 @@ def company_logo_update(request):
     if not url_has_allowed_host_and_scheme(nxt, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
         nxt = reverse("startup_company_profile")
     return redirect(nxt)
+
+
+@pro_company_required
+def talent_pool_search_view(request):
+    from django.core.paginator import Paginator
+
+    from internest_core.models import Internship
+
+    from .talent import DAILY_INVITATIONS, filter_options, invitations_today, pool_queryset
+
+    partner = request.partner
+    page = Paginator(pool_queryset(request.GET), 24).get_page(request.GET.get("page"))
+    invited = set(partner.talent_invitations.filter(student__in=list(page)).values_list("student_id", flat=True))
+    params = request.GET.copy()
+    params.pop("page", None)
+    context = get_user_context(request)
+    context.update({
+        "page": page, "invited": invited, "filters": request.GET, "querystring": params.urlencode(),
+        "options": filter_options(),
+        "opportunities": Internship.objects.filter(partner=partner, is_active=True, deadline__gte=timezone.now().date()).order_by("-pk"),
+        "invites_left": max(DAILY_INVITATIONS - invitations_today(partner), 0),
+    })
+    return render(request, "startups/talent_pool.html", context)
+
+
+@pro_company_required
+@require_POST
+def talent_pool_invite(request, student_id):
+    from django.db import IntegrityError
+    from django.shortcuts import get_object_or_404
+
+    from internest_core.models import Internship
+
+    from .models import TalentInvitation
+    from .talent import DAILY_INVITATIONS, invitations_today, qualifying_skills, send_invitation_email
+
+    partner = request.partner
+    back = reverse("talent_pool")
+    next_url = request.POST.get("next", "")
+    if next_url and url_has_allowed_host_and_scheme(next_url, {request.get_host()}) and next_url.startswith(back):
+        back = next_url
+    student = get_object_or_404(
+        StudentProfile.objects.select_related("user"),
+        pk=student_id, talent_pool_visible=True, pk__in=qualifying_skills().values("student_id"),
+    )
+    internship = Internship.objects.filter(
+        pk=request.POST.get("internship") or 0, partner=partner, is_active=True, deadline__gte=timezone.now().date(),
+    ).first()
+    if internship is None:
+        messages.error(request, _("Choose one of your open opportunities."))
+    elif invitations_today(partner) >= DAILY_INVITATIONS:
+        messages.error(request, _("You've reached today's limit of %(n)s invitations. Try again tomorrow.") % {"n": DAILY_INVITATIONS})
+    else:
+        try:
+            with transaction.atomic():
+                invitation = TalentInvitation.objects.create(
+                    partner=partner, student=student, internship=internship, message=request.POST.get("message", "").strip()[:500],
+                )
+        except IntegrityError:
+            messages.info(request, _("This student was already invited to this opportunity."))
+        else:
+            send_invitation_email(invitation, request.build_absolute_uri(reverse("internship_detail", args=[internship.pk])))
+            messages.success(request, _("Invitation sent. Contact details unlock once the student applies and you shortlist them."))
+    return redirect(back)

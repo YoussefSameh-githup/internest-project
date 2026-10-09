@@ -164,3 +164,30 @@ div.dash-card.is-locked:hover { transform: none; box-shadow: none; }
 .tag-input input { flex: 1; min-width: 160px; border: 0; outline: none; font: inherit; padding: 6px 4px; background: transparent; }
 .tag-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 12px; border-radius: 999px; background: #e0e7ff; color: #3730a3; font-weight: 700; font-size: .85rem; }
 .tag-chip button { border: 0; background: rgba(55, 48, 163, .12); color: inherit; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; line-height: 1; }
+
+/* ---- Talent Pool (Pro) ---- */
+.tp-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.tp-head h1 { font-size: var(--text-3xl, 1.9rem); }
+.tp-quota { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: #eef2ff; color: #3730a3; font-size: var(--text-sm); font-weight: 600; }
+.tp-filters { display: grid; grid-template-columns: minmax(220px, 2fr) repeat(4, minmax(140px, 1fr)) auto auto; gap: 10px; align-items: center; padding: 14px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(15, 23, 42, .05); margin-bottom: 16px; }
+.tp-search { position: relative; }
+.tp-search .bi { position: absolute; inset-inline-start: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+.tp-search input { width: 100%; padding: 10px 12px; padding-inline-start: 36px; border: 1px solid #e2e8f0; border-radius: 10px; font: inherit; }
+.tp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.tp-card { display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(15, 23, 42, .05); transition: box-shadow .2s, transform .2s; }
+.tp-card:hover { box-shadow: 0 10px 24px rgba(15, 23, 42, .08); transform: translateY(-2px); }
+.tp-card__head { display: flex; align-items: center; gap: 12px; }
+.tp-avatar { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #1e3a8a, #3b6fe0); color: #fff; font-weight: 800; }
+.tp-card__name { font-size: var(--text-lg); margin: 0; }
+.tp-card__meta { margin: 2px 0 0; color: #64748b; font-size: var(--text-sm); }
+.tp-best { margin-inline-start: auto; padding: 4px 10px; border-radius: 999px; background: #dcfce7; color: #166534; font-weight: 800; font-size: var(--text-sm); }
+.tp-card__bio { margin: 0; color: #475569; font-size: var(--text-sm); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tp-skills { display: flex; flex-wrap: wrap; gap: 6px; }
+.tp-card__foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 12px; border-top: 1px solid #f1f5f9; }
+.tp-card__foot .btn { margin-inline-start: auto; }
+.tp-private { color: #94a3b8; font-size: var(--text-xs); }
+.tp-pages { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 24px; }
+.tp-dialog { width: min(480px, calc(100vw - 32px)); border: 0; border-radius: 18px; padding: 24px; box-shadow: 0 24px 60px rgba(15, 23, 42, .25); }
+.tp-dialog::backdrop { background: rgba(15, 23, 42, .45); }
+.tp-note { margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; background: #f8fafc; color: #475569; font-size: var(--text-xs); }
+@media (max-width: 900px) { .tp-filters { grid-template-columns: 1fr 1fr; } .tp-search { grid-column: 1 / -1; } }

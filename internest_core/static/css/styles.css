@@ -1686,3 +1686,6 @@ html[dir="ltr"] {
 .consent-check { display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; cursor: pointer; }
 .consent-check input { margin-top: 4px; width: 18px; height: 18px; flex-shrink: 0; }
 .consent-check--error { border-color: var(--color-danger, #dc2626); background: #fef2f2; }
+.invite-panel { padding: 18px; border-radius: 16px; background: linear-gradient(135deg, #eef2ff, #f5f3ff); border: 1px solid #e0e7ff; }
+.invite-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid #e0e7ff; flex-wrap: wrap; }
+.invite-row:first-of-type { border-top: 0; }

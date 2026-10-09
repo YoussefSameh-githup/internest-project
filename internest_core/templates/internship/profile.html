@@ -175,6 +175,15 @@
                         {{ form.linkedin_url }}
                     </div>
                     <div class="form-group form-group--full">
+                        <label class="consent-check">
+                            {{ form.talent_pool_visible }}
+                            <span>
+                                <strong>{{ form.talent_pool_visible.label }}</strong><br>
+                                <small class="text-muted">{% trans "Pro startups can find you by your verified skills and invite you to apply. They see your name, university, major, study year, bio and verified skills — never your phone, email or CV." %}</small>
+                            </span>
+                        </label>
+                    </div>
+                    <div class="form-group form-group--full">
                         <label for="{{ form.bio.id_for_label }}" class="form-label">{{ form.bio.label }}</label>
                         {{ form.bio }}
                         <small class="form-help">{% trans "Startups see this with your verified skills before your CV and contact details are shared. Mention projects, tools and achievements." %}</small>

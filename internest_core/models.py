@@ -69,6 +69,8 @@ class StudentProfile(models.Model):
     phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="رقم الهاتف")
     # Shown to startups before the CV/contacts unlock (skills-first review).
     bio = models.TextField(max_length=600, blank=True, default="", verbose_name=_("About me & projects"))
+    # Explicit opt-in to appear in the Pro Talent Pool (name, studies and verified skills only — never contacts).
+    talent_pool_visible = models.BooleanField(default=False, verbose_name=_("Show me in the Talent Pool"))
     cv_file = models.FileField(
         upload_to='cvs/', blank=True, null=True,
         validators=[

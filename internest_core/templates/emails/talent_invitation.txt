@@ -1,0 +1,24 @@
+{% autoescape off %}مرحباً {{ name }}،
+
+{{ company }} شافت مهاراتك الموثّقة في Talent Pool على Internest ودعتك للتقديم على فرصة "{{ title }}".
+{% if message %}
+رسالة من الشركة:
+{{ message }}
+{% endif %}
+قدّم من هنا: {{ url }}
+بيانات تواصلك لن تُشارك إلا إذا قدّمت وتم ترشيحك للمقابلة.
+
+—
+
+Hi {{ name }},
+
+{{ company }} found your verified skills in the Internest Talent Pool and invited you to apply for "{{ title }}".
+{% if message %}
+Message from the company:
+{{ message }}
+{% endif %}
+Apply here: {{ url }}
+Your contact details are only shared if you apply and get shortlisted for an interview.
+
+— Internest
+{% endautoescape %}

@@ -15,6 +15,20 @@
 
 <section class="section-sm">
     <div class="container">
+        {% if invitations %}
+            <div class="invite-panel mb-6">
+                <h2 class="mb-3" style="font-size: var(--text-lg);"><i class="bi bi-envelope-paper-heart"></i> {% trans "Startups invited you to apply" %}</h2>
+                {% for inv in invitations %}
+                    <div class="invite-row">
+                        <div>
+                            <strong>{{ inv.internship.title }}</strong> · {{ inv.partner.company_name }}
+                            {% if inv.message %}<p class="text-muted mb-0 mt-1" style="font-size: var(--text-sm);">“{{ inv.message }}”</p>{% endif %}
+                        </div>
+                        <a href="{% url 'internship_detail' inv.internship.pk %}" class="btn btn--primary btn--sm">{% trans "View & apply" %}</a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
         {% if applications %}
             <div class="data-table-wrap fade-up">
                 <table class="data-table">

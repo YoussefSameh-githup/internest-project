@@ -105,13 +105,14 @@
 
             {% if not partner.is_academic %}
                 {% if is_pro %}
-                    <div class="dash-card is-locked" aria-disabled="true">
+                    <a href="{% url 'talent_pool' %}" class="dash-card">
                         <span class="dash-card__icon dash-card__icon--blue"><i class="bi bi-search"></i></span>
                         <span class="dash-card__text">
-                            <span class="dash-card__title">{% trans "Direct Talent Search" %}</span>
-                            <span class="dash-card__sub">{% trans "Coming soon" %}</span>
+                            <span class="dash-card__title">{% trans "Talent Pool" %} <span class="pro-chip">PRO</span></span>
+                            <span class="dash-card__sub">{% trans "Search verified students and invite them to apply" %}</span>
                         </span>
-                    </div>
+                        <i class="bi bi-chevron-left dash-card__go" aria-hidden="true"></i>
+                    </a>
                 {% else %}
                     <a href="{% url 'startup_upgrade' %}" class="dash-card dash-card--gold" data-upsell>
                         <span class="dash-card__icon dash-card__icon--gold"><i class="bi bi-gem"></i></span>

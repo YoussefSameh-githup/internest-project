@@ -3,7 +3,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from internest_core.models import PartnerProfile
+from internest_core.models import Internship, PartnerProfile, StudentProfile
 
 
 def current_year():
@@ -98,3 +98,20 @@ class ProUpgradeRequest(models.Model):
 
     def __str__(self):
         return f"{self.partner} · Pro × {self.months} ({self.get_status_display()})"
+
+
+class TalentInvitation(models.Model):
+    """A Pro startup invites a Talent Pool student to apply. Contacts stay hidden until the usual shortlist step."""
+
+    partner = models.ForeignKey(PartnerProfile, on_delete=models.CASCADE, related_name="talent_invitations")
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="talent_invitations")
+    internship = models.ForeignKey(Internship, on_delete=models.CASCADE, related_name="talent_invitations")
+    message = models.TextField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [models.UniqueConstraint(fields=["internship", "student"], name="unique_talent_invitation")]
+
+    def __str__(self):
+        return f"{self.partner} → {self.student} ({self.internship})"

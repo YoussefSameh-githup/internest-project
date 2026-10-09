@@ -113,3 +113,14 @@ class ProUpgradeRequestAdmin(admin.ModelAdmin):
     def pro_until(self, obj):
         sub = getattr(obj.partner, "subscription", None)
         return sub.valid_until if sub and sub.plan == "pro" else "—"
+
+
+from .models import TalentInvitation  # noqa: E402
+
+
+@admin.register(TalentInvitation)
+class TalentInvitationAdmin(admin.ModelAdmin):
+    list_display = ("partner", "student", "internship", "created_at")
+    list_filter = ("created_at",)
+    search_fields = ("partner__company_name", "student__user__username", "internship__title")
+    raw_id_fields = ("partner", "student", "internship")

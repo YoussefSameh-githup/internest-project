@@ -432,8 +432,16 @@ def my_applications_view(request):
         .select_related("internship", "internship__partner")
         .order_by("-application_date")
     )
+    from internest_startups.models import TalentInvitation
+
+    applied = {a.internship_id for a in applications}
+    invitations = [
+        inv for inv in TalentInvitation.objects.filter(student__user=request.user, internship__is_active=True)
+        .select_related("internship", "partner")[:10]
+        if inv.internship_id not in applied
+    ]
     context = get_user_context(request)
-    context["applications"] = applications
+    context.update({"applications": applications, "invitations": invitations})
     return render(request, "internship/my_applications.html", context)
 
 

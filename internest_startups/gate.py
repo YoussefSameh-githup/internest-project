@@ -68,3 +68,28 @@ class CompanyProfileGateMiddleware:
             return resolve(path).url_name in PROFILE_GATE_ALLOWED
         except Resolver404:
             return False
+
+
+def pro_company_required(view):
+    """Pro startups only. Others are sent to the upgrade page with an explanation; non-startups get a 404."""
+    from functools import wraps
+
+    from django.contrib import messages
+    from django.contrib.auth.decorators import login_required
+    from django.http import Http404
+
+    from .tiers import is_pro
+
+    @login_required
+    @wraps(view)
+    def wrapped(request, *args, **kwargs):
+        partner = startup_partner(request.user)
+        if partner is None:
+            raise Http404
+        if not is_pro(partner):
+            messages.warning(request, _("Upgrade to Internest Pro to access the Talent Pool."))
+            return redirect("startup_upgrade")
+        request.partner = partner
+        return view(request, *args, **kwargs)
+
+    return wrapped
