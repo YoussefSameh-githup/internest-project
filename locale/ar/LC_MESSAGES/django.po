@@ -3281,3 +3281,79 @@ msgstr "يلزم وجود مهارة موثّقة أو درجة 80%% فأكثر 
 
 msgid "Verify a skill"
 msgstr "وثّق مهارة"
+
+msgid "Invited by you"
+msgstr "بدعوة خاصة (Invited)"
+
+msgid "Portfolio link (GitHub, Behance, website)"
+msgstr "رابط أعمالك (GitHub أو Behance أو موقعك)"
+
+msgid "Portfolio link"
+msgstr "رابط الأعمال"
+
+msgid "Direct"
+msgstr "مباشر"
+
+msgid "%(company)s invited you, so the skill match requirement is waived."
+msgstr "دعتك %(company)s، لذلك تم إعفاؤك من شرط تطابق المهارات."
+
+msgid ""
+"Shown to Pro startups in your Talent Pool profile. Don't use a link that "
+"shows your phone or email."
+msgstr ""
+"يظهر لشركات Pro في ملفك بقاعدة المواهب. لا تستخدم رابطاً يظهر فيه رقمك أو "
+"بريدك."
+
+msgid "Applied"
+msgstr "تم التقديم"
+
+msgid "Each opportunity can have at most %(n)s invitations."
+msgstr "الحد الأقصى %(n)s دعوات لكل فرصة."
+
+msgid "View %(name)s's profile"
+msgstr "عرض بروفايل %(name)s"
+
+msgid "View profile"
+msgstr "عرض البروفايل"
+
+msgid "Candidate profile"
+msgstr "بروفايل المرشح"
+
+msgid "Loading…"
+msgstr "جارٍ التحميل…"
+
+msgid ""
+"Invited students can apply even below the 80%% skill match. Up to %(n)s "
+"invitations per opportunity."
+msgstr ""
+"يستطيع الطلاب المدعوون التقديم حتى لو كان تطابق مهاراتهم أقل من 80%%. حتى "
+"%(n)s دعوات لكل فرصة."
+
+msgid "Could not load this profile. Please try again."
+msgstr "تعذّر تحميل البروفايل. حاول مرة أخرى."
+
+msgid "Verified student"
+msgstr "طالب موثّق"
+
+msgid "No bio yet."
+msgstr "لا توجد نبذة بعد."
+
+msgid "Portfolio"
+msgstr "الأعمال"
+
+msgid "Verified skills & scores"
+msgstr "المهارات الموثّقة والدرجات"
+
+msgid "Contact details"
+msgstr "بيانات التواصل"
+
+msgid "Contact details are hidden"
+msgstr "بيانات التواصل مخفية"
+
+msgid ""
+"Unlocks when the student applies through your invitation and you shortlist "
+"them for an interview."
+msgstr "تظهر عندما يتقدّم الطالب من خلال دعوتك وترشّحه للمقابلة."
+
+msgid "Invited to %(title)s"
+msgstr "تمت دعوته إلى %(title)s"

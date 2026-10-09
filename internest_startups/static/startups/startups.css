@@ -191,3 +191,22 @@ div.dash-card.is-locked:hover { transform: none; box-shadow: none; }
 .tp-dialog::backdrop { background: rgba(15, 23, 42, .45); }
 .tp-note { margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; background: #f8fafc; color: #475569; font-size: var(--text-xs); }
 @media (max-width: 900px) { .tp-filters { grid-template-columns: 1fr 1fr; } .tp-search { grid-column: 1 / -1; } }
+
+/* ---- Candidate profile preview ---- */
+.tp-card--clickable { cursor: pointer; }
+.tp-card--clickable:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+.tp-dialog--wide { width: min(680px, calc(100vw - 32px)); max-height: calc(100vh - 48px); }
+.tp-dialog__close { position: absolute; inset-inline-end: 14px; top: 14px; width: 34px; height: 34px; border: 0; border-radius: 50%; background: #f1f5f9; cursor: pointer; }
+.cp { display: flex; flex-direction: column; gap: 18px; }
+.cp__head { display: flex; align-items: center; gap: 12px; padding-inline-end: 40px; }
+.cp__name { margin: 0; font-size: var(--text-xl); }
+.cp__section h3 { font-size: var(--text-base); margin: 0 0 10px; }
+.cp__bio { margin: 0; white-space: pre-line; color: #334155; }
+.cp__skills { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.cp__skills th, .cp__skills td { padding: 8px 6px; text-align: start; border-bottom: 1px solid #f1f5f9; }
+.cp__skills th { color: #64748b; font-weight: 600; font-size: var(--text-xs); }
+.cp__score { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #dcfce7; color: #166534; font-weight: 700; }
+.cp__masked { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.cp__masked li { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: #f8fafc; color: #64748b; }
+.cp__blur { filter: blur(4px); user-select: none; direction: ltr; }
+.cp__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: flex-end; padding-top: 14px; border-top: 1px solid #f1f5f9; }

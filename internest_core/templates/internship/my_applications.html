@@ -24,7 +24,7 @@
                             <strong>{{ inv.internship.title }}</strong> · {{ inv.partner.company_name }}
                             {% if inv.message %}<p class="text-muted mb-0 mt-1" style="font-size: var(--text-sm);">“{{ inv.message }}”</p>{% endif %}
                         </div>
-                        <a href="{% url 'internship_detail' inv.internship.pk %}" class="btn btn--primary btn--sm">{% trans "View & apply" %}</a>
+                        <a href="{{ inv.apply_url }}" class="btn btn--primary btn--sm">{% trans "View & apply" %}</a>
                     </div>
                 {% endfor %}
             </div>

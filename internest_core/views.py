@@ -311,8 +311,11 @@ def internship_detail_view(request, pk):
     context["internship"] = internship
     student = _get_student_profile(request.user) if request.user.is_authenticated else None
     if student is not None:
+        from internest_startups.talent import valid_invitation
+
         context["match"] = skill_match(student, internship)
         context["already_applied"] = Application.objects.filter(internship=internship, applicant=request.user).exists()
+        context["invitation"] = valid_invitation(request.user, internship, request.GET.get("invite_token"))
     return render(request, "internship/detail.html", context)
 
 
@@ -388,8 +391,12 @@ def apply_to_internship(request, internship_id):
         messages.info(request, _("You have already applied to %(title)s.") % {"title": internship.title})
         return redirect("internship_detail", pk=internship.pk)
 
+    from internest_startups.talent import valid_invitation
+
+    # A Talent Pool invitation link waives the 80% skill match (only for the invited student).
+    invitation = valid_invitation(request.user, internship, request.POST.get("invite_token") or request.GET.get("invite_token"))
     match = skill_match(profile, internship)
-    if not match.unlocked:
+    if not match.unlocked and invitation is None:
         messages.error(
             request,
             _("Your skill match is %(score)s%%. You need at least %(threshold)s%% of the required skills verified to apply.")
@@ -400,16 +407,23 @@ def apply_to_internship(request, internship_id):
     consent_error = None
     if request.method == "POST":
         if request.POST.get("contact_consent") == "on":
-            return _create_application(request, internship)
+            return _create_application(request, internship, invitation)
         consent_error = _("Please agree to sharing your CV and contact details to apply.")
     context = get_user_context(request)
-    context.update({"internship": internship, "profile": profile, "consent_error": consent_error})
+    context.update({"internship": internship, "profile": profile, "consent_error": consent_error, "invitation": invitation})
     return render(request, "internship/apply_confirm.html", context)
 
 
-def _create_application(request, internship):
+def _create_application(request, internship, invitation=None):
     try:
-        Application.objects.create(internship=internship, applicant=request.user, contact_consent_at=timezone.now())
+        with transaction.atomic():
+            Application.objects.create(
+                internship=internship, applicant=request.user, contact_consent_at=timezone.now(),
+                source=Application.SOURCE_INVITED if invitation else Application.SOURCE_DIRECT,
+            )
+            if invitation:
+                invitation.status, invitation.accepted_at = invitation.STATUS_ACCEPTED, timezone.now()
+                invitation.save(update_fields=["status", "accepted_at"])
         messages.success(request, _("You applied to %(title)s.") % {"title": internship.title})
     except IntegrityError:
         messages.warning(

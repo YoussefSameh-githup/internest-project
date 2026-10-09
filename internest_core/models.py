@@ -69,6 +69,7 @@ class StudentProfile(models.Model):
     phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="رقم الهاتف")
     # Shown to startups before the CV/contacts unlock (skills-first review).
     bio = models.TextField(max_length=600, blank=True, default="", verbose_name=_("About me & projects"))
+    portfolio_url = models.URLField(blank=True, default="", verbose_name=_("Portfolio link"))
     # Explicit opt-in to appear in the Pro Talent Pool (name, studies and verified skills only — never contacts).
     talent_pool_visible = models.BooleanField(default=False, db_index=True, verbose_name=_("Show me in the Talent Pool"))
 
@@ -226,6 +227,10 @@ class Application(models.Model):
     reviewed_at = models.DateTimeField(null=True, blank=True)
     decided_at = models.DateTimeField(null=True, blank=True)
     shortlisted_at = models.DateTimeField(null=True, blank=True)
+    SOURCE_DIRECT = "direct"
+    SOURCE_INVITED = "invited"  # applied through a Talent Pool invitation link (skill match waived)
+    SOURCE_CHOICES = [(SOURCE_DIRECT, _("Direct")), (SOURCE_INVITED, _("Invited"))]
+    source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=SOURCE_DIRECT)
     # When the student agreed that their CV and contact details are shared once shortlisted.
     contact_consent_at = models.DateTimeField(null=True, blank=True)
 

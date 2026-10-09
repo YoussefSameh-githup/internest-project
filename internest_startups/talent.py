@@ -10,6 +10,22 @@ from internest_skills.models import Skill, StudentSkill
 
 TOP_SCORE = 80
 DAILY_INVITATIONS = 20  # per startup, anti-spam
+INVITES_PER_OPPORTUNITY = 5  # invited students skip the skill gate, so keep it scarce
+
+
+def valid_invitation(user, internship, token):
+    """The invitation behind `?invite_token=` if it belongs to this student and opportunity, else None."""
+    import uuid
+
+    from .models import TalentInvitation
+
+    if not token or not getattr(user, "is_authenticated", False):
+        return None
+    try:
+        token = uuid.UUID(str(token))
+    except ValueError:
+        return None
+    return TalentInvitation.objects.filter(token=token, internship=internship, student__user=user).first()
 
 
 def qualifying_skills():

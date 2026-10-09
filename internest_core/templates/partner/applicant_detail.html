@@ -14,7 +14,7 @@
                     <h1 class="mb-1" style="font-size: var(--text-2xl);">{{ app.applicant.get_full_name|default:app.applicant.username }}</h1>
                     <p class="text-muted mb-0">{% blocktrans with title=app.internship.title %}Applied to {{ title }}{% endblocktrans %} · {{ app.application_date|date:"Y/m/d" }}</p>
                 </div>
-                <span class="app-status app-status--{{ app.status }}">{{ app.get_status_display }}</span>
+                <span><span class="app-status app-status--{{ app.status }}">{{ app.get_status_display }}</span>{% if app.source == "invited" %} <span class="invited-badge">🎟️ {% trans "Invited by you" %}</span>{% endif %}</span>
             </div>
 
             <dl class="applicant-facts">

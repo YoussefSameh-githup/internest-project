@@ -21,7 +21,7 @@ def _skill(student, slug, status=StudentSkill.STATUS_VERIFIED, score=90):
 
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
-class TalentPoolTests(ApplicationsBase):
+class PoolBase(ApplicationsBase):
     def setUp(self):
         super().setUp()
         self.amr_user, self.amr = _student("amr")
@@ -46,6 +46,9 @@ class TalentPoolTests(ApplicationsBase):
     def _names(self, resp):
         return {c.user.username for c in resp.context["page"]}
 
+
+
+class TalentPoolTests(PoolBase):
     def test_free_startup_redirected_to_upgrade_with_message(self):
         self.client.force_login(self.founder)
         resp = self.client.get(URL, follow=True)
@@ -168,3 +171,84 @@ class TalentPoolProfileSettingTests(ApplicationsBase):
         self.assertNotContains(page, "A verified skill or a score of 80%+ is required")
         self._save(talent_pool_visible="on")
         self.assertContains(self.client.get(reverse("profile")), "Visible to Pro startups")
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class InvitationBypassAndPreviewTests(PoolBase):
+    def setUp(self):
+        super().setUp()
+        self.gig.required_skills.set([Skill.objects.get(slug="legal-research")])  # amr has none of these
+        self._pro()
+
+    def _invite(self, student=None):
+        self.client.post(reverse("talent_pool_invite", args=[(student or self.amr).pk]), {"internship": self.gig.pk})
+        return TalentInvitation.objects.get(student=student or self.amr, internship=self.gig)
+
+    def test_invite_token_bypasses_skill_gate(self):
+        inv = self._invite()
+        self.assertIn(f"invite_token={inv.token}", mail.outbox[-1].body)
+        self.login_student(self.amr_user)
+        apply_url = reverse("apply", args=[self.gig.pk])
+
+        self.client.post(apply_url, CONSENT)  # no token: still locked by the 80% match
+        self.assertFalse(Application.objects.exists())
+        detail = self.client.get(inv.apply_url)
+        self.assertContains(detail, "invited you, so the skill match requirement is waived")
+        self.assertContains(detail, f"{apply_url}?invite_token={inv.token}")
+        page = self.client.get(f"{apply_url}?invite_token={inv.token}")
+        self.assertContains(page, f'name="invite_token" value="{inv.token}"')
+        self.client.post(apply_url, {**CONSENT, "invite_token": str(inv.token)})
+
+        app = Application.objects.get()
+        self.assertEqual(app.source, Application.SOURCE_INVITED)
+        inv.refresh_from_db()
+        self.assertEqual(inv.status, TalentInvitation.STATUS_ACCEPTED)
+        self.client.force_login(self.founder)
+        self.assertContains(self.client.get(reverse("partner_applicant", args=[app.pk])), "🎟️ Invited")
+        self.assertContains(self.client.get(reverse("partner_dashboard_section", args=["applicants"])), "🎟️ Invited")
+        self.client.cookies["internest_lang"] = "ar"
+        self.assertContains(self.client.get(reverse("partner_applicant", args=[app.pk])), "🎟️ بدعوة خاصة (Invited)")
+
+    def test_token_only_works_for_the_invited_student(self):
+        inv = self._invite()
+        self.login_student(self.sara_user)  # someone else's token
+        self.client.post(reverse("apply", args=[self.gig.pk]), {**CONSENT, "invite_token": str(inv.token)})
+        self.login_student(self.amr_user)
+        for bad in ("not-a-uuid", "00000000-0000-0000-0000-000000000000"):
+            self.client.post(reverse("apply", args=[self.gig.pk]), {**CONSENT, "invite_token": bad})
+        self.assertFalse(Application.objects.exists())
+
+    def test_regular_applications_are_direct(self):
+        self.gig.required_skills.clear()
+        self.login_student(self.amr_user)
+        self.client.post(reverse("apply", args=[self.gig.pk]), CONSENT)
+        self.assertEqual(Application.objects.get().source, Application.SOURCE_DIRECT)
+
+    def test_five_invitations_per_opportunity(self):
+        for i in range(5):
+            u, p = _student(f"extra{i}")
+            TalentInvitation.objects.create(partner=self.partner, student=p, internship=self.gig)
+        resp = self.client.post(reverse("talent_pool_invite", args=[self.amr.pk]), {"internship": self.gig.pk}, follow=True)
+        self.assertContains(resp, "at most 5 invitations")
+        self.assertFalse(TalentInvitation.objects.filter(student=self.amr).exists())
+        self.assertContains(self.client.get(URL), "· 5/5</option>")
+
+    def test_profile_preview_hides_contacts(self):
+        type(self.amr).objects.filter(pk=self.amr.pk).update(
+            linkedin_url="https://www.linkedin.com/in/amr-secret", portfolio_url="https://github.com/amr-dev")
+        self.assertContains(self.client.get(URL), reverse("talent_pool_candidate", args=[self.amr.pk]))
+        resp = self.client.get(reverse("talent_pool_candidate", args=[self.amr.pk]))
+        for shown in ("Built a stock dashboard in Django", "https://github.com/amr-dev", "Python", "95%", "P70",
+                      "Cairo University", "Computer Science", "Invite to apply / contact"):
+            self.assertContains(resp, shown)
+        for secret in ("amr@uni.edu", "01012345678", "amr-secret", "cvs/"):
+            self.assertNotContains(resp, secret)
+        self.assertEqual(self.client.get(reverse("talent_pool_candidate", args=[self.hidden.pk])).status_code, 404)
+        self.assertEqual(self.client.get(reverse("talent_pool_candidate", args=[self.weak.pk])).status_code, 404)
+
+    def test_preview_is_pro_only(self):
+        from internest_skills.models import EmployerSubscription
+
+        EmployerSubscription.objects.filter(partner=self.partner).update(plan=EmployerSubscription.PLAN_FREE)
+        resp = self.client.get(reverse("talent_pool_candidate", args=[self.amr.pk]))
+        self.assertRedirects(resp, reverse("startup_upgrade"), fetch_redirect_response=False)

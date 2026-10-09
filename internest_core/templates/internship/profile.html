@@ -207,6 +207,12 @@
                         {{ form.bio }}
                         <small class="form-help">{% trans "Startups see this with your verified skills before your CV and contact details are shared. Mention projects, tools and achievements." %}</small>
                     </div>
+                    <div class="form-group form-group--full">
+                        <label for="{{ form.portfolio_url.id_for_label }}" class="form-label">{{ form.portfolio_url.label }}</label>
+                        {{ form.portfolio_url }}
+                        {% if form.portfolio_url.errors %}<div class="form-error">{{ form.portfolio_url.errors|striptags }}</div>{% endif %}
+                        <small class="form-help">{% trans "Shown to Pro startups in your Talent Pool profile. Don't use a link that shows your phone or email." %}</small>
+                    </div>
                     <div class="form-group">
                         <label for="{{ form.cv_file.id_for_label }}" class="form-label">{{ form.cv_file.label }}</label>
                         {{ form.cv_file }}

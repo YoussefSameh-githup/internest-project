@@ -20,8 +20,12 @@
                 </div>
             {% endif %}
 
+            {% if invitation %}
+                <div class="invite-banner"><span>🎟️</span> {% blocktrans with company=internship.partner.company_name %}{{ company }} invited you, so the skill match requirement is waived.{% endblocktrans %}</div>
+            {% endif %}
             <form method="post" class="mt-4">
                 {% csrf_token %}
+                {% if invitation %}<input type="hidden" name="invite_token" value="{{ invitation.token }}">{% endif %}
                 <label class="consent-check{% if consent_error %} consent-check--error{% endif %}">
                     <input type="checkbox" name="contact_consent" required>
                     <span>{% trans "When I'm shortlisted for an interview, my CV and contact details will be shared with the company." %}</span>

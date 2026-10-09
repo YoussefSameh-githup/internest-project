@@ -239,7 +239,7 @@
                                     <td>{{ app.internship.title }}</td>
                                     <td>{{ student.major|default:"-" }}</td>
                                     <td>{{ app.application_date|date:"Y/m/d" }}</td>
-                                    <td><span class="app-status app-status--{{ app.status }}">{{ app.get_status_display }}</span></td>
+                                    <td><span class="app-status app-status--{{ app.status }}">{{ app.get_status_display }}</span>{% if app.source == "invited" %} <span class="invited-badge">🎟️ {% trans "Invited by you" %}</span>{% endif %}</td>
                                     <td>
                                         <a href="{% url 'partner_applicant' app.pk %}" class="btn btn--primary btn--sm">
                                             <i class="bi bi-person-lines-fill"></i> {% trans "Open" %}

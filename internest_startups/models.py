@@ -1,3 +1,5 @@
+import uuid
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
@@ -106,8 +108,16 @@ class TalentInvitation(models.Model):
     partner = models.ForeignKey(PartnerProfile, on_delete=models.CASCADE, related_name="talent_invitations")
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="talent_invitations")
     internship = models.ForeignKey(Internship, on_delete=models.CASCADE, related_name="talent_invitations")
+    STATUS_PENDING = "pending"
+    STATUS_ACCEPTED = "accepted"
+    STATUS_CHOICES = [(STATUS_PENDING, _("Pending")), (STATUS_ACCEPTED, _("Applied"))]
+
     message = models.TextField(max_length=500, blank=True)
+    # Secret link token: lets this student apply without meeting the 80% skill match.
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
+    accepted_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["-created_at"]
@@ -115,3 +125,9 @@ class TalentInvitation(models.Model):
 
     def __str__(self):
         return f"{self.partner} → {self.student} ({self.internship})"
+
+    @property
+    def apply_url(self):
+        from django.urls import reverse
+
+        return f"{reverse('internship_detail', args=[self.internship_id])}?invite_token={self.token}"

@@ -209,7 +209,9 @@ def talent_pool_search_view(request):
 
     from internest_core.models import Internship
 
-    from .talent import DAILY_INVITATIONS, filter_options, invitations_today, pool_queryset
+    from django.db.models import Count
+
+    from .talent import DAILY_INVITATIONS, INVITES_PER_OPPORTUNITY, filter_options, invitations_today, pool_queryset
 
     partner = request.partner
     page = Paginator(pool_queryset(request.GET), 24).get_page(request.GET.get("page"))
@@ -220,7 +222,9 @@ def talent_pool_search_view(request):
     context.update({
         "page": page, "invited": invited, "filters": request.GET, "querystring": params.urlencode(),
         "options": filter_options(),
-        "opportunities": Internship.objects.filter(partner=partner, is_active=True, deadline__gte=timezone.now().date()).order_by("-pk"),
+        "opportunities": Internship.objects.filter(partner=partner, is_active=True, deadline__gte=timezone.now().date())
+        .annotate(invites_used=Count("talent_invitations")).order_by("-pk"),
+        "invites_per_opportunity": INVITES_PER_OPPORTUNITY,
         "invites_left": max(DAILY_INVITATIONS - invitations_today(partner), 0),
     })
     return render(request, "startups/talent_pool.html", context)
@@ -235,7 +239,7 @@ def talent_pool_invite(request, student_id):
     from internest_core.models import Internship
 
     from .models import TalentInvitation
-    from .talent import DAILY_INVITATIONS, invitations_today, qualifying_skills, send_invitation_email
+    from .talent import DAILY_INVITATIONS, INVITES_PER_OPPORTUNITY, invitations_today, qualifying_skills, send_invitation_email
 
     partner = request.partner
     back = reverse("talent_pool")
@@ -251,6 +255,8 @@ def talent_pool_invite(request, student_id):
     ).first()
     if internship is None:
         messages.error(request, _("Choose one of your open opportunities."))
+    elif internship.talent_invitations.count() >= INVITES_PER_OPPORTUNITY:
+        messages.error(request, _("Each opportunity can have at most %(n)s invitations.") % {"n": INVITES_PER_OPPORTUNITY})
     elif invitations_today(partner) >= DAILY_INVITATIONS:
         messages.error(request, _("You've reached today's limit of %(n)s invitations. Try again tomorrow.") % {"n": DAILY_INVITATIONS})
     else:
@@ -262,6 +268,24 @@ def talent_pool_invite(request, student_id):
         except IntegrityError:
             messages.info(request, _("This student was already invited to this opportunity."))
         else:
-            send_invitation_email(invitation, request.build_absolute_uri(reverse("internship_detail", args=[internship.pk])))
+            send_invitation_email(invitation, request.build_absolute_uri(invitation.apply_url))
             messages.success(request, _("Invitation sent. Contact details unlock once the student applies and you shortlist them."))
     return redirect(back)
+
+
+@pro_company_required
+def talent_pool_candidate(request, student_id):
+    """Profile preview (modal fragment): studies, bio, portfolio and verified skills — never contact details."""
+    from django.shortcuts import get_object_or_404
+
+    from .talent import qualifying_skills
+
+    candidate = get_object_or_404(
+        StudentProfile.objects.select_related("user"),
+        pk=student_id, talent_pool_visible=True, pk__in=qualifying_skills().values("student_id"),
+    )
+    return render(request, "startups/_candidate_preview.html", {
+        "c": candidate,
+        "skills": qualifying_skills().filter(student=candidate).select_related("skill").order_by("-score", "skill__name"),
+        "invited": request.partner.talent_invitations.filter(student=candidate).select_related("internship"),
+    })

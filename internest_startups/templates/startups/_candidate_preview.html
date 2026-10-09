@@ -1,0 +1,67 @@
+{% load i18n %}
+<div class="cp">
+    <header class="cp__head">
+        <span class="tp-avatar">{{ c.user.get_full_name|default:c.user.username|slice:":1"|upper }}</span>
+        <div>
+            <h2 class="cp__name">{{ c.user.get_full_name|default:c.user.username }}</h2>
+            <p class="tp-card__meta mb-0">
+                {% if c.is_university_email_verified %}<span class="badge badge--success"><i class="bi bi-mortarboard-fill"></i> {% trans "Verified student" %}</span>{% endif %}
+            </p>
+        </div>
+    </header>
+
+    <section class="cp__section">
+        <h3><i class="bi bi-mortarboard"></i> {% trans "Education" %}</h3>
+        <dl class="applicant-facts">
+            <div><dt>{% trans "University" %}</dt><dd>{{ c.university|default:"—" }}</dd></div>
+            <div><dt>{% trans "Major" %}</dt><dd>{{ c.major|default:"—" }}</dd></div>
+            <div><dt>{% trans "Study level" %}</dt><dd>{{ c.get_study_level_display|default:"—" }}</dd></div>
+        </dl>
+    </section>
+
+    <section class="cp__section">
+        <h3><i class="bi bi-person-lines-fill"></i> {% trans "About me & projects" %}</h3>
+        {% if c.bio %}<p class="cp__bio">{{ c.bio }}</p>{% else %}<p class="text-muted mb-0">{% trans "No bio yet." %}</p>{% endif %}
+        {% if c.portfolio_url %}
+            <a href="{{ c.portfolio_url }}" target="_blank" rel="noopener nofollow" class="btn btn--ghost btn--sm mt-2"><i class="bi bi-box-arrow-up-right"></i> {% trans "Portfolio" %}</a>
+        {% endif %}
+    </section>
+
+    <section class="cp__section">
+        <h3><i class="bi bi-patch-check-fill text-success"></i> {% trans "Verified skills & scores" %}</h3>
+        <table class="cp__skills">
+            <thead><tr><th>{% trans "Skill" %}</th><th>{% trans "Score" %}</th><th>{% trans "Percentile" %}</th><th>{% trans "Verified on" %}</th></tr></thead>
+            <tbody>
+                {% for s in skills %}
+                    <tr>
+                        <td>{{ s.skill.name }}</td>
+                        <td><span class="cp__score">{{ s.score|default_if_none:"—" }}{% if s.score is not None %}%{% endif %}</span></td>
+                        <td>{% if s.percentile is not None %}P{{ s.percentile }}{% else %}—{% endif %}</td>
+                        <td>{{ s.verified_at|date:"Y/m/d"|default:"—" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="cp__section">
+        <h3><i class="bi bi-lock-fill"></i> {% trans "Contact details" %}</h3>
+        {# Placeholders only — the real values are never sent to the browser. #}
+        <ul class="cp__masked" aria-label="{% trans 'Contact details are hidden' %}">
+            <li><i class="bi bi-telephone"></i> <span class="cp__blur">01•• ••• ••••</span></li>
+            <li><i class="bi bi-envelope"></i> <span class="cp__blur">•••••••@•••••.com</span></li>
+            <li><i class="bi bi-linkedin"></i> <span class="cp__blur">linkedin.com/in/••••••</span></li>
+            <li><i class="bi bi-file-earmark-pdf"></i> <span class="cp__blur">CV_••••••.pdf</span></li>
+        </ul>
+        <p class="tp-note">{% trans "Unlocks when the student applies through your invitation and you shortlist them for an interview." %}</p>
+    </section>
+
+    <footer class="cp__foot">
+        {% for inv in invited %}
+            <span class="badge badge--outline"><i class="bi bi-check2"></i> {% blocktrans with title=inv.internship.title %}Invited to {{ title }}{% endblocktrans %}</span>
+        {% endfor %}
+        <button type="button" class="btn btn--primary" data-invite="{% url 'talent_pool_invite' c.pk %}" data-name="{{ c.user.get_full_name|default:c.user.username }}">
+            <i class="bi bi-envelope-paper-heart"></i> {% trans "Invite to apply / contact" %}
+        </button>
+    </footer>
+</div>

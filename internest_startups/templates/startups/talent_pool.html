@@ -48,7 +48,8 @@
         {% if page.object_list %}
             <div class="tp-grid">
                 {% for c in page %}
-                    <article class="tp-card">
+                    <article class="tp-card tp-card--clickable" data-preview="{% url 'talent_pool_candidate' c.pk %}" tabindex="0"
+                             aria-label="{% blocktrans with name=c.user.get_full_name|default:c.user.username %}View {{ name }}'s profile{% endblocktrans %}">
                         <div class="tp-card__head">
                             <span class="tp-avatar">{{ c.user.get_full_name|default:c.user.username|slice:":1"|upper }}</span>
                             <div>
@@ -65,6 +66,7 @@
                         </div>
                         <div class="tp-card__foot">
                             <span class="tp-private"><i class="bi bi-lock-fill"></i> {% trans "Contact details private" %}</span>
+                            <button type="button" class="btn btn--ghost btn--sm" data-preview-btn><i class="bi bi-person-vcard"></i> {% trans "View profile" %}</button>
                             {% if c.pk in invited %}
                                 <span class="badge badge--outline"><i class="bi bi-check2"></i> {% trans "Invited" %}</span>
                             {% endif %}
@@ -93,6 +95,11 @@
     </div>
 </section>
 
+<dialog class="tp-dialog tp-dialog--wide" id="profileDialog" aria-label="{% trans 'Candidate profile' %}">
+    <button type="button" class="tp-dialog__close" data-close aria-label="{% trans 'Close' %}"><i class="bi bi-x-lg"></i></button>
+    <div data-profile-body><p class="text-muted">{% trans "Loading…" %}</p></div>
+</dialog>
+
 <dialog class="tp-dialog" id="inviteDialog" aria-labelledby="inviteTitle">
     <form method="post" id="inviteForm">
         {% csrf_token %}
@@ -102,11 +109,12 @@
         {% if opportunities %}
             <label class="form-label" for="inviteInternship">{% trans "Opportunity" %}</label>
             <select name="internship" id="inviteInternship" class="form-select" required>
-                {% for o in opportunities %}<option value="{{ o.pk }}">{{ o.title }}</option>{% endfor %}
+                {% for o in opportunities %}<option value="{{ o.pk }}" {% if o.invites_used >= invites_per_opportunity %}disabled{% endif %}>{{ o.title }} · {{ o.invites_used }}/{{ invites_per_opportunity }}</option>{% endfor %}
             </select>
             <label class="form-label mt-3" for="inviteMessage">{% trans "Message (optional)" %}</label>
             <textarea name="message" id="inviteMessage" class="form-control" rows="3" maxlength="500"
                       placeholder="{% trans 'Why this student is a good fit…' %}"></textarea>
+            <p class="tp-note"><i class="bi bi-ticket-perforated"></i> {% blocktrans with n=invites_per_opportunity %}Invited students can apply even below the 80% skill match. Up to {{ n }} invitations per opportunity.{% endblocktrans %}</p>
             <p class="tp-note"><i class="bi bi-shield-lock"></i> {% trans "The student receives your invitation by email. Their CV and contact details unlock when they apply and you shortlist them for an interview." %}</p>
             <div class="flex mt-4" style="gap: var(--space-3);">
                 <button type="submit" class="btn btn--primary" {% if not invites_left %}disabled{% endif %}><i class="bi bi-send-fill"></i> {% trans "Send invitation" %}</button>
@@ -124,18 +132,39 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{% trans "Could not load this profile. Please try again." as load_error %}
 <script>
 (function () {
-  var dialog = document.getElementById("inviteDialog"), form = document.getElementById("inviteForm");
-  if (!dialog) return;
-  document.querySelectorAll("[data-invite]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      form.action = btn.dataset.invite;
-      dialog.querySelector("[data-invite-name]").textContent = btn.dataset.name;
-      dialog.showModal();
-    });
+  var invite = document.getElementById("inviteDialog"), form = document.getElementById("inviteForm");
+  var profile = document.getElementById("profileDialog"), body = profile.querySelector("[data-profile-body]");
+  var loading = body.innerHTML;
+
+  function openPreview(url) {
+    body.innerHTML = loading;
+    profile.showModal();
+    fetch(url, {headers: {"X-Requested-With": "fetch"}, credentials: "same-origin"})
+      .then(function (r) { if (!r.ok) throw r; return r.text(); })
+      .then(function (html) { body.innerHTML = html; })
+      .catch(function () { body.innerHTML = "<p>{{ load_error|escapejs }}</p>"; });
+  }
+
+  document.addEventListener("click", function (e) {
+    var inv = e.target.closest("[data-invite]");
+    if (inv) {
+      if (profile.open) profile.close();
+      form.action = inv.dataset.invite;
+      invite.querySelector("[data-invite-name]").textContent = inv.dataset.name;
+      invite.showModal();
+      return;
+    }
+    if (e.target.closest("[data-close]")) { e.target.closest("dialog").close(); return; }
+    var card = e.target.closest("[data-preview]");
+    if (card && !e.target.closest("a, form, button:not([data-preview-btn])")) openPreview(card.dataset.preview);
   });
-  dialog.querySelectorAll("[data-close]").forEach(function (b) { b.addEventListener("click", function () { dialog.close(); }); });
+  document.addEventListener("keydown", function (e) {
+    var card = e.target.closest && e.target.closest("[data-preview]");
+    if (card && e.target === card && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openPreview(card.dataset.preview); }
+  });
 })();
 </script>
 {% endblock %}
