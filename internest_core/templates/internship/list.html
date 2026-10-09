@@ -79,7 +79,7 @@
                     </div>
 
                     <div class="listing-card__meta">
-                        <span class="badge badge--outline">{% if internship.location == "Online" %}<i class="bi bi-wifi"></i> {% trans "Online" %}{% else %}<i class="bi bi-geo-alt"></i> {{ internship.location }}{% endif %}</span>
+                        <span class="badge badge--outline">{% if internship.is_online %}💻 {% trans "Online" %}{% else %}<i class="bi bi-geo-alt"></i> {{ internship.location }}{% endif %}</span>
                         <span class="badge badge--primary"><i class="bi bi-mortarboard"></i> {{ internship.required_majors }}</span>
                     </div>
 

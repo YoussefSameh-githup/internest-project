@@ -1,0 +1,35 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Confirm application" %} — Internest{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container-narrow">
+        <a href="{% url 'internship_detail' internship.pk %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short"></i> {% trans "Back" %}</a>
+        <div class="card">
+            <span class="eyebrow">{{ internship.partner.company_name }}</span>
+            <h1 class="mt-2 mb-2" style="font-size: var(--text-2xl);">{{ internship.title }}</h1>
+            <p class="text-muted">{% trans "Startups review applicants skills-first: they see your verified skills, scores, major, university, study year and your “About me & projects” first." %}</p>
+
+            {% if not profile.bio %}
+                <div class="alert alert-info">
+                    <i class="bi bi-lightbulb"></i>
+                    {% trans "Tip: add a short “About me & projects” to your profile so startups have more to go on." %}
+                    <a href="{% url 'profile' %}">{% trans "Edit profile" %}</a>
+                </div>
+            {% endif %}
+
+            <form method="post" class="mt-4">
+                {% csrf_token %}
+                <label class="consent-check{% if consent_error %} consent-check--error{% endif %}">
+                    <input type="checkbox" name="contact_consent" required>
+                    <span>{% trans "When I'm shortlisted for an interview, my CV and contact details will be shared with the company." %}</span>
+                </label>
+                {% if consent_error %}<div class="form-error mt-2">{{ consent_error }}</div>{% endif %}
+                <button type="submit" class="btn btn--accent btn--lg btn--block mt-5"><i class="bi bi-send-fill"></i> {% trans "Apply now" %}</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

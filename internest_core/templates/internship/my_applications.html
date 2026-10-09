@@ -44,7 +44,7 @@
                                         {% elif app.status == "under_review" %}<i class="bi bi-eye"></i>
                                         {% elif app.status == "fulfilled" %}<i class="bi bi-people"></i>
                                         {% else %}<i class="bi bi-send-check"></i>{% endif %}
-                                        {{ app.get_status_display }}
+                                        {{ app.student_status_label }}
                                     </span>
                                 </td>
                             </tr>

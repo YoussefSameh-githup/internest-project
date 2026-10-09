@@ -23,38 +23,57 @@
                 <div><dt>{% trans "Study level" %}</dt><dd>{{ student.get_study_level_display|default:"—" }}</dd></div>
             </dl>
 
+            {% if student.bio %}
+                <h3 class="mt-5 mb-2" style="font-size: var(--text-lg);"><i class="bi bi-person-lines-fill"></i> {% trans "About me & projects" %}</h3>
+                <p class="mb-0" style="white-space: pre-line;">{{ student.bio }}</p>
+            {% endif %}
+
             {% if verified_skills %}
                 <h3 class="mt-5 mb-3" style="font-size: var(--text-lg);"><i class="bi bi-patch-check-fill text-success"></i> {% trans "Verified skills" %}</h3>
                 <div class="flex" style="flex-wrap: wrap; gap: var(--space-2);">
                     {% for s in verified_skills %}
-                        <span class="badge badge--success">{{ s.skill.name }}{% if is_pro %} · P{{ s.percentile }}{% endif %}</span>
+                        <span class="badge badge--success">{{ s.skill.name }}{% if is_pro %} · {{ s.score }}% · P{{ s.percentile }}{% endif %}</span>
                     {% endfor %}
                 </div>
                 {% if not is_pro %}<p class="text-muted mt-2 mb-0" style="font-size: var(--text-xs);"><i class="bi bi-gem"></i> {% trans "Scores and percentiles are available on Internest Pro." %}</p>{% endif %}
             {% endif %}
+            {% if is_pro and student %}
+                <a href="{% url 'skills_student_report' student.pk %}" class="btn btn--ghost btn--sm mt-4"><i class="bi bi-bar-chart"></i> {% trans "Skill report" %}</a>
+            {% endif %}
 
-            <div class="flex mt-6" style="flex-wrap: wrap; gap: var(--space-3);">
-                {% if student.cv_file %}
-                    <a href="{{ student.cv_file.url }}" target="_blank" rel="noopener" class="btn btn--primary"><i class="bi bi-file-earmark-person"></i> {% trans "View CV" %}</a>
-                {% endif %}
-                {% if is_pro and student %}
-                    <a href="{% url 'skills_student_report' student.pk %}" class="btn btn--ghost"><i class="bi bi-bar-chart"></i> {% trans "Skill report" %}</a>
-                {% endif %}
-            </div>
-
-            {% if app.status == "accepted" %}
-                <div class="alert alert-success mt-6 mb-0">
-                    <strong><i class="bi bi-check2-circle"></i> {% trans "Accepted — contact the student directly:" %}</strong>
-                    <div class="mt-2" dir="ltr">
-                        <i class="bi bi-envelope"></i> <a href="mailto:{{ student.personal_email|default:app.applicant.email }}">{{ student.personal_email|default:app.applicant.email }}</a>
-                        {% if student.phone_number %} · <i class="bi bi-telephone"></i> {{ student.phone_number }}{% endif %}
-                        {% if student.linkedin_url %} · <a href="{{ student.linkedin_url }}" target="_blank" rel="noopener">LinkedIn</a>{% endif %}
+            {% if unlocked %}
+                <div class="contact-unlocked mt-6">
+                    <strong><i class="bi bi-unlock-fill"></i>
+                        {% if app.status == "accepted" %}{% trans "Accepted — contact the student directly:" %}{% else %}{% trans "Shortlisted — contact the student to schedule the interview:" %}{% endif %}
+                    </strong>
+                    <div class="contact-unlocked__actions">
+                        {% if student.cv_file %}
+                            <a href="{% url 'partner_applicant_cv' app.pk %}" target="_blank" rel="noopener" class="btn btn--primary btn--sm"><i class="bi bi-file-earmark-person"></i> {% trans "View CV" %}</a>
+                        {% endif %}
+                        <a href="mailto:{{ contact_email }}" class="btn btn--ghost btn--sm" dir="ltr"><i class="bi bi-envelope"></i> {{ contact_email }}</a>
+                        {% if student.phone_number %}
+                            <a href="tel:{{ student.phone_number }}" class="btn btn--ghost btn--sm" dir="ltr"><i class="bi bi-telephone"></i> {{ student.phone_number }}</a>
+                            {% if whatsapp %}<a href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener" class="btn btn--whatsapp btn--sm"><i class="bi bi-whatsapp"></i> WhatsApp</a>{% endif %}
+                        {% endif %}
+                        {% if student.linkedin_url %}
+                            <a href="{{ student.linkedin_url }}" target="_blank" rel="noopener" class="btn btn--ghost btn--sm"><i class="bi bi-linkedin"></i> LinkedIn</a>
+                        {% endif %}
                     </div>
                 </div>
             {% elif app.status != "fulfilled" %}
-                <form method="post" action="{% url 'partner_applicant_decide' app.pk %}" class="flex mt-6" style="flex-wrap: wrap; gap: var(--space-3);">
+                <div class="contact-locked mt-6">
+                    <i class="bi bi-lock-fill"></i>
+                    <span>{% trans "Skills-first review: the CV and contact details unlock when you shortlist this student for an interview." %}</span>
+                </div>
+            {% endif %}
+
+            {% if app.status != "accepted" and app.status != "fulfilled" %}
+                <form method="post" action="{% url 'partner_applicant_decide' app.pk %}" class="flex mt-5" style="flex-wrap: wrap; gap: var(--space-3);">
                     {% csrf_token %}
-                    <button type="submit" name="decision" value="accept" class="btn btn--success"><i class="bi bi-check2"></i> {% trans "Accept" %}</button>
+                    {% if not unlocked %}
+                        <button type="submit" name="decision" value="shortlist" class="btn btn--primary"><i class="bi bi-star-fill"></i> {% trans "Shortlist for interview" %}</button>
+                    {% endif %}
+                    <button type="submit" name="decision" value="accept" class="btn {% if unlocked %}btn--success{% else %}btn--ghost{% endif %}"><i class="bi bi-check2"></i> {% trans "Accept" %}</button>
                     <button type="submit" name="decision" value="fulfilled" class="btn btn--ghost"><i class="bi bi-x"></i> {% trans "Decline (shown as “Position filled”)" %}</button>
                 </form>
             {% endif %}

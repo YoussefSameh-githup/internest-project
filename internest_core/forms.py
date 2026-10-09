@@ -37,7 +37,7 @@ class ProfileForm(forms.ModelForm):
         fields = [
             'personal_email', 'university_email', 'university', 'major', 
             'study_level', 'phone_number', 'cv_file', 'profile_picture', 
-            'linkedin_url'
+            'linkedin_url', 'bio',
         ]
         
         labels = {
@@ -46,6 +46,7 @@ class ProfileForm(forms.ModelForm):
             'study_level': _("Study level"), 'phone_number': _("Phone number"),
             'cv_file': _("CV file"), 'profile_picture': _("Profile picture"),
             'linkedin_url': _("LinkedIn URL"),
+            'bio': _("About me & projects"),
         }
         
         widgets = {
@@ -57,6 +58,7 @@ class ProfileForm(forms.ModelForm):
             'cv_file': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'profile_picture': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'linkedin_url': forms.URLInput(attrs={'class': 'form-control'}),
+            'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'maxlength': 600}),
         }
         
     def __init__(self, *args, **kwargs):

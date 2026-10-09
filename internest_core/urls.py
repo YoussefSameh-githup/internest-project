@@ -33,6 +33,7 @@ urlpatterns = [
     path('partner/dashboard/', views.partner_dashboard_view, name='partner_dashboard'),
     path('partner/dashboard/<slug:section>/', views.partner_dashboard_view, name='partner_dashboard_section'),
     path('partner/applicants/<int:app_id>/', views.partner_applicant_view, name='partner_applicant'),
+    path('partner/applicants/<int:app_id>/cv/', views.partner_applicant_cv, name='partner_applicant_cv'),
     path('partner/applicants/<int:app_id>/decide/', views.partner_applicant_decide, name='partner_applicant_decide'),
     path('partner/opportunities/<int:internship_id>/close/', views.partner_close_opportunity, name='partner_close_opportunity'),
     path('partner/profile/', views.partner_profile_view, name='partner_profile'), 

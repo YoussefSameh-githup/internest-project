@@ -67,6 +67,8 @@ class StudentProfile(models.Model):
     major = models.CharField(max_length=100, blank=True, null=True, verbose_name="التخصص")
     study_level = models.CharField(max_length=50, choices=[('1', 'سنة أولى'), ('2', 'سنة ثانية'), ('3', 'سنة ثالثة'), ('4', 'سنة رابعة/خريج')], blank=True, null=True, verbose_name="المستوى الدراسي")
     phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="رقم الهاتف")
+    # Shown to startups before the CV/contacts unlock (skills-first review).
+    bio = models.TextField(max_length=600, blank=True, default="", verbose_name=_("About me & projects"))
     cv_file = models.FileField(
         upload_to='cvs/', blank=True, null=True,
         validators=[
@@ -160,6 +162,9 @@ class PartnerProfile(models.Model):
         return self.company_name
 
 # === 2. نموذج فرص التدريب (Internship) ===
+ONLINE_LOCATION_KEYWORDS = ("online", "remote", "عن بعد", "عن بُعد", "أونلاين", "اونلاين")
+
+
 class Internship(models.Model):
     partner = models.ForeignKey(PartnerProfile, on_delete=models.CASCADE, related_name="internships", verbose_name="الشريك (الشركة)")
     title = models.CharField(max_length=200)
@@ -170,6 +175,12 @@ class Internship(models.Model):
     is_premium = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     
+    @property
+    def is_online(self):
+        """Remote/online opportunity (no physical address → no map)."""
+        loc = (self.location or "").strip().lower()
+        return not loc or any(k in loc for k in ONLINE_LOCATION_KEYWORDS)
+
     @property
     def is_expired(self):
         """التحقق من انتهاء صلاحية التدريب (للعرض الفوري)."""
@@ -192,20 +203,39 @@ class Application(models.Model):
     # Empathy-driven lifecycle: students never see "rejected" — closed/declined shows as "fulfilled".
     STATUS_SUBMITTED = "submitted"
     STATUS_UNDER_REVIEW = "under_review"
+    STATUS_SHORTLISTED = "shortlisted"
     STATUS_ACCEPTED = "accepted"
     STATUS_FULFILLED = "fulfilled"
     STATUS_CHOICES = [
         (STATUS_SUBMITTED, _("Submitted")),
         (STATUS_UNDER_REVIEW, _("Under review")),
+        (STATUS_SHORTLISTED, _("Shortlisted for interview")),
         (STATUS_ACCEPTED, _("Accepted")),
         (STATUS_FULFILLED, _("Position filled")),
     ]
     status = models.CharField(max_length=50, default=STATUS_SUBMITTED, choices=STATUS_CHOICES)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     decided_at = models.DateTimeField(null=True, blank=True)
+    shortlisted_at = models.DateTimeField(null=True, blank=True)
+    # When the student agreed that their CV and contact details are shared once shortlisted.
+    contact_consent_at = models.DateTimeField(null=True, blank=True)
+
+    # Skills-first funnel: the CV and contact details stay locked until the startup shortlists.
+    CONTACT_UNLOCKED_STATUSES = (STATUS_SHORTLISTED, STATUS_ACCEPTED)
 
     class Meta:
         unique_together = ('internship', 'applicant')
+
+    @property
+    def contact_unlocked(self):
+        return self.status in self.CONTACT_UNLOCKED_STATUSES
+
+    @property
+    def student_status_label(self):
+        """Status wording on the student's side."""
+        if self.status == self.STATUS_SHORTLISTED:
+            return _("You're shortlisted for an interview 🎉")
+        return self.get_status_display()
 
     def mark_viewed(self):
         """The startup opened the applicant's file: Submitted → Under review (never moves backwards)."""

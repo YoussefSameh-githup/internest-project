@@ -3073,3 +3073,69 @@ msgid ""
 "Not enough questions are available for this challenge right now. Please try "
 "again later."
 msgstr "لا تتوفر أسئلة كافية لهذا الاختبار حالياً، يرجى المحاولة لاحقاً"
+
+msgid "About me & projects"
+msgstr "نبذة عني ومشاريعي"
+
+msgid "Shortlisted for interview"
+msgstr "مرشّح للمقابلة"
+
+msgid "You're shortlisted for an interview 🎉"
+msgstr "تم ترشيحك للمقابلة 🎉"
+
+msgid "Please agree to sharing your CV and contact details to apply."
+msgstr ""
+"يرجى الموافقة على مشاركة سيرتك الذاتية وبيانات التواصل لإتمام التقديم."
+
+msgid ""
+"Shortlisted for interview. The CV and contact details are now unlocked, and "
+"the student was notified."
+msgstr ""
+"تم ترشيح الطالب للمقابلة. أصبحت السيرة الذاتية وبيانات التواصل متاحة لك، وتم"
+" إشعار الطالب."
+
+msgid "Confirm application"
+msgstr "تأكيد التقديم"
+
+msgid ""
+"Startups review applicants skills-first: they see your verified skills, "
+"scores, major, university, study year and your “About me & projects” first."
+msgstr ""
+"تراجع الشركات المتقدمين بالمهارات أولاً: يرون مهاراتك الموثّقة ودرجاتك "
+"وتخصصك وجامعتك وسنتك الدراسية و\"نبذة عني ومشاريعي\" أولاً."
+
+msgid ""
+"Tip: add a short “About me & projects” to your profile so startups have more"
+" to go on."
+msgstr ""
+"نصيحة: أضف \"نبذة عني ومشاريعي\" قصيرة في ملفك ليكون لدى الشركات ما تعرفك به"
+" أكثر."
+
+msgid ""
+"When I'm shortlisted for an interview, my CV and contact details will be "
+"shared with the company."
+msgstr ""
+"عند ترشيحك للمقابلة، سيتم مشاركة سيرتك الذاتية وبيانات التواصل مع الشركة"
+
+msgid "Remote / online opportunity"
+msgstr "فرصة عمل عن بُعد / أونلاين"
+
+msgid ""
+"Startups see this with your verified skills before your CV and contact "
+"details are shared. Mention projects, tools and achievements."
+msgstr ""
+"تراها الشركات مع مهاراتك الموثّقة قبل مشاركة سيرتك الذاتية وبيانات تواصلك. "
+"اذكر مشاريعك والأدوات التي تستخدمها وإنجازاتك."
+
+msgid "Shortlisted — contact the student to schedule the interview:"
+msgstr "مرشّح للمقابلة — تواصل مع الطالب لتحديد موعد المقابلة:"
+
+msgid ""
+"Skills-first review: the CV and contact details unlock when you shortlist "
+"this student for an interview."
+msgstr ""
+"مراجعة بالمهارات أولاً: تظهر السيرة الذاتية وبيانات التواصل عند ترشيح الطالب"
+" للمقابلة."
+
+msgid "Shortlist for interview"
+msgstr "تحويل لـ مرشح للمقابلة"

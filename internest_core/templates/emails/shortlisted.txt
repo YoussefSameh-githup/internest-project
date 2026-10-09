@@ -1,0 +1,16 @@
+{% autoescape off %}مرحباً {{ name }}،
+
+تم ترشيحك للمقابلة 🎉
+اختارتك {{ company }} كمرشح للمقابلة في فرصة "{{ title }}". ستتواصل معك الشركة قريباً عبر بيانات التواصل في ملفك.
+تابع حالة طلبك من صفحة "طلباتي" على Internest.
+
+—
+
+Hi {{ name }},
+
+You're shortlisted for an interview 🎉
+{{ company }} shortlisted you for "{{ title }}". They will contact you soon using the details in your profile.
+Track your application under "My applications" on Internest.
+
+— Internest
+{% endautoescape %}

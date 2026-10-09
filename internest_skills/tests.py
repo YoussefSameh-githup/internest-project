@@ -632,7 +632,7 @@ class MarketReadinessGateTests(Base):
         page = self.client.get(reverse("internship_detail", args=[self.internship.pk]))
         self.assertContains(page, "Your Skill Match: 80% — Unlocked")
         self.assertContains(page, reverse("apply", args=[self.internship.id]))
-        resp = self.client.get(reverse("apply", args=[self.internship.id]))
+        resp = self.client.post(reverse("apply", args=[self.internship.id]), {"contact_consent": "on"})
         self.assertRedirects(resp, reverse("application_success"), fetch_redirect_response=False)
         self.assertTrue(Application.objects.filter(internship=self.internship, applicant=self.student_user).exists())
 
@@ -644,7 +644,7 @@ class MarketReadinessGateTests(Base):
 
     def test_opportunity_without_required_skills_is_not_gated(self):
         self.internship.required_skills.clear()
-        resp = self.client.get(reverse("apply", args=[self.internship.id]))
+        resp = self.client.post(reverse("apply", args=[self.internship.id]), {"contact_consent": "on"})
         self.assertRedirects(resp, reverse("application_success"), fetch_redirect_response=False)
 
     def test_take_test_link_claims_skill_and_starts_challenge(self):

@@ -19,6 +19,9 @@ from internest_startups.models import CompanyProfile
 from internest_startups.tiers import activate_pro
 
 
+CONSENT = {"contact_consent": "on"}
+
+
 def _student(username):
     user = User.objects.create_user(username, password="pw", first_name=username.title())
     profile = StudentProfile.objects.create(user=user, university="Cairo", major="CS", study_level="3",
@@ -70,7 +73,7 @@ class CounterAndLifecycleTests(ApplicationsBase):
     def test_status_lifecycle(self):
         user, _ = _student("amr")
         self.login_student(user)
-        self.client.get(reverse("apply", args=[self.gig.pk]))
+        self.client.post(reverse("apply", args=[self.gig.pk]), CONSENT)
         app = Application.objects.get()
         self.assertEqual(app.status, Application.STATUS_SUBMITTED)
         self.assertContains(self.client.get(reverse("my_applications")), "Submitted")
@@ -120,8 +123,8 @@ class DuplicateAndCardTests(ApplicationsBase):
     def test_duplicate_application_prevented_and_button_locked(self):
         user, _ = _student("amr")
         self.login_student(user)
-        self.client.get(reverse("apply", args=[self.gig.pk]))
-        resp = self.client.get(reverse("apply", args=[self.gig.pk]))
+        self.client.post(reverse("apply", args=[self.gig.pk]), CONSENT)
+        resp = self.client.post(reverse("apply", args=[self.gig.pk]), CONSENT)
         self.assertRedirects(resp, reverse("internship_detail", args=[self.gig.pk]), fetch_redirect_response=False)
         self.assertEqual(Application.objects.count(), 1)
         listing = self.client.get(reverse("list"))
@@ -146,7 +149,7 @@ class DuplicateAndCardTests(ApplicationsBase):
         self.login_student(user)
         listing = self.client.get(reverse("list"))
         self.assertContains(listing, "listing-card__desc--clamp")
-        self.assertContains(listing, "bi-wifi")
+        self.assertContains(listing, "💻")
         detail = self.client.get(reverse("internship_detail", args=[self.role.pk]))
         self.assertContains(detail, "maps.google.com/maps?q=Giza")
 
@@ -190,7 +193,7 @@ class SemanticMatchTests(ApplicationsBase):
         StudentSkill.objects.create(student=student, skill=have, source="explicit", status=StudentSkill.STATUS_VERIFIED)
         self.gig.required_skills.set([req])
         self.login_student(user)
-        self.client.get(reverse("apply", args=[self.gig.pk]))
+        self.client.post(reverse("apply", args=[self.gig.pk]), CONSENT)
         self.assertTrue(Application.objects.filter(internship=self.gig, applicant=user).exists())
 
 

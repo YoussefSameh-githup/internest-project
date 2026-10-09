@@ -44,3 +44,27 @@ def issue_and_send_verification(user, email: str, email_type: str) -> bool:
         return False
     otp = EmailVerification.issue(user=user, email=email, email_type=email_type)
     return send_verification_email(user, otp)
+
+
+def notify_shortlisted(application) -> bool:
+    """Tell the student they're shortlisted (Arabic + English). Never raises."""
+    student = getattr(application.applicant, "studentprofile", None)
+    to = (student.personal_email if student else "") or application.applicant.email
+    if not to:
+        return False
+    context = {
+        "name": application.applicant.get_full_name() or application.applicant.username,
+        "title": application.internship.title,
+        "company": application.internship.partner.company_name,
+    }
+    try:
+        sent = EmailMultiAlternatives(
+            subject=f"🎉 تم ترشيحك للمقابلة — {context['title']} | You're shortlisted for an interview",
+            body=render_to_string("emails/shortlisted.txt", context),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[to],
+        ).send(fail_silently=False)
+        return bool(sent)
+    except Exception:
+        logger.exception("Failed to send shortlist email for application %s", application.pk)
+        return False

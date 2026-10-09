@@ -20,6 +20,7 @@ from internest_startups.gate import posting_block_reason
 from internest_startups.tiers import FREE_POSTS_PER_MONTH, is_pro, monthly_quota_reached, posts_this_month
 
 from .email_helpers import issue_and_send_verification as _issue_and_send_verification
+from .email_helpers import notify_shortlisted
 from .models import (
     Internship, StudentProfile, Application,
     PartnerProfile, PartnerInternshipSubmission, PartnerCourseSubmission,
@@ -44,7 +45,9 @@ logger = logging.getLogger(__name__)
 # -------------------------------------------------------------------
 @login_required
 def serve_protected_media(request, filepath: str):
-    """Stream user-uploaded files. Login required; path traversal blocked."""
+    """Stream user-uploaded files; path traversal blocked. CVs are private (see _can_view_cv)."""
+    if filepath.replace("\\", "/").lstrip("/").startswith("cvs/") and not _can_view_cv(request.user, filepath):
+        raise Http404()
     media_root = os.path.realpath(settings.MEDIA_ROOT)
     absolute = os.path.realpath(os.path.join(media_root, filepath))
     if not absolute.startswith(media_root + os.sep) and absolute != media_root:
@@ -52,6 +55,31 @@ def serve_protected_media(request, filepath: str):
     if not os.path.isfile(absolute):
         raise Http404()
     return FileResponse(open(absolute, "rb"))
+
+
+def _can_view_cv(user, filepath):
+    """The student themself, staff, or a startup that shortlisted/accepted them."""
+    if not user.is_authenticated:
+        return False
+    if user.is_staff:
+        return True
+    name = filepath.replace("\\", "/").lstrip("/")
+    owner = StudentProfile.objects.filter(cv_file=name).values_list("user_id", flat=True).first()
+    if owner is None:
+        return False
+    return owner == user.id or Application.objects.filter(
+        applicant_id=owner, internship__partner__user=user, status__in=Application.CONTACT_UNLOCKED_STATUSES,
+    ).exists()
+
+
+def _whatsapp_number(phone):
+    """Egyptian-friendly wa.me number: 01xxxxxxxxx → 201xxxxxxxxx; None if unusable."""
+    digits = "".join(ch for ch in (phone or "") if ch.isdigit())
+    if digits.startswith("00"):
+        digits = digits[2:]
+    elif digits.startswith("0") and len(digits) == 11:
+        digits = "2" + digits
+    return digits if len(digits) >= 10 else None
 
 
 def _get_student_profile(user):
@@ -355,8 +383,19 @@ def apply_to_internship(request, internship_id):
         )
         return redirect("internship_detail", pk=internship.pk)
 
+    consent_error = None
+    if request.method == "POST":
+        if request.POST.get("contact_consent") == "on":
+            return _create_application(request, internship)
+        consent_error = _("Please agree to sharing your CV and contact details to apply.")
+    context = get_user_context(request)
+    context.update({"internship": internship, "profile": profile, "consent_error": consent_error})
+    return render(request, "internship/apply_confirm.html", context)
+
+
+def _create_application(request, internship):
     try:
-        Application.objects.create(internship=internship, applicant=request.user)
+        Application.objects.create(internship=internship, applicant=request.user, contact_consent_at=timezone.now())
         messages.success(request, _("You applied to %(title)s.") % {"title": internship.title})
     except IntegrityError:
         messages.warning(
@@ -857,8 +896,21 @@ def partner_applicant_view(request, app_id):
         "partner": partner, "app": app, "student": student,
         "is_pro": is_pro_employer(partner),
         "verified_skills": student.skills.filter(status="verified").select_related("skill") if student else [],
+        "unlocked": app.contact_unlocked,
+        "contact_email": (student.personal_email if student else "") or app.applicant.email,
+        "whatsapp": _whatsapp_number(student.phone_number) if student else None,
     })
     return render(request, "partner/applicant_detail.html", context)
+
+
+@login_required
+def partner_applicant_cv(request, app_id):
+    """The applicant's CV, only once the startup has shortlisted (or accepted) them."""
+    _partner, app = _partner_application_or_404(request, app_id)
+    student = getattr(app.applicant, "studentprofile", None)
+    if not app.contact_unlocked or student is None or not student.cv_file:
+        raise Http404
+    return FileResponse(student.cv_file.open("rb"), filename=os.path.basename(student.cv_file.name))
 
 
 @login_required
@@ -866,6 +918,12 @@ def partner_applicant_view(request, app_id):
 def partner_applicant_decide(request, app_id):
     partner, app = _partner_application_or_404(request, app_id)
     decision = request.POST.get("decision")
+    if decision == "shortlist" and app.status in (Application.STATUS_SUBMITTED, Application.STATUS_UNDER_REVIEW):
+        app.status, app.shortlisted_at = Application.STATUS_SHORTLISTED, timezone.now()
+        app.save(update_fields=["status", "shortlisted_at"])
+        notify_shortlisted(app)
+        messages.success(request, _("Shortlisted for interview. The CV and contact details are now unlocked, and the student was notified."))
+        return redirect("partner_applicant", app_id=app.pk)
     if decision == "accept":
         app.status = Application.STATUS_ACCEPTED
         messages.success(request, _("Applicant accepted. Their contact details are now visible to you."))
