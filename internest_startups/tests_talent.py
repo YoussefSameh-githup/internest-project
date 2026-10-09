@@ -75,7 +75,7 @@ class TalentPoolTests(ApplicationsBase):
         python = Skill.objects.get(slug="python").pk
         self.assertEqual(self._names(self.client.get(URL, {"skill": python})), {"amr"})
         self.assertEqual(self._names(self.client.get(URL, {"min_score": "90"})), {"amr"})
-        self.assertEqual(self._names(self.client.get(URL, {"university": "ain shams"})), {"sara"})
+        self.assertEqual(self._names(self.client.get(URL, {"university": "Ain Shams"})), {"sara"})
         self.assertEqual(self._names(self.client.get(URL, {"major": "Computer Science"})), {"amr"})
         self.assertEqual(self._names(self.client.get(URL, {"q": "dashboard"})), {"amr"})
         self.assertEqual(self._names(self.client.get(URL, {"q": "financial"})), {"sara"})

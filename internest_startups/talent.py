@@ -33,9 +33,9 @@ def pool_queryset(params):
             | Q(pk__in=qualifying_skills().filter(skill__name__icontains=q).values("student_id"))
         )
     if params.get("university"):
-        students = students.filter(university__iexact=params["university"])
+        students = students.filter(university=params["university"])  # exact: indexable (values come from the dropdown)
     if params.get("major"):
-        students = students.filter(major__iexact=params["major"])
+        students = students.filter(major=params["major"])
 
     shown = qualifying_skills().select_related("skill").order_by("-score", "skill__name")
     return (
@@ -49,8 +49,8 @@ def pool_queryset(params):
 def filter_options():
     pool = StudentProfile.objects.filter(talent_pool_visible=True, pk__in=qualifying_skills().values("student_id"))
 
-    def distinct(field):
-        return sorted({v.strip() for v in pool.exclude(**{f"{field}__isnull": True}).values_list(field, flat=True) if v and v.strip()},
+    def distinct(field):  # stored values as-is, so the exact-match filter finds them
+        return sorted({v for v in pool.exclude(**{f"{field}__isnull": True}).values_list(field, flat=True) if v and v.strip()},
                       key=str.lower)
 
     return {

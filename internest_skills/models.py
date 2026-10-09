@@ -177,6 +177,11 @@ class StudentSkill(models.Model):
     class Meta:
         unique_together = ("student", "skill")
         ordering = ["-status", "skill__name"]
+        indexes = [
+            # Talent Pool: "verified OR score >= 80" → student ids, and the min-score filter.
+            models.Index(fields=["status", "student"], name="studentskill_status_idx"),
+            models.Index(fields=["score", "student"], name="studentskill_score_idx"),
+        ]
 
     def __str__(self):
         return f"{self.student} · {self.skill} ({self.status})"

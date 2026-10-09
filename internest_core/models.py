@@ -70,7 +70,14 @@ class StudentProfile(models.Model):
     # Shown to startups before the CV/contacts unlock (skills-first review).
     bio = models.TextField(max_length=600, blank=True, default="", verbose_name=_("About me & projects"))
     # Explicit opt-in to appear in the Pro Talent Pool (name, studies and verified skills only — never contacts).
-    talent_pool_visible = models.BooleanField(default=False, verbose_name=_("Show me in the Talent Pool"))
+    talent_pool_visible = models.BooleanField(default=False, db_index=True, verbose_name=_("Show me in the Talent Pool"))
+
+    class Meta:
+        indexes = [
+            # Talent Pool filters; partial indexes only cover opted-in students (small and exact).
+            models.Index(fields=["university"], condition=Q(talent_pool_visible=True), name="student_pool_university_idx"),
+            models.Index(fields=["major"], condition=Q(talent_pool_visible=True), name="student_pool_major_idx"),
+        ]
     cv_file = models.FileField(
         upload_to='cvs/', blank=True, null=True,
         validators=[
