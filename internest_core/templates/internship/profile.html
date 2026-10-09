@@ -93,6 +93,19 @@
                             {% endif %}
                         </p>
                     </div>
+                    <div>
+                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "Talent Pool" %}</span>
+                        <p class="fw-bold mt-2 mb-0">
+                            {% if profile.talent_pool_visible and talent_pool_eligible %}
+                                <span class="badge badge--success"><i class="bi bi-eye-fill"></i> {% trans "Visible to Pro startups" %}</span>
+                            {% elif profile.talent_pool_visible %}
+                                <span class="badge badge--accent"><i class="bi bi-hourglass-split"></i> {% trans "Waiting for a verified skill" %}</span>
+                            {% else %}
+                                <span class="text-muted">{% trans "Hidden" %}</span>
+                            {% endif %}
+                            <a href="#talent-pool" style="font-size: var(--text-xs);">{% trans "Change" %}</a>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -175,11 +188,17 @@
                         {{ form.linkedin_url }}
                     </div>
                     <div class="form-group form-group--full">
-                        <label class="consent-check">
+                        <label class="consent-check" id="talent-pool">
                             {{ form.talent_pool_visible }}
                             <span>
                                 <strong>{{ form.talent_pool_visible.label }}</strong><br>
                                 <small class="text-muted">{% trans "Pro startups can find you by your verified skills and invite you to apply. They see your name, university, major, study year, bio and verified skills — never your phone, email or CV." %}</small>
+                                {% if not talent_pool_eligible %}
+                                    <small class="talent-hint"><i class="bi bi-info-circle"></i>
+                                        {% trans "A verified skill or a score of 80%+ is required to appear in the talent pool." %}
+                                        <a href="{% url 'skills_hub' %}">{% trans "Verify a skill" %}</a>
+                                    </small>
+                                {% endif %}
                             </span>
                         </label>
                     </div>

@@ -1689,3 +1689,5 @@ html[dir="ltr"] {
 .invite-panel { padding: 18px; border-radius: 16px; background: linear-gradient(135deg, #eef2ff, #f5f3ff); border: 1px solid #e0e7ff; }
 .invite-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid #e0e7ff; flex-wrap: wrap; }
 .invite-row:first-of-type { border-top: 0; }
+.talent-hint { display: block; margin-top: 8px; padding: 6px 10px; border-radius: 8px; background: #fffbeb; color: #92400e; }
+#talent-pool { scroll-margin-top: 96px; }

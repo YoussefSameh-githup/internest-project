@@ -3261,3 +3261,23 @@ msgstr "إرسال الدعوة"
 
 msgid "You need an open opportunity to invite students to."
 msgstr "تحتاج لفرصة مفتوحة لتدعو الطلاب إليها."
+
+msgid "Visible to Pro startups"
+msgstr "ظاهر لشركات Pro"
+
+msgid "Waiting for a verified skill"
+msgstr "في انتظار مهارة موثّقة"
+
+msgid "Hidden"
+msgstr "مخفي"
+
+msgid "Change"
+msgstr "تغيير"
+
+msgid ""
+"A verified skill or a score of 80%%+ is required to appear in the talent "
+"pool."
+msgstr "يلزم وجود مهارة موثّقة أو درجة 80%% فأكثر للظهور في قاعدة المواهب."
+
+msgid "Verify a skill"
+msgstr "وثّق مهارة"

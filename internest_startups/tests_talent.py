@@ -137,3 +137,34 @@ class TalentPoolTests(ApplicationsBase):
         page = self.client.get(reverse("profile"))
         self.assertContains(page, 'name="talent_pool_visible"')
         self.assertContains(page, "never your phone, email or CV")
+
+
+class TalentPoolProfileSettingTests(ApplicationsBase):
+    def setUp(self):
+        super().setUp()
+        self.user, self.profile = _student("lina")
+        self.login_student(self.user)
+
+    def _save(self, **extra):
+        data = {"personal_email": "lina@uni.edu", "university": "Cairo", "major": "CS", "study_level": "3",
+                "phone_number": "01000000000", "linkedin_url": "", "bio": "", **extra}
+        return self.client.post(reverse("profile"), data)
+
+    def test_checkbox_saves_both_ways(self):
+        self.assertRedirects(self._save(talent_pool_visible="on"), reverse("profile"), fetch_redirect_response=False)
+        self.profile.refresh_from_db()
+        self.assertTrue(self.profile.talent_pool_visible)
+        self._save()  # unchecked boxes are simply absent from the POST
+        self.profile.refresh_from_db()
+        self.assertFalse(self.profile.talent_pool_visible)
+
+    def test_checkbox_visible_to_all_with_eligibility_hint(self):
+        page = self.client.get(reverse("profile"))
+        self.assertContains(page, 'name="talent_pool_visible"')
+        self.assertContains(page, "A verified skill or a score of 80%+ is required to appear in the talent pool.")
+        _skill(self.profile, "python")
+        page = self.client.get(reverse("profile"))
+        self.assertContains(page, 'name="talent_pool_visible"')
+        self.assertNotContains(page, "A verified skill or a score of 80%+ is required")
+        self._save(talent_pool_visible="on")
+        self.assertContains(self.client.get(reverse("profile")), "Visible to Pro startups")

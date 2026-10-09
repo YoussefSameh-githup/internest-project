@@ -351,8 +351,13 @@ def profile_view(request):
     else:
         form = ProfileForm(instance=profile)
 
+    from internest_startups.talent import qualifying_skills
+
     context = get_user_context(request)
-    context.update({"profile": profile, "form": form})
+    context.update({
+        "profile": profile, "form": form,
+        "talent_pool_eligible": profile.pk is not None and qualifying_skills().filter(student=profile).exists(),
+    })
     return render(request, "internship/profile.html", context)
 
 
