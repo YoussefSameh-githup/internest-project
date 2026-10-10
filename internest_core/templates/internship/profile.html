@@ -34,6 +34,7 @@
                         {% if profile.is_university_email_verified %}
                             <span class="badge badge--success"><i class="bi bi-mortarboard-fill"></i> {% trans "Verified student" %}</span>
                         {% endif %}
+                        {% if proof.top %}<span class="badge badge--accent">🏅 {% trans "Top Verified Candidate" %}</span>{% endif %}
                         {% if profile.talent_pool_visible and talent_pool_eligible %}
                             <span class="badge badge--success"><i class="bi bi-eye-fill"></i> {% trans "Visible to Pro startups" %}</span>
                         {% elif profile.talent_pool_visible %}
@@ -86,6 +87,35 @@
 
                 <section class="pf-card">
                     <h2 class="pf-card__title"><span class="pf-step">2</span> {% trans "Skills and professional links" %}</h2>
+                    <div class="pow-banner{% if proof.top %} pow-banner--top{% endif %}">
+                        <span class="pow-banner__icon">{% if proof.top %}🏅{% else %}<i class="bi bi-briefcase-fill"></i>{% endif %}</span>
+                        <div>
+                            {% if proof.count %}
+                                <strong>{% blocktrans with n=proof.count avg=proof.avg|stringformat:".1f" %}Completed {{ n }} verified gigs | Average rating ⭐️ {{ avg }}/5{% endblocktrans %}</strong>
+                                {% if proof.top %}<small>{% trans "Top Verified Candidate 🏅 — you're shown first to Pro startups." %}</small>
+                                {% else %}<small>{% blocktrans with n=top_min %}Complete {{ n }} verified gigs to earn the Top Verified Candidate 🏅 badge.{% endblocktrans %}</small>{% endif %}
+                            {% else %}
+                                <strong>{% trans "No verified gigs yet" %}</strong>
+                                <small>{% trans "When a startup marks your gig as completed and rates it, it appears here with a verified recommendation letter." %}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if experiences %}
+                        <ul class="pow-list">
+                            {% for e in experiences %}
+                                <li class="pow-item">
+                                    <span class="ol-logo">{% if e.company.logo %}<img src="{{ e.company.logo.url }}" alt="">{% else %}{{ e.company.company_name|slice:":1"|upper }}{% endif %}</span>
+                                    <div class="pow-item__body">
+                                        <strong>{{ e.gig_title }}</strong>
+                                        <span>{{ e.company.company_name }} · {{ e.completion_date|date:"Y/m/d" }}</span>
+                                        <span class="pow-item__stars">{% for n in "12345" %}<i class="bi {% if forloop.counter <= e.star_rating %}bi-star-fill{% else %}bi-star{% endif %}"></i>{% endfor %}</span>
+                                    </div>
+                                    <span class="pow-verified"><i class="bi bi-patch-check-fill"></i> {% trans "Verified" %}</span>
+                                    <a href="{% url 'experience_letter' e.verification_uuid %}" class="btn btn--outline btn--sm">{% trans "Download the verified recommendation letter" %} 📄</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
                     <div class="pf-grid">
                         {% trans "Startups see this with your verified skills before your CV and contact details are shared. Mention projects, tools and achievements." as bio_help %}
                         {% include "internship/_pf_field.html" with field=form.bio help=bio_help full=True %}

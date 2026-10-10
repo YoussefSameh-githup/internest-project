@@ -56,7 +56,7 @@ class TranslationCoverageTests(TestCase):
         with translation.override("ar"):
             untranslated = sorted(m for m in msgids if translation.gettext(m) == m and any(c.isalpha() for c in m))
         # Brand/product names are intentionally identical in both languages.
-        allowed = {"Internest Pro", "LinkedIn", "Facebook", "Twitter", "Instagram"}
+        allowed = {"Internest Pro", "LinkedIn", "Facebook", "Twitter", "Instagram", "Top Verified Candidate"}
         self.assertEqual([m for m in untranslated if m not in allowed], [])
 
     def test_no_hardcoded_arabic_in_python_ui_code(self):

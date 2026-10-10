@@ -16,6 +16,8 @@ class EmailVerificationGateMiddleware:
         "logout",
         "set_language",
         "serve_media",
+        "verify_experience",  # public letter authenticity check
+        "experience_letter",
     })
     ALLOWED_PREFIXES = ("/admin/", "/static/", "/i18n/")
 

@@ -1,0 +1,32 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Verified document" %} · {{ exp.verification_code }} — Internest{% endblock %}
+
+{% block content %}
+<section class="vx-page">
+    <div class="container-narrow">
+        <article class="vx-card">
+            <div class="vx-seal" aria-hidden="true"><i class="bi bi-patch-check-fill"></i></div>
+            <p class="vx-kicker">{% trans "Officially certified and verified document from Internest" %}</p>
+            <h1 class="vx-title">{% trans "Verified work experience" %}</h1>
+
+            <dl class="vx-facts">
+                <div><dt>{% trans "Student" %}</dt><dd>{{ exp.student.user.get_full_name|default:exp.student.user.username }}</dd></div>
+                <div><dt>{% trans "Company" %}</dt><dd>{{ exp.company.company_name }}{% if exp.company.is_fully_verified %} <i class="bi bi-patch-check-fill text-success" title="{% trans 'Verified account' %}"></i>{% endif %}</dd></div>
+                <div><dt>{% trans "Role" %}</dt><dd>{{ exp.gig_title }}</dd></div>
+                <div><dt>{% trans "Completion date" %}</dt><dd>{{ exp.completion_date|date:"Y/m/d" }}</dd></div>
+                <div>
+                    <dt>{% trans "Rating" %}</dt>
+                    <dd class="vx-stars" aria-label="{{ exp.star_rating }}/5">{% for i in stars %}<i class="bi {% if i <= exp.star_rating %}bi-star-fill{% else %}bi-star{% endif %}"></i>{% endfor %} <span>{{ exp.star_rating }}/5</span></dd>
+                </div>
+                <div><dt>{% trans "Verification code" %}</dt><dd dir="ltr">{{ exp.verification_code }}</dd></div>
+            </dl>
+
+            <blockquote class="vx-quote">“{{ exp.review_text }}”</blockquote>
+
+            <a href="{% url 'experience_letter' exp.verification_uuid %}" class="btn btn--primary btn--lg"><i class="bi bi-file-earmark-pdf"></i> {% trans "Download the verified recommendation letter" %}</a>
+        </article>
+    </div>
+</section>
+{% endblock %}

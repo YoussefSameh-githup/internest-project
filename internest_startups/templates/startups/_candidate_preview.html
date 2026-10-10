@@ -27,6 +27,28 @@
         {% endif %}
     </section>
 
+    {% if experiences %}
+        <section class="cp__section">
+            <h3><i class="bi bi-briefcase-fill"></i> {% trans "Verified work experience" %}
+                <small class="cp__pow">{% blocktrans with n=proof.count avg=proof.avg|stringformat:".1f" %}Completed {{ n }} verified gigs | Average rating ⭐️ {{ avg }}/5{% endblocktrans %}</small>
+                {% if proof.top %}<span class="tc__tag tc__tag--top">🏅 {% trans "Top Verified Candidate" %}</span>{% endif %}
+            </h3>
+            <ul class="pow-list">
+                {% for e in experiences %}
+                    <li class="pow-item">
+                        <div class="pow-item__body">
+                            <strong>{{ e.gig_title }}</strong>
+                            <span>{{ e.company.company_name }} · {{ e.completion_date|date:"Y/m/d" }}</span>
+                            <span class="pow-item__stars">{% for n in "12345" %}<i class="bi {% if forloop.counter <= e.star_rating %}bi-star-fill{% else %}bi-star{% endif %}"></i>{% endfor %}</span>
+                            <em class="pow-item__review">“{{ e.review_text|truncatechars:180 }}”</em>
+                        </div>
+                        <a href="{% url 'verify_experience' e.verification_uuid %}" target="_blank" rel="noopener" class="pow-verified"><i class="bi bi-patch-check-fill"></i> {% trans "Verified" %}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+
     <section class="cp__section">
         <h3><i class="bi bi-patch-check-fill text-success"></i> {% trans "Verified skills & scores" %}</h3>
         <table class="cp__skills">

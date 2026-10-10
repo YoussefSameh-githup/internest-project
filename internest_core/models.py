@@ -1,4 +1,5 @@
 import secrets
+import uuid
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
@@ -218,12 +219,14 @@ class Application(models.Model):
     STATUS_SHORTLISTED = "shortlisted"
     STATUS_ACCEPTED = "accepted"
     STATUS_FULFILLED = "fulfilled"
+    STATUS_COMPLETED = "completed"  # the gig was delivered and rated by the startup
     STATUS_CHOICES = [
         (STATUS_SUBMITTED, _("Submitted")),
         (STATUS_UNDER_REVIEW, _("Under review")),
         (STATUS_SHORTLISTED, _("Shortlisted for interview")),
         (STATUS_ACCEPTED, _("Accepted")),
         (STATUS_FULFILLED, _("Position filled")),
+        (STATUS_COMPLETED, _("Gig completed")),
     ]
     status = models.CharField(max_length=50, default=STATUS_SUBMITTED, choices=STATUS_CHOICES)
     reviewed_at = models.DateTimeField(null=True, blank=True)
@@ -237,7 +240,7 @@ class Application(models.Model):
     contact_consent_at = models.DateTimeField(null=True, blank=True)
 
     # Skills-first funnel: the CV and contact details stay locked until the startup shortlists.
-    CONTACT_UNLOCKED_STATUSES = (STATUS_SHORTLISTED, STATUS_ACCEPTED)
+    CONTACT_UNLOCKED_STATUSES = (STATUS_SHORTLISTED, STATUS_ACCEPTED, STATUS_COMPLETED)
 
     class Meta:
         unique_together = ('internship', 'applicant')
@@ -249,6 +252,8 @@ class Application(models.Model):
     @property
     def progress_step(self):
         """1–4 on the student's stepper (submitted → under review → shortlisted → accepted); 0 when filled."""
+        if self.status == self.STATUS_COMPLETED:
+            return 4
         order = [self.STATUS_SUBMITTED, self.STATUS_UNDER_REVIEW, self.STATUS_SHORTLISTED, self.STATUS_ACCEPTED]
         return order.index(self.status) + 1 if self.status in order else 0
 
@@ -498,3 +503,38 @@ class StudentEnrollment(models.Model):
         
     def __str__(self):
         return f"{self.student.user.username} مسجل في {self.course.title}"
+
+# === Verified work experience (proof of work) ===
+TOP_VERIFIED_MIN_GIGS = 3  # "Top Verified Candidate" badge + Talent Pool priority
+
+
+class GigExperience(models.Model):
+    """A gig the startup marked as completed and rated. Backs a PDF recommendation letter with a public QR check."""
+
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="gig_experiences")
+    company = models.ForeignKey(PartnerProfile, on_delete=models.CASCADE, related_name="issued_experiences")
+    application = models.OneToOneField(Application, on_delete=models.SET_NULL, null=True, blank=True, related_name="experience")
+    gig_title = models.CharField(max_length=200)
+    completion_date = models.DateField()
+    star_rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    review_text = models.TextField(max_length=1000)
+    verification_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    pdf_file = models.FileField(upload_to="letters/", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-completion_date", "-pk"]
+
+    def __str__(self):
+        return f"{self.student} · {self.gig_title} @ {self.company} ({self.star_rating}★)"
+
+    @property
+    def verification_code(self):
+        return str(self.verification_uuid).split("-")[0].upper()
+
+
+def proof_of_work(student):
+    """{"count", "avg", "top"} for a student's verified gigs."""
+    stats = student.gig_experiences.aggregate(count=models.Count("id"), avg=models.Avg("star_rating"))
+    count = stats["count"] or 0
+    return {"count": count, "avg": round(stats["avg"] or 0, 1), "top": count >= TOP_VERIFIED_MIN_GIGS}

@@ -280,3 +280,14 @@ class StudentEnrollmentAdmin(admin.ModelAdmin):
         return False
     def has_change_permission(self, request, obj=None):
         return False
+
+from .models import GigExperience  # noqa: E402
+
+
+@admin.register(GigExperience)
+class GigExperienceAdmin(admin.ModelAdmin):
+    list_display = ("student", "company", "gig_title", "star_rating", "completion_date", "verification_code")
+    list_filter = ("star_rating", "completion_date")
+    search_fields = ("student__user__username", "company__company_name", "gig_title")
+    raw_id_fields = ("student", "company", "application")
+    readonly_fields = ("verification_uuid", "created_at")

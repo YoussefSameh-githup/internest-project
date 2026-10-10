@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from internest_core.models import PartnerProfile, StudentProfile
+from internest_core.models import PartnerProfile, StudentProfile, proof_of_work
 from internest_core.views import get_user_context
 
 from .completion import PLACEHOLDER_PREFIX
@@ -309,4 +309,6 @@ def talent_pool_candidate(request, student_id):
         "c": candidate,
         "skills": qualifying_skills().filter(student=candidate).select_related("skill").order_by("-score", "skill__name"),
         "invited": request.partner.talent_invitations.filter(student=candidate).select_related("internship"),
+        "experiences": candidate.gig_experiences.select_related("company"),
+        "proof": proof_of_work(candidate),
     })

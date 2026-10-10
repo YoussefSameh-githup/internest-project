@@ -322,3 +322,9 @@ div.dash-card.is-locked:hover { transform: none; box-shadow: none; }
   .ts-bar__filters { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 420px) { .tc__actions { grid-template-columns: 1fr; } .ts-bar__actions { flex-wrap: wrap; } .ts-bar__actions .btn { flex: 1; } }
+
+/* Talent Pool tags */
+.tc__tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tc__tags:empty { display: none; }
+.tc__tag--top { background: #fef3c7; color: #92400e; }
+.tc__tag--gigs { background: #eef2ff; color: #3730a3; }

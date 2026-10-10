@@ -46,7 +46,7 @@
                                 <span class="sh-card__sub">{{ app.internship.partner.company_name }}</span>
                             </div>
                             <span class="app-status app-status--{{ app.status }}">
-                                {% if app.status == "accepted" %}🎉{% elif app.status == "shortlisted" %}<i class="bi bi-star-fill"></i>{% elif app.status == "under_review" %}<i class="bi bi-eye"></i>{% elif app.status == "fulfilled" %}<i class="bi bi-people"></i>{% else %}<i class="bi bi-send-check"></i>{% endif %}
+                                {% if app.status == "accepted" %}🎉{% elif app.status == "completed" %}✅{% elif app.status == "shortlisted" %}<i class="bi bi-star-fill"></i>{% elif app.status == "under_review" %}<i class="bi bi-eye"></i>{% elif app.status == "fulfilled" %}<i class="bi bi-people"></i>{% else %}<i class="bi bi-send-check"></i>{% endif %}
                                 {{ app.student_status_label }}
                             </span>
                         </header>
@@ -66,6 +66,7 @@
                             <span><i class="bi bi-send"></i> {% trans "Applied on" %} {{ app.application_date|date:"Y/m/d" }}</span>
                             <span><i class="bi bi-calendar-event"></i> {% trans "Deadline" %} {{ app.internship.deadline|date:"Y/m/d" }}</span>
                             {% if app.source == "invited" %}<span class="sh-pill sh-pill--invited">🎟️ {% trans "Invited" %}</span>{% endif %}
+                            {% if app.status == "completed" and app.experience %}<a href="{% url 'experience_letter' app.experience.verification_uuid %}" class="btn btn--outline btn--sm">📄 {% trans "Recommendation letter" %}</a>{% endif %}
                         </footer>
                     </article>
                 {% endfor %}

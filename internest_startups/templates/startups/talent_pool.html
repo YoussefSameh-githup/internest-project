@@ -66,7 +66,11 @@
                             {% if c.best_score %}<span class="tc__score" title="{% trans 'Best skill score' %}">{{ c.best_score }}%</span>{% endif %}
                         </header>
 
-                        {% if c.pk in invited %}<span class="tc__tag"><i class="bi bi-check2-circle"></i> {% trans "Invited" %}</span>{% endif %}
+                        <div class="tc__tags">
+                            {% if c.top_verified %}<span class="tc__tag tc__tag--top">🏅 {% trans "Top Verified Candidate" %}</span>{% endif %}
+                            {% if c.gig_count %}<span class="tc__tag tc__tag--gigs">{% blocktrans with n=c.gig_count r=c.gig_rating|stringformat:".1f" %}✅ {{ n }} verified gigs · ⭐ {{ r }}/5{% endblocktrans %}</span>{% endif %}
+                            {% if c.pk in invited %}<span class="tc__tag"><i class="bi bi-check2-circle"></i> {% trans "Invited" %}</span>{% endif %}
+                        </div>
                         {% if c.bio %}<p class="tc__bio">{{ c.bio|truncatechars:150 }}</p>{% endif %}
 
                         <ul class="tc__skills" aria-label="{% trans 'Verified skills' %}">

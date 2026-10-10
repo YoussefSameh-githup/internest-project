@@ -3673,3 +3673,87 @@ msgstr "النقاط"
 
 msgid "Student hub"
 msgstr "المساحة الطلابية"
+
+msgid "Gig completed"
+msgstr "تم إنجاز المهمة"
+
+msgid ""
+"Gig completed and rated. The student's verified recommendation letter is "
+"ready."
+msgstr "تم إنهاء المهمة وتقييمها. خطاب التوصية الموثّق للطالب جاهز."
+
+msgid ""
+"Choose a rating from 1 to 5 and write at least 10 characters of feedback."
+msgstr "اختر تقييماً من 1 إلى 5 واكتب رأياً لا يقل عن 10 أحرف."
+
+msgid "Recommendation letter"
+msgstr "خطاب التوصية"
+
+msgid "Top Verified Candidate"
+msgstr "Top Verified Candidate"
+
+msgid "Completed %(n)s verified gigs | Average rating ⭐️ %(avg)s/5"
+msgstr "أنجز %(n)s جيجات موثّقة | متوسط التقييم ⭐️ %(avg)s/5"
+
+msgid "Top Verified Candidate 🏅 — you're shown first to Pro startups."
+msgstr "Top Verified Candidate 🏅 — تظهر أولاً لشركات Pro."
+
+msgid ""
+"Complete %(n)s verified gigs to earn the Top Verified Candidate 🏅 badge."
+msgstr "أنجز %(n)s جيجات موثّقة لتحصل على شارة Top Verified Candidate 🏅."
+
+msgid "No verified gigs yet"
+msgstr "لا توجد جيجات موثّقة بعد"
+
+msgid ""
+"When a startup marks your gig as completed and rates it, it appears here "
+"with a verified recommendation letter."
+msgstr "عندما تُنهي شركة مهمتك وتقيّمها، تظهر هنا مع خطاب توصية موثّق."
+
+msgid "Download the verified recommendation letter"
+msgstr "تحميل خطاب التوصية الموثق"
+
+msgid "Verified document"
+msgstr "وثيقة موثّقة"
+
+msgid "Officially certified and verified document from Internest"
+msgstr "وثيقة معتمدة وموثّقة رسميًا من منصة Internest"
+
+msgid "Verified work experience"
+msgstr "خبرة عمل موثّقة"
+
+msgid "Role"
+msgstr "الدور"
+
+msgid "Completion date"
+msgstr "تاريخ الإنجاز"
+
+msgid "Rating"
+msgstr "التقييم"
+
+msgid "Gig finished? Rate the student"
+msgstr "انتهت المهمة؟ قيّم الطالب"
+
+msgid ""
+"The student gets a verified recommendation letter (PDF) with a QR code "
+"anyone can check."
+msgstr ""
+"سيحصل الطالب على خطاب توصية موثّق (PDF) برمز QR يمكن لأي شخص التحقق منه."
+
+msgid "Feedback for the letter"
+msgstr "رأيك الذي سيظهر في الخطاب"
+
+msgid "What did the student deliver? What stood out?"
+msgstr "ماذا أنجز الطالب؟ وما الذي ميّزه؟"
+
+msgid "Mark gig as completed and rate"
+msgstr "تم إنهاء المهمة والتقييم"
+
+msgid "Gig completed and rated"
+msgstr "تم إنهاء المهمة والتقييم"
+
+msgid "Verification page"
+msgstr "صفحة التحقق"
+
+msgid "✅ %(n)s verified gigs · ⭐ %(r)s/5"
+msgstr "✅ %(n)s جيجات موثّقة · ⭐ %(r)s/5"

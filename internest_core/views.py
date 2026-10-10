@@ -21,13 +21,14 @@ from internest_startups.tiers import FREE_POSTS_PER_MONTH, is_pro, monthly_quota
 
 from .email_helpers import issue_and_send_verification as _issue_and_send_verification
 from .email_helpers import notify_shortlisted
+from .letters import generate_letter
 from .models import (
     Internship, StudentProfile, Application,
     PartnerProfile, PartnerInternshipSubmission, PartnerCourseSubmission,
     PartnerApplicantData,
     GamificationTask, TaskAnswer, StudentTaskRecord,
     DiscountCode, StudentEnrollment,
-    EmailVerification,
+    EmailVerification, GigExperience, TOP_VERIFIED_MIN_GIGS, proof_of_work,
 )
 from .forms import (
     ProfileForm, PartnerInternshipForm, PartnerCourseForm,
@@ -46,8 +47,11 @@ logger = logging.getLogger(__name__)
 @login_required
 def serve_protected_media(request, filepath: str):
     """Stream user-uploaded files; path traversal blocked. CVs are private (see _can_view_cv)."""
-    if filepath.replace("\\", "/").lstrip("/").startswith("cvs/") and not _can_view_cv(request.user, filepath):
+    path = filepath.replace("\\", "/").lstrip("/")
+    if path.startswith("cvs/") and not _can_view_cv(request.user, filepath):
         raise Http404()
+    if path.startswith("letters/") and not request.user.is_staff:
+        raise Http404()  # use /verify/<uuid>/letter.pdf
     media_root = os.path.realpath(settings.MEDIA_ROOT)
     absolute = os.path.realpath(os.path.join(media_root, filepath))
     if not absolute.startswith(media_root + os.sep) and absolute != media_root:
@@ -447,6 +451,9 @@ def profile_view(request):
     context.update({
         "profile": profile, "form": form, "talent_pool_eligible": _talent_pool_eligible(profile),
         "verified_skills_count": _verified_skills_count(profile), "campus_share": _campus_share(request, profile),
+        "proof": proof_of_work(profile) if profile.pk else None,
+        "top_min": TOP_VERIFIED_MIN_GIGS,
+        "experiences": profile.gig_experiences.select_related("company") if profile.pk else [],
     })
     return render(request, "internship/profile.html", context)
 
@@ -535,7 +542,7 @@ def my_applications_view(request):
     applications = (
         Application.objects
         .filter(applicant=request.user)
-        .select_related("internship", "internship__partner")
+        .select_related("internship", "internship__partner", "experience")
         .order_by("-application_date")
     )
     from internest_startups.models import TalentInvitation
@@ -1030,6 +1037,7 @@ def partner_applicant_view(request, app_id):
         "is_pro": is_pro_employer(partner),
         "verified_skills": student.skills.filter(status="verified").select_related("skill") if student else [],
         "unlocked": app.contact_unlocked,
+        "experience": getattr(app, "experience", None),
         "contact_email": (student.personal_email if student else "") or app.applicant.email,
         "whatsapp": _whatsapp_number(student.phone_number) if student else None,
     })
@@ -1086,3 +1094,50 @@ def partner_close_opportunity(request, internship_id):
     )
     messages.success(request, _("Opportunity closed. %(n)s pending applicants will see “Position filled”.") % {"n": closed})
     return redirect("partner_dashboard")
+
+
+
+@login_required
+@require_POST
+def partner_applicant_complete(request, app_id):
+    """Startup marks an accepted gig as done and rates it → verified experience + PDF recommendation letter."""
+    _partner, app = _partner_application_or_404(request, app_id)
+    student = getattr(app.applicant, "studentprofile", None)
+    if app.status != Application.STATUS_ACCEPTED or student is None or hasattr(app, "experience"):
+        return redirect("partner_applicant", app_id=app.pk)
+    try:
+        rating = int(request.POST.get("star_rating", ""))
+    except ValueError:
+        rating = 0
+    review = request.POST.get("review_text", "").strip()[:1000]
+    if not 1 <= rating <= 5 or len(review) < 10:
+        messages.error(request, _("Choose a rating from 1 to 5 and write at least 10 characters of feedback."))
+        return redirect("partner_applicant", app_id=app.pk)
+    with transaction.atomic():
+        exp = GigExperience.objects.create(
+            student=student, company=app.internship.partner, application=app, gig_title=app.internship.title,
+            completion_date=timezone.now().date(), star_rating=rating, review_text=review,
+        )
+        app.status, app.decided_at = Application.STATUS_COMPLETED, timezone.now()
+        app.save(update_fields=["status", "decided_at"])
+    generate_letter(exp, request.build_absolute_uri(reverse("verify_experience", args=[exp.verification_uuid])))
+    messages.success(request, _("Gig completed and rated. The student's verified recommendation letter is ready."))
+    return redirect("partner_applicant", app_id=app.pk)
+
+
+def verify_experience(request, uuid):
+    """Public authenticity check behind the letter's QR code."""
+    exp = get_object_or_404(GigExperience.objects.select_related("student__user", "company"), verification_uuid=uuid)
+    context = get_user_context(request)
+    context.update({"exp": exp, "stars": range(1, 6)})
+    return render(request, "internship/verify_experience.html", context)
+
+
+def experience_letter(request, uuid):
+    """The PDF letter (public by its unguessable UUID, like the verification page). Rebuilt if missing."""
+    exp = get_object_or_404(GigExperience.objects.select_related("student__user", "company"), verification_uuid=uuid)
+    if not exp.pdf_file or not exp.pdf_file.storage.exists(exp.pdf_file.name):
+        if not generate_letter(exp, request.build_absolute_uri(reverse("verify_experience", args=[exp.verification_uuid]))):
+            raise Http404
+    name = f"Internest-recommendation-{exp.verification_code}.pdf"
+    return FileResponse(exp.pdf_file.open("rb"), content_type="application/pdf", filename=name)

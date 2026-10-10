@@ -1,11 +1,12 @@
 """Talent Pool: opted-in students with verified skills (or a quiz score ≥ MATCH_THRESHOLD), searchable by Pro startups."""
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
-from django.db.models import Max, Prefetch, Q
+from django.db.models import Avg, Case, Count, IntegerField, Max, OuterRef, Prefetch, Q, Subquery, Value, When
+from django.db.models.functions import Coalesce
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from internest_core.models import StudentProfile
+from internest_core.models import TOP_VERIFIED_MIN_GIGS, GigExperience, StudentProfile
 from internest_skills.models import Skill, StudentSkill
 
 from internest_skills.matching import MATCH_THRESHOLD
@@ -56,11 +57,18 @@ def pool_queryset(params):
         students = students.filter(major=params["major"])
 
     shown = qualifying_skills().select_related("skill").order_by("-score", "skill__name")
+    gigs = GigExperience.objects.filter(student=OuterRef("pk")).values("student")  # subqueries: no join fan-out
     return (
         students.select_related("user")
-        .annotate(best_score=Max("skills__score", filter=Q(skills__in=qualifying_skills())))
+        .annotate(
+            best_score=Max("skills__score", filter=Q(skills__in=qualifying_skills())),
+            gig_count=Coalesce(Subquery(gigs.annotate(n=Count("id")).values("n")), 0),
+            gig_rating=Subquery(gigs.annotate(a=Avg("star_rating")).values("a")),
+        )
+        # Top Verified Candidates (≥ TOP_VERIFIED_MIN_GIGS completed gigs) come first.
+        .annotate(top_verified=Case(When(gig_count__gte=TOP_VERIFIED_MIN_GIGS, then=Value(1)), default=Value(0), output_field=IntegerField()))
         .prefetch_related(Prefetch("skills", queryset=shown, to_attr="pool_skills"))
-        .order_by("-best_score", "-pk")
+        .order_by("-top_verified", "-best_score", "-pk")
     )
 
 

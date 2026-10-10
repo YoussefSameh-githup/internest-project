@@ -8,7 +8,7 @@ from internest_core.models import PartnerProfile
 # URL names a startup without a company profile may still reach.
 PROFILE_GATE_ALLOWED = frozenset({
     "startup_company_profile", "startup_company_profile_edit", "logout", "set_language", "serve_media", "landing",
-    "startup_register",
+    "startup_register", "verify_experience", "experience_letter",
 })
 PROFILE_GATE_PREFIXES = ("/admin/", "/static/", "/i18n/", "/accounts/")
 
