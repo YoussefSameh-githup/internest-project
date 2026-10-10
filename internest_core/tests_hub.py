@@ -67,3 +67,13 @@ class StudentHubTests(ApplicationsBase):
         self.assertContains(page, "Close your skill gap")
         self.assertContains(page, "Start learning")
         self.assertContains(page, "Recommended for you")
+
+    def test_student_navbar_has_three_links(self):
+        page = self.client.get(reverse("task_list")).content.decode()
+        nav = page[page.index('class="nav__links"'):page.index("</ul>", page.index('class="nav__links"'))]
+        self.assertEqual(nav.count("<li><a "), 3)
+        for name in ("list", "my_applications", "profile"):
+            self.assertIn(f'href="{reverse(name)}"', nav)
+        for name in ("task_list", "course_list"):
+            self.assertNotIn(f'href="{reverse(name)}"', nav)
+        self.assertIn('nav__link is-active">🎓', nav)  # hub is active on its tabs

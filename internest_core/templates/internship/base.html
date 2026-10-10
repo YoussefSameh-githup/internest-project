@@ -52,11 +52,12 @@
                             <li><a href="{% url 'lounge_feed' %}" class="nav__link"><i class="bi bi-cup-hot"></i> {% trans "Founders Network" %}</a></li>
                         {% endif %}
                     {% else %}
-                        <li><a href="{% url 'list' %}" class="nav__link"><i class="bi bi-briefcase"></i> {% trans "Internships" %}</a></li>
-                        <li><a href="{% url 'course_list' %}" class="nav__link"><i class="bi bi-mortarboard"></i> {% trans "Courses" %}</a></li>
-                        <li><a href="{% url 'task_list' %}" class="nav__link"><i class="bi bi-trophy"></i> {% trans "Tasks" %}</a></li>
-                        <li><a href="{% url 'my_applications' %}" class="nav__link"><i class="bi bi-file-earmark-text"></i> {% trans "My applications" %}</a></li>
-                        <li><a href="{% url 'profile' %}" class="nav__link"><i class="bi bi-person-circle"></i> {% trans "My profile" %}</a></li>
+                        {# Applications, tasks and courses live as tabs inside the student hub. #}
+                        {% with page=request.resolver_match.url_name %}
+                        <li><a href="{% url 'list' %}" class="nav__link{% if page == 'list' %} is-active{% endif %}">💼 {% trans "Internships" %}</a></li>
+                        <li><a href="{% url 'my_applications' %}" class="nav__link{% if page == 'my_applications' or page == 'task_list' or page == 'course_list' %} is-active{% endif %}">🎓 {% trans "Your student hub" %}</a></li>
+                        <li><a href="{% url 'profile' %}" class="nav__link{% if page == 'profile' %} is-active{% endif %}">👤 {% trans "My profile" %}</a></li>
+                        {% endwith %}
                     {% endif %}
                 {% else %}
                     <li><a href="{% url 'landing' %}#features" class="nav__link">{% trans "For students" %}</a></li>

@@ -70,7 +70,7 @@ class TalentPoolTests(PoolBase):
         resp = self.client.get(URL)
         self.assertEqual(self._names(resp), {"amr", "sara"})
         self.assertEqual(resp.context["page"][0].user.username, "amr")  # best score first
-        self.assertContains(resp, '<span class="tp-skill__name">Python</span>')
+        self.assertContains(resp, '<span class="tp-skill__name"><i class="bi bi-patch-check-fill"></i> Python</span>')
         self.assertContains(resp, '<span class="tp-skill__score">95%</span>')
         self.assertContains(resp, "Cairo University")
 
