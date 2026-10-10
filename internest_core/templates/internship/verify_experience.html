@@ -24,7 +24,7 @@
 
 .vx-qr { display: flex; align-items: center; gap: 18px; margin: 0 0 24px; padding: 16px; border-radius: 18px; background: #f8fafc; border: 1px solid #e2e8f0; text-align: start; }
 .vx-qr__code { flex-shrink: 0; padding: 8px; border-radius: 14px; background: #fff; border: 1px solid #e2e8f0; line-height: 0; }
-.vx-qr__code svg { width: 150px; height: 150px; }
+.vx-qr__code img { display: block; width: 150px; height: 150px; image-rendering: pixelated; }
 .vx-qr__info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .vx-qr__label { color: #64748b; font-size: var(--text-xs); font-weight: 600; }
 .vx-qr__value { font-size: 1.5rem; letter-spacing: .08em; color: #0f172a; }
@@ -53,7 +53,7 @@
             <blockquote class="vx-quote">“{{ exp.review_text }}”</blockquote>
 
             <div class="vx-qr">
-                {% if qr_svg %}<div class="vx-qr__code">{{ qr_svg }}</div>{% endif %}
+                {% if qr_img %}<div class="vx-qr__code"><img src="{{ qr_img }}" alt="{% trans 'QR code for this verification page' %}" width="150" height="150"></div>{% endif %}
                 <div class="vx-qr__info">
                     <span class="vx-qr__label">{% trans "Verification code" %}</span>
                     <strong class="vx-qr__value" dir="ltr">{{ exp.verification_code }}</strong>

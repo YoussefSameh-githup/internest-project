@@ -3761,3 +3761,6 @@ msgstr "✅ %(n)s جيجات موثّقة · ⭐ %(r)s/5"
 msgid ""
 "Scan the QR code to open this page and confirm the letter is authentic."
 msgstr "امسح رمز QR لفتح هذه الصفحة والتأكد من أن الخطاب أصلي."
+
+msgid "QR code for this verification page"
+msgstr "رمز QR لصفحة التحقق هذه"

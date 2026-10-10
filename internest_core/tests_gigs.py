@@ -161,6 +161,6 @@ class LetterDeliveryTests(ApplicationsBase):
 
     def test_verification_page_shows_qr(self):
         page = self.client.get(reverse("verify_experience", args=[self.exp.verification_uuid]))
-        self.assertContains(page, '<svg xmlns="http://www.w3.org/2000/svg"')
+        self.assertContains(page, 'src="data:image/svg+xml;base64,')
         self.assertContains(page, f"http://testserver/verify/{self.exp.verification_uuid}/")
         self.assertContains(page, self.exp.verification_code)

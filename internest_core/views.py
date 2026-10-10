@@ -21,7 +21,7 @@ from internest_startups.tiers import FREE_POSTS_PER_MONTH, is_pro, monthly_quota
 
 from .email_helpers import issue_and_send_verification as _issue_and_send_verification
 from .email_helpers import notify_shortlisted
-from .letters import generate_letter, letter_bytes, qr_svg
+from .letters import generate_letter, letter_bytes, qr_data_uri
 from .models import (
     Internship, StudentProfile, Application,
     PartnerProfile, PartnerInternshipSubmission, PartnerCourseSubmission,
@@ -1131,12 +1131,10 @@ def _verify_url(request, exp):
 
 def verify_experience(request, uuid):
     """Public authenticity check behind the letter's QR code (the page shows the same QR)."""
-    from django.utils.safestring import mark_safe
-
     exp = get_object_or_404(GigExperience.objects.select_related("student__user", "company"), verification_uuid=uuid)
     verify_url = _verify_url(request, exp)
     context = get_user_context(request)
-    context.update({"exp": exp, "stars": range(1, 6), "verify_url": verify_url, "qr_svg": mark_safe(qr_svg(verify_url))})
+    context.update({"exp": exp, "stars": range(1, 6), "verify_url": verify_url, "qr_img": qr_data_uri(verify_url)})
     return render(request, "internship/verify_experience.html", context)
 
 
