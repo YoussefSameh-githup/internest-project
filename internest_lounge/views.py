@@ -35,15 +35,16 @@ def lounge_feed(request):
     form = PostForm(request.POST or None)
     hourly_limit_hit = False
     if request.method == "POST" and form.is_valid():
-        title, body = form.cleaned_data["title"], form.cleaned_data["body"]
+        title, body = "", form.cleaned_data["body"]
         if not viewer_is_pro and moderation.post_rate_exceeded(founder):
             # Free tier: 3 posts/hour. Pro is unlimited → show the upgrade modal instead of a bare error.
             hourly_limit_hit = True
         else:
             try:
-                moderation.check_keywords(title, body)  # spam filters apply to every tier
+                moderation.check_keywords(body)  # spam + language filters apply to every tier
+                moderation.check_language(body)
             except moderation.SpamRejected as exc:
-                messages.error(request, str(exc))
+                form.add_error("body", str(exc))
             else:
                 reason = moderation.auto_hide_reason(title, body, moderation.recent_fingerprints())
                 post = form.save(commit=False)
@@ -157,6 +158,7 @@ def add_comment(request, pk):
     try:
         moderation.check_comment_rate(founder)
         moderation.check_keywords(body)
+        moderation.check_language(body)
     except moderation.SpamRejected as exc:
         messages.error(request, str(exc))
         return redirect("lounge_post", pk=post.pk)
@@ -221,9 +223,10 @@ def edit_post(request, pk):
         return redirect("lounge_post", pk=post.pk)
     form = PostForm(request.POST or None, instance=post)
     if request.method == "POST" and form.is_valid():
-        title, body = form.cleaned_data["title"], form.cleaned_data["body"]
+        title, body = post.title, form.cleaned_data["body"]
         try:
             moderation.check_keywords(title, body)
+            moderation.check_language(title, body)
         except moderation.SpamRejected as exc:
             messages.error(request, str(exc))
         else:

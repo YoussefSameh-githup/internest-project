@@ -1,32 +1,38 @@
 {% extends 'internship/base.html' %}
-{% load i18n asset_tags %}
+{% load i18n asset_tags lounge_tags %}
 
 {% block title %}{% trans "Founders Network" %} — Internest{% endblock %}
 {% block extra_head %}<link rel="stylesheet" href="{% asset 'lounge/network.css' %}">{% endblock %}
 
 {% block content %}
-<section class="nw-page">
-    <div class="container nw-layout">
-        <main class="nw-main">
-            <header class="nw-heading">
-                <h1>{% trans "Founders Network" %}</h1>
-                <p>{% trans "Hire, ask for advice and find B2B partners with other verified startup founders." %}</p>
+{% include "lounge/_chat_styles.html" %}
+<section class="ch-page">
+    <div class="container ch-layout">
+        <main>
+            <header class="ch-head">
+                <div>
+                    <h1>{% trans "Founders Network" %}</h1>
+                    <p>{% trans "Hire, ask for advice and find B2B partners with other verified startup founders." %}</p>
+                </div>
+                {% dm_unread_count user as dm_unread %}
+                <a href="{% url 'lounge_inbox' %}" class="ch-inbox-link">💬 {% trans "Messages" %}{% if dm_unread %} <b>{{ dm_unread }}</b>{% endif %}</a>
             </header>
 
-            <button type="button" class="nw-composer" data-open-dialog="compose-dialog">
-                {% include "lounge/_author_avatar.html" with author=founder %}
-                <span class="nw-composer__input">{% trans "Share an idea or ask fellow founders for advice..." %}</span>
-                <span class="nw-composer__icon"><i class="bi bi-pencil-square"></i></span>
-            </button>
+            <nav class="ch-tags" aria-label="{% trans 'Trending tags' %}">
+                <a href="{% url 'lounge_feed' %}" class="{% if not active_tag %}is-active{% endif %}">{% trans "#All_discussions" %}</a>
+                {% for value, label in tags %}<a href="?tag={{ value }}" class="{% if active_tag == value %}is-active{% endif %}">{{ label }}</a>{% endfor %}
+            </nav>
 
-            {% for post in page %}
-                {% include "lounge/_post_card.html" with post=post is_upvoted=post.is_upvoted detail=False %}
-            {% empty %}
-                <div class="nw-card nw-empty-state">
-                    <i class="bi bi-chat-square-text"></i>
-                    <p>{% trans "No discussions yet. Start the first one!" %}</p>
-                </div>
-            {% endfor %}
+            <div class="ch-stream">
+                {% for post in page %}
+                    {% include "lounge/_post_card.html" with post=post is_upvoted=post.is_upvoted detail=False %}
+                {% empty %}
+                    <div class="ch-widget nw-empty-state" style="text-align: center;">
+                        <i class="bi bi-chat-square-text" style="font-size: 2rem; color: #2563eb;"></i>
+                        <p class="mb-0">{% trans "No discussions yet. Start the first one!" %}</p>
+                    </div>
+                {% endfor %}
+            </div>
 
             {% if page.has_other_pages %}
                 <nav class="nw-pager">
@@ -34,29 +40,46 @@
                     {% if page.has_next %}<a class="btn btn--ghost btn--sm" href="?page={{ page.next_page_number }}{% if active_tag %}&tag={{ active_tag }}{% endif %}">{% trans "Older" %}</a>{% endif %}
                 </nav>
             {% endif %}
+
+            {# Floating chat composer #}
+            <form method="post" class="ch-composer" id="composer" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors or form.body.errors %}
+                    <p class="ch-error" role="alert">{{ form.non_field_errors|join:" " }} {{ form.body.errors|striptags }}</p>
+                {% endif %}
+                <div class="ch-emoji" data-emoji-panel aria-label="{% trans 'Emoji' %}">
+                    {% for e in "😀😂😍🤝👍👏🙏🚀🎉💡🔥✅📈💼🧠📣💙🤔" %}<button type="button" data-emoji="{{ e }}">{{ e }}</button>{% endfor %}
+                </div>
+                <div class="ch-composer__row">
+                    {% include "lounge/_author_avatar.html" with author=founder %}
+                    <textarea name="body" dir="auto" rows="1" maxlength="5000" required data-autogrow
+                              placeholder="{% trans 'Share an idea or ask fellow founders for advice...' %}"
+                              aria-label="{% trans 'What would you like to discuss?' %}">{{ form.body.value|default:'' }}</textarea>
+                    <button type="button" class="ch-icon-btn" data-emoji-toggle aria-label="{% trans 'Emoji' %}" aria-expanded="false">😊</button>
+                    <button type="submit" class="ch-send">{% trans "Send" %} 🚀</button>
+                </div>
+                <div class="ch-composer__tools">
+                    <select name="category" aria-label="{% trans 'Tag' %}">
+                        <option value="">{% trans "No tag" %}</option>
+                        {% for value, label in tags %}<option value="{{ value }}" {% if form.category.value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                    </select>
+                    <span class="ch-composer__hint"><i class="bi bi-shield-check"></i>
+                        {% if viewer_is_pro %}{% trans "Unlimited posting with Pro" %}{% else %}{% blocktrans with n=hourly_limit %}Free accounts: up to {{ n }} posts per hour{% endblocktrans %}{% endif %}
+                    </span>
+                </div>
+            </form>
         </main>
 
-        <aside class="nw-side">
-            <div class="nw-widget">
-                <h4 class="nw-widget__title">{% trans "Trending tags" %}</h4>
-                <div class="nw-pills">
-                    <a href="{% url 'lounge_feed' %}" class="nw-pill {% if not active_tag %}is-active{% endif %}">{% trans "#All_discussions" %}</a>
-                    {% for value, label in tags %}
-                        <a href="?tag={{ value }}" class="nw-pill {% if active_tag == value %}is-active{% endif %}">{{ label }}</a>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <div class="nw-widget nw-widget--pro">
-                <div class="nw-widget__crest">👑</div>
+        <aside class="ch-side">
+            <div class="ch-widget nw-widget--pro">
                 {% if viewer_is_pro %}
-                    <h4 class="nw-widget__title">{% trans "You're on Internest Pro" %}</h4>
+                    <h4>👑 {% trans "You're on Internest Pro" %}</h4>
                     <ul class="nw-perks">
                         <li><i class="bi bi-infinity"></i> {% trans "Unlimited posting" %}</li>
                         <li><i class="bi bi-pin-angle"></i> {% trans "Your new posts are pinned to the top of the feed for 72 hours." %}</li>
                     </ul>
                 {% else %}
-                    <h4 class="nw-widget__title">Internest Pro</h4>
+                    <h4>👑 Internest Pro</h4>
                     <ul class="nw-perks">
                         <li><i class="bi bi-infinity"></i> {% trans "Unlimited posting" %}</li>
                         <li><i class="bi bi-pin-angle"></i> {% trans "Top-of-feed priority" %}</li>
@@ -66,41 +89,48 @@
                     <a href="{% url 'startup_upgrade' %}" class="btn btn--gold btn--block">{% trans "Upgrade to Pro" %}</a>
                 {% endif %}
             </div>
+            <div class="ch-widget">
+                <h4>🛡️ {% trans "Professional space" %}</h4>
+                <p class="mb-0" style="font-size: 13px; color: #64748b;">{% trans "Posts and private messages with offensive language are blocked automatically, in Arabic and English." %}</p>
+            </div>
         </aside>
     </div>
 </section>
 
-<dialog id="compose-dialog" class="compose-dialog" {% if compose_open %}data-autoopen{% endif %} aria-labelledby="compose-title">
-    <form method="dialog" class="upsell-dialog__close"><button aria-label="{% trans 'Close' %}"><i class="bi bi-x-lg"></i></button></form>
-    <div class="nw-compose-head">
-        {% include "lounge/_author_avatar.html" with author=founder %}
-        <div>
-            <h2 id="compose-title">{% trans "Start a discussion" %}</h2>
-            <span class="nw-time">{{ founder.company_name }}</span>
-        </div>
-    </div>
-    <form method="post" class="nw-compose-form" novalidate>
-        {% csrf_token %}
-        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
-        <input type="text" name="title" maxlength="160" class="nw-compose-title" placeholder="{% trans 'Title (optional)' %}" value="{{ form.title.value|default:'' }}" aria-label="{% trans 'Title (optional)' %}">
-        {% if form.title.errors %}<div class="form-error">{{ form.title.errors|striptags }}</div>{% endif %}
-        <textarea name="body" rows="6" maxlength="5000" required class="nw-compose-body" placeholder="{% trans 'What would you like to discuss?' %}" aria-label="{% trans 'What would you like to discuss?' %}">{{ form.body.value|default:'' }}</textarea>
-        {% if form.body.errors %}<div class="form-error">{{ form.body.errors|striptags }}</div>{% endif %}
-        <fieldset class="nw-tag-picker">
-            <legend>{% trans "Tag" %}</legend>
-            <label><input type="radio" name="category" value="" {% if not form.category.value %}checked{% endif %}><span>{% trans "No tag" %}</span></label>
-            {% for value, label in tags %}
-                <label><input type="radio" name="category" value="{{ value }}" {% if form.category.value == value %}checked{% endif %}><span>{{ label }}</span></label>
-            {% endfor %}
-        </fieldset>
-        <div class="nw-compose-foot">
-            <span class="nw-time"><i class="bi bi-shield-check"></i> {% if viewer_is_pro %}{% trans "Unlimited posting with Pro" %}{% else %}{% blocktrans with n=hourly_limit %}Free accounts: up to {{ n }} posts per hour{% endblocktrans %}{% endif %}</span>
-            <button type="submit" class="btn btn--primary"><i class="bi bi-send"></i> {% trans "Publish" %}</button>
-        </div>
-    </form>
-</dialog>
-
 {% if not viewer_is_pro %}{% include "startups/_upsell_modal.html" %}{% endif %}
 {% endblock %}
 
-{% block extra_scripts %}<script src="{% asset 'lounge/network.js' %}"></script>{% endblock %}
+{% block extra_scripts %}
+<script src="{% asset 'lounge/network.js' %}"></script>
+<script>
+(function () {
+  var form = document.getElementById("composer");
+  if (!form) return;
+  var box = form.querySelector("[data-autogrow]"), panel = form.querySelector("[data-emoji-panel]"), toggle = form.querySelector("[data-emoji-toggle]");
+  var send = form.querySelector(".ch-send");
+  function grow() {
+    box.style.height = "auto";
+    box.style.height = Math.min(box.scrollHeight, 160) + "px";
+    box.style.overflowY = box.scrollHeight > 160 ? "auto" : "hidden";
+    send.disabled = !box.value.trim();
+  }
+  box.addEventListener("input", grow);
+  box.addEventListener("keydown", function (e) { if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && box.value.trim()) form.submit(); });
+  toggle.addEventListener("click", function () {
+    var open = panel.classList.toggle("is-open");
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  panel.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-emoji]");
+    if (!b) return;
+    var s = box.selectionStart || box.value.length, end = box.selectionEnd || box.value.length;
+    box.value = box.value.slice(0, s) + b.dataset.emoji + box.value.slice(end);
+    box.focus();
+    box.selectionStart = box.selectionEnd = s + b.dataset.emoji.length;
+    grow();
+  });
+  grow();
+  if (form.querySelector(".ch-error")) box.focus();
+})();
+</script>
+{% endblock %}

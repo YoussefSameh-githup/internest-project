@@ -7,10 +7,9 @@ from .models import LoungeComment, LoungePost
 class PostForm(forms.ModelForm):
     class Meta:
         model = LoungePost
-        fields = ["title", "body", "category"]
-        labels = {"title": _("Title"), "body": _("What would you like to discuss?"), "category": _("Tag")}
+        fields = ["body", "category"]  # chat-style: no title (older posts keep theirs)
+        labels = {"body": _("What would you like to discuss?"), "category": _("Tag")}
         widgets = {
-            "title": forms.TextInput(attrs={"class": "form-control", "maxlength": 160}),
             "body": forms.Textarea(attrs={"class": "form-control", "rows": 4, "maxlength": 5000}),
             "category": forms.Select(attrs={"class": "form-select"}),
         }
@@ -18,7 +17,6 @@ class PostForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["category"].choices = [("", _("No tag"))] + list(LoungePost.CATEGORY_CHOICES)
-        self.fields["title"].required = False
 
 
 class CommentForm(forms.ModelForm):

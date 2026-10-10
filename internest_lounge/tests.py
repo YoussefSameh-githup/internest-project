@@ -78,7 +78,7 @@ class AccessControlTests(LoungeTestBase):
         self.assertContains(self.client.get(reverse("partner_dashboard")), LOUNGE)
         resp = self.client.get(LOUNGE)
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Start a discussion")
+        self.assertContains(resp, 'class="ch-composer"')  # floating chat composer
 
     def test_unverified_partner_does_not_see_link(self):
         self.client.force_login(self.unverified)
@@ -130,7 +130,7 @@ class AntiSpamTests(LoungeTestBase):
         post = LoungePost.objects.get()
         self.assertEqual((post.visibility, post.hidden_reason), (Visibility.HIDDEN, "link_spam"))
         self.client.force_login(self.peers[0])
-        self.assertNotContains(self.client.get(LOUNGE), post.title)
+        self.assertNotContains(self.client.get(LOUNGE), "Join us")
         self.assertEqual(self.client.get(reverse("lounge_post", args=[post.pk])).status_code, 404)
         self.client.force_login(self.founder)
         self.assertContains(self.client.get(LOUNGE), "Waiting for admin review")
@@ -182,8 +182,8 @@ class FeedFeatureTests(LoungeTestBase):
         self.client.force_login(self.peers[0])
         self.post_as(self.peers[0], title="Hiring now", body="frontend role", category="hiring")
         resp = self.client.get(LOUNGE + "?tag=advice")
-        self.assertContains(resp, "Need advice")
-        self.assertNotContains(resp, "Hiring now")
+        self.assertContains(resp, "pricing?")
+        self.assertNotContains(resp, "frontend role")
 
     def test_arabic_blocked_message(self):
         self.client.cookies["internest_lang"] = "ar"
@@ -216,7 +216,7 @@ class FeedRenderingTests(LoungeTestBase):
         self.assertContains(page, "nw-widget--pro")
         self.assertRegex(html, r'/static/lounge/network\.css\?v=[0-9a-f]{10}')
         # Pro posts are pinned first.
-        self.assertLess(html.index("Pro advice"), html.index("Hiring frontend"))
+        self.assertLess(html.index("Pricing tips"), html.index("React role"))  # titles are gone: compare bodies
 
     def test_post_detail_uses_card_with_open_thread(self):
         self.post_as(self.founder)

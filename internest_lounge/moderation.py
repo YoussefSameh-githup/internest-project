@@ -74,3 +74,22 @@ def recent_fingerprints():
     return set(
         LoungePost.objects.filter(created_at__gte=timezone.now() - DUPLICATE_WINDOW).values_list("body_fingerprint", flat=True)
     )
+
+
+DMS_PER_HOUR = 40  # private messages, anti-spam
+
+
+def check_language(*texts):
+    """Reject profanity / hate speech (Arabic, English, Franco-Arabic) in posts, comments and private messages."""
+    from .profanity import contains_profanity
+
+    if contains_profanity(*texts):
+        raise SpamRejected(_("Sorry, please keep the conversation professional and avoid prohibited language 🛡️"))
+
+
+def check_dm_rate(sender):
+    from .models import DirectMessage
+
+    since = timezone.now() - timedelta(hours=1)
+    if DirectMessage.objects.filter(sender=sender, created_at__gte=since).count() >= DMS_PER_HOUR:
+        raise SpamRejected(_("You are sending messages too fast. Please try again later."))

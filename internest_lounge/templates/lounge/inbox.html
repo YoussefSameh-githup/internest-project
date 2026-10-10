@@ -1,0 +1,123 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Messages" %}{% if other %} · {{ other.company_name }}{% endif %} — Internest{% endblock %}
+
+{% block content %}
+{% include "lounge/_chat_styles.html" %}
+<section class="ch-page">
+    <div class="container">
+        <div class="dm-shell {% if other %}has-active{% endif %}">
+            <aside class="dm-list">
+                <div class="dm-list__head">
+                    <h1>💬 {% trans "Messages" %}</h1>
+                    <small class="text-muted">{% trans "Private conversations between verified companies." %}</small>
+                </div>
+                <ul class="dm-list__items">
+                    {% for c in conversations %}
+                        <li>
+                            <a href="{% url 'lounge_thread' c.partner.pk %}" class="dm-conv {% if other and c.partner.pk == other.pk %}is-active{% endif %}">
+                                {% include "lounge/_author_avatar.html" with author=c.partner %}
+                                <span class="dm-conv__text">
+                                    <span class="dm-conv__name">{{ c.partner.company_name }}{% if c.last %}<small>{{ c.last.created_at|date:"H:i" }}</small>{% endif %}</span>
+                                    <span class="dm-conv__last" dir="auto">{% if c.last %}{% if c.last.sender_id == me.pk %}{% trans "You:" %} {% endif %}{{ c.last.message_text|truncatechars:60 }}{% else %}{% trans "New conversation" %}{% endif %}</span>
+                                </span>
+                                {% if c.unread %}<span class="dm-badge" aria-label="{% trans 'Unread messages' %}">{{ c.unread }}</span>{% endif %}
+                            </a>
+                        </li>
+                    {% empty %}
+                        <li class="dm-empty" style="margin: 24px 8px;">{% trans "No conversations yet. Start one from the Founders Network with “Private chat 💬”." %}</li>
+                    {% endfor %}
+                </ul>
+            </aside>
+
+            <div class="dm-pane">
+                {% if other %}
+                    <header class="dm-pane__head">
+                        <a href="{% url 'lounge_inbox' %}" class="dm-back btn btn--ghost btn--sm" aria-label="{% trans 'All conversations' %}"><i class="bi bi-arrow-right"></i></a>
+                        {% include "lounge/_author_avatar.html" with author=other %}
+                        <div>
+                            <strong>{{ other.company_name }}</strong>
+                            <small><i class="bi bi-lock-fill"></i> {% trans "Only your two companies can see this conversation." %}</small>
+                        </div>
+                    </header>
+                    <div class="dm-messages" data-thread data-poll-url="{% url 'lounge_thread_poll' other.pk %}">
+                        {% for m in thread %}
+                            <div class="dm-msg {% if m.sender_id == me.pk %}dm-msg--mine{% endif %}" data-id="{{ m.pk }}" dir="auto">{{ m.message_text }}<time>{{ m.created_at|date:"H:i" }}</time></div>
+                        {% empty %}
+                            <div class="dm-empty" data-empty><i class="bi bi-chat-heart"></i>{% blocktrans with name=other.company_name %}Say hello to {{ name }} 👋{% endblocktrans %}</div>
+                        {% endfor %}
+                    </div>
+                    <p class="dm-form__error" data-error {% if not messages %}hidden{% endif %}>{% for m in messages %}{{ m }} {% endfor %}</p>
+                    <form method="post" class="dm-form" data-send>
+                        {% csrf_token %}
+                        <textarea name="message_text" dir="auto" rows="1" maxlength="{{ max_length }}" required placeholder="{% trans 'Write a message…' %}" aria-label="{% trans 'Message' %}"></textarea>
+                        <button type="submit" class="ch-send">{% trans "Send" %} 🚀</button>
+                    </form>
+                {% else %}
+                    <div class="dm-empty"><i class="bi bi-chat-dots"></i>{% trans "Choose a conversation to start chatting." %}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if other %}
+<script>
+(function () {
+  var list = document.querySelector("[data-thread]"), form = document.querySelector("[data-send]");
+  var box = form.querySelector("textarea"), errorBox = document.querySelector("[data-error]");
+  var last = 0;
+  list.querySelectorAll("[data-id]").forEach(function (el) { last = Math.max(last, +el.dataset.id); });
+  function scrollDown() { list.scrollTop = list.scrollHeight; }
+  function add(m) {
+    if (list.querySelector('[data-id="' + m.id + '"]')) return;
+    var empty = list.querySelector("[data-empty]");
+    if (empty) empty.remove();
+    var el = document.createElement("div");
+    el.className = "dm-msg" + (m.mine ? " dm-msg--mine" : "");
+    el.dataset.id = m.id;
+    el.dir = "auto";
+    el.textContent = m.text;
+    var t = document.createElement("time");
+    t.textContent = m.time;
+    el.appendChild(t);
+    list.appendChild(el);
+    last = Math.max(last, m.id);
+    scrollDown();
+  }
+  function poll() {
+    fetch(list.dataset.pollUrl + "?after=" + last, {credentials: "same-origin"})
+      .then(function (r) { return r.ok ? r.json() : {messages: []}; })
+      .then(function (d) { d.messages.forEach(add); })
+      .catch(function () {});
+  }
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!box.value.trim()) return;
+    var data = new FormData(form);
+    fetch(location.pathname, {method: "POST", body: data, credentials: "same-origin", headers: {"X-Requested-With": "fetch"}})
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.error) { errorBox.textContent = d.error; errorBox.hidden = false; return; }
+        errorBox.hidden = true;
+        box.value = "";
+        box.style.height = "auto";
+        add(d.message);
+      })
+      .catch(function () { form.submit(); });
+  });
+  box.addEventListener("input", function () {
+    box.style.height = "auto";
+    box.style.height = Math.min(box.scrollHeight, 140) + "px";
+    box.style.overflowY = box.scrollHeight > 140 ? "auto" : "hidden";
+  });
+  box.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
+  scrollDown();
+  setInterval(function () { if (!document.hidden) poll(); }, 4000);
+})();
+</script>
+{% endif %}
+{% endblock %}

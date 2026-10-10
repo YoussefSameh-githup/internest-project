@@ -50,6 +50,8 @@
                         {% is_lounge_member user as show_lounge %}
                         {% if show_lounge %}
                             <li><a href="{% url 'lounge_feed' %}" class="nav__link"><i class="bi bi-cup-hot"></i> {% trans "Founders Network" %}</a></li>
+                            {% dm_unread_count user as dm_unread %}
+                            <li><a href="{% url 'lounge_inbox' %}" class="nav__link">💬 {% trans "Messages" %}{% if dm_unread %} <span class="nav-badge" style="display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#ef4444;color:#fff;font-size:11px;font-weight:800;">{{ dm_unread }}</span>{% endif %}</a></li>
                         {% endif %}
                     {% else %}
                         {# Applications, tasks and courses live as tabs inside the student hub. #}

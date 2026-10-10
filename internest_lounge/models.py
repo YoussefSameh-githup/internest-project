@@ -90,3 +90,23 @@ class LoungeFlag(models.Model):
 
     class Meta:
         unique_together = ("post", "reporter")
+
+
+class DirectMessage(models.Model):
+    """Private B2B message between two verified companies. Only the two parties can read their thread."""
+
+    sender = models.ForeignKey(PartnerProfile, on_delete=models.CASCADE, related_name="sent_messages")
+    recipient = models.ForeignKey(PartnerProfile, on_delete=models.CASCADE, related_name="received_messages")
+    message_text = models.TextField(max_length=2000)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["created_at", "pk"]
+        indexes = [
+            models.Index(fields=["recipient", "is_read"], name="dm_unread_idx"),
+            models.Index(fields=["sender", "recipient", "created_at"], name="dm_thread_idx"),
+        ]
+
+    def __str__(self):
+        return f"{self.sender} → {self.recipient} ({self.created_at:%Y-%m-%d %H:%M})"

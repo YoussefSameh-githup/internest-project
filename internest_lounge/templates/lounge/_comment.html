@@ -6,9 +6,10 @@
             <div class="nw-comment__head">
                 <span class="nw-author__company">{{ comment.author.company_name }}</span>
                 <span class="nw-time">{% blocktrans with t=comment.created_at|timesince %}{{ t }} ago{% endblocktrans %}</span>
+                {% if comment.author_id != founder.pk %}<a class="ch-dm ch-dm--mini" href="{% url 'lounge_thread' comment.author_id %}" title="{% trans 'Private chat' %}">💬</a>{% endif %}
             </div>
             {% if comment.visibility != 'visible' %}<p class="nw-review">{% trans "Waiting for admin review — only you can see this" %}</p>{% endif %}
-            <p class="nw-comment__body">{{ comment.body|linebreaksbr }}</p>
+            <p class="nw-comment__body" dir="auto">{{ comment.body|linebreaksbr }}</p>
         </div>
         {% if depth < max_depth and post.is_visible %}
             <details class="nw-reply">

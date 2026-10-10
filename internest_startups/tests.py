@@ -386,12 +386,12 @@ class ProTierTests(OnboardingBase):
         page = self.client.get(reverse("lounge_feed"))
         self.assertContains(page, "Founders Network")
         self.assertContains(page, "Share an idea or ask fellow founders for advice...")
-        self.assertContains(page, 'id="compose-dialog"')
-        self.assertNotContains(page, 'id="compose-dialog" class="compose-dialog" data-autoopen')
-        self.assertContains(page, 'class="nw-thread"')
+        self.assertContains(page, 'class="ch-composer"')  # floating chat composer replaces the old dialog
+        self.assertNotContains(page, 'class="ch-error"')
+        self.assertContains(page, 'class="nw-thread ch-thread"')
         self.assertContains(page, 'class="nw-tag"')
-        resp = self.client.post(reverse("lounge_feed"), {"title": "", "body": ""})  # errors reopen the modal
-        self.assertContains(resp, "data-autoopen")
+        resp = self.client.post(reverse("lounge_feed"), {"body": ""})  # errors show inside the composer
+        self.assertContains(resp, 'class="ch-error"')
         self.client.cookies["internest_lang"] = "ar"
         self.assertContains(self.client.get(reverse("lounge_feed")), "شبكة رواد الأعمال")
 

@@ -5,6 +5,7 @@
 {% block extra_head %}<link rel="stylesheet" href="{% asset 'lounge/network.css' %}">{% endblock %}
 
 {% block content %}
+{% include "lounge/_chat_styles.html" %}
 <section class="nw-page">
     <div class="container nw-single">
         <a href="{% url 'lounge_feed' %}" class="nw-back"><i class="bi bi-arrow-right-short"></i> {% trans "Founders Network" %}</a>

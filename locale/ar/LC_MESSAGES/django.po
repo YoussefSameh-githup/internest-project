@@ -3779,3 +3779,75 @@ msgstr ""
 
 msgid "Rated below 3.5: no verified letter was issued."
 msgstr "التقييم أقل من 3.5: لم يصدر خطاب موثّق."
+
+msgid "Messages"
+msgstr "الرسائل"
+
+msgid "Write a message first."
+msgstr "اكتب رسالة أولاً."
+
+msgid "Messages can be at most %(n)s characters."
+msgstr "الحد الأقصى للرسالة %(n)s حرف."
+
+msgid ""
+"Sorry, please keep the conversation professional and avoid prohibited "
+"language 🛡️"
+msgstr "عذراً، يرجى الالتزام بمعايير التواصل المهني وتجنب الألفاظ المحظورة 🛡️"
+
+msgid "You are sending messages too fast. Please try again later."
+msgstr "أنت ترسل رسائل بسرعة كبيرة. حاول مرة أخرى لاحقاً."
+
+msgid "Emoji"
+msgstr "رموز تعبيرية"
+
+msgid "Send"
+msgstr "إرسال"
+
+msgid "Professional space"
+msgstr "مساحة مهنية"
+
+msgid ""
+"Posts and private messages with offensive language are blocked "
+"automatically, in Arabic and English."
+msgstr ""
+"يتم حظر المنشورات والرسائل الخاصة التي تحتوي على ألفاظ مسيئة تلقائياً، "
+"بالعربية والإنجليزية."
+
+msgid "Private conversations between verified companies."
+msgstr "محادثات خاصة بين الشركات الموثّقة."
+
+msgid "You:"
+msgstr "أنت:"
+
+msgid "New conversation"
+msgstr "محادثة جديدة"
+
+msgid "Unread messages"
+msgstr "رسائل غير مقروءة"
+
+msgid ""
+"No conversations yet. Start one from the Founders Network with “Private chat"
+" 💬”."
+msgstr ""
+"لا توجد محادثات بعد. ابدأ محادثة من شبكة المؤسسين عبر زر \"محادثة خاصة 💬\"."
+
+msgid "All conversations"
+msgstr "كل المحادثات"
+
+msgid "Only your two companies can see this conversation."
+msgstr "هذه المحادثة مرئية لشركتيكما فقط."
+
+msgid "Say hello to %(name)s 👋"
+msgstr "قل مرحباً لـ %(name)s 👋"
+
+msgid "Write a message…"
+msgstr "اكتب رسالة…"
+
+msgid "Message"
+msgstr "الرسالة"
+
+msgid "Choose a conversation to start chatting."
+msgstr "اختر محادثة لتبدأ الدردشة."
+
+msgid "Private chat"
+msgstr "محادثة خاصة"
