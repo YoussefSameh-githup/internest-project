@@ -81,7 +81,7 @@ class GigExperienceTests(ApplicationsBase):
                             "وثيقة معتمدة وموثّقة رسميًا من منصة Internest")
         pdf = self.client.get(reverse("experience_letter", args=[exp.verification_uuid]))
         self.assertEqual((pdf.status_code, pdf["Content-Type"]), (200, "application/pdf"))
-        self.assertEqual(b"".join(pdf.streaming_content)[:4], b"%PDF")
+        self.assertEqual(pdf.content[:4], b"%PDF")
         self.assertIn(self.client.get(f"/media/{exp.pdf_file.name}").status_code, (302, 404))  # no direct media access
         exp.pdf_file.storage.delete(exp.pdf_file.name)
         self.assertEqual(self.client.get(reverse("experience_letter", args=[exp.verification_uuid])).status_code, 200)  # rebuilt
@@ -119,3 +119,48 @@ class GigExperienceTests(ApplicationsBase):
         preview = self.client.get(reverse("talent_pool_candidate", args=[self.student.pk]))
         self.assertContains(preview, "Verified work experience")
         self.assertContains(preview, "Excellent.")
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA)
+class LetterDeliveryTests(ApplicationsBase):
+    """The letter link must never 404: stored file → on-the-fly render → plain fallback PDF."""
+
+    def setUp(self):
+        super().setUp()
+        _user, student = _student("lina")
+        self.exp = GigExperience.objects.create(student=student, company=self.partner, gig_title="Design gig",
+                                                completion_date=timezone.now().date(), star_rating=5, review_text="Great work.")
+        self.url = reverse("experience_letter", args=[self.exp.verification_uuid])
+
+    def _pdf(self):
+        resp = self.client.get(self.url)
+        self.assertEqual((resp.status_code, resp["Content-Type"]), (200, "application/pdf"))
+        self.assertIn("attachment;", resp["Content-Disposition"])
+        self.assertEqual(resp.content[:4], b"%PDF")
+        return resp.content
+
+    def test_generated_on_the_fly_without_stored_file(self):
+        self.assertFalse(self.exp.pdf_file)
+        self._pdf()
+        self.exp.refresh_from_db()
+        self.assertTrue(self.exp.pdf_file)  # stored for next time
+
+    def test_fallback_pdf_when_rendering_fails(self):
+        from unittest import mock
+
+        with mock.patch("internest_core.letters.render_letter", side_effect=ImportError("No module named 'reportlab'")):
+            content = self._pdf()
+        self.assertIn(self.exp.verification_code.encode(), content)
+        self.assertIn(b"/verify/", content)
+
+    def test_served_even_if_storage_fails(self):
+        from unittest import mock
+
+        with mock.patch("django.db.models.fields.files.FieldFile.save", side_effect=OSError("read-only")):
+            self._pdf()
+
+    def test_verification_page_shows_qr(self):
+        page = self.client.get(reverse("verify_experience", args=[self.exp.verification_uuid]))
+        self.assertContains(page, '<svg xmlns="http://www.w3.org/2000/svg"')
+        self.assertContains(page, f"http://testserver/verify/{self.exp.verification_uuid}/")
+        self.assertContains(page, self.exp.verification_code)

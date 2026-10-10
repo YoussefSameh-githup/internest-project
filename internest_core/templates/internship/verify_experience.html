@@ -4,6 +4,34 @@
 {% block title %}{% trans "Verified document" %} · {{ exp.verification_code }} — Internest{% endblock %}
 
 {% block content %}
+<style>
+/* Embedded: this public page must look right even with an old cached stylesheet. */
+/* Public verification page */
+.vx-page { padding: 56px 0 72px; background: radial-gradient(700px 300px at 50% 0%, #dcfce7, transparent 70%), #f8fafc; }
+.vx-card { position: relative; padding: 48px 32px 32px; border-radius: 24px; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 24px 60px rgba(15, 23, 42, .1); text-align: center; }
+.vx-seal { position: absolute; top: -32px; left: 50%; transform: translateX(-50%); width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center;
+  background: linear-gradient(135deg, #22c55e, #15803d); color: #fff; font-size: 2rem; box-shadow: 0 10px 24px rgba(22, 163, 74, .35); }
+.vx-kicker { margin: 0; color: #15803d; font-weight: 800; }
+.vx-title { margin: 6px 0 24px; font-size: clamp(1.5rem, 3vw, 2rem); }
+.vx-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0 0 20px; text-align: start; }
+.vx-facts div { padding: 12px 14px; border-radius: 14px; background: #f8fafc; border: 1px solid #eef2f7; }
+.vx-facts dt { color: #64748b; font-size: var(--text-xs); font-weight: 600; }
+.vx-facts dd { margin: 2px 0 0; font-weight: 800; color: #0f172a; }
+.vx-stars { color: #f59e0b; }
+.vx-stars span { color: #0f172a; margin-inline-start: 4px; }
+.vx-quote { margin: 0 0 24px; padding: 16px 18px; border-radius: 14px; background: #f0fdf4; color: #14532d; font-style: italic; text-align: start; border-inline-start: 4px solid #22c55e; }
+@media (max-width: 560px) { .vx-facts { grid-template-columns: 1fr; } .vx-card { padding: 44px 18px 22px; } }
+
+.vx-qr { display: flex; align-items: center; gap: 18px; margin: 0 0 24px; padding: 16px; border-radius: 18px; background: #f8fafc; border: 1px solid #e2e8f0; text-align: start; }
+.vx-qr__code { flex-shrink: 0; padding: 8px; border-radius: 14px; background: #fff; border: 1px solid #e2e8f0; line-height: 0; }
+.vx-qr__code svg { width: 150px; height: 150px; }
+.vx-qr__info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.vx-qr__label { color: #64748b; font-size: var(--text-xs); font-weight: 600; }
+.vx-qr__value { font-size: 1.5rem; letter-spacing: .08em; color: #0f172a; }
+.vx-qr__info small { color: #64748b; }
+.vx-qr__link { color: var(--brand-500); font-size: var(--text-xs); overflow-wrap: anywhere; }
+@media (max-width: 560px) { .vx-qr { flex-direction: column; text-align: center; } .vx-qr__info { align-items: center; } }
+</style>
 <section class="vx-page">
     <div class="container-narrow">
         <article class="vx-card">
@@ -20,12 +48,21 @@
                     <dt>{% trans "Rating" %}</dt>
                     <dd class="vx-stars" aria-label="{{ exp.star_rating }}/5">{% for i in stars %}<i class="bi {% if i <= exp.star_rating %}bi-star-fill{% else %}bi-star{% endif %}"></i>{% endfor %} <span>{{ exp.star_rating }}/5</span></dd>
                 </div>
-                <div><dt>{% trans "Verification code" %}</dt><dd dir="ltr">{{ exp.verification_code }}</dd></div>
             </dl>
 
             <blockquote class="vx-quote">“{{ exp.review_text }}”</blockquote>
 
-            <a href="{% url 'experience_letter' exp.verification_uuid %}" class="btn btn--primary btn--lg"><i class="bi bi-file-earmark-pdf"></i> {% trans "Download the verified recommendation letter" %}</a>
+            <div class="vx-qr">
+                {% if qr_svg %}<div class="vx-qr__code">{{ qr_svg }}</div>{% endif %}
+                <div class="vx-qr__info">
+                    <span class="vx-qr__label">{% trans "Verification code" %}</span>
+                    <strong class="vx-qr__value" dir="ltr">{{ exp.verification_code }}</strong>
+                    <small>{% trans "Scan the QR code to open this page and confirm the letter is authentic." %}</small>
+                    <a href="{{ verify_url }}" class="vx-qr__link" dir="ltr">{{ verify_url }}</a>
+                </div>
+            </div>
+
+            <a href="{% url 'experience_letter' exp.verification_uuid %}" class="btn btn--primary btn--lg" download><i class="bi bi-file-earmark-pdf"></i> {% trans "Download the verified recommendation letter" %}</a>
         </article>
     </div>
 </section>

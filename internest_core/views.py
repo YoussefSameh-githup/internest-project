@@ -21,7 +21,7 @@ from internest_startups.tiers import FREE_POSTS_PER_MONTH, is_pro, monthly_quota
 
 from .email_helpers import issue_and_send_verification as _issue_and_send_verification
 from .email_helpers import notify_shortlisted
-from .letters import generate_letter
+from .letters import generate_letter, letter_bytes, qr_svg
 from .models import (
     Internship, StudentProfile, Application,
     PartnerProfile, PartnerInternshipSubmission, PartnerCourseSubmission,
@@ -1125,19 +1125,26 @@ def partner_applicant_complete(request, app_id):
     return redirect("partner_applicant", app_id=app.pk)
 
 
+def _verify_url(request, exp):
+    return request.build_absolute_uri(reverse("verify_experience", args=[exp.verification_uuid]))
+
+
 def verify_experience(request, uuid):
-    """Public authenticity check behind the letter's QR code."""
+    """Public authenticity check behind the letter's QR code (the page shows the same QR)."""
+    from django.utils.safestring import mark_safe
+
     exp = get_object_or_404(GigExperience.objects.select_related("student__user", "company"), verification_uuid=uuid)
+    verify_url = _verify_url(request, exp)
     context = get_user_context(request)
-    context.update({"exp": exp, "stars": range(1, 6)})
+    context.update({"exp": exp, "stars": range(1, 6), "verify_url": verify_url, "qr_svg": mark_safe(qr_svg(verify_url))})
     return render(request, "internship/verify_experience.html", context)
 
 
 def experience_letter(request, uuid):
-    """The PDF letter (public by its unguessable UUID, like the verification page). Rebuilt if missing."""
+    """The PDF letter (public by its unguessable UUID). Generated on the fly whenever no stored file is usable."""
+    from django.http import HttpResponse
+
     exp = get_object_or_404(GigExperience.objects.select_related("student__user", "company"), verification_uuid=uuid)
-    if not exp.pdf_file or not exp.pdf_file.storage.exists(exp.pdf_file.name):
-        if not generate_letter(exp, request.build_absolute_uri(reverse("verify_experience", args=[exp.verification_uuid]))):
-            raise Http404
-    name = f"Internest-recommendation-{exp.verification_code}.pdf"
-    return FileResponse(exp.pdf_file.open("rb"), content_type="application/pdf", filename=name)
+    response = HttpResponse(letter_bytes(exp, _verify_url(request, exp)), content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="Internest-recommendation-{exp.verification_code}.pdf"'
+    return response

@@ -194,3 +194,74 @@ def generate_letter(exp, verify_url) -> bool:
         exp.pdf_file.delete(save=False)
     exp.pdf_file.save(f"letter-{exp.verification_uuid}.pdf", ContentFile(pdf), save=True)
     return True
+
+
+def qr_svg(url, size=176) -> str:
+    """Compact inline SVG QR code (one path) for `url`; "" if the QR encoder is unavailable."""
+    try:
+        from reportlab.graphics.barcode.qr import QrCodeWidget
+
+        widget = QrCodeWidget(url)
+        widget.draw()
+        qr, quiet = widget.qr, 4
+        n = qr.getModuleCount()
+    except Exception:
+        logger.exception("QR code generation failed")
+        return ""
+    cells = "".join(f"M{c + quiet},{r + quiet}h1v1h-1z" for r in range(n) for c in range(n) if qr.isDark(r, c))
+    total = n + 2 * quiet
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {total} {total}" width="{size}" height="{size}" '
+            f'shape-rendering="crispEdges" role="img" aria-label="QR"><rect width="100%" height="100%" fill="#fff"/>'
+            f'<path d="{cells}" fill="#0f172a"/></svg>')
+
+
+def _fallback_pdf(exp, verify_url) -> bytes:
+    """Plain one-page PDF written by hand: used only if ReportLab is missing or rendering fails."""
+    def esc(text):
+        text = str(text).encode("latin-1", "replace").decode("latin-1")  # core fonts have no Arabic glyphs
+        return text.replace("\\", "\\\\").replace("(", r"\(").replace(")", r"\)")
+
+    student = exp.student.user.get_full_name() or exp.student.user.username
+    lines = [
+        (18, "Internest - Verified Recommendation Letter"), (12, ""),
+        (12, f"Student: {student}"), (12, f"Company: {exp.company.company_name}"), (12, f"Role: {exp.gig_title}"),
+        (12, f"Completed on: {exp.completion_date:%d %B %Y}"), (12, f"Rating: {exp.star_rating} / 5"), (12, ""),
+        (12, f"Verification code: {exp.verification_code}"), (11, f"Verify this letter at: {verify_url}"),
+    ]
+    stream = "BT /F1 12 Tf 56 780 Td 18 TL\n" + "".join(f"/F1 {size} Tf ({esc(text)}) Tj T*\n" for size, text in lines) + "ET"
+    objects = [
+        "<< /Type /Catalog /Pages 2 0 R >>",
+        "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+        f"<< /Length {len(stream.encode('latin-1'))} >>\nstream\n{stream}\nendstream",
+    ]
+    out, offsets = bytearray(b"%PDF-1.4\n"), []
+    for i, obj in enumerate(objects, 1):
+        offsets.append(len(out))
+        out += f"{i} 0 obj\n{obj}\nendobj\n".encode("latin-1")
+    xref = len(out)
+    out += f"xref\n0 {len(objects) + 1}\n0000000000 65535 f \n".encode()
+    out += "".join(f"{o:010d} 00000 n \n" for o in offsets).encode()
+    out += f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode()
+    return bytes(out)
+
+
+def letter_bytes(exp, verify_url) -> bytes:
+    """The letter as PDF bytes, always: stored file → fresh render (stored if possible) → plain fallback."""
+    if exp.pdf_file:
+        try:
+            with exp.pdf_file.open("rb") as f:
+                return f.read()
+        except Exception:  # file missing on disk (e.g. new server): rebuild below
+            logger.info("Stored letter %s missing, rebuilding", exp.pk)
+    try:
+        pdf = render_letter(exp, verify_url)
+    except Exception:
+        logger.exception("Letter rendering failed for %s; serving the plain fallback", exp.pk)
+        return _fallback_pdf(exp, verify_url)
+    try:
+        exp.pdf_file.save(f"letter-{exp.verification_uuid}.pdf", ContentFile(pdf), save=True)
+    except Exception:  # read-only or full media storage: still serve the letter
+        logger.exception("Could not store letter %s", exp.pk)
+    return pdf
