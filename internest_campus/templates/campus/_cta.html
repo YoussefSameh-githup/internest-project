@@ -1,10 +1,51 @@
 {% load i18n %}
-<div class="card campus-cta mb-5" style="background: linear-gradient(135deg, #fff7ed, #fffbeb); border: 1px solid #fde68a; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap;">
-    <div>
-        <h3 class="mb-2"><i class="bi bi-megaphone-fill" style="color: var(--accent-700);"></i> {% trans "Is your faculty not on Internest yet?" %}</h3>
-        <p class="text-muted mb-0">{% trans "Vote for your campus, share your card, and help your classmates reach 500 votes." %}</p>
+{% if campus_share %}
+    <div class="card campus-cta campus-cta--done mb-5">
+        <div>
+            <h3 class="mb-2">{% trans "Well done, champ! Your vote reached your faculty 🚀" %}</h3>
+            <p class="text-muted mb-0">{% trans "Help your faculty join Internest officially, faster: share the voting link with your classmates!" %}</p>
+        </div>
+        <button type="button" class="btn btn--accent btn--lg" data-share-link="{{ campus_share.link }}" data-share-text="{{ campus_share.text }}"
+                data-copied="{% trans 'Link copied' %}">
+            {% trans "Share the link with your friends 🔗" %}
+        </button>
+        <input type="text" class="form-control campus-cta__link" value="{{ campus_share.link }}" readonly dir="ltr" style="display: none;"
+               aria-label="{% trans 'Voting link' %}">
     </div>
-    <a href="{% url 'campus_vote' %}?open=1" class="btn btn--accent btn--lg">
-        <i class="bi bi-hand-index-thumb"></i> {% trans "Bring Internest to My Campus" %}
-    </a>
-</div>
+    <script>
+    (function () {
+      var btn = document.querySelector("[data-share-link]");
+      if (!btn) return;
+      btn.addEventListener("click", function () {
+        var url = btn.dataset.shareLink, label = btn.textContent;
+        if (navigator.share) {
+          navigator.share({title: "Internest", text: btn.dataset.shareText, url: url}).catch(function () {});
+          return;
+        }
+        var field = btn.parentNode.querySelector(".campus-cta__link");
+        function copied() {
+          btn.textContent = "✅ " + btn.dataset.copied;
+          setTimeout(function () { btn.textContent = label; }, 2500);
+        }
+        function fallback() {  // clipboard blocked: try execCommand, else show the link to copy by hand
+          field.style.display = "block";
+          field.select();
+          var ok = false;
+          try { ok = document.execCommand("copy"); } catch (e) {}
+          if (ok) copied();
+        }
+        (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(copied, fallback);
+      });
+    })();
+    </script>
+{% else %}
+    <div class="card campus-cta mb-5">
+        <div>
+            <h3 class="mb-2"><i class="bi bi-megaphone-fill" style="color: var(--accent-700);"></i> {% trans "Is your faculty not on Internest yet?" %}</h3>
+            <p class="text-muted mb-0">{% trans "Vote for your campus, share your card, and help your classmates reach 500 votes." %}</p>
+        </div>
+        <a href="{% url 'campus_vote' %}?open=1" class="btn btn--accent btn--lg">
+            <i class="bi bi-hand-index-thumb"></i> {% trans "Bring Internest to My Campus" %}
+        </a>
+    </div>
+{% endif %}

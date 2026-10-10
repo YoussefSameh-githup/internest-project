@@ -338,6 +338,31 @@ def _talent_pool_eligible(profile):
         return False
 
 
+def _verified_skills_count(profile):
+    from django.db import DatabaseError
+
+    try:
+        with transaction.atomic():
+            return profile.skills.filter(status="verified").count()
+    except DatabaseError:
+        return 0
+
+
+def _campus_share(request, profile):
+    """Share link + text when the student already voted for their campus, else None."""
+    from django.db import DatabaseError
+
+    from internest_campus.models import CampusDemandVote
+    from internest_campus.views import _share_payload
+
+    try:
+        with transaction.atomic():
+            vote = CampusDemandVote.objects.filter(student=profile).first()
+    except DatabaseError:
+        return None
+    return _share_payload(request, vote) if vote else None
+
+
 @login_required
 def profile_view(request):
     if _get_partner_profile(request.user) is not None:
@@ -374,7 +399,10 @@ def profile_view(request):
         form = ProfileForm(instance=profile)
 
     context = get_user_context(request)
-    context.update({"profile": profile, "form": form, "talent_pool_eligible": _talent_pool_eligible(profile)})
+    context.update({
+        "profile": profile, "form": form, "talent_pool_eligible": _talent_pool_eligible(profile),
+        "verified_skills_count": _verified_skills_count(profile), "campus_share": _campus_share(request, profile),
+    })
     return render(request, "internship/profile.html", context)
 
 

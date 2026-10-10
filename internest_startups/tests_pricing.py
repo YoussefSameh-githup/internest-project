@@ -47,7 +47,7 @@ class UpgradePageTests(ApplicationsBase):
         page = self.client.get(UPGRADE)
         for text in ("800 EGP", "or 8,000 EGP / year", "1 per month", "Verified skills only (no scores or percentile report)",
                      "Full scores + percentile reports", "Shortlist for interview", "Talent Pool search & profile preview",
-                     "5 per job post", "Pro badge + priority placement", "3 per hour"):
+                     "3 per job post", "Pro badge + priority placement", "3 per hour"):
             self.assertContains(page, text)
         self.assertNotContains(page, "$")
         self.assertContains(self.client.get(UPGRADE, {"period": "year"}), "8,000 EGP")

@@ -3509,3 +3509,56 @@ msgstr "المجموع الفرعي"
 
 msgid "Prices in %(c)s based on your company's country."
 msgstr "الأسعار بعملة %(c)s حسب دولة شركتك."
+
+msgid "Personal and university details"
+msgstr "البيانات الشخصية والجامعية"
+
+msgid "Skills and professional links"
+msgstr "المهارات والروابط الاحترافية"
+
+msgid ""
+"Your phone, email and CV are shared only if you apply and a startup "
+"shortlists you for an interview."
+msgstr ""
+"لا تتم مشاركة رقمك وبريدك وسيرتك الذاتية إلا إذا تقدّمت لفرصة ورشّحتك الشركة"
+" للمقابلة."
+
+msgid "Attachments (photo and CV)"
+msgstr "المرفقات (الصورة والسيرة الذاتية)"
+
+msgid "File is larger than 5 MB."
+msgstr "حجم الملف أكبر من 5 ميجابايت."
+
+msgid "Ready to upload"
+msgstr "جاهز للرفع"
+
+msgid "Drag a file here or click to choose"
+msgstr "اسحب الملف إلى هنا أو اضغط للاختيار"
+
+msgid "Max 5 MB"
+msgstr "الحد الأقصى 5 ميجابايت"
+
+msgid "Uploaded"
+msgstr "تم الرفع"
+
+msgid "View"
+msgstr "عرض"
+
+msgid "Well done, champ! Your vote reached your faculty 🚀"
+msgstr "عاش يا بطل! صوتك وصل لكليتك 🚀"
+
+msgid ""
+"Help your faculty join Internest officially, faster: share the voting link "
+"with your classmates!"
+msgstr ""
+"ساهم في تسريع انضمام كليتك رسمياً بـ Internest عن طريق مشاركة رابط التصويت "
+"مع زملائك!"
+
+msgid "Link copied"
+msgstr "تم نسخ الرابط"
+
+msgid "Share the link with your friends 🔗"
+msgstr "شارك الرابط مع أصدقائك 🔗"
+
+msgid "Voting link"
+msgstr "رابط التصويت"

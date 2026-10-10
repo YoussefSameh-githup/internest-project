@@ -224,14 +224,14 @@ class InvitationBypassAndPreviewTests(PoolBase):
         self.client.post(reverse("apply", args=[self.gig.pk]), CONSENT)
         self.assertEqual(Application.objects.get().source, Application.SOURCE_DIRECT)
 
-    def test_five_invitations_per_opportunity(self):
-        for i in range(5):
+    def test_three_invitations_per_opportunity(self):
+        for i in range(3):
             u, p = _student(f"extra{i}")
             TalentInvitation.objects.create(partner=self.partner, student=p, internship=self.gig)
         resp = self.client.post(reverse("talent_pool_invite", args=[self.amr.pk]), {"internship": self.gig.pk}, follow=True)
-        self.assertContains(resp, "at most 5 invitations")
+        self.assertContains(resp, "at most 3 invitations")
         self.assertFalse(TalentInvitation.objects.filter(student=self.amr).exists())
-        self.assertContains(self.client.get(URL), "· 5/5</option>")
+        self.assertContains(self.client.get(URL), "· 3/3</option>")
 
     def test_profile_preview_hides_contacts(self):
         type(self.amr).objects.filter(pk=self.amr.pk).update(
@@ -252,3 +252,34 @@ class InvitationBypassAndPreviewTests(PoolBase):
         EmployerSubscription.objects.filter(partner=self.partner).update(plan=EmployerSubscription.PLAN_FREE)
         resp = self.client.get(reverse("talent_pool_candidate", args=[self.amr.pk]))
         self.assertRedirects(resp, reverse("startup_upgrade"), fetch_redirect_response=False)
+
+
+class ProfileRedesignTests(ApplicationsBase):
+    def setUp(self):
+        super().setUp()
+        self.user, self.profile = _student("nour")
+        self.login_student(self.user)
+
+    def test_sections_dropzones_and_pool_switch(self):
+        page = self.client.get(reverse("profile"))
+        for marker in ("Personal and university details", "Skills and professional links", "Attachments (photo and CV)",
+                       "data-dropzone", 'name="cv_file"', 'name="profile_picture"', "Max 5 MB", 'class="pf-switch"',
+                       "Your phone, email and CV are shared only if you apply"):
+            self.assertContains(page, marker)
+
+    def test_cv_upload_through_dropzone_field(self):
+        import shutil
+        import tempfile
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        media = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, media, True)
+        data = {"personal_email": "nour@uni.edu", "university": "Cairo", "major": "CS", "study_level": "3",
+                "phone_number": "01000000000", "linkedin_url": "", "bio": "",
+                "cv_file": SimpleUploadedFile("nour.pdf", b"%PDF-1.4", content_type="application/pdf")}
+        with override_settings(MEDIA_ROOT=media):
+            self.client.post(reverse("profile"), data)
+            self.profile.refresh_from_db()
+            self.assertTrue(self.profile.cv_file.name.startswith("cvs/"))
+            self.assertContains(self.client.get(reverse("profile")), 'name="cv_file-clear"')

@@ -150,3 +150,17 @@ class CampusVoteTests(TestCase):
         self.client.force_login(self.alice)
         self.client.cookies["internest_lang"] = "ar"
         self.assertContains(self.client.get(reverse("profile")), "طالب بنسخة تجريبية لكليتك")
+
+    def test_profile_card_switches_to_share_after_voting(self):
+        self.vote(self.alice)
+        vote = CampusDemandVote.objects.get(student__user=self.alice)
+        page = self.client.get(reverse("profile"))
+        self.assertContains(page, "Well done, champ! Your vote reached your faculty 🚀")
+        self.assertContains(page, f'data-share-link="http://testserver{URL}?ref={vote.share_ref}"')
+        self.assertNotContains(page, f"{URL}?open=1")
+        self.client.cookies["internest_lang"] = "ar"
+        page = self.client.get(reverse("profile"))
+        for text in ("عاش يا بطل! صوتك وصل لكليتك 🚀", "شارك الرابط مع أصدقائك 🔗",
+                     "ساهم في تسريع انضمام كليتك رسمياً بـ Internest عن طريق مشاركة رابط التصويت مع زملائك!"):
+            self.assertContains(page, text)
+        self.assertNotContains(page, "طالب بنسخة تجريبية لكليتك")

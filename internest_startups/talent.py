@@ -10,7 +10,7 @@ from internest_skills.models import Skill, StudentSkill
 
 TOP_SCORE = 80
 DAILY_INVITATIONS = 20  # per startup, anti-spam
-INVITES_PER_OPPORTUNITY = 5  # invited students skip the skill gate, so keep it scarce
+INVITES_PER_OPPORTUNITY = 3  # invited students skip the skill gate, so keep it scarce
 
 
 def valid_invitation(user, internship, token):

@@ -4,16 +4,7 @@
 {% block title %}{% trans "My profile" %} — Internest{% endblock %}
 
 {% block content %}
-
-<section class="page-header">
-    <div class="container">
-        <span class="eyebrow"><i class="bi bi-person-circle"></i> {% trans "My profile" %}</span>
-        <h1 class="mt-3">{% trans "Manage your unified profile and points" %}</h1>
-        <p>{% trans "Everything you edit here is shown to partners when you apply to an opportunity." %}</p>
-    </div>
-</section>
-
-<section class="section-sm">
+<section class="pf-page">
     <div class="container">
 
         {% if profile.has_any_pending_email_verification %}
@@ -24,213 +15,165 @@
             </div>
         {% endif %}
 
-        <div class="profile-summary mb-5 fade-up">
-            <div style="text-align: center;">
-                <div class="profile-avatar">
-                    {% if profile.profile_picture %}
-                        <img src="{{ profile.profile_picture.url }}" alt="">
+        {# ---------- Summary header ---------- #}
+        <header class="pf-hero fade-up">
+            <div class="pf-hero__id">
+                <div class="pf-avatar">
+                    {% if profile.profile_picture %}<img src="{{ profile.profile_picture.url }}" alt="">{% else %}<i class="bi bi-person-fill"></i>{% endif %}
+                    {% if profile.is_personal_email_verified %}<span class="pf-avatar__check" title="{% trans 'Verified' %}"><i class="bi bi-patch-check-fill"></i></span>{% endif %}
+                </div>
+                <div>
+                    <h1 class="pf-hero__name">{{ user.get_full_name|default:user.username }}</h1>
+                    <p class="pf-hero__meta"><bdi dir="ltr">@{{ user.username }}</bdi>{% if profile.university %} · {{ profile.university }}{% endif %}{% if profile.major %} · {{ profile.major }}{% endif %}</p>
+                    <div class="pf-badges">
+                        {% if profile.is_personal_email_verified %}
+                            <span class="badge badge--success"><i class="bi bi-envelope-check-fill"></i> {% trans "Verified" %}</span>
+                        {% elif profile.personal_email %}
+                            <span class="badge badge--accent"><i class="bi bi-exclamation-circle-fill"></i> {% trans "Unverified" %}</span>
+                        {% endif %}
+                        {% if profile.is_university_email_verified %}
+                            <span class="badge badge--success"><i class="bi bi-mortarboard-fill"></i> {% trans "Verified student" %}</span>
+                        {% endif %}
+                        {% if profile.talent_pool_visible and talent_pool_eligible %}
+                            <span class="badge badge--success"><i class="bi bi-eye-fill"></i> {% trans "Visible to Pro startups" %}</span>
+                        {% elif profile.talent_pool_visible %}
+                            <span class="badge badge--accent"><i class="bi bi-hourglass-split"></i> {% trans "Waiting for a verified skill" %}</span>
+                        {% endif %}
+                        {% if profile.linkedin_url %}<a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener" class="badge badge--outline"><i class="bi bi-linkedin"></i> LinkedIn</a>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="pf-stats">
+                <div class="pf-stat pf-stat--wide">
+                    <span class="pf-stat__label">{% trans "Profile completion" %}</span>
+                    <span class="pf-stat__value">{{ profile.profile_completion_score }}%</span>
+                    <div class="progress"><div class="progress__bar {% if profile.profile_completion_score == 100 %}progress__bar--success{% endif %}" style="width: {{ profile.profile_completion_score }}%;"></div></div>
+                    {% if profile.profile_completion_score < 100 %}
+                        <small class="pf-stat__hint pf-stat__hint--warn"><i class="bi bi-exclamation-triangle-fill"></i> {% trans "Complete to unlock applying" %}</small>
                     {% else %}
-                        <i class="bi bi-person-fill"></i>
+                        <small class="pf-stat__hint pf-stat__hint--ok"><i class="bi bi-check-circle-fill"></i> {% trans "Ready to apply" %}</small>
                     {% endif %}
                 </div>
-                <h3 class="mt-4 mb-0">{{ user.get_full_name|default:user.username }}</h3>
-                <p class="text-muted mb-3">@{{ user.username }}</p>
-                {% if profile.linkedin_url %}
-                    <a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener" class="btn btn--ghost btn--sm">
-                        <i class="bi bi-linkedin"></i> LinkedIn
-                    </a>
-                {% endif %}
-            </div>
-
-            <div>
-                <h4 class="mb-4">{% trans "Account information" %}</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4);">
-                    <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "Personal email" %}</span>
-                        <p class="fw-bold mt-2 mb-0">
-                            {{ profile.personal_email|default:"-" }}
-                            {% if profile.personal_email %}
-                                {% if profile.is_personal_email_verified %}
-                                    <span class="badge badge--success" title="{% trans 'Verified' %}"><i class="bi bi-patch-check-fill"></i> {% trans "Verified" %}</span>
-                                {% else %}
-                                    <span class="badge badge--accent" title="{% trans 'Not verified' %}"><i class="bi bi-exclamation-circle-fill"></i> {% trans "Unverified" %}</span>
-                                {% endif %}
-                            {% endif %}
-                        </p>
-                    </div>
-                    {% if profile.university_email %}
-                    <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "University email" %}</span>
-                        <p class="fw-bold mt-2 mb-0">
-                            {{ profile.university_email }}
-                            {% if profile.is_university_email_verified %}
-                                <span class="badge badge--success"><i class="bi bi-patch-check-fill"></i> {% trans "Verified" %}</span>
-                            {% else %}
-                                <span class="badge badge--accent"><i class="bi bi-exclamation-circle-fill"></i> {% trans "Unverified" %}</span>
-                            {% endif %}
-                        </p>
-                    </div>
-                    {% endif %}
-                    <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "Phone number" %}</span>
-                        <p class="fw-bold mt-2 mb-0">{{ profile.phone_number|default:"-" }}</p>
-                    </div>
-                    <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "University" %}</span>
-                        <p class="fw-bold mt-2 mb-0">{{ profile.university|default:"-" }}</p>
-                    </div>
-                    <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "Major" %}</span>
-                        <p class="fw-bold mt-2 mb-0">{{ profile.major|default:"-" }}</p>
-                    </div>
-                    <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "CV" %}</span>
-                        <p class="fw-bold mt-2 mb-0">
-                            {% if profile.cv_file %}
-                                <a href="{{ profile.cv_file.url }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> {% trans "View CV" %}</a>
-                            {% else %}
-                                <span class="text-muted">{% trans "Not uploaded" %}</span>
-                            {% endif %}
-                        </p>
-                    </div>
-                    <div>
-                        <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "Talent Pool" %}</span>
-                        <p class="fw-bold mt-2 mb-0">
-                            {% if profile.talent_pool_visible and talent_pool_eligible %}
-                                <span class="badge badge--success"><i class="bi bi-eye-fill"></i> {% trans "Visible to Pro startups" %}</span>
-                            {% elif profile.talent_pool_visible %}
-                                <span class="badge badge--accent"><i class="bi bi-hourglass-split"></i> {% trans "Waiting for a verified skill" %}</span>
-                            {% else %}
-                                <span class="text-muted">{% trans "Hidden" %}</span>
-                            {% endif %}
-                            <a href="#talent-pool" style="font-size: var(--text-xs);">{% trans "Change" %}</a>
-                        </p>
-                    </div>
+                <div class="pf-stat">
+                    <span class="pf-stat__label">{% trans "Verified skills" %}</span>
+                    <span class="pf-stat__value"><i class="bi bi-patch-check-fill text-success"></i> {{ verified_skills_count }}</span>
                 </div>
-            </div>
-        </div>
-
-        {% skills_profile_card profile %}
-
-        {% include "campus/_cta.html" %}
-
-        <div class="metric-grid mb-5">
-            <div class="metric">
-                <div class="metric__icon"><i class="bi bi-clipboard-check"></i></div>
-                <div class="metric__value">{{ profile.profile_completion_score }}%</div>
-                <div class="metric__label">{% trans "Profile completion" %}</div>
-                <div class="progress mt-3">
-                    <div class="progress__bar {% if profile.profile_completion_score == 100 %}progress__bar--success{% endif %}"
-                         style="width: {{ profile.profile_completion_score }}%;"></div>
-                </div>
-                {% if profile.profile_completion_score < 100 %}
-                    <p class="mt-3 mb-0" style="font-size: var(--text-xs); color: var(--color-danger);">
-                        <i class="bi bi-exclamation-triangle-fill"></i> {% trans "Complete to unlock applying" %}
-                    </p>
-                {% else %}
-                    <p class="mt-3 mb-0" style="font-size: var(--text-xs); color: var(--color-success);">
-                        <i class="bi bi-check-circle-fill"></i> {% trans "Ready to apply" %}
-                    </p>
-                {% endif %}
-            </div>
-
-            <div class="metric metric--accent">
-                <div class="metric__icon"><i class="bi bi-trophy-fill"></i></div>
-                <div class="metric__value">{{ profile.gamification_score }}</div>
-                <div class="metric__label">{% trans "Performance points" %}</div>
-                <a href="{% url 'task_list' %}" class="btn btn--ghost btn--sm mt-3" style="padding-inline: 0;">
-                    {% trans "Earn points" %} <i class="bi bi-arrow-left-short"></i>
+                <a class="pf-stat" href="{% url 'task_list' %}">
+                    <span class="pf-stat__label">{% trans "Performance points" %}</span>
+                    <span class="pf-stat__value"><i class="bi bi-trophy-fill" style="color: #f59e0b;"></i> {{ profile.gamification_score }}</span>
                 </a>
             </div>
+        </header>
 
-            <div class="metric metric--success">
-                <div class="metric__icon"><i class="bi bi-mortarboard-fill"></i></div>
-                <div class="metric__value">{{ profile.study_level|default:"-" }}</div>
-                <div class="metric__label">{% trans "Study level" %}</div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h3 class="mb-5"><i class="bi bi-pencil-square text-primary"></i> {% trans "Edit information" %}</h3>
-
-            <form method="POST" enctype="multipart/form-data" class="form">
+        <div class="pf-layout">
+            {# ---------- Edit form ---------- #}
+            <form method="POST" enctype="multipart/form-data" class="pf-main" novalidate>
                 {% csrf_token %}
+                {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
 
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="{{ form.personal_email.id_for_label }}" class="form-label">{{ form.personal_email.label }}</label>
-                        {{ form.personal_email }}
-                        {% if form.personal_email.errors %}<div class="form-error">{{ form.personal_email.errors|striptags }}</div>{% endif %}
+                <section class="pf-card">
+                    <h2 class="pf-card__title"><span class="pf-step">1</span> {% trans "Personal and university details" %}</h2>
+                    <div class="pf-grid">
+                        {% include "internship/_pf_field.html" with field=form.personal_email %}
+                        {% include "internship/_pf_field.html" with field=form.university_email %}
+                        {% include "internship/_pf_field.html" with field=form.phone_number %}
+                        {% include "internship/_pf_field.html" with field=form.study_level %}
+                        {% include "internship/_pf_field.html" with field=form.university %}
+                        {% include "internship/_pf_field.html" with field=form.major %}
                     </div>
-                    <div class="form-group">
-                        <label for="{{ form.university_email.id_for_label }}" class="form-label">{{ form.university_email.label }}</label>
-                        {{ form.university_email }}
-                        {% if form.university_email.errors %}<div class="form-error">{{ form.university_email.errors|striptags }}</div>{% endif %}
+                </section>
+
+                <section class="pf-card">
+                    <h2 class="pf-card__title"><span class="pf-step">2</span> {% trans "Skills and professional links" %}</h2>
+                    <div class="pf-grid">
+                        {% trans "Startups see this with your verified skills before your CV and contact details are shared. Mention projects, tools and achievements." as bio_help %}
+                        {% include "internship/_pf_field.html" with field=form.bio help=bio_help full=True %}
+                        {% include "internship/_pf_field.html" with field=form.linkedin_url %}
+                        {% trans "Shown to Pro startups in your Talent Pool profile. Don't use a link that shows your phone or email." as portfolio_help %}
+                        {% include "internship/_pf_field.html" with field=form.portfolio_url help=portfolio_help %}
                     </div>
-                    <div class="form-group">
-                        <label for="{{ form.university.id_for_label }}" class="form-label">{{ form.university.label }}</label>
-                        {{ form.university }}
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.major.id_for_label }}" class="form-label">{{ form.major.label }}</label>
-                        {{ form.major }}
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.study_level.id_for_label }}" class="form-label">{{ form.study_level.label }}</label>
-                        {{ form.study_level }}
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.phone_number.id_for_label }}" class="form-label">{{ form.phone_number.label }}</label>
-                        {{ form.phone_number }}
-                    </div>
-                    <div class="form-group form-group--full">
-                        <label for="{{ form.linkedin_url.id_for_label }}" class="form-label">{{ form.linkedin_url.label }}</label>
-                        {{ form.linkedin_url }}
-                    </div>
-                    <div class="form-group form-group--full">
-                        <label class="consent-check" id="talent-pool">
+
+                    <div class="pf-pool" id="talent-pool">
+                        <label class="pf-switch">
                             {{ form.talent_pool_visible }}
-                            <span>
-                                <strong>{{ form.talent_pool_visible.label }}</strong><br>
-                                <small class="text-muted">{% trans "Pro startups can find you by your verified skills and invite you to apply. They see your name, university, major, study year, bio and verified skills — never your phone, email or CV." %}</small>
-                                {% if not talent_pool_eligible %}
-                                    <small class="talent-hint"><i class="bi bi-info-circle"></i>
-                                        {% trans "A verified skill or a score of 80%+ is required to appear in the talent pool." %}
-                                        <a href="{% url 'skills_hub' %}">{% trans "Verify a skill" %}</a>
-                                    </small>
-                                {% endif %}
+                            <span class="pf-switch__track" aria-hidden="true"></span>
+                            <span class="pf-switch__text">
+                                <strong>{{ form.talent_pool_visible.label }}</strong>
+                                <small>{% trans "Pro startups can find you by your verified skills and invite you to apply. They see your name, university, major, study year, bio and verified skills — never your phone, email or CV." %}</small>
                             </span>
                         </label>
+                        <p class="pf-pool__privacy"><i class="bi bi-shield-lock-fill"></i> {% trans "Your phone, email and CV are shared only if you apply and a startup shortlists you for an interview." %}</p>
+                        {% if not talent_pool_eligible %}
+                            <small class="talent-hint"><i class="bi bi-info-circle"></i>
+                                {% trans "A verified skill or a score of 80%+ is required to appear in the talent pool." %}
+                                <a href="{% url 'skills_hub' %}">{% trans "Verify a skill" %}</a>
+                            </small>
+                        {% endif %}
                     </div>
-                    <div class="form-group form-group--full">
-                        <label for="{{ form.bio.id_for_label }}" class="form-label">{{ form.bio.label }}</label>
-                        {{ form.bio }}
-                        <small class="form-help">{% trans "Startups see this with your verified skills before your CV and contact details are shared. Mention projects, tools and achievements." %}</small>
-                    </div>
-                    <div class="form-group form-group--full">
-                        <label for="{{ form.portfolio_url.id_for_label }}" class="form-label">{{ form.portfolio_url.label }}</label>
-                        {{ form.portfolio_url }}
-                        {% if form.portfolio_url.errors %}<div class="form-error">{{ form.portfolio_url.errors|striptags }}</div>{% endif %}
-                        <small class="form-help">{% trans "Shown to Pro startups in your Talent Pool profile. Don't use a link that shows your phone or email." %}</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.cv_file.id_for_label }}" class="form-label">{{ form.cv_file.label }}</label>
-                        {{ form.cv_file }}
-                        <small class="form-help">{% trans "PDF / DOC / DOCX — max size 5 MB" %}</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.profile_picture.id_for_label }}" class="form-label">{{ form.profile_picture.label }}</label>
-                        {{ form.profile_picture }}
-                        <small class="form-help">{% trans "JPG / PNG / WEBP — max size 5 MB" %}</small>
-                    </div>
-                </div>
+                </section>
 
-                <button type="submit" class="btn btn--primary btn--lg mt-6">
-                    <i class="bi bi-save"></i> {% trans "Save changes" %}
-                </button>
+                <section class="pf-card">
+                    <h2 class="pf-card__title"><span class="pf-step">3</span> {% trans "Attachments (photo and CV)" %}</h2>
+                    <div class="pf-grid">
+                        {% include "internship/_pf_dropzone.html" with field=form.profile_picture current=profile.profile_picture kind="image" accept="image/png,image/jpeg,image/webp" hint="JPG / PNG / WEBP" %}
+                        {% include "internship/_pf_dropzone.html" with field=form.cv_file current=profile.cv_file kind="doc" accept=".pdf,.doc,.docx" hint="PDF / DOC / DOCX" %}
+                    </div>
+                </section>
+
+                <div class="pf-save">
+                    <button type="submit" class="btn btn--primary btn--lg"><i class="bi bi-save"></i> {% trans "Save changes" %}</button>
+                </div>
             </form>
+
+            {# ---------- Sidebar ---------- #}
+            <aside class="pf-aside">
+                {% skills_profile_card profile %}
+                {% include "campus/_cta.html" %}
+            </aside>
         </div>
     </div>
 </section>
+{% endblock %}
 
+{% block extra_scripts %}
+{% trans "File is larger than 5 MB." as too_big %}{% trans "Ready to upload" as ready %}
+<script>
+(function () {
+  document.querySelectorAll("[data-dropzone]").forEach(function (box) {
+    var input = box.querySelector("input[type=file]"), zone = box.querySelector(".pf-drop__zone");
+    var preview = box.querySelector("[data-preview]"), status = box.querySelector("[data-status]");
+    var max = +box.dataset.maxBytes;
+    function chip(cls, icon, text) { return '<span class="pf-chip ' + cls + '"><i class="bi ' + icon + '"></i> ' + text + "</span>"; }
+    function show() {
+      var f = input.files[0];
+      if (!f) return;
+      var size = (f.size / 1048576).toFixed(1) + " MB";
+      if (f.size > max) {
+        input.value = "";
+        status.innerHTML = chip("pf-chip--error", "bi-x-circle-fill", "{{ too_big|escapejs }} (" + size + ")");
+        return;
+      }
+      var name = document.createElement("span");
+      name.className = "pf-chip"; name.textContent = f.name + " · " + size;
+      status.innerHTML = chip("pf-chip--ok", "bi-cloud-arrow-up-fill", "{{ ready|escapejs }}");
+      status.appendChild(name);
+      if (box.dataset.kind === "image") {
+        preview.innerHTML = "";
+        var img = document.createElement("img"); img.src = URL.createObjectURL(f); img.alt = "";
+        preview.appendChild(img);
+      } else {
+        preview.innerHTML = '<i class="bi bi-file-earmark-check-fill"></i>';
+      }
+    }
+    input.addEventListener("change", show);
+    ["dragenter", "dragover"].forEach(function (ev) { zone.addEventListener(ev, function (e) { e.preventDefault(); box.classList.add("is-drag"); }); });
+    ["dragleave", "drop"].forEach(function (ev) { zone.addEventListener(ev, function () { box.classList.remove("is-drag"); }); });
+    zone.addEventListener("drop", function (e) {
+      e.preventDefault();
+      if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; show(); }
+    });
+  });
+})();
+</script>
 {% endblock %}

@@ -1,0 +1,27 @@
+{% load i18n %}
+{# Custom file picker: drag & drop, live preview, 5 MB check. Posts the same field name, so the form is unchanged. #}
+<div class="pf-drop{% if field.errors %} has-error{% endif %}" data-dropzone data-max-bytes="5242880" data-kind="{{ kind }}">
+    <span class="pf-label">{{ field.label }}</span>
+    <label class="pf-drop__zone" for="{{ field.id_for_label }}">
+        <input type="file" name="{{ field.html_name }}" id="{{ field.id_for_label }}" accept="{{ accept }}" class="pf-drop__input">
+        <span class="pf-drop__preview" data-preview>
+            {% if kind == "image" and current %}<img src="{{ current.url }}" alt="">
+            {% elif kind == "image" %}<i class="bi bi-person-bounding-box"></i>
+            {% else %}<i class="bi bi-file-earmark-arrow-up"></i>{% endif %}
+        </span>
+        <span class="pf-drop__text">
+            <strong>{% trans "Drag a file here or click to choose" %}</strong>
+            <small>{{ hint }} · {% trans "Max 5 MB" %}</small>
+        </span>
+    </label>
+    <div class="pf-drop__status" data-status>
+        {% if current %}
+            <span class="pf-chip pf-chip--ok"><i class="bi bi-check-circle-fill"></i> {% trans "Uploaded" %}</span>
+            <a href="{{ current.url }}" target="_blank" rel="noopener" class="pf-chip">{% if kind == "image" %}{% trans "View" %}{% else %}{% trans "View CV" %}{% endif %}</a>
+            <label class="pf-chip pf-chip--remove"><input type="checkbox" name="{{ field.html_name }}-clear"> {% trans "Remove" %}</label>
+        {% else %}
+            <span class="pf-chip pf-chip--empty"><i class="bi bi-dash-circle"></i> {% trans "Not uploaded" %}</span>
+        {% endif %}
+    </div>
+    {% if field.errors %}<div class="form-error">{{ field.errors|striptags }}</div>{% endif %}
+</div>
