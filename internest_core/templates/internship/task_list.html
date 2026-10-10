@@ -1,59 +1,98 @@
 {% extends 'internship/base.html' %}
 {% load static i18n %}
 
-{% block title %}{% trans "Tasks & points" %} — Internest{% endblock %}
+{% block title %}{% trans "Tasks & quizzes" %} — Internest{% endblock %}
 
 {% block content %}
+{% include "internship/_student_hub.html" %}
 
-<section class="page-header">
+<section class="sh-body">
     <div class="container">
-        <span class="eyebrow eyebrow--accent"><i class="bi bi-trophy"></i> {% trans "Gamification" %}</span>
-        <h1 class="mt-3">{% trans "Earn points, climb the ranks" %}</h1>
-        <p>{% trans "Short tasks that test your knowledge — every task rewards you with points that lift you up the Golden List." %}</p>
-    </div>
-</section>
-
-<section class="section-sm">
-    <div class="container">
-        {% if tasks %}
-            <div class="listing-grid">
-                {% for task in tasks %}
-                    <article class="listing-card fade-up">
-                        <div class="listing-card__head">
-                            <div class="listing-card__avatar" style="background: linear-gradient(135deg, #fef3c7, var(--accent-100)); color: var(--accent-700);">
-                                <i class="bi bi-puzzle-fill"></i>
+        {# ---------- Skill quizzes ---------- #}
+        <div class="sh-section-head">
+            <h2 class="sh-section-title"><i class="bi bi-patch-check"></i> {% trans "Skill quizzes" %}</h2>
+            <a href="{% url 'skills_hub' %}" class="btn btn--ghost btn--sm">{% trans "Analyze & Verify Skills" %}</a>
+        </div>
+        {% if skill_quizzes %}
+            <div class="sh-grid">
+                {% for ss in skill_quizzes %}
+                    <article class="sh-card sh-quiz sh-quiz--{{ ss.status }}">
+                        <header class="sh-card__head">
+                            <span class="sh-quiz__icon">{% if ss.status == "verified" %}<i class="bi bi-patch-check-fill"></i>{% elif ss.status == "lag" %}<i class="bi bi-arrow-repeat"></i>{% else %}<i class="bi bi-stopwatch"></i>{% endif %}</span>
+                            <div class="sh-card__who">
+                                <h3 class="sh-card__title">{{ ss.skill.name }}</h3>
+                                <span class="sh-card__sub">{{ ss.status_label }}</span>
                             </div>
-                            <div style="flex: 1;">
-                                <h3 class="listing-card__title">{{ task.title }}</h3>
-                                <p class="listing-card__partner">
-                                    <i class="bi bi-stars text-accent"></i>
-                                    {% blocktrans with p=task.points_awarded %}+{{ p }} points{% endblocktrans %}
-                                </p>
-                            </div>
-                        </div>
-
-                        <p class="listing-card__desc">{{ task.description|truncatewords:20 }}</p>
-
-                        <div class="listing-card__footer">
-                            <span class="badge badge--accent"><i class="bi bi-lightning-fill"></i> {% trans "Quick" %}</span>
-                            <a href="{% url 'take_task' task.id %}" class="btn btn--accent btn--sm">
-                                {% trans "Start" %} <i class="bi bi-arrow-left-short"></i>
-                            </a>
-                        </div>
+                            {% if ss.score is not None %}<span class="sh-score">{{ ss.score }}%</span>{% endif %}
+                        </header>
+                        {% if ss.score is not None %}
+                            <div class="progress"><div class="progress__bar {% if ss.status == 'verified' %}progress__bar--success{% endif %}" style="width: {{ ss.score }}%;"></div></div>
+                        {% endif %}
+                        <footer class="sh-card__foot">
+                            {% if ss.percentile is not None %}<span class="sh-pill">{% blocktrans with p=ss.percentile %}Percentile P{{ p }}{% endblocktrans %}</span>{% endif %}
+                            {% if ss.status == "verified" %}
+                                <span class="sh-pill sh-pill--ok"><i class="bi bi-check2-circle"></i> {% trans "Verified" %}</span>
+                            {% elif ss.in_cooldown %}
+                                <span class="sh-pill"><i class="bi bi-hourglass-split"></i> {% trans "Retest available" %}: {{ ss.cooldown_until|date:"Y/m/d" }}</span>
+                            {% else %}
+                                <form method="post" action="{% url 'skills_challenge_start' ss.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn--primary btn--sm">
+                                        {% if ss.status == "lag" %}<i class="bi bi-arrow-repeat"></i> {% trans "Retake quiz" %}{% else %}<i class="bi bi-play-fill"></i> {% trans "Start quiz" %}{% endif %}
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </footer>
                     </article>
                 {% endfor %}
             </div>
         {% else %}
-            <div class="empty-state">
-                <div class="empty-state__icon" style="background: var(--accent-100); color: var(--accent-700);">
-                    <i class="bi bi-emoji-sunglasses"></i>
-                </div>
+            <div class="sh-empty sh-empty--compact">
+                <i class="bi bi-file-earmark-person"></i>
+                <p>{% trans "Upload your CV to detect your skills, then prove them in a short timed quiz." %}</p>
+                <a href="{% url 'skills_hub' %}" class="btn btn--primary btn--sm">{% trans "Analyze & Verify Skills" %}</a>
+            </div>
+        {% endif %}
+
+        {# ---------- Point tasks ---------- #}
+        <div class="sh-section-head mt-8">
+            <h2 class="sh-section-title"><i class="bi bi-trophy"></i> {% trans "Earn points, climb the ranks" %}</h2>
+        </div>
+        {% if tasks %}
+            <div class="sh-grid">
+                {% for task in tasks %}
+                    <article class="sh-card">
+                        <header class="sh-card__head">
+                            <span class="sh-quiz__icon sh-quiz__icon--gold"><i class="bi bi-puzzle-fill"></i></span>
+                            <div class="sh-card__who">
+                                <h3 class="sh-card__title">{{ task.title }}</h3>
+                                <span class="sh-card__sub"><i class="bi bi-stars"></i> {% blocktrans with p=task.points_awarded %}+{{ p }} points{% endblocktrans %}</span>
+                            </div>
+                        </header>
+                        <p class="sh-card__desc">{{ task.description|truncatewords:20 }}</p>
+                        <footer class="sh-card__foot">
+                            <span class="sh-pill"><i class="bi bi-lightning-fill"></i> {% trans "Quick" %}</span>
+                            <a href="{% url 'take_task' task.id %}" class="btn btn--accent btn--sm">{% trans "Start" %} <i class="bi bi-arrow-left-short"></i></a>
+                        </footer>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="sh-empty sh-empty--compact">
+                <i class="bi bi-emoji-sunglasses"></i>
                 <h3>{% trans "Great work! You completed every available task" %}</h3>
                 <p>{% trans "Follow us for new tasks landing soon." %}</p>
-                <a href="{% url 'course_list' %}" class="btn btn--primary">{% trans "Browse courses" %}</a>
             </div>
+        {% endif %}
+
+        {% if completed_tasks %}
+            <h3 class="sh-subtitle">{% trans "Completed" %}</h3>
+            <ul class="sh-done">
+                {% for rec in completed_tasks %}
+                    <li><i class="bi bi-check-circle-fill"></i> {{ rec.task.title }} <span class="sh-pill sh-pill--ok">+{{ rec.task.points_awarded }}</span> <time>{{ rec.completed_on|date:"Y/m/d" }}</time></li>
+                {% endfor %}
+            </ul>
         {% endif %}
     </div>
 </section>
-
 {% endblock %}

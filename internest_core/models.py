@@ -247,6 +247,12 @@ class Application(models.Model):
         return self.status in self.CONTACT_UNLOCKED_STATUSES
 
     @property
+    def progress_step(self):
+        """1–4 on the student's stepper (submitted → under review → shortlisted → accepted); 0 when filled."""
+        order = [self.STATUS_SUBMITTED, self.STATUS_UNDER_REVIEW, self.STATUS_SHORTLISTED, self.STATUS_ACCEPTED]
+        return order.index(self.status) + 1 if self.status in order else 0
+
+    @property
     def student_status_label(self):
         """Status wording on the student's side."""
         if self.status == self.STATUS_SHORTLISTED:

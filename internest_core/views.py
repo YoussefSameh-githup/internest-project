@@ -385,6 +385,29 @@ def _campus_share(request, profile):
     return _share_payload(request, vote) if vote else None
 
 
+def _student_hub(request, profile, tab):
+    """Header + tabs shared by My applications, Tasks & quizzes and Courses."""
+    return {
+        "hub_tab": tab,
+        "hub_stats": {
+            "applications": Application.objects.filter(applicant=request.user).count(),
+            "verified": _verified_skills_count(profile),
+            "points": profile.gamification_score,
+        },
+    }
+
+
+def _skill_quizzes(profile):
+    """The student's skill tests (claimed → start, lag → retake, verified → done). [] if tables are unavailable."""
+    from django.db import DatabaseError
+
+    try:
+        with transaction.atomic():
+            return list(profile.skills.select_related("skill").order_by("status", "skill__name"))
+    except DatabaseError:
+        return []
+
+
 @login_required
 def profile_view(request):
     if _get_partner_profile(request.user) is not None:
@@ -525,6 +548,9 @@ def my_applications_view(request):
     ]
     context = get_user_context(request)
     context.update({"applications": applications, "invitations": invitations})
+    student = _get_student_profile(request.user)
+    if student is not None:
+        context.update(_student_hub(request, student, "applications"))
     return render(request, "internship/my_applications.html", context)
 
 
@@ -738,6 +764,11 @@ def task_list_view(request):
     )
     context = get_user_context(request)
     context["tasks"] = available_tasks
+    context["skill_quizzes"] = _skill_quizzes(student_profile)
+    context["completed_tasks"] = (
+        StudentTaskRecord.objects.filter(student=student_profile).select_related("task").order_by("-completed_on")[:6]
+    )
+    context.update(_student_hub(request, student_profile, "tasks"))
     return render(request, "internship/task_list.html", context)
 
 
@@ -835,10 +866,21 @@ def course_list_view(request):
     )
     from internest_skills.recommendations import recommendations_for_student
 
+    from internest_skills.recommendations import track_recommendations
+
+    recommended = recommendations_for_student(student_profile)
+    # Learning paths: one track per tested skill (gaps first) with its score and its own courses.
+    tracks = [
+        {"record": ss, "recs": track_recommendations(ss)}
+        for ss in _skill_quizzes(student_profile) if ss.status in ("lag", "verified")
+    ][:6]
+
     context = get_user_context(request)
     context["courses"] = courses
     context["enrolled_course_ids"] = enrolled_course_ids
-    context["recommended"] = recommendations_for_student(student_profile)
+    context["recommended"] = recommended
+    context["tracks"] = tracks
+    context.update(_student_hub(request, student_profile, "courses"))
     return render(request, "internship/course_list.html", context)
 
 

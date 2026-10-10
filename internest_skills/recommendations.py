@@ -141,3 +141,8 @@ def recommendations_for_student(student, limit=6) -> dict:
             rec = {**rec, "skill": ss.skill.name, "is_gap": ss.status == StudentSkill.STATUS_LAG}
             (internal if rec["provider_type"] == "internest_partner" else external).append(rec)
     return {"internal": internal[:limit], "external": [] if internal else external[:limit], "tested": tested.exists()}
+
+
+def track_recommendations(student_skill, limit=3) -> list[dict]:
+    """Courses for one learning path: gap-specific first, else general courses for the skill."""
+    return (recommendations_for(student_skill)["recommendations"] or _level_up(student_skill))[:limit]

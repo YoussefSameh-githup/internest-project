@@ -3214,7 +3214,7 @@ msgid "Clear"
 msgstr "مسح"
 
 msgid "%(n)s candidates"
-msgstr "عدد المرشحين: %(n)s"
+msgstr "%(n)s مرشح"
 
 msgid "Best skill score"
 msgstr "أعلى درجة مهارة"
@@ -3606,3 +3606,70 @@ msgstr ""
 
 msgid "Direct invitations (skip the %(t)s%% skill match)"
 msgstr "دعوات مباشرة (تتخطّى شرط تطابق %(t)s%%)"
+
+msgid "Courses & learning paths"
+msgstr "الكورسات ومسارات التطوير"
+
+msgid "Your learning paths"
+msgstr "مسارات التطوير الخاصة بك"
+
+msgid "Level up a verified skill"
+msgstr "طوّر مهارة موثّقة"
+
+msgid "Close your skill gap"
+msgstr "سُدّ فجوتك المهارية"
+
+msgid "Start learning"
+msgstr "ابدأ التعلّم"
+
+msgid "View skill report"
+msgstr "عرض تقرير المهارة"
+
+msgid "Application progress"
+msgstr "مراحل الطلب"
+
+msgid "Interview"
+msgstr "المقابلة"
+
+msgid ""
+"This position has been filled. Keep going — new opportunities are posted "
+"every week."
+msgstr "تم الاكتفاء لهذه الفرصة. استمر — تُنشر فرص جديدة كل أسبوع."
+
+msgid "Tasks & quizzes"
+msgstr "المهام والاختبارات"
+
+msgid "Skill quizzes"
+msgstr "اختبارات المهارات"
+
+msgid "Percentile P%(p)s"
+msgstr "الترتيب المئوي P%(p)s"
+
+msgid "Retake quiz"
+msgstr "إعادة الاختبار"
+
+msgid "Start quiz"
+msgstr "ابدأ الاختبار"
+
+msgid ""
+"Upload your CV to detect your skills, then prove them in a short timed quiz."
+msgstr ""
+"ارفع سيرتك الذاتية لاكتشاف مهاراتك، ثم أثبتها في اختبار قصير بوقت محدد."
+
+msgid "Completed"
+msgstr "المكتملة"
+
+msgid "Hi %(name)s 👋"
+msgstr "أهلاً %(name)s 👋"
+
+msgid "Your student hub"
+msgstr "مساحتك الطلابية"
+
+msgid "Applications"
+msgstr "الطلبات"
+
+msgid "Points"
+msgstr "النقاط"
+
+msgid "Student hub"
+msgstr "المساحة الطلابية"

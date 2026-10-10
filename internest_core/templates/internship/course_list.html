@@ -1,22 +1,60 @@
 {% extends 'internship/base.html' %}
 {% load static i18n %}
 
-{% block title %}{% trans "Partner courses" %} — Internest{% endblock %}
+{% block title %}{% trans "Courses & learning paths" %} — Internest{% endblock %}
 
 {% block content %}
+{% include "internship/_student_hub.html" %}
 
-<section class="page-header">
+<section class="sh-body">
     <div class="container">
-        <span class="eyebrow"><i class="bi bi-mortarboard"></i> {% trans "Verified courses" %}</span>
-        <h1 class="mt-3">{% trans "Partner courses" %}</h1>
-        <p>{% trans "Courses from real experts that earn you Gamification points and strengthen your CV." %}</p>
-    </div>
-</section>
+        {# ---------- Learning paths from quiz results ---------- #}
+        <div class="sh-section-head">
+            <h2 class="sh-section-title"><i class="bi bi-signpost-split"></i> {% trans "Your learning paths" %}</h2>
+        </div>
+        {% if tracks %}
+            <div class="sh-grid">
+                {% for t in tracks %}
+                    <article class="sh-card sh-track sh-track--{{ t.record.status }}">
+                        <header class="sh-card__head">
+                            <span class="sh-quiz__icon">{% if t.record.status == "verified" %}<i class="bi bi-rocket-takeoff"></i>{% else %}<i class="bi bi-graph-up-arrow"></i>{% endif %}</span>
+                            <div class="sh-card__who">
+                                <h3 class="sh-card__title">{{ t.record.skill.name }}</h3>
+                                <span class="sh-card__sub">{% if t.record.status == "verified" %}{% trans "Level up a verified skill" %}{% else %}{% trans "Close your skill gap" %}{% endif %}</span>
+                            </div>
+                            {% if t.record.score is not None %}<span class="sh-score">{{ t.record.score }}%</span>{% endif %}
+                        </header>
+                        <div class="progress"><div class="progress__bar {% if t.record.status == 'verified' %}progress__bar--success{% endif %}" style="width: {{ t.record.score|default:0 }}%;"></div></div>
+                        {% if t.recs %}
+                            <ul class="sh-track__recs">
+                                {% for rec in t.recs %}
+                                    <li><a href="{{ rec.url }}" {% if rec.provider_type != "internest_partner" %}target="_blank" rel="noopener"{% endif %}>
+                                        <span>{{ rec.title }}</span>
+                                        <small>{% if rec.provider_type == "internest_partner" %}<i class="bi bi-patch-check-fill"></i>{% endif %} {{ rec.provider }}</small>
+                                    </a></li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        <footer class="sh-card__foot">
+                            {% if t.recs %}
+                                <a href="{{ t.recs.0.url }}" class="btn btn--primary btn--sm" {% if t.recs.0.provider_type != "internest_partner" %}target="_blank" rel="noopener"{% endif %}>{% trans "Start learning" %} <i class="bi bi-arrow-left-short"></i></a>
+                            {% else %}
+                                <a href="{% url 'skills_hub' %}" class="btn btn--ghost btn--sm">{% trans "View skill report" %}</a>
+                            {% endif %}
+                        </footer>
+                    </article>
+                {% endfor %}
+            </div>
+        {% elif not recommended.tested %}
+            <div class="sh-empty sh-empty--compact">
+                <i class="bi bi-lightbulb"></i>
+                <p>{% trans "Take a skill test to get course recommendations tailored to your gaps." %}</p>
+                <a href="{% url 'skills_hub' %}" class="btn btn--primary btn--sm">{% trans "Verify Your Skills" %}</a>
+            </div>
+        {% endif %}
 
-<section class="section-sm">
-    <div class="container">
         {% if recommended.internal or recommended.external %}
-            <div class="card mb-6 rec-panel">
+            <div class="rec-panel sh-card mt-6">
                 <h3 class="mb-1"><i class="bi bi-stars text-accent"></i> {% trans "Recommended for you" %}</h3>
                 <p class="text-muted mb-4" style="font-size: var(--text-sm);">
                     {% if recommended.internal %}{% trans "Internest partner courses matched to your skill tests." %}
@@ -32,70 +70,47 @@
                     {% endfor %}
                 </div>
             </div>
-        {% elif not recommended.tested %}
-            <div class="card mb-6 rec-panel rec-panel--empty">
-                <i class="bi bi-lightbulb"></i>
-                <span>{% trans "Take a skill test to get course recommendations tailored to your gaps." %}</span>
-                <a href="{% url 'skills_hub' %}" class="btn btn--primary btn--sm">{% trans "Verify Your Skills" %}</a>
-            </div>
         {% endif %}
 
+        {# ---------- Partner course catalogue ---------- #}
+        <div class="sh-section-head mt-8">
+            <h2 class="sh-section-title"><i class="bi bi-mortarboard"></i> {% trans "Partner courses" %}</h2>
+        </div>
         {% if courses %}
-            <div class="listing-grid">
+            <div class="sh-grid">
                 {% for course in courses %}
-                    <article class="listing-card fade-up">
-                        <div class="listing-card__head">
-                            <div class="listing-card__avatar">
-                                {% if course.partner.logo %}
-                                    <img src="{{ course.partner.logo.url }}" alt="">
-                                {% else %}
-                                    {{ course.partner.company_name|slice:":1" }}
-                                {% endif %}
+                    <article class="sh-card">
+                        <header class="sh-card__head">
+                            <span class="ol-logo">{% if course.partner.logo %}<img src="{{ course.partner.logo.url }}" alt="">{% else %}{{ course.partner.company_name|slice:":1"|upper }}{% endif %}</span>
+                            <div class="sh-card__who">
+                                <h3 class="sh-card__title">{{ course.title }}</h3>
+                                <span class="sh-card__sub">{{ course.partner.company_name }}{% if course.partner.is_fully_verified %} <i class="bi bi-patch-check-fill" style="color: var(--brand-500);"></i>{% endif %}</span>
                             </div>
-                            <div style="flex: 1; min-width: 0;">
-                                <h3 class="listing-card__title">{{ course.title }}</h3>
-                                <p class="listing-card__partner">
-                                    {{ course.partner.company_name }}
-                                    {% if course.partner.is_fully_verified %}
-                                        <i class="bi bi-patch-check-fill" style="color: var(--brand-500);"></i>
-                                    {% endif %}
-                                </p>
-                            </div>
+                        </header>
+                        <p class="sh-card__desc">{{ course.description|truncatechars:120 }}</p>
+                        <div class="ol-card__chips">
+                            <span class="ol-chip"><i class="bi bi-person-video3"></i> {{ course.instructor_name }}</span>
+                            <span class="ol-chip"><i class="bi bi-stars"></i> {% blocktrans with p=course.points_awarded %}+{{ p }} points{% endblocktrans %}</span>
                         </div>
-
-                        <div class="listing-card__meta">
-                            <span class="badge badge--outline"><i class="bi bi-person-video3"></i> {{ course.instructor_name }}</span>
-                            <span class="badge badge--accent"><i class="bi bi-stars"></i> {% blocktrans with p=course.points_awarded %}+{{ p }} points{% endblocktrans %}</span>
-                        </div>
-
-                        <p class="listing-card__desc">{{ course.description|truncatechars:120 }}</p>
-
-                        <div class="listing-card__footer">
-                            <span style="font-family: var(--font-display); font-weight: 800; font-size: var(--text-lg); color: var(--brand-800);">
-                                {{ course.price }} <span style="font-size: var(--text-xs); color: var(--color-muted);">{% trans "EGP" %}</span>
-                            </span>
+                        <footer class="sh-card__foot">
+                            <span class="sh-price">{{ course.price }} <small>{% trans "EGP" %}</small></span>
                             {% if course.id in enrolled_course_ids %}
-                                <a href="{{ course.video_link }}" target="_blank" rel="noopener" class="btn btn--success btn--sm">
-                                    <i class="bi bi-play-circle-fill"></i> {% trans "Watch" %}
-                                </a>
+                                <a href="{{ course.video_link }}" target="_blank" rel="noopener" class="btn btn--success btn--sm"><i class="bi bi-play-circle-fill"></i> {% trans "Watch" %}</a>
                             {% else %}
-                                <a href="{% url 'course_checkout' course.id %}" class="btn btn--primary btn--sm">
-                                    {% trans "Enroll" %} <i class="bi bi-arrow-left-short"></i>
-                                </a>
+                                <a href="{% url 'course_checkout' course.id %}" class="btn btn--primary btn--sm">{% trans "Enroll" %} <i class="bi bi-arrow-left-short"></i></a>
                             {% endif %}
-                        </div>
+                        </footer>
                     </article>
                 {% endfor %}
             </div>
         {% else %}
-            <div class="empty-state">
-                <div class="empty-state__icon"><i class="bi bi-mortarboard"></i></div>
+            <div class="sh-empty sh-empty--compact">
+                <i class="bi bi-mortarboard"></i>
                 <h3>{% trans "No courses available right now" %}</h3>
                 <p>{% trans "Partners add new courses regularly. Check back soon to see the latest." %}</p>
-                <a href="{% url 'task_list' %}" class="btn btn--primary">{% trans "Try tasks" %}</a>
+                <a href="{% url 'task_list' %}" class="btn btn--primary btn--sm">{% trans "Try tasks" %}</a>
             </div>
         {% endif %}
     </div>
 </section>
-
 {% endblock %}

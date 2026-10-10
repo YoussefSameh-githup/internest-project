@@ -14,7 +14,6 @@
                 <p class="tp-hero__sub">{% blocktrans with t=MATCH_THRESHOLD %}Students who opted in, with verified skills or a skill score of {{ t }}% or more. Contact details stay private until they apply and you shortlist them.{% endblocktrans %}</p>
             </div>
             <div class="tp-hero__stats">
-                <span class="tp-stat"><strong>{{ page.paginator.count }}</strong> {% trans "candidates" %}</span>
                 <span class="tp-stat tp-stat--quota" title="{% blocktrans with n=invites_per_opportunity d=invites_daily %}{{ n }} per opportunity · {{ d }} per day{% endblocktrans %}">
                     <i class="bi bi-send-fill"></i> {% blocktrans with n=invites_left %}{{ n }} invitations left today{% endblocktrans %}
                 </span>
@@ -43,6 +42,7 @@
                 {% for m in options.majors %}<option value="{{ m }}" {% if filters.major == m %}selected{% endif %}>{{ m }}</option>{% endfor %}
             </select>
             <button type="submit" class="btn btn--primary"><i class="bi bi-funnel"></i> {% trans "Filter" %}</button>
+            <span class="tp-count">{% blocktrans with n=page.paginator.count %}{{ n }} candidates{% endblocktrans %}</span>
             {% if querystring %}<a href="{% url 'talent_pool' %}" class="btn btn--ghost">{% trans "Clear" %}</a>{% endif %}
         </form>
 
@@ -56,13 +56,13 @@
                             <div class="tp-card__who">
                                 <h2 class="tp-card__name">{{ c.user.get_full_name|default:c.user.username }}</h2>
                                 <p class="tp-card__meta"><i class="bi bi-mortarboard"></i> {{ c.university|default:"—" }}</p>
+                                <div class="tp-facts">
+                                    {% if c.pk in invited %}<span class="tp-fact tp-fact--invited"><i class="bi bi-check2"></i> {% trans "Invited" %}</span>{% endif %}
+                                    {% if c.study_level %}<span class="tp-fact">{{ c.get_study_level_display }}</span>{% endif %}
+                                    <span class="tp-fact">{{ c.major|default:"—" }}</span>
+                                </div>
                             </div>
                             {% if c.best_score %}<span class="tp-best" title="{% trans 'Best skill score' %}">{{ c.best_score }}%</span>{% endif %}
-                        </div>
-                        <div class="tp-facts">
-                            <span class="tp-fact">{{ c.major|default:"—" }}</span>
-                            {% if c.study_level %}<span class="tp-fact">{{ c.get_study_level_display }}</span>{% endif %}
-                            {% if c.pk in invited %}<span class="tp-fact tp-fact--invited"><i class="bi bi-check2"></i> {% trans "Invited" %}</span>{% endif %}
                         </div>
                         {% if c.bio %}<p class="tp-card__bio">{{ c.bio|truncatechars:160 }}</p>{% endif %}
                         <ul class="tp-skills" aria-label="{% trans 'Verified skills' %}">
@@ -71,16 +71,17 @@
                                     <i class="bi bi-patch-check-fill"></i>
                                     <span class="tp-skill__name">{{ s.skill.name }}</span>
                                     {% if s.score is not None %}<span class="tp-skill__score">{{ s.score }}%</span>{% endif %}
+                                    {% if s.score is not None %}<span class="tp-skill__bar" aria-hidden="true"><span style="width: {{ s.score }}%;"></span></span>{% endif %}
                                 </li>
                             {% endfor %}
                         </ul>
                         <div class="tp-card__foot">
                             <span class="tp-private"><i class="bi bi-lock-fill"></i> {% trans "Contact details private" %}</span>
                             <div class="tp-actions">
-                                <button type="button" class="btn btn--ghost btn--sm" data-preview-btn><i class="bi bi-person-vcard"></i> {% trans "View profile" %}</button>
+                                <button type="button" class="btn btn--ghost btn--sm" data-preview-btn>🪪 {% trans "View profile" %}</button>
                                 <button type="button" class="btn btn--primary btn--sm" data-invite="{% url 'talent_pool_invite' c.pk %}"
                                         data-name="{{ c.user.get_full_name|default:c.user.username }}">
-                                    <i class="bi bi-envelope-paper-heart"></i> {% trans "Invite to apply / contact" %}
+                                    ✉️ {% trans "Invite to apply / contact" %}
                                 </button>
                             </div>
                         </div>

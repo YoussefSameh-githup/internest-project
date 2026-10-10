@@ -1,0 +1,27 @@
+{% load i18n %}
+{# Shared header + tabs for the student hub (My applications / Tasks & quizzes / Courses). #}
+<section class="sh-hero">
+    <div class="container">
+        <div class="sh-hero__row">
+            <div class="sh-hero__who">
+                <span class="sh-avatar">{{ user.get_full_name|default:user.username|slice:":1"|upper }}</span>
+                <div>
+                    <p class="sh-hero__hello">{% blocktrans with name=user.first_name|default:user.username %}Hi {{ name }} 👋{% endblocktrans %}</p>
+                    <h1 class="sh-hero__title">{% trans "Your student hub" %}</h1>
+                </div>
+            </div>
+            {% if hub_stats %}
+                <dl class="sh-stats">
+                    <div><dt>{% trans "Applications" %}</dt><dd>{{ hub_stats.applications }}</dd></div>
+                    <div><dt>{% trans "Verified skills" %}</dt><dd>{{ hub_stats.verified }}</dd></div>
+                    <div><dt>{% trans "Points" %}</dt><dd>{{ hub_stats.points }}</dd></div>
+                </dl>
+            {% endif %}
+        </div>
+        <nav class="sh-tabs" aria-label="{% trans 'Student hub' %}">
+            <a href="{% url 'my_applications' %}" class="sh-tab {% if hub_tab == 'applications' %}is-active{% endif %}" {% if hub_tab == 'applications' %}aria-current="page"{% endif %}>📄 {% trans "My applications" %}</a>
+            <a href="{% url 'task_list' %}" class="sh-tab {% if hub_tab == 'tasks' %}is-active{% endif %}" {% if hub_tab == 'tasks' %}aria-current="page"{% endif %}>🎯 {% trans "Tasks & quizzes" %}</a>
+            <a href="{% url 'course_list' %}" class="sh-tab {% if hub_tab == 'courses' %}is-active{% endif %}" {% if hub_tab == 'courses' %}aria-current="page"{% endif %}>📚 {% trans "Courses & learning paths" %}</a>
+        </nav>
+    </div>
+</section>
