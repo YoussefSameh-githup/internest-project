@@ -5,75 +5,147 @@
 {% block extra_head %}<link rel="stylesheet" href="{% asset 'startups/startups.css' %}">{% endblock %}
 
 {% block content %}
-<section class="tp-page">
+<style>
+/* Talent Pool v4 — embedded on purpose so it works even when the server serves an old cached stylesheet. */
+.tp-v4 { --tp-accent: #2563eb; --tp-accent-dark: #1d4ed8; --tp-ink: #0f172a; --tp-muted: #64748b; --tp-line: #e2e8f0;
+  padding: 32px 0 56px; background: linear-gradient(180deg, #f1f5ff 0%, #f8fafc 260px, #fff 100%); }
+.tp-v4 .tp-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.tp-v4 .tp-head h1 { margin: 0 0 6px; font-size: clamp(1.6rem, 3vw, 2.2rem); color: var(--tp-ink); }
+.tp-v4 .tp-head p { margin: 0; max-width: 680px; color: var(--tp-muted); }
+.tp-v4 .tp-quota { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 14px; background: #fffbeb;
+  border: 1px solid #fde68a; color: #92400e; font-weight: 700; font-size: 14px; cursor: help; }
+
+/* Floating filter bar */
+.tp-v4 .tp-filter-bar { position: sticky; top: 84px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px;
+  margin-bottom: 26px; border-radius: 20px; background: #fff; border: 1px solid #cbd5e1; box-shadow: 0 20px 44px rgba(15, 23, 42, .12); }
+.tp-v4 .tp-filter-bar__q { position: relative; flex: 2 1 260px; }
+.tp-v4 .tp-filter-bar__q .bi { position: absolute; inset-inline-start: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+.tp-v4 .tp-filter-bar input, .tp-v4 .tp-filter-bar select { width: 100%; height: 46px; padding: 0 12px; margin: 0; border: 1px solid var(--tp-line);
+  border-radius: 12px; background: #f8fafc; color: var(--tp-ink); font: inherit; box-shadow: none; }
+.tp-v4 .tp-filter-bar input { padding-inline-start: 40px; }
+.tp-v4 .tp-filter-bar select { flex: 1 1 150px; width: auto; min-width: 140px; }
+.tp-v4 .tp-filter-bar input:focus, .tp-v4 .tp-filter-bar select:focus { outline: none; background: #fff; border-color: var(--tp-accent); box-shadow: 0 0 0 4px rgba(37, 99, 235, .15); }
+.tp-v4 .tp-filter-bar__actions { display: flex; align-items: center; gap: 8px; margin-inline-start: auto; }
+.tp-v4 .tp-count { display: inline-flex; align-items: center; height: 46px; padding: 0 14px; border-radius: 12px; background: #eff6ff; color: var(--tp-accent-dark); font-weight: 800; white-space: nowrap; }
+
+/* Buttons (scoped) */
+.tp-v4 .tp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 46px; padding: 0 18px; border-radius: 12px; border: 1px solid transparent;
+  font: inherit; font-weight: 700; white-space: nowrap; cursor: pointer; text-decoration: none; transition: background .15s, border-color .15s, color .15s, transform .15s; }
+.tp-v4 .tp-btn--primary { background: var(--tp-accent); color: #fff; box-shadow: 0 8px 18px rgba(37, 99, 235, .25); }
+.tp-v4 .tp-btn--primary:hover { background: var(--tp-accent-dark); color: #fff; }
+.tp-v4 .tp-btn--soft { background: #eff6ff; color: var(--tp-accent-dark); border-color: #bfdbfe; }
+.tp-v4 .tp-btn--soft:hover { background: #dbeafe; }
+.tp-v4 .tp-btn--ghost { background: transparent; color: var(--tp-muted); }
+
+/* Candidate grid & card */
+.tp-v4 .tp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; }
+.tp-v4 .tp-card { position: relative; display: flex; flex-direction: column; gap: 16px; padding: 22px; margin: 0; border-radius: 22px; background: #fff;
+  border: 1px solid var(--tp-line); box-shadow: 0 2px 6px rgba(15, 23, 42, .04); cursor: pointer; transform: none; transition: box-shadow .2s, border-color .2s, transform .2s; }
+.tp-v4 .tp-card:hover { transform: translateY(-3px); border-color: #93c5fd; box-shadow: 0 20px 40px rgba(37, 99, 235, .12); }
+.tp-v4 .tp-card:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+.tp-v4 .tp-card__head { display: flex; align-items: center; gap: 14px; }
+.tp-v4 .tp-avatar { flex-shrink: 0; width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; background: linear-gradient(135deg, #1d4ed8, #60a5fa);
+  color: #fff; font-size: 1.4rem; font-weight: 800; box-shadow: 0 8px 18px rgba(37, 99, 235, .3); }
+.tp-v4 .tp-card__who { flex: 1; min-width: 0; }
+.tp-v4 .tp-card__name { margin: 2px 0 2px; font-size: 1.15rem; color: var(--tp-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tp-v4 .tp-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.tp-v4 .tp-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; background: #f1f5f9; color: #334155; font-size: 12px; font-weight: 700; }
+.tp-v4 .tp-badge--uni { background: #eff6ff; color: #1d4ed8; }
+.tp-v4 .tp-badge--top { background: #fef3c7; color: #92400e; }
+.tp-v4 .tp-badge--gigs { background: #ede9fe; color: #5b21b6; }
+.tp-v4 .tp-badge--invited { background: #dcfce7; color: #166534; }
+.tp-v4 .tp-score { flex-shrink: 0; padding: 6px 12px; border-radius: 12px; background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #166534; font-weight: 800; direction: ltr; }
+.tp-v4 .tp-card__bio { margin: 0; color: #475569; font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Skills with gradient progress bars */
+.tp-v4 .tp-skills { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.tp-v4 .tp-skill { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; padding: 0; background: none; border: 0; font-size: 13px; }
+.tp-v4 .tp-skill__name { font-weight: 700; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tp-v4 .tp-skill__name .bi { color: #16a34a; }
+.tp-v4 .tp-skill__score { padding: 0; background: none; color: var(--tp-accent-dark); font-weight: 800; direction: ltr; }
+.tp-v4 .tp-skill__bar { grid-column: 1 / -1; display: block; height: 8px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }
+.tp-v4 .tp-skill__bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #60a5fa, #2563eb 60%, #4f46e5); }
+
+/* Actions + privacy */
+.tp-v4 .tp-card__actions { display: flex; gap: 10px; margin-top: auto; }
+.tp-v4 .tp-card__actions .tp-btn { flex: 1 1 auto; min-width: 0; height: auto; min-height: 46px; padding: 10px 8px; font-size: 14px; white-space: normal; text-align: center; line-height: 1.3; }
+.tp-v4 .tp-card__privacy { display: flex; align-items: center; justify-content: center; gap: 6px; padding-top: 12px; border-top: 1px dashed var(--tp-line); color: #94a3b8; font-size: 12px; }
+.tp-v4 .tp-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 48px 16px; border-radius: 20px; background: #fff; border: 1px dashed #cbd5e1; color: var(--tp-muted); text-align: center; }
+.tp-v4 .tp-empty .bi { font-size: 2.6rem; color: var(--tp-accent); }
+.tp-v4 .tp-pages { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 28px; }
+@media (max-width: 900px) { .tp-v4 .tp-filter-bar { position: static; } .tp-v4 .tp-filter-bar__actions { width: 100%; justify-content: flex-end; } }
+@media (max-width: 420px) { .tp-v4 .tp-grid { grid-template-columns: 1fr; } .tp-v4 .tp-card__actions { flex-direction: column; } .tp-v4 .tp-filter-bar select { flex-basis: 100%; } }
+</style>
+
+<section class="tp-v4">
     <div class="container">
         <a href="{% url 'partner_dashboard' %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short"></i> {% trans "Dashboard" %}</a>
-        <header class="tp-hero">
+        <header class="tp-head">
             <div>
-                <h1 class="tp-hero__title">{% trans "Talent Pool" %} <span class="pro-chip">PRO</span></h1>
-                <p class="tp-hero__sub">{% blocktrans with t=MATCH_THRESHOLD %}Students who opted in, with verified skills or a skill score of {{ t }}% or more. Contact details stay private until they apply and you shortlist them.{% endblocktrans %}</p>
+                <h1>{% trans "Talent Pool" %} <span class="pro-chip">PRO</span></h1>
+                <p>{% blocktrans with t=MATCH_THRESHOLD %}Students who opted in, with verified skills or a skill score of {{ t }}% or more. Contact details stay private until they apply and you shortlist them.{% endblocktrans %}</p>
             </div>
-            <span class="tp-quota-alert" role="status" title="{% blocktrans with n=invites_per_opportunity d=invites_daily %}{{ n }} per opportunity · {{ d }} per day{% endblocktrans %}">
+            <span class="tp-quota" role="status" title="{% blocktrans with n=invites_per_opportunity d=invites_daily %}{{ n }} per opportunity · {{ d }} per day{% endblocktrans %}">
                 <i class="bi bi-send-fill"></i> {% blocktrans with n=invites_left %}{{ n }} invitations left today{% endblocktrans %}
             </span>
         </header>
 
-        <form method="get" class="ts-bar" role="search">
-            <div class="ts-bar__q">
+        <form method="get" class="tp-filter-bar" role="search">
+            <div class="tp-filter-bar__q">
                 <i class="bi bi-search"></i>
                 <input type="search" name="q" value="{{ filters.q }}" placeholder="{% trans 'Search by name, skill, major or project…' %}" aria-label="{% trans 'Search' %}">
             </div>
-            <div class="ts-bar__filters">
-                <select name="skill" aria-label="{% trans 'Skill' %}">
-                    <option value="">{% trans "All skills" %}</option>
-                    {% for s in options.skills %}<option value="{{ s.pk }}" {% if filters.skill == s.pk|stringformat:"s" %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
-                </select>
-                <select name="min_score" aria-label="{% trans 'Minimum score' %}">
-                    <option value="">{% trans "Any score" %}</option>
-                    {% for n in score_steps %}<option value="{{ n }}" {% if filters.min_score == n|stringformat:"s" %}selected{% endif %}>≥ {{ n }}%</option>{% endfor %}
-                </select>
-                <select name="university" aria-label="{% trans 'University' %}">
-                    <option value="">{% trans "All universities" %}</option>
-                    {% for u in options.universities %}<option value="{{ u }}" {% if filters.university == u %}selected{% endif %}>{{ u }}</option>{% endfor %}
-                </select>
-                <select name="major" aria-label="{% trans 'Major' %}">
-                    <option value="">{% trans "All majors" %}</option>
-                    {% for m in options.majors %}<option value="{{ m }}" {% if filters.major == m %}selected{% endif %}>{{ m }}</option>{% endfor %}
-                </select>
-            </div>
-            <div class="ts-bar__actions">
-                <span class="ts-count">{% blocktrans with n=page.paginator.count %}{{ n }} candidates{% endblocktrans %}</span>
-                {% if querystring %}<a href="{% url 'talent_pool' %}" class="btn btn--ghost">{% trans "Clear" %}</a>{% endif %}
-                <button type="submit" class="btn btn--primary"><i class="bi bi-funnel"></i> {% trans "Filter" %}</button>
+            <select name="skill" aria-label="{% trans 'Skill' %}">
+                <option value="">{% trans "All skills" %}</option>
+                {% for s in options.skills %}<option value="{{ s.pk }}" {% if filters.skill == s.pk|stringformat:"s" %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+            </select>
+            <select name="min_score" aria-label="{% trans 'Minimum score' %}">
+                <option value="">{% trans "Any score" %}</option>
+                {% for n in score_steps %}<option value="{{ n }}" {% if filters.min_score == n|stringformat:"s" %}selected{% endif %}>≥ {{ n }}%</option>{% endfor %}
+            </select>
+            <select name="university" aria-label="{% trans 'University' %}">
+                <option value="">{% trans "All universities" %}</option>
+                {% for u in options.universities %}<option value="{{ u }}" {% if filters.university == u %}selected{% endif %}>{{ u }}</option>{% endfor %}
+            </select>
+            <select name="major" aria-label="{% trans 'Major' %}">
+                <option value="">{% trans "All majors" %}</option>
+                {% for m in options.majors %}<option value="{{ m }}" {% if filters.major == m %}selected{% endif %}>{{ m }}</option>{% endfor %}
+            </select>
+            <div class="tp-filter-bar__actions">
+                <span class="tp-count">{% blocktrans with n=page.paginator.count %}{{ n }} candidates{% endblocktrans %}</span>
+                {% if querystring %}<a href="{% url 'talent_pool' %}" class="tp-btn tp-btn--ghost">{% trans "Clear" %}</a>{% endif %}
+                <button type="submit" class="tp-btn tp-btn--primary"><i class="bi bi-funnel"></i> {% trans "Filter" %}</button>
             </div>
         </form>
 
         {% if page.object_list %}
-            <div class="tc-grid">
+            <div class="tp-grid">
                 {% for c in page %}
-                    <article class="tc" data-preview="{% url 'talent_pool_candidate' c.pk %}" tabindex="0"
+                    <article class="tp-card" data-preview="{% url 'talent_pool_candidate' c.pk %}" tabindex="0"
                              aria-label="{% blocktrans with name=c.user.get_full_name|default:c.user.username %}View {{ name }}'s profile{% endblocktrans %}">
-                        <header class="tc__head">
-                            <span class="tc__avatar">{{ c.user.get_full_name|default:c.user.username|slice:":1"|upper }}</span>
-                            <div class="tc__id">
-                                <h2 class="tc__name">{{ c.user.get_full_name|default:c.user.username }}</h2>
-                                <p class="tc__meta">
-                                    <span><i class="bi bi-mortarboard"></i> {{ c.university|default:"—" }}</span>
-                                    <span><i class="bi bi-book"></i> {{ c.major|default:"—" }}</span>
-                                    {% if c.study_level %}<span><i class="bi bi-calendar3"></i> {{ c.get_study_level_display }}</span>{% endif %}
-                                </p>
+                        <header class="tp-card__head">
+                            <span class="tp-avatar">{{ c.user.get_full_name|default:c.user.username|slice:":1"|upper }}</span>
+                            <div class="tp-card__who">
+                                <h2 class="tp-card__name">{{ c.user.get_full_name|default:c.user.username }}</h2>
                             </div>
-                            {% if c.best_score %}<span class="tc__score" title="{% trans 'Best skill score' %}">{{ c.best_score }}%</span>{% endif %}
+                            {% if c.best_score %}<span class="tp-score" title="{% trans 'Best skill score' %}">{{ c.best_score }}%</span>{% endif %}
                         </header>
-
-                        <div class="tc__tags">
-                            {% if c.top_verified %}<span class="tc__tag tc__tag--top">🏅 {% trans "Top Verified Candidate" %}</span>{% endif %}
-                            {% if c.gig_count %}<span class="tc__tag tc__tag--gigs">{% blocktrans with n=c.gig_count r=c.gig_rating|stringformat:".1f" %}✅ {{ n }} verified gigs · ⭐ {{ r }}/5{% endblocktrans %}</span>{% endif %}
-                            {% if c.pk in invited %}<span class="tc__tag"><i class="bi bi-check2-circle"></i> {% trans "Invited" %}</span>{% endif %}
+                        <div class="tp-badges">
+                            <span class="tp-badge tp-badge--uni"><i class="bi bi-mortarboard"></i> {{ c.university|default:"—" }}</span>
+                            <span class="tp-badge"><i class="bi bi-book"></i> {{ c.major|default:"—" }}</span>
+                            {% if c.study_level %}<span class="tp-badge"><i class="bi bi-calendar3"></i> {{ c.get_study_level_display }}</span>{% endif %}
                         </div>
-                        {% if c.bio %}<p class="tc__bio">{{ c.bio|truncatechars:150 }}</p>{% endif %}
 
-                        <ul class="tc__skills" aria-label="{% trans 'Verified skills' %}">
+                        {% if c.top_verified or c.gig_count or c.pk in invited %}
+                            <div class="tp-badges">
+                                {% if c.top_verified %}<span class="tp-badge tp-badge--top">🏅 {% trans "Top Verified Candidate" %}</span>{% endif %}
+                                {% if c.gig_count %}<span class="tp-badge tp-badge--gigs">{% blocktrans with n=c.gig_count r=c.gig_rating|stringformat:".1f" %}✅ {{ n }} verified gigs · ⭐ {{ r }}/5{% endblocktrans %}</span>{% endif %}
+                                {% if c.pk in invited %}<span class="tp-badge tp-badge--invited"><i class="bi bi-check2-circle"></i> {% trans "Invited" %}</span>{% endif %}
+                            </div>
+                        {% endif %}
+                        {% if c.bio %}<p class="tp-card__bio">{{ c.bio|truncatechars:150 }}</p>{% endif %}
+
+                        <ul class="tp-skills" aria-label="{% trans 'Verified skills' %}">
                             {% for s in c.pool_skills|slice:":4" %}
                                 <li class="tp-skill">
                                     <span class="tp-skill__name"><i class="bi bi-patch-check-fill"></i> {{ s.skill.name }}</span>
@@ -83,21 +155,21 @@
                             {% endfor %}
                         </ul>
 
-                        <div class="tc__actions">
-                            <button type="button" class="btn btn--outline" data-preview-btn>🪪 {% trans "View profile" %}</button>
-                            <button type="button" class="btn btn--primary" data-invite="{% url 'talent_pool_invite' c.pk %}"
+                        <div class="tp-card__actions">
+                            <button type="button" class="tp-btn tp-btn--soft" data-preview-btn>🪪 {% trans "View profile" %}</button>
+                            <button type="button" class="tp-btn tp-btn--primary" data-invite="{% url 'talent_pool_invite' c.pk %}"
                                     data-name="{{ c.user.get_full_name|default:c.user.username }}">✉️ {% trans "Invite to apply / contact" %}</button>
                         </div>
-                        <footer class="tc__privacy"><span>🔒</span> {% trans "Contact details private" %}</footer>
+                        <footer class="tp-card__privacy"><span>🔒</span> {% trans "Contact details private" %}</footer>
                     </article>
                 {% endfor %}
             </div>
 
             {% if page.has_other_pages %}
                 <nav class="tp-pages" aria-label="{% trans 'Pages' %}">
-                    {% if page.has_previous %}<a class="btn btn--ghost btn--sm" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}
+                    {% if page.has_previous %}<a class="tp-btn tp-btn--soft" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}
                     <span>{{ page.number }} / {{ page.paginator.num_pages }}</span>
-                    {% if page.has_next %}<a class="btn btn--ghost btn--sm" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page.next_page_number }}">{% trans "Next" %}</a>{% endif %}
+                    {% if page.has_next %}<a class="tp-btn tp-btn--soft" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page.next_page_number }}">{% trans "Next" %}</a>{% endif %}
                 </nav>
             {% endif %}
         {% else %}
