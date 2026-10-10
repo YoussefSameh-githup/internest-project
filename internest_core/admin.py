@@ -94,11 +94,11 @@ class PartnerProfileAdmin(admin.ModelAdmin):
 # --- تسجيل النماذج المخصصة ---
 
 class InternshipRequiredSkillInline(admin.TabularInline):
-    """Market Readiness Gate: skills students must have verified (≥80%) to apply."""
+    """Market Readiness Gate: skills students must have verified (≥70% match) to apply."""
     model = Skill.opportunities.through
     extra = 1
     verbose_name = "Required skill"
-    verbose_name_plural = "Required skills (students need ≥80% verified to apply)"
+    verbose_name_plural = "Required skills (students need ≥70% match to apply)"
 
 
 @admin.register(Internship)

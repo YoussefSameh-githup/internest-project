@@ -133,7 +133,7 @@ class PartnerInternshipForm(forms.ModelForm):
         required=False, max_length=100, label=_("Office address"),
         widget=forms.TextInput(attrs={"class": "form-control", "placeholder": _("e.g. Smart Village, Giza"), "autocomplete": "street-address"}),
     )
-    # Market Readiness Gate: students need ≥80% coverage (exact or semantically related verified skills).
+    # Market Readiness Gate: students need ≥MATCH_THRESHOLD coverage (exact or semantically related verified skills).
     required_skills = forms.ModelMultipleChoiceField(
         queryset=None, required=False, label=_("Required skills"),
         widget=forms.SelectMultiple(attrs={"class": "form-control", "size": 6}),

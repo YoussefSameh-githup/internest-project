@@ -122,7 +122,7 @@ class TalentInvitation(models.Model):
     STATUS_CHOICES = [(STATUS_PENDING, _("Pending")), (STATUS_ACCEPTED, _("Applied"))]
 
     message = models.TextField(max_length=500, blank=True)
-    # Secret link token: lets this student apply without meeting the 80% skill match.
+    # Secret link token: lets this student apply without meeting the skill match gate.
     token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at = models.DateTimeField(auto_now_add=True)

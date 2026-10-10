@@ -5,113 +5,106 @@
 
 {% block content %}
 
-<section class="page-header">
+<section class="ol-hero">
     <div class="container">
-        <div class="page-header__inner">
-            <div>
-                <span class="eyebrow"><i class="bi bi-briefcase"></i> {% trans "Opportunities" %}</span>
-                <h1 class="mt-3">{% trans "Internships, gigs & part-time roles with real startups" %}</h1>
-                <p>{% trans "Find real work that fits your studies and apply in one click with your verified profile." %}</p>
+        <span class="ol-hero__eyebrow"><i class="bi bi-briefcase-fill"></i> {% trans "Opportunities" %}</span>
+        <h1 class="ol-hero__title">{% trans "Internships, gigs & part-time roles with real startups" %}</h1>
+        <p class="ol-hero__sub">{% trans "Find real work that fits your studies and apply in one click with your verified profile." %}</p>
+
+        <form method="GET" action="{% url 'list' %}" class="ol-search" role="search">
+            <div class="ol-search__q">
+                <i class="bi bi-search"></i>
+                <input type="search" name="q" value="{{ request.GET.q|default:'' }}" placeholder="{% trans 'Search by job title or company...' %}"
+                       aria-label="{% trans 'Search' %}">
             </div>
-        </div>
+            <select name="major" aria-label="{% trans 'Major' %}">
+                <option value="">{% trans "All majors" %}</option>
+                {% for major in available_majors %}<option value="{{ major }}" {% if request.GET.major == major %}selected{% endif %}>{{ major }}</option>{% endfor %}
+            </select>
+            <select name="mode" aria-label="{% trans 'Work location' %}">
+                <option value="">{% trans "Online & on-site" %}</option>
+                <option value="online" {% if mode == "online" %}selected{% endif %}>{% trans "Online" %}</option>
+                <option value="onsite" {% if mode == "onsite" %}selected{% endif %}>{% trans "On-site" %}</option>
+            </select>
+            <button type="submit" class="btn btn--accent"><i class="bi bi-funnel"></i> {% trans "Search" %}</button>
+        </form>
     </div>
 </section>
 
 <section class="section-sm">
     <div class="container">
-
-        <form method="GET" action="{% url 'list' %}" class="filter-bar fade-up">
-            <div style="position: relative;">
-                <i class="bi bi-search" style="position: absolute; top: 50%; transform: translateY(-50%); inset-inline-start: 16px; color: var(--color-muted);"></i>
-                <input type="text" name="q" class="form-control" style="padding-inline-start: 44px;"
-                       placeholder="{% trans 'Search by job title or company...' %}"
-                       value="{{ request.GET.q|default:'' }}">
-            </div>
-
-            <select name="major" class="form-control">
-                <option value="">{% trans "All majors" %}</option>
-                {% for major in available_majors %}
-                    <option value="{{ major }}" {% if request.GET.major == major %}selected{% endif %}>{{ major }}</option>
-                {% endfor %}
-            </select>
-
-            <button type="submit" class="btn btn--primary btn--lg">
-                <i class="bi bi-funnel"></i> {% trans "Search" %}
-            </button>
-        </form>
-
-        <div class="flex items-center justify-between mt-6 mb-4" style="flex-wrap: wrap; gap: var(--space-3);">
-            <p class="text-muted mb-0">
-                {% if internships %}
-                    <strong style="color: var(--slate-900);">{{ internships|length }}</strong> {% trans "opportunities available" %}
-                    {% if request.GET.q %}{% blocktrans with q=request.GET.q %}for "{{ q }}"{% endblocktrans %}{% endif %}
-                {% endif %}
-            </p>
-            {% if request.GET.q or request.GET.major %}
-                <a href="{% url 'list' %}" class="btn btn--ghost btn--sm">
-                    <i class="bi bi-x-circle"></i> {% trans "Clear filters" %}
-                </a>
+        <div class="ol-toolbar">
+            <p class="mb-0"><strong>{{ internships|length }}</strong> {% trans "opportunities available" %}</p>
+            {% if active_filters %}
+                <div class="ol-tags">
+                    {% for label, remove_url in active_filters %}
+                        <a href="{{ remove_url }}" class="ol-tag" aria-label="{% trans 'Remove filter' %}: {{ label }}">{{ label }} <i class="bi bi-x"></i></a>
+                    {% endfor %}
+                    <a href="{% url 'list' %}" class="ol-tag ol-tag--clear">{% trans "Clear filters" %}</a>
+                </div>
             {% endif %}
         </div>
 
-        <div class="listing-grid">
+        <div class="ol-grid">
             {% for internship in internships %}
                 {% with pro=internship.partner|is_pro_partner %}
-                <article class="listing-card {% if pro %}listing-card--premium{% endif %} fade-up">
-                    <div class="listing-card__head">
-                        <div class="listing-card__avatar">
-                            {% if internship.partner.logo %}
-                                <img src="{{ internship.partner.logo.url }}" alt="">
-                            {% else %}
-                                {{ internship.partner.company_name|slice:":1" }}
-                            {% endif %}
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <h3 class="listing-card__title">{{ internship.title }}</h3>
-                            <p class="listing-card__partner">
+                <article class="ol-card {% if pro %}ol-card--pro{% endif %} fade-up">
+                    <header class="ol-card__head">
+                        <span class="ol-logo">
+                            {% if internship.partner.logo %}<img src="{{ internship.partner.logo.url }}" alt="">{% else %}{{ internship.partner.company_name|slice:":1"|upper }}{% endif %}
+                        </span>
+                        <div class="ol-card__company">
+                            <span class="ol-card__company-name">
                                 {{ internship.partner.company_name }}
-                                {% if internship.partner.company_name in verified_partner_names %}
-                                    <i class="bi bi-patch-check-fill" style="color: var(--brand-500);" title="{% trans 'Verified account' %}"></i>
-                                {% endif %}
-                            </p>
+                                {% if internship.partner.company_name in verified_partner_names %}<i class="bi bi-patch-check-fill" title="{% trans 'Verified account' %}"></i>{% endif %}
+                            </span>
+                            <span class="ol-loc ol-loc--{% if internship.is_online %}online{% else %}onsite{% endif %}">
+                                {% if internship.is_online %}💻 {% trans "Online" %}{% else %}<i class="bi bi-geo-alt-fill"></i> {{ internship.location }}{% endif %}
+                            </span>
                         </div>
                         {% if pro %}<span class="pro-badge" title="Internest Pro">PRO</span>{% endif %}
+                    </header>
+
+                    <h3 class="ol-card__title">{{ internship.title }}</h3>
+                    <p class="listing-card__desc listing-card__desc--clamp ol-card__desc">{{ internship.description }}</p>
+
+                    <div class="ol-card__chips">
+                        <span class="ol-chip"><i class="bi bi-mortarboard"></i> {{ internship.required_majors }}</span>
+                        <span class="ol-chip"><i class="bi bi-calendar-event"></i> {% blocktrans with d=internship.deadline|date:"Y/m/d" %}Ends {{ d }}{% endblocktrans %}</span>
+                        {% if is_student and internship.gated %}
+                            <span class="ol-match ol-match--{{ internship.match_level }}">{% blocktrans with score=internship.match_score %}Match {{ score }}%{% endblocktrans %}</span>
+                        {% endif %}
                     </div>
 
-                    <div class="listing-card__meta">
-                        <span class="badge badge--outline">{% if internship.is_online %}💻 {% trans "Online" %}{% else %}<i class="bi bi-geo-alt"></i> {{ internship.location }}{% endif %}</span>
-                        <span class="badge badge--primary"><i class="bi bi-mortarboard"></i> {{ internship.required_majors }}</span>
-                    </div>
-
-                    <p class="listing-card__desc listing-card__desc--clamp">{{ internship.description }}</p>
-
-                    <div class="listing-card__footer">
-                        <span class="text-muted" style="font-size: var(--text-xs);">
-                            <i class="bi bi-clock-history"></i>
-                            {% blocktrans with d=internship.deadline|date:"Y/m/d" %}Ends {{ d }}{% endblocktrans %}
-                        </span>
-                        <div class="btn-group">
-                            <a href="{% url 'internship_detail' internship.id %}" class="btn btn--ghost btn--sm">{% trans "Details" %}</a>
-                            {% if internship.pk in applied_ids %}
-                                <button type="button" class="btn btn--success btn--sm" disabled aria-disabled="true">
-                                    <i class="bi bi-check2-circle"></i> {% trans "Already applied" %}
-                                </button>
-                            {% elif internship.match_score < 80 %}
-                                <a href="{% url 'internship_detail' internship.id %}" class="btn btn--outline btn--sm" title="{% trans 'Skill Gap Detected' %}">
-                                    <i class="bi bi-lock-fill"></i> {% blocktrans with score=internship.match_score %}Match {{ score }}%{% endblocktrans %}
-                                </a>
-                            {% else %}
-                                <a href="{% url 'apply' internship.id %}" class="btn btn--primary btn--sm">
-                                    {% trans "Apply now" %} <i class="bi bi-arrow-left-short"></i>
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
+                    <footer class="ol-card__foot">
+                        <a href="{% url 'internship_detail' internship.id %}" class="btn btn--ghost btn--sm">{% trans "Details" %}</a>
+                        {% if internship.pk in applied_ids %}
+                            <button type="button" class="btn btn--success btn--sm" disabled aria-disabled="true">
+                                <i class="bi bi-check2-circle"></i> {% trans "Already applied" %}
+                            </button>
+                        {% elif is_student and internship.match_score < MATCH_THRESHOLD %}
+                            <a href="{% url 'internship_detail' internship.id %}" class="btn btn--outline btn--sm" title="{% trans 'Skill Gap Detected' %}">
+                                <i class="bi bi-lock-fill"></i> {% trans "Skill Gap Detected" %}
+                            </a>
+                        {% else %}
+                            <a href="{% url 'apply' internship.id %}" class="btn btn--primary btn--sm">{% trans "Apply now" %} <i class="bi bi-arrow-left-short"></i></a>
+                        {% endif %}
+                    </footer>
                 </article>
                 {% endwith %}
             {% empty %}
-                <div class="empty-state" style="grid-column: 1 / -1;">
-                    <div class="empty-state__icon"><i class="bi bi-search"></i></div>
+                <div class="ol-empty">
+                    <svg viewBox="0 0 220 150" width="220" height="150" aria-hidden="true">
+                        <ellipse cx="110" cy="136" rx="80" ry="8" fill="#e2e8f0"/>
+                        <rect x="38" y="30" width="110" height="82" rx="12" fill="#eef2ff" stroke="#c7d2fe" stroke-width="2"/>
+                        <rect x="52" y="46" width="60" height="8" rx="4" fill="#c7d2fe"/>
+                        <rect x="52" y="62" width="82" height="6" rx="3" fill="#e0e7ff"/>
+                        <rect x="52" y="74" width="70" height="6" rx="3" fill="#e0e7ff"/>
+                        <rect x="52" y="90" width="36" height="10" rx="5" fill="#a5b4fc"/>
+                        <circle cx="150" cy="86" r="26" fill="#fff" stroke="#6366f1" stroke-width="6"/>
+                        <line x1="169" y1="105" x2="188" y2="124" stroke="#6366f1" stroke-width="8" stroke-linecap="round"/>
+                        <path d="M141 80 l18 12 M159 80 l-18 12" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
                     <h3>{% trans "No matching opportunities right now" %}</h3>
                     <p>{% trans "Try editing your search keyword or clearing filters — new opportunities are posted weekly." %}</p>
                     <a href="{% url 'list' %}" class="btn btn--primary">{% trans "Show all opportunities" %}</a>

@@ -106,7 +106,7 @@
                         <p class="pf-pool__privacy"><i class="bi bi-shield-lock-fill"></i> {% trans "Your phone, email and CV are shared only if you apply and a startup shortlists you for an interview." %}</p>
                         {% if not talent_pool_eligible %}
                             <small class="talent-hint"><i class="bi bi-info-circle"></i>
-                                {% trans "A verified skill or a score of 80%+ is required to appear in the talent pool." %}
+                                {% blocktrans with t=MATCH_THRESHOLD %}A verified skill or a score of {{ t }}%+ is required to appear in the talent pool.{% endblocktrans %}
                                 <a href="{% url 'skills_hub' %}">{% trans "Verify a skill" %}</a>
                             </small>
                         {% endif %}

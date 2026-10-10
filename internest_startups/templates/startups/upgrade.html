@@ -57,7 +57,7 @@
                         <td>✅</td><td class="tier-table__pro">✅</td></tr>
                     <tr><th scope="row">{% trans "Talent Pool search & profile preview" %}</th>
                         <td><span class="tier-off">🔒 {% trans "Locked" %}</span></td><td class="tier-table__pro">✅</td></tr>
-                    <tr><th scope="row">{% trans "Direct invitations (skip the 80% skill match)" %}</th>
+                    <tr><th scope="row">{% blocktrans with t=MATCH_THRESHOLD %}Direct invitations (skip the {{ t }}% skill match){% endblocktrans %}</th>
                         <td><span class="tier-off">0</span></td><td class="tier-table__pro">{% blocktrans with n=invites_per_opportunity %}{{ n }} per job post{% endblocktrans %}</td></tr>
                     <tr><th scope="row">{% trans "Pro badge & top listing" %}</th>
                         <td><span class="tier-off">—</span></td><td class="tier-table__pro">👑 {% trans "Pro badge + priority placement" %}</td></tr>

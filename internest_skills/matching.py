@@ -1,4 +1,4 @@
-"""Market Readiness Gate: a student may apply only with ≥80% semantic coverage of an opportunity's required skills.
+"""Market Readiness Gate: a student may apply only with ≥MATCH_THRESHOLD% semantic coverage of an opportunity's required skills.
 
 Each required skill scores 1.0 when verified exactly, otherwise the combined relevance of the student's
 *related* verified skills (see semantic.py). The opportunity score is the average across required skills.
@@ -8,8 +8,8 @@ from dataclasses import dataclass, field
 from .models import Skill, StudentSkill
 from .semantic import aggregate_score, relation_map
 
-MATCH_THRESHOLD = 80
-SKILL_COVERED = 0.8  # a single required skill counts as covered at ≥ 80% relevance
+MATCH_THRESHOLD = 70  # single source for the apply gate, Talent Pool eligibility and every UI text that mentions it
+SKILL_COVERED = MATCH_THRESHOLD / 100  # a single required skill counts as covered at this relevance
 
 
 @dataclass

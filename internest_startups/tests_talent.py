@@ -70,7 +70,8 @@ class TalentPoolTests(PoolBase):
         resp = self.client.get(URL)
         self.assertEqual(self._names(resp), {"amr", "sara"})
         self.assertEqual(resp.context["page"][0].user.username, "amr")  # best score first
-        self.assertContains(resp, "Python · 95%")
+        self.assertContains(resp, '<span class="tp-skill__name">Python</span>')
+        self.assertContains(resp, '<span class="tp-skill__score">95%</span>')
         self.assertContains(resp, "Cairo University")
 
     def test_filters(self):
@@ -164,11 +165,11 @@ class TalentPoolProfileSettingTests(ApplicationsBase):
     def test_checkbox_visible_to_all_with_eligibility_hint(self):
         page = self.client.get(reverse("profile"))
         self.assertContains(page, 'name="talent_pool_visible"')
-        self.assertContains(page, "A verified skill or a score of 80%+ is required to appear in the talent pool.")
+        self.assertContains(page, "A verified skill or a score of 70%+ is required to appear in the talent pool.")
         _skill(self.profile, "python")
         page = self.client.get(reverse("profile"))
         self.assertContains(page, 'name="talent_pool_visible"')
-        self.assertNotContains(page, "A verified skill or a score of 80%+ is required")
+        self.assertNotContains(page, "A verified skill or a score of 70%+ is required")
         self._save(talent_pool_visible="on")
         self.assertContains(self.client.get(reverse("profile")), "Visible to Pro startups")
 
@@ -190,7 +191,7 @@ class InvitationBypassAndPreviewTests(PoolBase):
         self.login_student(self.amr_user)
         apply_url = reverse("apply", args=[self.gig.pk])
 
-        self.client.post(apply_url, CONSENT)  # no token: still locked by the 80% match
+        self.client.post(apply_url, CONSENT)  # no token: still locked by the skill match
         self.assertFalse(Application.objects.exists())
         detail = self.client.get(inv.apply_url)
         self.assertContains(detail, "invited you, so the skill match requirement is waived")
@@ -283,3 +284,37 @@ class ProfileRedesignTests(ApplicationsBase):
             self.profile.refresh_from_db()
             self.assertTrue(self.profile.cv_file.name.startswith("cvs/"))
             self.assertContains(self.client.get(reverse("profile")), 'name="cv_file-clear"')
+
+
+class ThresholdAndQuotaBadgeTests(PoolBase):
+    def test_score_70_qualifies_for_pool_but_69_does_not(self):
+        from internest_skills.matching import MATCH_THRESHOLD
+
+        self.assertEqual(MATCH_THRESHOLD, 70)
+        u1, at70 = _student("at70")
+        u2, below = _student("below")
+        type(at70).objects.filter(pk__in=[at70.pk, below.pk]).update(talent_pool_visible=True)
+        _skill(at70, "excel", status=StudentSkill.STATUS_LAG, score=70)
+        _skill(below, "excel", status=StudentSkill.STATUS_LAG, score=69)
+        self._pro()
+        names = self._names(self.client.get(URL))
+        self.assertIn("at70", names)
+        self.assertNotIn("below", names)
+        page = self.client.get(URL)
+        self.assertContains(page, "skill score of 70% or more")
+        self.assertContains(page, '<option value="70"')
+
+    def test_badge_counts_real_remaining_invitations(self):
+        self._pro()
+        self.assertEqual(self.client.get(URL).context["invites_left"], 6)  # 2 open opportunities × 3
+        for i in range(3):
+            _u, p = _student(f"inv{i}")
+            TalentInvitation.objects.create(partner=self.partner, student=p, internship=self.gig)
+        page = self.client.get(URL)
+        self.assertEqual(page.context["invites_left"], 3)
+        self.assertContains(page, "3 invitations left today")
+        type(self.gig).objects.filter(partner=self.partner).update(is_active=False)
+        self.assertEqual(self.client.get(URL).context["invites_left"], 0)  # nothing open to invite to
+        self.client.cookies["internest_lang"] = "ar"
+        type(self.gig).objects.filter(pk=self.role.pk).update(is_active=True)
+        self.assertContains(self.client.get(URL), "متبقي 3 دعوات اليوم")

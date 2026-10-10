@@ -574,7 +574,7 @@ def tearDownModule():
 
 
 class MarketReadinessGateTests(Base):
-    """A student needs ≥80% of an opportunity's required skills verified to apply."""
+    """A student needs ≥70% (MATCH_THRESHOLD) of an opportunity's required skills verified to apply."""
 
     def setUp(self):
         super().setUp()
@@ -620,7 +620,7 @@ class MarketReadinessGateTests(Base):
         self.assertFalse(Application.objects.filter(internship=self.internship).exists())
         page = self.client.get(resp.url)
         self.assertContains(page, "Your Skill Match: 60% — Locked")
-        self.assertContains(page, "You need at least 80%")
+        self.assertContains(page, "You need at least 70%")
         self.assertContains(page, "disabled")
         self.assertContains(page, "Skill Gap Detected")
         for skill in self.required[3:]:

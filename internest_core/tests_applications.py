@@ -265,3 +265,30 @@ class CourseRecommendationTests(ApplicationsBase):
         page = self.client.get(reverse("course_list"))
         self.assertEqual([r["title"] for r in page.context["recommended"]["internal"]], ["Financial ratios bootcamp"])
         self.assertEqual(page.context["recommended"]["external"], [])
+
+
+class SeventyPercentGateTests(ApplicationsBase):
+    def test_related_skill_at_70_unlocks(self):
+        _, student = _student("amr")
+        need = Skill.objects.create(name="Copywriting Pro", slug="copywriting-pro", discipline="media")
+        have = Skill.objects.create(name="Content Writing X", slug="content-writing-x", discipline="media")
+        SkillRelation.objects.create(skill=need, related=have, weight=0.7)
+        StudentSkill.objects.create(student=student, skill=have, source="explicit", status=StudentSkill.STATUS_VERIFIED)
+        self.gig.required_skills.set([need])
+        match = skill_match(student, self.gig)
+        self.assertEqual(match.score, 70)
+        self.assertTrue(match.unlocked)
+        self.assertEqual(match.missing, [])
+
+    def test_list_redesign_markers(self):
+        user, _ = _student("lina")
+        self.login_student(user)
+        page = self.client.get(reverse("list"), {"mode": "online"})
+        self.assertContains(page, "ol-search")
+        self.assertContains(page, "Design gig")
+        self.assertNotContains(page, "Data role")  # on-site role filtered out
+        self.assertContains(page, 'class="ol-tag"')
+        empty = self.client.get(reverse("list"), {"q": "zzz-nothing"})
+        self.assertContains(empty, "<svg")
+        self.assertContains(empty, "No matching opportunities right now")
+        self.assertContains(self.client.get(reverse("list"), {"q": "NileCode"}), "Design gig")  # company name search

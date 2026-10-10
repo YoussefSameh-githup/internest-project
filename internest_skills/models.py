@@ -178,7 +178,7 @@ class StudentSkill(models.Model):
         unique_together = ("student", "skill")
         ordering = ["-status", "skill__name"]
         indexes = [
-            # Talent Pool: "verified OR score >= 80" → student ids, and the min-score filter.
+            # Talent Pool: "verified OR score >= MATCH_THRESHOLD" → student ids, and the min-score filter.
             models.Index(fields=["status", "student"], name="studentskill_status_idx"),
             models.Index(fields=["score", "student"], name="studentskill_score_idx"),
         ]

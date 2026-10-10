@@ -224,21 +224,29 @@ def talent_pool_search_view(request):
 
     from django.db.models import Count
 
-    from .talent import DAILY_INVITATIONS, INVITES_PER_OPPORTUNITY, filter_options, invitations_today, pool_queryset
+    from .talent import DAILY_INVITATIONS, INVITES_PER_OPPORTUNITY, TOP_SCORE, filter_options, invitations_today, pool_queryset
 
     partner = request.partner
     page = Paginator(pool_queryset(request.GET), 24).get_page(request.GET.get("page"))
     invited = set(partner.talent_invitations.filter(student__in=list(page)).values_list("student_id", flat=True))
     params = request.GET.copy()
     params.pop("page", None)
+    opportunities = list(
+        Internship.objects.filter(partner=partner, is_active=True, deadline__gte=timezone.now().date())
+        .annotate(invites_used=Count("talent_invitations")).order_by("-pk")
+    )
+    # What the company can really still send: per-opportunity quota left, capped by the daily anti-spam limit.
+    per_post_left = sum(max(INVITES_PER_OPPORTUNITY - o.invites_used, 0) for o in opportunities)
+    invites_left = min(per_post_left, max(DAILY_INVITATIONS - invitations_today(partner), 0))
     context = get_user_context(request)
     context.update({
         "page": page, "invited": invited, "filters": request.GET, "querystring": params.urlencode(),
         "options": filter_options(),
-        "opportunities": Internship.objects.filter(partner=partner, is_active=True, deadline__gte=timezone.now().date())
-        .annotate(invites_used=Count("talent_invitations")).order_by("-pk"),
+        "opportunities": opportunities,
         "invites_per_opportunity": INVITES_PER_OPPORTUNITY,
-        "invites_left": max(DAILY_INVITATIONS - invitations_today(partner), 0),
+        "score_steps": [n for n in (TOP_SCORE, 80, 90, 95) if n >= TOP_SCORE],
+        "invites_left": invites_left,
+        "invites_daily": DAILY_INVITATIONS,
     })
     return render(request, "startups/talent_pool.html", context)
 

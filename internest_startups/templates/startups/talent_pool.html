@@ -5,45 +5,46 @@
 {% block extra_head %}<link rel="stylesheet" href="{% asset 'startups/startups.css' %}">{% endblock %}
 
 {% block content %}
-<section class="section-sm">
+<section class="tp-page">
     <div class="container">
         <a href="{% url 'partner_dashboard' %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short"></i> {% trans "Dashboard" %}</a>
-        <header class="tp-head">
+        <header class="tp-hero">
             <div>
-                <h1 class="mb-1">{% trans "Talent Pool" %} <span class="pro-chip">PRO</span></h1>
-                <p class="text-muted mb-0">{% trans "Students who opted in, with verified skills or a skill score of 80% or more. Contact details stay private until they apply and you shortlist them." %}</p>
+                <h1 class="tp-hero__title">{% trans "Talent Pool" %} <span class="pro-chip">PRO</span></h1>
+                <p class="tp-hero__sub">{% blocktrans with t=MATCH_THRESHOLD %}Students who opted in, with verified skills or a skill score of {{ t }}% or more. Contact details stay private until they apply and you shortlist them.{% endblocktrans %}</p>
             </div>
-            <span class="tp-quota"><i class="bi bi-send"></i> {% blocktrans with n=invites_left %}{{ n }} invitations left today{% endblocktrans %}</span>
+            <div class="tp-hero__stats">
+                <span class="tp-stat"><strong>{{ page.paginator.count }}</strong> {% trans "candidates" %}</span>
+                <span class="tp-stat tp-stat--quota" title="{% blocktrans with n=invites_per_opportunity d=invites_daily %}{{ n }} per opportunity · {{ d }} per day{% endblocktrans %}">
+                    <i class="bi bi-send-fill"></i> {% blocktrans with n=invites_left %}{{ n }} invitations left today{% endblocktrans %}
+                </span>
+            </div>
         </header>
 
-        <form method="get" class="tp-filters" role="search">
-            <div class="tp-search">
+        <form method="get" class="tp-bar" role="search">
+            <div class="tp-bar__q">
                 <i class="bi bi-search"></i>
                 <input type="search" name="q" value="{{ filters.q }}" placeholder="{% trans 'Search by name, skill, major or project…' %}" aria-label="{% trans 'Search' %}">
             </div>
-            <select name="skill" class="form-select" aria-label="{% trans 'Skill' %}">
+            <select name="skill" aria-label="{% trans 'Skill' %}">
                 <option value="">{% trans "All skills" %}</option>
                 {% for s in options.skills %}<option value="{{ s.pk }}" {% if filters.skill == s.pk|stringformat:"s" %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
             </select>
-            <select name="min_score" class="form-select" aria-label="{% trans 'Minimum score' %}">
+            <select name="min_score" aria-label="{% trans 'Minimum score' %}">
                 <option value="">{% trans "Any score" %}</option>
-                <option value="80" {% if filters.min_score == "80" %}selected{% endif %}>≥ 80%</option>
-                <option value="90" {% if filters.min_score == "90" %}selected{% endif %}>≥ 90%</option>
-                <option value="95" {% if filters.min_score == "95" %}selected{% endif %}>≥ 95%</option>
+                {% for n in score_steps %}<option value="{{ n }}" {% if filters.min_score == n|stringformat:"s" %}selected{% endif %}>≥ {{ n }}%</option>{% endfor %}
             </select>
-            <select name="university" class="form-select" aria-label="{% trans 'University' %}">
+            <select name="university" aria-label="{% trans 'University' %}">
                 <option value="">{% trans "All universities" %}</option>
                 {% for u in options.universities %}<option value="{{ u }}" {% if filters.university == u %}selected{% endif %}>{{ u }}</option>{% endfor %}
             </select>
-            <select name="major" class="form-select" aria-label="{% trans 'Major' %}">
+            <select name="major" aria-label="{% trans 'Major' %}">
                 <option value="">{% trans "All majors" %}</option>
                 {% for m in options.majors %}<option value="{{ m }}" {% if filters.major == m %}selected{% endif %}>{{ m }}</option>{% endfor %}
             </select>
             <button type="submit" class="btn btn--primary"><i class="bi bi-funnel"></i> {% trans "Filter" %}</button>
             {% if querystring %}<a href="{% url 'talent_pool' %}" class="btn btn--ghost">{% trans "Clear" %}</a>{% endif %}
         </form>
-
-        <p class="text-muted mb-4" style="font-size: var(--text-sm);">{% blocktrans with n=page.paginator.count %}{{ n }} candidates{% endblocktrans %}</p>
 
         {% if page.object_list %}
             <div class="tp-grid">
@@ -52,28 +53,36 @@
                              aria-label="{% blocktrans with name=c.user.get_full_name|default:c.user.username %}View {{ name }}'s profile{% endblocktrans %}">
                         <div class="tp-card__head">
                             <span class="tp-avatar">{{ c.user.get_full_name|default:c.user.username|slice:":1"|upper }}</span>
-                            <div>
+                            <div class="tp-card__who">
                                 <h2 class="tp-card__name">{{ c.user.get_full_name|default:c.user.username }}</h2>
-                                <p class="tp-card__meta">{{ c.university|default:"—" }} · {{ c.major|default:"—" }}{% if c.study_level %} · {{ c.get_study_level_display }}{% endif %}</p>
+                                <p class="tp-card__meta"><i class="bi bi-mortarboard"></i> {{ c.university|default:"—" }}</p>
                             </div>
                             {% if c.best_score %}<span class="tp-best" title="{% trans 'Best skill score' %}">{{ c.best_score }}%</span>{% endif %}
                         </div>
-                        {% if c.bio %}<p class="tp-card__bio">{{ c.bio|truncatechars:160 }}</p>{% endif %}
-                        <div class="tp-skills">
-                            {% for s in c.pool_skills|slice:":6" %}
-                                <span class="badge badge--success"><i class="bi bi-patch-check-fill"></i> {{ s.skill.name }}{% if s.score is not None %} · {{ s.score }}%{% endif %}</span>
-                            {% endfor %}
+                        <div class="tp-facts">
+                            <span class="tp-fact">{{ c.major|default:"—" }}</span>
+                            {% if c.study_level %}<span class="tp-fact">{{ c.get_study_level_display }}</span>{% endif %}
+                            {% if c.pk in invited %}<span class="tp-fact tp-fact--invited"><i class="bi bi-check2"></i> {% trans "Invited" %}</span>{% endif %}
                         </div>
+                        {% if c.bio %}<p class="tp-card__bio">{{ c.bio|truncatechars:160 }}</p>{% endif %}
+                        <ul class="tp-skills" aria-label="{% trans 'Verified skills' %}">
+                            {% for s in c.pool_skills|slice:":5" %}
+                                <li class="tp-skill">
+                                    <i class="bi bi-patch-check-fill"></i>
+                                    <span class="tp-skill__name">{{ s.skill.name }}</span>
+                                    {% if s.score is not None %}<span class="tp-skill__score">{{ s.score }}%</span>{% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
                         <div class="tp-card__foot">
                             <span class="tp-private"><i class="bi bi-lock-fill"></i> {% trans "Contact details private" %}</span>
-                            <button type="button" class="btn btn--ghost btn--sm" data-preview-btn><i class="bi bi-person-vcard"></i> {% trans "View profile" %}</button>
-                            {% if c.pk in invited %}
-                                <span class="badge badge--outline"><i class="bi bi-check2"></i> {% trans "Invited" %}</span>
-                            {% endif %}
-                            <button type="button" class="btn btn--primary btn--sm" data-invite="{% url 'talent_pool_invite' c.pk %}"
-                                    data-name="{{ c.user.get_full_name|default:c.user.username }}">
-                                <i class="bi bi-envelope-paper-heart"></i> {% trans "Invite to apply / contact" %}
-                            </button>
+                            <div class="tp-actions">
+                                <button type="button" class="btn btn--ghost btn--sm" data-preview-btn><i class="bi bi-person-vcard"></i> {% trans "View profile" %}</button>
+                                <button type="button" class="btn btn--primary btn--sm" data-invite="{% url 'talent_pool_invite' c.pk %}"
+                                        data-name="{{ c.user.get_full_name|default:c.user.username }}">
+                                    <i class="bi bi-envelope-paper-heart"></i> {% trans "Invite to apply / contact" %}
+                                </button>
+                            </div>
                         </div>
                     </article>
                 {% endfor %}
@@ -87,9 +96,9 @@
                 </nav>
             {% endif %}
         {% else %}
-            <div class="card text-center">
-                <i class="bi bi-people" style="font-size: 2.5rem; color: var(--brand-500);"></i>
-                <p class="mt-3 mb-0">{% trans "No candidates match these filters yet. Try fewer filters." %}</p>
+            <div class="tp-empty">
+                <i class="bi bi-people"></i>
+                <p class="mb-0">{% trans "No candidates match these filters yet. Try fewer filters." %}</p>
             </div>
         {% endif %}
     </div>
@@ -114,7 +123,7 @@
             <label class="form-label mt-3" for="inviteMessage">{% trans "Message (optional)" %}</label>
             <textarea name="message" id="inviteMessage" class="form-control" rows="3" maxlength="500"
                       placeholder="{% trans 'Why this student is a good fit…' %}"></textarea>
-            <p class="tp-note"><i class="bi bi-ticket-perforated"></i> {% blocktrans with n=invites_per_opportunity %}Invited students can apply even below the 80% skill match. Up to {{ n }} invitations per opportunity.{% endblocktrans %}</p>
+            <p class="tp-note"><i class="bi bi-ticket-perforated"></i> {% blocktrans with n=invites_per_opportunity t=MATCH_THRESHOLD %}Invited students can apply even below the {{ t }}% skill match. Up to {{ n }} invitations per opportunity.{% endblocktrans %}</p>
             <p class="tp-note"><i class="bi bi-shield-lock"></i> {% trans "The student receives your invitation by email. Their CV and contact details unlock when they apply and you shortlist them for an interview." %}</p>
             <div class="flex mt-4" style="gap: var(--space-3);">
                 <button type="submit" class="btn btn--primary" {% if not invites_left %}disabled{% endif %}><i class="bi bi-send-fill"></i> {% trans "Send invitation" %}</button>

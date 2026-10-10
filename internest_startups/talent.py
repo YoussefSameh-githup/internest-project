@@ -1,4 +1,4 @@
-"""Talent Pool: opted-in students with verified skills (or a quiz score ≥ 80%), searchable by Pro startups."""
+"""Talent Pool: opted-in students with verified skills (or a quiz score ≥ MATCH_THRESHOLD), searchable by Pro startups."""
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.db.models import Max, Prefetch, Q
@@ -8,7 +8,9 @@ from django.utils import timezone
 from internest_core.models import StudentProfile
 from internest_skills.models import Skill, StudentSkill
 
-TOP_SCORE = 80
+from internest_skills.matching import MATCH_THRESHOLD
+
+TOP_SCORE = MATCH_THRESHOLD
 DAILY_INVITATIONS = 20  # per startup, anti-spam
 INVITES_PER_OPPORTUNITY = 3  # invited students skip the skill gate, so keep it scarce
 

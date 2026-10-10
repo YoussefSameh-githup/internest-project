@@ -261,8 +261,11 @@ def logout_view(request):
 
 @login_required
 def internship_list(request):
+    from internest_skills.matching import MATCH_THRESHOLD
+
     query = request.GET.get("q", "").strip()
     major = request.GET.get("major", "").strip()
+    mode = request.GET.get("mode", "")
 
     today = timezone.now().date()
     pro_partner = Q(partner__subscription__plan="pro") & (
@@ -278,7 +281,7 @@ def internship_list(request):
     )
 
     if query:
-        internships = internships.filter(title__icontains=query)
+        internships = internships.filter(Q(title__icontains=query) | Q(partner__company_name__icontains=query))
     if major:
         internships = internships.filter(required_majors__icontains=major)
 
@@ -293,9 +296,27 @@ def internship_list(request):
         Application.objects.filter(applicant=request.user).values_list("internship_id", flat=True)
     ) if student is not None else set()
     internships = list(internships)
+    if mode in ("online", "onsite"):  # location keywords live in free text, so filter in Python
+        internships = [i for i in internships if i.is_online == (mode == "online")]
     scores = bulk_match_scores(internships, student)  # semantic coverage, same rule as the apply gate
     for internship in internships:
         internship.match_score = scores[internship.id]
+        internship.gated = bool(internship.required_skills.all())
+        internship.match_level = (
+            "ok" if internship.match_score >= MATCH_THRESHOLD else "near" if internship.match_score >= MATCH_THRESHOLD - 20 else "low"
+        )
+
+    def without(key):
+        params = request.GET.copy()
+        params.pop(key, None)
+        return f"?{params.urlencode()}" if params else "?"
+
+    active_filters = [
+        (label, without(key)) for key, label in (
+            ("q", f"“{query}”" if query else ""), ("major", major),
+            ("mode", {"online": _("Online"), "onsite": _("On-site")}.get(mode, "")),
+        ) if label
+    ]
 
     context = get_user_context(request)
     context.update({
@@ -303,6 +324,7 @@ def internship_list(request):
         "internships": internships,
         "available_majors": ["CS", "Engineering", "Finance", "Marketing"],
         "verified_partner_names": verified_partner_names,
+        "is_student": student is not None, "mode": mode, "active_filters": active_filters,
     })
     return render(request, "internship/list.html", context)
 
@@ -325,7 +347,7 @@ def internship_detail_view(request, pk):
 
 
 def _talent_pool_eligible(profile):
-    """Has a verified skill or a score ≥ 80%. The profile must render even if skills tables are unavailable."""
+    """Has a verified skill or a score ≥ the match threshold. The profile must render even if skills tables are unavailable."""
     from django.db import DatabaseError
 
     from internest_startups.talent import qualifying_skills
@@ -426,7 +448,7 @@ def apply_to_internship(request, internship_id):
 
     from internest_startups.talent import valid_invitation
 
-    # A Talent Pool invitation link waives the 80% skill match (only for the invited student).
+    # A Talent Pool invitation link waives the skill match gate (only for the invited student).
     invitation = valid_invitation(request.user, internship, request.POST.get("invite_token") or request.GET.get("invite_token"))
     match = skill_match(profile, internship)
     if not match.unlocked and invitation is None:

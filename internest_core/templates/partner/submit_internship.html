@@ -81,7 +81,7 @@
             <section class="opp-card">
                 <h2 class="opp-card__title"><span class="opp-step">3</span> {% trans "Required skills" %}</h2>
                 <p class="text-muted" style="font-size: var(--text-sm);">
-                    <i class="bi bi-stars"></i> {% trans "Students need at least 80% skill match to apply. Related verified skills count too (e.g. Photoshop + Illustrator for Graphic Design)." %}
+                    <i class="bi bi-stars"></i> {% blocktrans with t=MATCH_THRESHOLD %}Students need at least {{ t }}% skill match to apply. Related verified skills count too (e.g. Photoshop + Illustrator for Graphic Design).{% endblocktrans %}
                 </p>
                 <div class="form-group">
                     <label for="{{ form.required_skills.id_for_label }}" class="form-label">{% trans "Choose from the list" %}</label>
