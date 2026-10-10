@@ -53,7 +53,7 @@
             <blockquote class="vx-quote">“{{ exp.review_text }}”</blockquote>
 
             <div class="vx-qr">
-                {% if qr_img %}<div class="vx-qr__code"><img src="{{ qr_img }}" alt="{% trans 'QR code for this verification page' %}" width="150" height="150"></div>{% endif %}
+                {% if qr_code_base64 %}<div class="vx-qr__code"><img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Code" title="{% trans 'QR code for this verification page' %}" width="150" height="150"></div>{% endif %}
                 <div class="vx-qr__info">
                     <span class="vx-qr__label">{% trans "Verification code" %}</span>
                     <strong class="vx-qr__value" dir="ltr">{{ exp.verification_code }}</strong>

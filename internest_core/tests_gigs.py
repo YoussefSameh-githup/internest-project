@@ -153,6 +153,33 @@ class LetterDeliveryTests(ApplicationsBase):
         self.assertIn(self.exp.verification_code.encode(), content)
         self.assertIn(b"/verify/", content)
 
+    def test_fallback_is_a_styled_certificate(self):
+        from unittest import mock
+
+        with mock.patch("internest_core.letters.render_letter", side_effect=RuntimeError("boom")):
+            content = self._pdf()
+        for marker in (b"INTERNEST - OFFICIAL RECOMMENDATION LETTER", b"PERFORMANCE RATING", b"re f", b"VERIFIED"):
+            self.assertIn(marker, content)  # banner, table, vector shapes, stamp
+
+    def test_letters_from_an_older_design_are_rebuilt(self):
+        from django.core.files.base import ContentFile
+
+        self.exp.pdf_file.save(f"letter-{self.exp.verification_uuid}.pdf", ContentFile(b"%PDF-old"), save=True)
+        self.assertNotEqual(self._pdf(), b"%PDF-old")
+        self.exp.refresh_from_db()
+        self.assertIn("-v3-", self.exp.pdf_file.name)
+        self.assertEqual(self._pdf()[:4], b"%PDF")  # served from the new stored copy
+
+    def test_letters_doctor_command(self):
+        import io
+
+        from django.core.management import call_command
+
+        out = io.StringIO()
+        call_command("letters_doctor", stdout=out)
+        self.assertIn("reportlab", out.getvalue())
+        self.assertIn("Full ReportLab letter renders", out.getvalue())
+
     def test_served_even_if_storage_fails(self):
         from unittest import mock
 
@@ -161,6 +188,6 @@ class LetterDeliveryTests(ApplicationsBase):
 
     def test_verification_page_shows_qr(self):
         page = self.client.get(reverse("verify_experience", args=[self.exp.verification_uuid]))
-        self.assertContains(page, 'src="data:image/svg+xml;base64,')
+        self.assertContains(page, 'src="data:image/png;base64,iVBOR')  # PNG signature
         self.assertContains(page, f"http://testserver/verify/{self.exp.verification_uuid}/")
         self.assertContains(page, self.exp.verification_code)

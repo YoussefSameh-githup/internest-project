@@ -21,7 +21,7 @@ from internest_startups.tiers import FREE_POSTS_PER_MONTH, is_pro, monthly_quota
 
 from .email_helpers import issue_and_send_verification as _issue_and_send_verification
 from .email_helpers import notify_shortlisted
-from .letters import generate_letter, letter_bytes, qr_data_uri
+from .letters import generate_letter, letter_bytes, qr_png_base64
 from .models import (
     Internship, StudentProfile, Application,
     PartnerProfile, PartnerInternshipSubmission, PartnerCourseSubmission,
@@ -1134,7 +1134,7 @@ def verify_experience(request, uuid):
     exp = get_object_or_404(GigExperience.objects.select_related("student__user", "company"), verification_uuid=uuid)
     verify_url = _verify_url(request, exp)
     context = get_user_context(request)
-    context.update({"exp": exp, "stars": range(1, 6), "verify_url": verify_url, "qr_img": qr_data_uri(verify_url)})
+    context.update({"exp": exp, "stars": range(1, 6), "verify_url": verify_url, "qr_code_base64": qr_png_base64(verify_url)})
     return render(request, "internship/verify_experience.html", context)
 
 
