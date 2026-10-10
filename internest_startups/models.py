@@ -91,6 +91,9 @@ class ProUpgradeRequest(models.Model):
     promo_code = models.ForeignKey(PromoCode, null=True, blank=True, on_delete=models.SET_NULL, related_name="requests")
     discount_percent = models.PositiveSmallIntegerField(default=0)
     final_price = models.DecimalField(max_digits=8, decimal_places=2)
+    currency = models.CharField(max_length=3, default="EGP")
+    country = models.CharField(max_length=2, blank=True, default="")
+    gateway = models.CharField(max_length=20, default="manual")  # e.g. fawaterak / stripe
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     activated_at = models.DateTimeField(null=True, blank=True)
@@ -99,7 +102,13 @@ class ProUpgradeRequest(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.partner} · Pro × {self.months} ({self.get_status_display()})"
+        return f"{self.partner} · Pro × {self.months} · {self.final_price} {self.currency} ({self.get_status_display()})"
+
+    @property
+    def price_label(self):
+        from .pricing import format_price
+
+        return format_price(self.final_price, self.currency)
 
 
 class TalentInvitation(models.Model):

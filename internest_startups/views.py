@@ -127,11 +127,20 @@ def _session_promo(request):
 @login_required
 def upgrade(request):
     from .models import PromoCode, ProUpgradeRequest
+    from .pricing import PERIOD_MONTHS, currency_for, format_price, gateway_for, pricing_country
+    from internest_lounge.moderation import POSTS_PER_HOUR
+
+    from .talent import INVITES_PER_OPPORTUNITY
     from .tiers import FREE_POSTS_PER_MONTH, is_pro, quote
 
     partner = _startup_or_redirect(request)
     if partner is None:
         return redirect("home_redirect")
+    country = pricing_country(request, partner)
+    currency = currency_for(country)
+    period = request.POST.get("period") or request.GET.get("period")
+    period = period if period in PERIOD_MONTHS else "month"
+    back = reverse("startup_upgrade") + ("?period=year" if period == "year" else "")
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -150,21 +159,25 @@ def upgrade(request):
                 messages.info(request, _("You already have a Pro request awaiting payment. Our team will contact you shortly."))
             else:
                 promo = _session_promo(request)
-                q = quote(promo)
+                q = quote(promo, period, currency)
                 ProUpgradeRequest.objects.create(
-                    partner=partner, list_price=q["list_price"], promo_code=promo,
+                    partner=partner, months=q["months"], list_price=q["list_price"], promo_code=promo,
                     discount_percent=q["discount_percent"], final_price=q["final_price"],
+                    currency=currency, country=country, gateway=gateway_for(currency),
                 )
                 request.session.pop(PROMO_SESSION_KEY, None)
                 messages.success(request, _("Request received! Our team will contact you within 24 hours to complete payment and activate Pro."))
-        return redirect("startup_upgrade")
+        return redirect(back)
 
     promo = _session_promo(request)
     context = get_user_context(request)
     context.update({
         "partner": partner,
         "promo": promo,
-        "quote": quote(promo),
+        "quote": quote(promo, period, currency),
+        "monthly": quote(None, "month", currency), "yearly": quote(None, "year", currency),
+        "free_price": format_price(0, currency), "currency": currency, "period": period,
+        "invites_per_opportunity": INVITES_PER_OPPORTUNITY, "network_hourly": POSTS_PER_HOUR,
         "is_pro": is_pro(partner),
         "subscription": getattr(partner, "subscription", None),
         "pending_request": ProUpgradeRequest.objects.filter(partner=partner, status=ProUpgradeRequest.STATUS_PENDING).first(),

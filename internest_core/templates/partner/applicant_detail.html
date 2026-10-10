@@ -35,7 +35,15 @@
                         <span class="badge badge--success">{{ s.skill.name }}{% if is_pro %} · {{ s.score }}% · P{{ s.percentile }}{% endif %}</span>
                     {% endfor %}
                 </div>
-                {% if not is_pro %}<p class="text-muted mt-2 mb-0" style="font-size: var(--text-xs);"><i class="bi bi-gem"></i> {% trans "Scores and percentiles are available on Internest Pro." %}</p>{% endif %}
+                {% if not is_pro %}
+                    {# Placeholder digits only: Free accounts never receive the real scores. #}
+                    <div class="score-locked">
+                        <i class="bi bi-lock-fill"></i>
+                        <span class="score-locked__blur" aria-hidden="true">92% · P88 · 87% · P74</span>
+                        <span>{% trans "Upgrade to see the detailed score report" %}</span>
+                        <a href="{% url 'startup_upgrade' %}" class="btn btn--gold btn--sm">👑 Pro</a>
+                    </div>
+                {% endif %}
             {% endif %}
             {% if is_pro and student %}
                 <a href="{% url 'skills_student_report' student.pk %}" class="btn btn--ghost btn--sm mt-4"><i class="bi bi-bar-chart"></i> {% trans "Skill report" %}</a>

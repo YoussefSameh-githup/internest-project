@@ -30,10 +30,11 @@
                     </div>
                 </div>
 
-                {% for field in identity %}{% if field.name == "company_name" or field.name == "official_email" %}
+                {% for field in identity %}{% if field.name == "company_name" or field.name == "official_email" or field.name == "country_of_registration" %}
                     <div class="form-group">
                         <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                         {{ field }}
+                        {% if field.help_text %}<small class="form-help">{{ field.help_text }}</small>{% endif %}
                         {% if field.errors %}<div class="form-error">{{ field.errors|join:" " }}</div>{% endif %}
                     </div>
                 {% endif %}{% endfor %}
@@ -48,7 +49,7 @@
 
                 <h4 class="mt-4">{% trans "Online presence" %}</h4>
                 <p class="text-muted" style="font-size: var(--text-sm);">{% trans "At least one social media link is required." %}</p>
-                {% for field in identity %}{% if field.name != "company_name" and field.name != "official_email" and field.name != "logo" %}
+                {% for field in identity %}{% if field.name != "company_name" and field.name != "official_email" and field.name != "logo" and field.name != "country_of_registration" %}
                     <div class="form-group">
                         <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                         {{ field }}

@@ -81,8 +81,10 @@ class CompanyIdentityForm(forms.ModelForm):
 
     class Meta:
         model = PartnerProfile
-        fields = ["logo", "company_name", "official_email", "official_website", "linkedin_url", "facebook_url", "twitter_url", "instagram_url"]
+        fields = ["logo", "company_name", "official_email", "country_of_registration", "official_website", "linkedin_url",
+                  "facebook_url", "twitter_url", "instagram_url"]
         labels = {
+            "country_of_registration": _("Country of commercial registration"),
             "logo": _("Company logo"),
             "company_name": _("Company name"),
             "official_email": _("Company official email"),
@@ -99,10 +101,18 @@ class CompanyIdentityForm(forms.ModelForm):
         widgets["official_email"] = forms.EmailInput(attrs={**_input, "placeholder": "contact@company.com", "dir": "ltr"})
 
     def __init__(self, *args, **kwargs):
+        from .pricing import COUNTRY_CHOICES
+
         super().__init__(*args, **kwargs)
         if self.instance.company_name.startswith(PLACEHOLDER_PREFIX):
             self.initial["company_name"] = ""
         self.fields["official_email"].required = True
+        country = self.fields["country_of_registration"]
+        country.widget = forms.Select(choices=[("", "—")] + COUNTRY_CHOICES, attrs={"class": "form-select"})
+        country.required = True
+        country.help_text = _("Sets your Pro pricing currency. It can only be changed by our team after verification.")
+        if self.instance.is_fully_verified and self.instance.country_of_registration:
+            country.disabled = True  # pricing region is locked once an admin verified the company
 
     def clean_logo(self):
         return clean_logo_upload(self.cleaned_data.get("logo"), self.instance)

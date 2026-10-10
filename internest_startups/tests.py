@@ -22,6 +22,7 @@ PROFILE = {
     "official_website": "https://startupx.io", "linkedin_url": "https://linkedin.com/company/startupx",
     "facebook_url": "", "twitter_url": "", "instagram_url": "",
     "industry": "software", "founded_year": "2023", "description": "We build hiring tools for Egyptian SMEs.",
+    "country_of_registration": "EG",
 }
 OPPORTUNITY = {"title": "Frontend gig", "description": "React work", "location": "Remote", "required_majors": "CS",
                "deadline": (timezone.now().date() + timedelta(days=20)).isoformat()}
@@ -329,11 +330,11 @@ class ProTierTests(OnboardingBase):
     def test_promo_code_application_and_validation(self):
         from .models import PromoCode
         page = self.client.get(reverse("startup_upgrade"))
-        self.assertContains(page, "$100.00")
+        self.assertContains(page, "800 EGP")
         self.client.post(reverse("startup_upgrade"), {"action": "apply", "promo_code": "startup50"})
         page = self.client.get(reverse("startup_upgrade"))
-        self.assertEqual(page.context["quote"]["final_price"], 50)
-        self.assertContains(page, "$50.00")
+        self.assertEqual(page.context["quote"]["final_price"], 400)
+        self.assertContains(page, "400 EGP")
         self.assertContains(page, "STARTUP50")
 
         for code, setup in (("NOPE", None),
@@ -345,7 +346,7 @@ class ProTierTests(OnboardingBase):
             self.client.post(reverse("startup_upgrade"), {"action": "remove"})
             resp = self.client.post(reverse("startup_upgrade"), {"action": "apply", "promo_code": code}, follow=True)
             self.assertContains(resp, "This promo code is invalid or has expired.")
-            self.assertEqual(resp.context["quote"]["final_price"], 100)
+            self.assertEqual(resp.context["quote"]["final_price"], 800)
 
     def test_subscribe_creates_request_and_admin_activation_grants_pro(self):
         from django.contrib.admin.sites import AdminSite
@@ -355,7 +356,8 @@ class ProTierTests(OnboardingBase):
         self.client.post(reverse("startup_upgrade"), {"action": "subscribe"})
         self.client.post(reverse("startup_upgrade"), {"action": "subscribe"})  # duplicate ignored
         req = ProUpgradeRequest.objects.get()
-        self.assertEqual((req.final_price, req.discount_percent, req.promo_code.code, req.status), (80, 20, "EGYPT2026", "pending"))
+        self.assertEqual((req.final_price, req.currency, req.discount_percent, req.promo_code.code, req.status),
+                         (640, "EGP", 20, "EGYPT2026", "pending"))
         from .tiers import is_pro
         self.assertFalse(is_pro(self.partner()))  # no Pro before payment
 

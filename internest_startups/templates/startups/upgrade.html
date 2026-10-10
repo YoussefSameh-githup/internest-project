@@ -6,10 +6,10 @@
 {% block content %}
 <section class="section">
     <div class="container">
-        <div class="text-center" style="max-width: 680px; margin-inline: auto; margin-bottom: var(--space-10);">
+        <div class="text-center" style="max-width: 680px; margin-inline: auto; margin-bottom: var(--space-8);">
             <span class="pro-badge">👑 Internest Pro</span>
             <h1 class="mt-3">{% trans "Upgrade to Internest Pro" %}</h1>
-            <p class="text-muted">{% trans "Hire faster with unlimited posts, lower hiring fees and direct access to verified talent." %}</p>
+            <p class="text-muted">{% trans "Start free. Upgrade when you need more posts, full score reports and direct access to verified talent." %}</p>
         </div>
 
         {% if is_pro %}
@@ -19,74 +19,93 @@
         {% elif pending_request %}
             <div class="alert alert-warning text-center mb-6">
                 <i class="bi bi-hourglass-split"></i>
-                {% blocktrans with price=pending_request.final_price %}Your Pro request (${{ price }}) is awaiting payment. Our team will contact you within 24 hours.{% endblocktrans %}
+                {% blocktrans with price=pending_request.price_label %}Your Pro request ({{ price }}) is awaiting payment. Our team will contact you within 24 hours.{% endblocktrans %}
             </div>
         {% endif %}
 
-        <div class="plans">
-            <div class="plan card">
-                <h3>{% trans "Free" %}</h3>
-                <p class="plan__price">$0 <small>/ {% trans "month" %}</small></p>
-                <ul class="plan__features">
-                    <li>✅ {% blocktrans with n=free_posts %}{{ n }} opportunity per month{% endblocktrans %}</li>
-                    <li>✅ {% trans "Founders Network access" %}</li>
-                    <li>✅ {% trans "Pre-tested student applicants" %}</li>
-                    <li class="is-off">— {% trans "15–20% hiring fee" %}</li>
-                    <li class="is-off">— {% trans "No direct talent search" %}</li>
-                </ul>
-            </div>
+        <nav class="period-toggle" aria-label="{% trans 'Billing period' %}">
+            <a href="?period=month" class="period-toggle__opt {% if period == 'month' %}is-active{% endif %}">{% trans "Monthly" %}</a>
+            <a href="?period=year" class="period-toggle__opt {% if period == 'year' %}is-active{% endif %}">{% trans "Yearly" %} <span class="period-toggle__save">{% trans "2 months free" %}</span></a>
+        </nav>
 
-            <div class="plan plan--pro card">
-                <span class="pro-badge plan__ribbon">👑 {% trans "Most popular" %}</span>
-                <h3>Internest Pro</h3>
-                <p class="plan__price">
-                    {% if quote.discount_percent %}<s class="plan__old">${{ quote.list_price|floatformat:0 }}</s>{% endif %}
-                    ${{ quote.final_price|floatformat:2 }} <small>/ {% trans "month" %}</small>
-                </p>
-                <ul class="plan__features">
-                    <li>♾️ {% trans "Unlimited job posts" %}</li>
-                    <li>💸 {% trans "10% hiring fee (instead of 15–20%)" %}</li>
-                    <li>🔍 {% trans "Direct talent search" %}</li>
-                    <li>🎤 {% trans "Pitching at campus events" %}</li>
-                    <li>⭐ {% trans "Top-of-feed priority in Founders Network" %}</li>
-                    <li>👑 {% trans "Gold Pro Verified badge" %}</li>
-                </ul>
-
-                {% if not is_pro %}
-                    <form method="post" class="promo-form">
-                        {% csrf_token %}
-                        {% if promo %}
-                            <div class="promo-applied">
-                                <span><i class="bi bi-ticket-perforated"></i> <strong dir="ltr">{{ promo.code }}</strong> · −{{ quote.discount_percent }}% (−${{ quote.discount }})</span>
-                                <button type="submit" name="action" value="remove" class="btn btn--ghost btn--sm">{% trans "Remove" %}</button>
-                            </div>
-                        {% else %}
-                            <label class="form-label" for="promo_code">{% trans "Promo code" %}</label>
-                            <div class="promo-form__row">
-                                <input id="promo_code" name="promo_code" class="form-control" dir="ltr" autocomplete="off" placeholder="STARTUP50">
-                                <button type="submit" name="action" value="apply" class="btn btn--outline">{% trans "Apply" %}</button>
-                            </div>
-                        {% endif %}
-                    </form>
-
-                    <div class="checkout-summary">
-                        <div><span>{% trans "Internest Pro (1 month)" %}</span><span dir="ltr">${{ quote.list_price|floatformat:2 }}</span></div>
-                        {% if quote.discount_percent %}<div class="text-success"><span>{% trans "Discount" %}</span><span dir="ltr">−${{ quote.discount }}</span></div>{% endif %}
-                        <div class="checkout-summary__total"><span>{% trans "Total" %}</span><span dir="ltr">${{ quote.final_price|floatformat:2 }}</span></div>
-                    </div>
-
-                    <form method="post">
-                        {% csrf_token %}
-                        <button type="submit" name="action" value="subscribe" class="btn btn--gold btn--lg btn--block" {% if pending_request %}disabled{% endif %}>
-                            {% trans "Subscribe now and unlock every feature" %}
-                        </button>
-                    </form>
-                    <p class="text-muted text-center mt-3 mb-0" style="font-size: var(--text-xs);">
-                        <i class="bi bi-shield-lock"></i> {% trans "No card needed now: our team contacts you to complete payment, then activates Pro." %}
-                    </p>
-                {% endif %}
-            </div>
+        <div class="tier-table-wrap">
+            <table class="tier-table">
+                <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">
+                            <span class="tier-table__name">{% trans "Free" %}</span>
+                            <span class="tier-table__price">{{ free_price }}</span>
+                        </th>
+                        <th scope="col" class="tier-table__pro">
+                            <span class="tier-table__name">👑 Internest Pro</span>
+                            <span class="tier-table__price">
+                                {% if period == "year" %}{{ yearly.list_label }} <small>/ {% trans "year" %}</small>{% else %}{{ monthly.list_label }} <small>/ {% trans "month" %}</small>{% endif %}
+                            </span>
+                            <span class="tier-table__alt">
+                                {% if period == "year" %}{% blocktrans with p=monthly.list_label %}or {{ p }} / month{% endblocktrans %}{% else %}{% blocktrans with p=yearly.list_label %}or {{ p }} / year{% endblocktrans %}{% endif %}
+                            </span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><th scope="row">{% trans "Job posts" %}</th>
+                        <td>{% blocktrans with n=free_posts %}{{ n }} per month{% endblocktrans %}</td><td class="tier-table__pro">♾️ {% trans "Unlimited" %}</td></tr>
+                    <tr><th scope="row">{% trans "Applicant details" %}</th>
+                        <td>{% trans "Verified skills only (no scores or percentile report)" %}</td><td class="tier-table__pro">{% trans "Full scores + percentile reports" %}</td></tr>
+                    <tr><th scope="row">{% trans "Shortlist for interview" %}</th>
+                        <td>✅</td><td class="tier-table__pro">✅</td></tr>
+                    <tr><th scope="row">{% trans "Talent Pool search & profile preview" %}</th>
+                        <td><span class="tier-off">🔒 {% trans "Locked" %}</span></td><td class="tier-table__pro">✅</td></tr>
+                    <tr><th scope="row">{% trans "Direct invitations (skip the 80% skill match)" %}</th>
+                        <td><span class="tier-off">0</span></td><td class="tier-table__pro">{% blocktrans with n=invites_per_opportunity %}{{ n }} per job post{% endblocktrans %}</td></tr>
+                    <tr><th scope="row">{% trans "Pro badge & top listing" %}</th>
+                        <td><span class="tier-off">—</span></td><td class="tier-table__pro">👑 {% trans "Pro badge + priority placement" %}</td></tr>
+                    <tr><th scope="row">{% trans "Founders Network posts" %}</th>
+                        <td>{% blocktrans with n=network_hourly %}{{ n }} per hour{% endblocktrans %}</td><td class="tier-table__pro">♾️ {% trans "Unlimited" %}</td></tr>
+                </tbody>
+            </table>
         </div>
+
+        {% if not is_pro %}
+            <div class="checkout card">
+                <h3 class="mb-4">{% if period == "year" %}{% trans "Internest Pro (1 year)" %}{% else %}{% trans "Internest Pro (1 month)" %}{% endif %}</h3>
+                <form method="post" class="promo-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="period" value="{{ period }}">
+                    {% if promo %}
+                        <div class="promo-applied">
+                            <span><i class="bi bi-ticket-perforated"></i> <strong dir="ltr">{{ promo.code }}</strong> · −{{ quote.discount_percent }}% (−{{ quote.discount_label }})</span>
+                            <button type="submit" name="action" value="remove" class="btn btn--ghost btn--sm">{% trans "Remove" %}</button>
+                        </div>
+                    {% else %}
+                        <label class="form-label" for="promo_code">{% trans "Promo code" %}</label>
+                        <div class="promo-form__row">
+                            <input id="promo_code" name="promo_code" class="form-control" dir="ltr" autocomplete="off" placeholder="STARTUP50">
+                            <button type="submit" name="action" value="apply" class="btn btn--outline">{% trans "Apply" %}</button>
+                        </div>
+                    {% endif %}
+                </form>
+
+                <div class="checkout-summary">
+                    <div><span>{% trans "Subtotal" %}</span><span dir="ltr">{{ quote.list_label }}</span></div>
+                    {% if quote.discount_percent %}<div class="text-success"><span>{% trans "Discount" %}</span><span dir="ltr">−{{ quote.discount_label }}</span></div>{% endif %}
+                    <div class="checkout-summary__total"><span>{% trans "Total" %}</span><span dir="ltr">{{ quote.final_label }}</span></div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="period" value="{{ period }}">
+                    <button type="submit" name="action" value="subscribe" class="btn btn--gold btn--lg btn--block" {% if pending_request %}disabled{% endif %}>
+                        {% trans "Subscribe now and unlock every feature" %}
+                    </button>
+                </form>
+                <p class="text-muted text-center mt-3 mb-0" style="font-size: var(--text-xs);">
+                    <i class="bi bi-shield-lock"></i> {% trans "No card needed now: our team contacts you to complete payment, then activates Pro." %}
+                    {% if currency != "EGP" %}<br>{% blocktrans with c=currency %}Prices in {{ c }} based on your company's country.{% endblocktrans %}{% endif %}
+                </p>
+            </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

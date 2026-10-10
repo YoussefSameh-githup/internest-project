@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
-from django.db.models import F
+from django.db.models import Case, F, IntegerField, Q, Value, When
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -264,12 +264,17 @@ def internship_list(request):
     query = request.GET.get("q", "").strip()
     major = request.GET.get("major", "").strip()
 
+    today = timezone.now().date()
+    pro_partner = Q(partner__subscription__plan="pro") & (
+        Q(partner__subscription__valid_until__isnull=True) | Q(partner__subscription__valid_until__gte=today))
     internships = (
         Internship.objects
         .filter(is_active=True)
         .select_related("partner", "partner__subscription")
         .prefetch_related("required_skills")
-        .order_by("-deadline")
+        # Pro perk: priority placement at the top of the list.
+        .annotate(pro_rank=Case(When(pro_partner, then=Value(1)), default=Value(0), output_field=IntegerField()))
+        .order_by("-pro_rank", "-deadline", "-pk")
     )
 
     if query:

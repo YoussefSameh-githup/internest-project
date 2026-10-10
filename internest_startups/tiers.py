@@ -9,8 +9,8 @@ from internest_skills.models import EmployerSubscription
 from internest_skills.permissions import is_pro_employer
 
 FREE_POSTS_PER_MONTH = 1
-PRO_MONTHLY_PRICE = Decimal("100.00")  # USD, per BMC v2.0
 PRO_PERIOD_DAYS = 30
+PRO_YEAR_DAYS = 365
 
 
 def is_pro(partner) -> bool:
@@ -33,11 +33,21 @@ def monthly_quota_reached(partner) -> bool:
     return posts_this_month(partner) >= FREE_POSTS_PER_MONTH
 
 
-def quote(promo=None, months=1) -> dict:
-    list_price = PRO_MONTHLY_PRICE * months
+def quote(promo=None, period="month", currency="EGP") -> dict:
+    """Pro price for a billing period in a currency (see pricing.PRICES), after any promo code."""
+    from .pricing import PERIOD_MONTHS, PRICES, format_price
+
+    period = period if period in PERIOD_MONTHS else "month"
+    list_price = PRICES[currency][period]
     percent = promo.discount_percent if promo else 0
     discount = (list_price * percent / 100).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    return {"list_price": list_price, "discount_percent": percent, "discount": discount, "final_price": list_price - discount}
+    final = list_price - discount
+    return {
+        "period": period, "months": PERIOD_MONTHS[period], "currency": currency,
+        "list_price": list_price, "discount_percent": percent, "discount": discount, "final_price": final,
+        "list_label": format_price(list_price, currency), "discount_label": format_price(discount, currency),
+        "final_label": format_price(final, currency),
+    }
 
 
 def activate_pro(partner, months=1):
@@ -46,6 +56,6 @@ def activate_pro(partner, months=1):
     today = timezone.now().date()
     start = sub.valid_until if sub.plan == EmployerSubscription.PLAN_PRO and sub.valid_until and sub.valid_until > today else today
     sub.plan = EmployerSubscription.PLAN_PRO
-    sub.valid_until = start + timedelta(days=PRO_PERIOD_DAYS * months)
+    sub.valid_until = start + timedelta(days=PRO_YEAR_DAYS if months == 12 else PRO_PERIOD_DAYS * months)
     sub.save()
     return sub

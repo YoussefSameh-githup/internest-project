@@ -123,6 +123,8 @@ STATUS_CHOICES_SUBMISSION = [
 class PartnerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE) 
     company_name = models.CharField(max_length=200, unique=True, verbose_name="اسم الشركة/الجهة")
+    # ISO country of the commercial register (startup onboarding). Sets the Pro pricing currency; locked once verified.
+    country_of_registration = models.CharField(max_length=2, blank=True, default="", verbose_name=_("Country of registration"))
     partner_code = models.CharField(max_length=50, unique=True, help_text="الكود السري للدخول المخصص.")
     logo = models.ImageField(
         upload_to='partner_logos/', null=True, blank=True,

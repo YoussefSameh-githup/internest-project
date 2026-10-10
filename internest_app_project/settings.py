@@ -237,3 +237,9 @@ SKILLS_LLM_MODEL = env.str("SKILLS_LLM_MODEL", default="")
 # Off by default: PythonAnywhere free accounts must reach external APIs through the platform proxy.
 ENABLE_PROXY_BYPASS = env.bool("ENABLE_PROXY_BYPASS", default=False)
 SKILLS_LLM_TIMEOUT = env.float("SKILLS_LLM_TIMEOUT", default=15.0)
+
+# --- Regional Pro pricing (internest_startups.pricing) ---
+DEFAULT_PRICING_COUNTRY = env("DEFAULT_PRICING_COUNTRY", default="EG")
+# Optional MaxMind GeoLite2 folder (needs the geoip2 package). Without it: Cloudflare header, then the default.
+GEOIP_PATH = env("GEOIP_PATH", default="") or None
+PAYMENT_GATEWAYS = {"EGP": env("PAYMENT_GATEWAY_EGP", default="fawaterak"), "default": env("PAYMENT_GATEWAY_INTL", default="stripe")}

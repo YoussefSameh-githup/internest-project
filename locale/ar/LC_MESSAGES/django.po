@@ -3357,3 +3357,155 @@ msgstr "تظهر عندما يتقدّم الطالب من خلال دعوتك �
 
 msgid "Invited to %(title)s"
 msgstr "تمت دعوته إلى %(title)s"
+
+msgid "Country of registration"
+msgstr "دولة التسجيل"
+
+msgid "Upgrade to see the detailed score report"
+msgstr "ترقية لرؤية تقرير الدرجات التفصيلي"
+
+msgid ""
+"Sets your Pro pricing currency. It can only be changed by our team after "
+"verification."
+msgstr ""
+"تحدد عملة أسعار باقة Pro. بعد التوثيق لا يمكن تغييرها إلا عن طريق فريقنا."
+
+msgid "Country of commercial registration"
+msgstr "دولة السجل التجاري"
+
+msgid "Egypt"
+msgstr "مصر"
+
+msgid "Saudi Arabia"
+msgstr "السعودية"
+
+msgid "United Arab Emirates"
+msgstr "الإمارات"
+
+msgid "Qatar"
+msgstr "قطر"
+
+msgid "Kuwait"
+msgstr "الكويت"
+
+msgid "Bahrain"
+msgstr "البحرين"
+
+msgid "Oman"
+msgstr "عُمان"
+
+msgid "Jordan"
+msgstr "الأردن"
+
+msgid "United Kingdom"
+msgstr "المملكة المتحدة"
+
+msgid "Germany"
+msgstr "ألمانيا"
+
+msgid "France"
+msgstr "فرنسا"
+
+msgid "Netherlands"
+msgstr "هولندا"
+
+msgid "Spain"
+msgstr "إسبانيا"
+
+msgid "Italy"
+msgstr "إيطاليا"
+
+msgid "United States"
+msgstr "الولايات المتحدة"
+
+msgid "Canada"
+msgstr "كندا"
+
+msgid "%(amount)s EGP"
+msgstr "%(amount)s ج.م"
+
+msgid ""
+"Start free. Upgrade when you need more posts, full score reports and direct "
+"access to verified talent."
+msgstr ""
+"ابدأ مجاناً، وقم بالترقية عندما تحتاج لفرص أكثر وتقارير درجات كاملة ووصول "
+"مباشر للمواهب الموثّقة."
+
+msgid ""
+"Your Pro request (%(price)s) is awaiting payment. Our team will contact you "
+"within 24 hours."
+msgstr ""
+"طلب باقة Pro الخاص بك (%(price)s) في انتظار الدفع. سيتواصل معك فريقنا خلال "
+"24 ساعة."
+
+msgid "Billing period"
+msgstr "مدة الاشتراك"
+
+msgid "Monthly"
+msgstr "شهري"
+
+msgid "Yearly"
+msgstr "سنوي"
+
+msgid "2 months free"
+msgstr "شهرين مجاناً"
+
+msgid "year"
+msgstr "سنة"
+
+msgid "or %(p)s / month"
+msgstr "أو %(p)s / شهر"
+
+msgid "or %(p)s / year"
+msgstr "أو %(p)s / سنة"
+
+msgid "Job posts"
+msgstr "نشر الفرص"
+
+msgid "%(n)s per month"
+msgstr "%(n)s في الشهر"
+
+msgid "Unlimited"
+msgstr "غير محدود"
+
+msgid "Applicant details"
+msgstr "بيانات المتقدمين"
+
+msgid "Verified skills only (no scores or percentile report)"
+msgstr "المهارات الموثّقة فقط (بدون الدرجات أو تقرير الترتيب المئوي)"
+
+msgid "Full scores + percentile reports"
+msgstr "الدرجات كاملة + تقارير الترتيب المئوي"
+
+msgid "Talent Pool search & profile preview"
+msgstr "البحث في قاعدة المواهب ومعاينة البروفايل"
+
+msgid "Locked"
+msgstr "مقفول"
+
+msgid "Direct invitations (skip the 80%% skill match)"
+msgstr "دعوات مباشرة (تتخطّى شرط تطابق 80%%)"
+
+msgid "%(n)s per job post"
+msgstr "%(n)s لكل فرصة"
+
+msgid "Pro badge & top listing"
+msgstr "شارة Pro والظهور في الأعلى"
+
+msgid "Pro badge + priority placement"
+msgstr "شارة Pro + أولوية في الظهور"
+
+msgid "Founders Network posts"
+msgstr "منشورات Founders Network"
+
+msgid "%(n)s per hour"
+msgstr "%(n)s في الساعة"
+
+msgid "Internest Pro (1 year)"
+msgstr "Internest Pro (سنة)"
+
+msgid "Subtotal"
+msgstr "المجموع الفرعي"
+
+msgid "Prices in %(c)s based on your company's country."
+msgstr "الأسعار بعملة %(c)s حسب دولة شركتك."
