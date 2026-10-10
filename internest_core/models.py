@@ -1,5 +1,6 @@
 import secrets
 import uuid
+from decimal import Decimal
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
@@ -506,35 +507,75 @@ class StudentEnrollment(models.Model):
 
 # === Verified work experience (proof of work) ===
 TOP_VERIFIED_MIN_GIGS = 3  # "Top Verified Candidate" badge + Talent Pool priority
+VERIFIED_MIN_RATING = Decimal("3.5")  # below this: no letter, not counted as verified experience
+RATING_CHOICES = [Decimal(n) / 2 for n in range(10, 1, -1)]  # 5.0, 4.5 … 1.0
+# Letter tier by rating: (minimum, key, English title, Arabic title)
+LETTER_TIERS = [
+    (Decimal("5.0"), "excellence", "Letter of Recommendation & Excellence", "خطاب توصية وتقدير أداء متميز"),
+    (Decimal("4.0"), "recommendation", "Letter of Completion & Recommendation", "شهادة إتمام وتوصية عمل"),
+    (VERIFIED_MIN_RATING, "completion", "Certificate of Internship Completion", "شهادة إتمام مهمة تدريبية"),
+]
+
+
+class GigExperienceQuerySet(models.QuerySet):
+    def verified(self):
+        """Gigs that earn a letter and count as verified experience (rating ≥ 3.5)."""
+        return self.filter(star_rating__gte=VERIFIED_MIN_RATING)
 
 
 class GigExperience(models.Model):
-    """A gig the startup marked as completed and rated. Backs a PDF recommendation letter with a public QR check."""
+    """A gig the startup marked as completed and rated. Rated ≥ 3.5 → PDF letter with a public QR check."""
 
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="gig_experiences")
     company = models.ForeignKey(PartnerProfile, on_delete=models.CASCADE, related_name="issued_experiences")
     application = models.OneToOneField(Application, on_delete=models.SET_NULL, null=True, blank=True, related_name="experience")
     gig_title = models.CharField(max_length=200)
+    # Snapshot of the opportunity description when the gig was completed (what the student actually worked on).
+    gig_description = models.TextField(blank=True, default="")
     completion_date = models.DateField()
-    star_rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    star_rating = models.DecimalField(max_digits=2, decimal_places=1,
+                                      validators=[MinValueValidator(Decimal("1")), MaxValueValidator(Decimal("5"))])
     review_text = models.TextField(max_length=1000)
     verification_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     pdf_file = models.FileField(upload_to="letters/", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    objects = GigExperienceQuerySet.as_manager()
+
     class Meta:
         ordering = ["-completion_date", "-pk"]
 
     def __str__(self):
-        return f"{self.student} · {self.gig_title} @ {self.company} ({self.star_rating}★)"
+        return f"{self.student} · {self.gig_title} @ {self.company} ({self.rating_label}★)"
 
     @property
     def verification_code(self):
         return str(self.verification_uuid).split("-")[0].upper()
 
+    @property
+    def is_verified(self):
+        return Decimal(self.star_rating) >= VERIFIED_MIN_RATING
+
+    @property
+    def tier(self):
+        """(key, English title, Arabic title) for the letter, or None below 3.5."""
+        rating = Decimal(self.star_rating)
+        return next(((key, en, ar) for minimum, key, en, ar in LETTER_TIERS if rating >= minimum), None)
+
+    @property
+    def rating_label(self):
+        """'4.5', '5' (no trailing .0)."""
+        return f"{Decimal(self.star_rating):.1f}".removesuffix(".0")
+
+    @property
+    def star_icons(self):
+        """['full', 'full', 'half', 'empty', 'empty'] for 2.5 — used by templates and the PDF."""
+        rating = Decimal(self.star_rating)
+        return ["full" if n <= rating else "half" if n - Decimal("0.5") <= rating else "empty" for n in range(1, 6)]
+
 
 def proof_of_work(student):
-    """{"count", "avg", "top"} for a student's verified gigs."""
-    stats = student.gig_experiences.aggregate(count=models.Count("id"), avg=models.Avg("star_rating"))
+    """{"count", "avg", "top"} for a student's verified gigs (rated ≥ 3.5)."""
+    stats = student.gig_experiences.verified().aggregate(count=models.Count("id"), avg=models.Avg("star_rating"))
     count = stats["count"] or 0
-    return {"count": count, "avg": round(stats["avg"] or 0, 1), "top": count >= TOP_VERIFIED_MIN_GIGS}
+    return {"count": count, "avg": round(float(stats["avg"] or 0), 1), "top": count >= TOP_VERIFIED_MIN_GIGS}

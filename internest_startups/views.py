@@ -309,6 +309,6 @@ def talent_pool_candidate(request, student_id):
         "c": candidate,
         "skills": qualifying_skills().filter(student=candidate).select_related("skill").order_by("-score", "skill__name"),
         "invited": request.partner.talent_invitations.filter(student=candidate).select_related("internship"),
-        "experiences": candidate.gig_experiences.select_related("company"),
+        "experiences": candidate.gig_experiences.verified().select_related("company"),
         "proof": proof_of_work(candidate),
     })

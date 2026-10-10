@@ -39,7 +39,7 @@
                         <div class="pow-item__body">
                             <strong>{{ e.gig_title }}</strong>
                             <span>{{ e.company.company_name }} · {{ e.completion_date|date:"Y/m/d" }}</span>
-                            <span class="pow-item__stars">{% for n in "12345" %}<i class="bi {% if forloop.counter <= e.star_rating %}bi-star-fill{% else %}bi-star{% endif %}"></i>{% endfor %}</span>
+                            <span class="pow-item__stars">{% for icon in e.star_icons %}<i class="bi {% if icon == 'full' %}bi-star-fill{% elif icon == 'half' %}bi-star-half{% else %}bi-star{% endif %}"></i>{% endfor %}</span>
                             <em class="pow-item__review">“{{ e.review_text|truncatechars:180 }}”</em>
                         </div>
                         <a href="{% url 'verify_experience' e.verification_uuid %}" target="_blank" rel="noopener" class="pow-verified"><i class="bi bi-patch-check-fill"></i> {% trans "Verified" %}</a>

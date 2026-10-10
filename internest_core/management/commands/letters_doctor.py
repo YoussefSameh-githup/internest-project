@@ -37,7 +37,8 @@ class Command(BaseCommand):
         sample = SimpleNamespace(
             student=SimpleNamespace(user=SimpleNamespace(get_full_name=lambda: "Sample Student", username="sample")),
             company=SimpleNamespace(company_name="Sample Co", logo=None, pk=0), gig_title="Sample gig", star_rating=5,
-            completion_date=datetime.date.today(), created_at=None, review_text="Great work.", verification_code="TEST1234",
+            gig_description="Sample scope.", completion_date=datetime.date.today(), created_at=None, review_text="Great work.",
+            verification_code="TEST1234", verification_uuid="00000000-0000-4000-8000-000000000000",
         )
         try:
             letters.render_letter(sample, "https://example.com/verify/test/")

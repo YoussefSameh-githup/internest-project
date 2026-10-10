@@ -4,6 +4,18 @@
 {% block title %}{{ app.applicant.get_full_name|default:app.applicant.username }} — {% trans "Applicant" %}{% endblock %}
 
 {% block content %}
+<style>
+/* Rating scale (embedded so it works even with an old cached stylesheet) */
+.gx-scale { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 6px; }
+.gx-scale input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.gx-scale label { display: inline-flex; align-items: center; gap: 4px; padding: 7px 12px; border-radius: 999px; border: 1px solid #e2e8f0;
+  background: #fff; color: #334155; font-weight: 700; cursor: pointer; direction: ltr; transition: background .15s, border-color .15s; }
+.gx-scale label .bi { color: #f59e0b; }
+.gx-scale label:hover { border-color: #93c5fd; }
+.gx-scale input:checked + label { background: #2563eb; border-color: #2563eb; color: #fff; }
+.gx-scale input:checked + label .bi { color: #fde68a; }
+.gx-scale input:focus-visible + label { box-shadow: 0 0 0 4px rgba(37, 99, 235, .2); }
+</style>
 <section class="section-sm">
     <div class="container-narrow">
         <a href="{% url 'partner_dashboard_section' 'applicants' %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short"></i> {% trans "Applicants Inbox" %}</a>
@@ -93,12 +105,13 @@
                     <p class="text-muted mb-3" style="font-size: var(--text-sm);">{% trans "The student gets a verified recommendation letter (PDF) with a QR code anyone can check." %}</p>
                     <fieldset class="gx-rating">
                         <legend class="pf-label">{% trans "Rating" %}</legend>
-                        <div class="gx-stars">
-                            {% for n in "54321" %}
-                                <input type="radio" name="star_rating" id="star{{ n }}" value="{{ n }}" required>
-                                <label for="star{{ n }}" title="{{ n }}/5"><i class="bi bi-star-fill"></i></label>
+                        <div class="gx-scale">
+                            {% for r in rating_choices %}
+                                <input type="radio" name="star_rating" id="rate{{ forloop.counter }}" value="{{ r }}" required>
+                                <label for="rate{{ forloop.counter }}"><i class="bi bi-star-fill"></i> {{ r|floatformat:"-1" }}</label>
                             {% endfor %}
                         </div>
+                        <small class="pf-help">{% trans "5 = Excellence letter · 4–4.5 = Completion & recommendation · 3.5 = Internship completion certificate · below 3.5 = no letter" %}</small>
                     </fieldset>
                     <label class="pf-label gx-form__label" for="review_text">{% trans "Feedback for the letter" %}</label>
                     <textarea name="review_text" id="review_text" class="form-control" rows="4" minlength="10" maxlength="1000" required
@@ -107,10 +120,14 @@
                 </form>
             {% elif experience %}
                 <div class="gx-done mt-6">
-                    <span class="gx-done__stars">{% for n in "12345" %}<i class="bi {% if forloop.counter <= experience.star_rating %}bi-star-fill{% else %}bi-star{% endif %}"></i>{% endfor %}</span>
-                    <strong>{% trans "Gig completed and rated" %}</strong>
-                    <a href="{% url 'experience_letter' experience.verification_uuid %}" class="btn btn--ghost btn--sm"><i class="bi bi-file-earmark-pdf"></i> {% trans "Recommendation letter" %}</a>
-                    <a href="{% url 'verify_experience' experience.verification_uuid %}" class="btn btn--ghost btn--sm" target="_blank" rel="noopener"><i class="bi bi-qr-code"></i> {% trans "Verification page" %}</a>
+                    <span class="gx-done__stars">{% for icon in experience.star_icons %}<i class="bi {% if icon == 'full' %}bi-star-fill{% elif icon == 'half' %}bi-star-half{% else %}bi-star{% endif %}"></i>{% endfor %}</span>
+                    <strong>{% trans "Gig completed and rated" %} · {{ experience.rating_label }}/5</strong>
+                    {% if experience.is_verified %}
+                        <a href="{% url 'experience_letter' experience.verification_uuid %}" class="btn btn--ghost btn--sm"><i class="bi bi-file-earmark-pdf"></i> {% trans "Recommendation letter" %}</a>
+                        <a href="{% url 'verify_experience' experience.verification_uuid %}" class="btn btn--ghost btn--sm" target="_blank" rel="noopener"><i class="bi bi-qr-code"></i> {% trans "Verification page" %}</a>
+                    {% else %}
+                        <span class="text-muted" style="font-size: var(--text-sm);">{% trans "Rated below 3.5: no verified letter was issued." %}</span>
+                    {% endif %}
                 </div>
             {% endif %}
         </div>

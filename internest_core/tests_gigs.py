@@ -158,7 +158,7 @@ class LetterDeliveryTests(ApplicationsBase):
 
         with mock.patch("internest_core.letters.render_letter", side_effect=RuntimeError("boom")):
             content = self._pdf()
-        for marker in (b"INTERNEST - OFFICIAL RECOMMENDATION LETTER", b"PERFORMANCE RATING", b"re f", b"VERIFIED"):
+        for marker in (b"INTERNEST - OFFICIAL VERIFIED DOCUMENT", b"RATING SCORE", b"re f", b"VERIFIED"):
             self.assertIn(marker, content)  # banner, table, vector shapes, stamp
 
     def test_letters_from_an_older_design_are_rebuilt(self):
@@ -167,7 +167,9 @@ class LetterDeliveryTests(ApplicationsBase):
         self.exp.pdf_file.save(f"letter-{self.exp.verification_uuid}.pdf", ContentFile(b"%PDF-old"), save=True)
         self.assertNotEqual(self._pdf(), b"%PDF-old")
         self.exp.refresh_from_db()
-        self.assertIn("-v3-", self.exp.pdf_file.name)
+        from internest_core.letters import LETTER_VERSION
+
+        self.assertIn(f"-{LETTER_VERSION}-", self.exp.pdf_file.name)
         self.assertEqual(self._pdf()[:4], b"%PDF")  # served from the new stored copy
 
     def test_letters_doctor_command(self):
@@ -191,3 +193,69 @@ class LetterDeliveryTests(ApplicationsBase):
         self.assertContains(page, 'src="data:image/png;base64,iVBOR')  # PNG signature
         self.assertContains(page, f"http://testserver/verify/{self.exp.verification_uuid}/")
         self.assertContains(page, self.exp.verification_code)
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA)
+class RatingTierTests(ApplicationsBase):
+    """5 → excellence, 4–4.5 → completion & recommendation, 3.5 → internship completion, < 3.5 → no letter."""
+
+    def setUp(self):
+        super().setUp()
+        self.user, self.student = _student("amr")
+        self.app = Application.objects.create(internship=self.gig, applicant=self.user, status=Application.STATUS_ACCEPTED)
+        self.client.force_login(self.founder)
+
+    def _complete(self, rating):
+        return self.client.post(reverse("partner_applicant_complete", args=[self.app.pk]),
+                                {"star_rating": rating, "review_text": "Solid delivery and clear communication."}, follow=True)
+
+    def test_tier_titles(self):
+        from decimal import Decimal
+
+        from internest_core.letters import tier_for
+
+        self.assertEqual(tier_for(Decimal("5")), ("excellence", "Letter of Recommendation & Excellence", "خطاب توصية وتقدير أداء متميز"))
+        for rating in ("4", "4.5"):
+            self.assertEqual(tier_for(Decimal(rating))[1], "Letter of Completion & Recommendation")
+        self.assertEqual(tier_for(Decimal("3.5"))[1:], ("Certificate of Internship Completion", "شهادة إتمام مهمة تدريبية"))
+        self.assertIsNone(tier_for(Decimal("3")))
+
+    def test_half_star_rating_and_scope_snapshot(self):
+        self._complete("3.5")
+        exp = GigExperience.objects.get()
+        self.assertEqual((str(exp.star_rating), exp.rating_label, exp.star_icons), ("3.5", "3.5", ["full", "full", "full", "half", "empty"]))
+        self.assertEqual(exp.gig_description, self.gig.description)
+        from internest_core.letters import _fallback_pdf
+
+        pdf = _fallback_pdf(exp, "https://x.test/verify/")  # uncompressed, so the text can be inspected
+        for marker in (b"Certificate of Internship Completion", b"Gig Scope & Tasks Performed", b"Manager's Assessment & Feedback",
+                       str(exp.verification_uuid).encode()):
+            self.assertIn(marker, pdf)
+
+    def test_below_threshold_gets_no_letter_or_badge(self):
+        resp = self._complete("3")
+        self.assertContains(resp, "Ratings below 3.5 don&#x27;t issue a verified letter.")
+        exp = GigExperience.objects.get()
+        self.app.refresh_from_db()
+        self.assertEqual(self.app.status, Application.STATUS_COMPLETED)
+        self.assertFalse(exp.pdf_file)
+        self.assertContains(self.client.get(reverse("partner_applicant", args=[self.app.pk])), "no verified letter was issued")
+        self.client.logout()  # also clears the language cookie
+        self.client.cookies["internest_lang"] = "en"
+        self.assertEqual(self.client.get(reverse("verify_experience", args=[exp.verification_uuid])).status_code, 404)
+        self.assertEqual(self.client.get(reverse("experience_letter", args=[exp.verification_uuid])).status_code, 404)
+        self.login_student(self.user)
+        self.assertContains(self.client.get(reverse("profile")), "No verified gigs yet")
+        self.assertNotContains(self.client.get(reverse("my_applications")), "Recommendation letter")
+
+    def test_invalid_ratings_rejected(self):
+        for bad in ("3.7", "6", "0.5", "abc", "sNaN", "NaN", ""):
+            self._complete(bad)
+        self.assertFalse(GigExperience.objects.exists())
+
+    def test_excellence_letter_renders(self):
+        self._complete("5")
+        exp = GigExperience.objects.get()
+        with exp.pdf_file.open("rb") as f:
+            self.assertEqual(f.read(4), b"%PDF")
+        self.assertIn("-v4-", exp.pdf_file.name)

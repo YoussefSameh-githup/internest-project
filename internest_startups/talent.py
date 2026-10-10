@@ -57,7 +57,7 @@ def pool_queryset(params):
         students = students.filter(major=params["major"])
 
     shown = qualifying_skills().select_related("skill").order_by("-score", "skill__name")
-    gigs = GigExperience.objects.filter(student=OuterRef("pk")).values("student")  # subqueries: no join fan-out
+    gigs = GigExperience.objects.verified().filter(student=OuterRef("pk")).values("student")  # subqueries: no join fan-out
     return (
         students.select_related("user")
         .annotate(

@@ -1,6 +1,6 @@
 import logging
 import os
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
 from django.contrib import messages
@@ -28,7 +28,7 @@ from .models import (
     PartnerApplicantData,
     GamificationTask, TaskAnswer, StudentTaskRecord,
     DiscountCode, StudentEnrollment,
-    EmailVerification, GigExperience, TOP_VERIFIED_MIN_GIGS, proof_of_work,
+    EmailVerification, GigExperience, RATING_CHOICES, TOP_VERIFIED_MIN_GIGS, proof_of_work,
 )
 from .forms import (
     ProfileForm, PartnerInternshipForm, PartnerCourseForm,
@@ -453,7 +453,7 @@ def profile_view(request):
         "verified_skills_count": _verified_skills_count(profile), "campus_share": _campus_share(request, profile),
         "proof": proof_of_work(profile) if profile.pk else None,
         "top_min": TOP_VERIFIED_MIN_GIGS,
-        "experiences": profile.gig_experiences.select_related("company") if profile.pk else [],
+        "experiences": profile.gig_experiences.verified().select_related("company") if profile.pk else [],
     })
     return render(request, "internship/profile.html", context)
 
@@ -1038,6 +1038,7 @@ def partner_applicant_view(request, app_id):
         "verified_skills": student.skills.filter(status="verified").select_related("skill") if student else [],
         "unlocked": app.contact_unlocked,
         "experience": getattr(app, "experience", None),
+        "rating_choices": RATING_CHOICES,
         "contact_email": (student.personal_email if student else "") or app.applicant.email,
         "whatsapp": _whatsapp_number(student.phone_number) if student else None,
     })
@@ -1106,20 +1107,24 @@ def partner_applicant_complete(request, app_id):
     if app.status != Application.STATUS_ACCEPTED or student is None or hasattr(app, "experience"):
         return redirect("partner_applicant", app_id=app.pk)
     try:
-        rating = int(request.POST.get("star_rating", ""))
-    except ValueError:
-        rating = 0
+        rating = Decimal(request.POST.get("star_rating", ""))
+    except (InvalidOperation, ValueError):
+        rating = None
     review = request.POST.get("review_text", "").strip()[:1000]
-    if not 1 <= rating <= 5 or len(review) < 10:
+    if rating is None or not rating.is_finite() or rating not in RATING_CHOICES or len(review) < 10:
         messages.error(request, _("Choose a rating from 1 to 5 and write at least 10 characters of feedback."))
         return redirect("partner_applicant", app_id=app.pk)
     with transaction.atomic():
         exp = GigExperience.objects.create(
             student=student, company=app.internship.partner, application=app, gig_title=app.internship.title,
+            gig_description=app.internship.description,
             completion_date=timezone.now().date(), star_rating=rating, review_text=review,
         )
         app.status, app.decided_at = Application.STATUS_COMPLETED, timezone.now()
         app.save(update_fields=["status", "decided_at"])
+    if not exp.is_verified:
+        messages.info(request, _("Gig completed and rated. Ratings below 3.5 don't issue a verified letter."))
+        return redirect("partner_applicant", app_id=app.pk)
     generate_letter(exp, request.build_absolute_uri(reverse("verify_experience", args=[exp.verification_uuid])))
     messages.success(request, _("Gig completed and rated. The student's verified recommendation letter is ready."))
     return redirect("partner_applicant", app_id=app.pk)
@@ -1131,10 +1136,10 @@ def _verify_url(request, exp):
 
 def verify_experience(request, uuid):
     """Public authenticity check behind the letter's QR code (the page shows the same QR)."""
-    exp = get_object_or_404(GigExperience.objects.select_related("student__user", "company"), verification_uuid=uuid)
+    exp = get_object_or_404(GigExperience.objects.verified().select_related("student__user", "company"), verification_uuid=uuid)
     verify_url = _verify_url(request, exp)
     context = get_user_context(request)
-    context.update({"exp": exp, "stars": range(1, 6), "verify_url": verify_url, "qr_code_base64": qr_png_base64(verify_url)})
+    context.update({"exp": exp, "verify_url": verify_url, "qr_code_base64": qr_png_base64(verify_url)})
     return render(request, "internship/verify_experience.html", context)
 
 
@@ -1142,7 +1147,7 @@ def experience_letter(request, uuid):
     """The PDF letter (public by its unguessable UUID). Generated on the fly whenever no stored file is usable."""
     from django.http import HttpResponse
 
-    exp = get_object_or_404(GigExperience.objects.select_related("student__user", "company"), verification_uuid=uuid)
+    exp = get_object_or_404(GigExperience.objects.verified().select_related("student__user", "company"), verification_uuid=uuid)
     response = HttpResponse(letter_bytes(exp, _verify_url(request, exp)), content_type="application/pdf")
     response["Content-Disposition"] = f'attachment; filename="Internest-recommendation-{exp.verification_code}.pdf"'
     return response

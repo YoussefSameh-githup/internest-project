@@ -1957,12 +1957,7 @@ a.pf-stat:hover { border-color: #c7d2fe; }
 .gx-form__title { margin: 0 0 4px; font-size: var(--text-lg); }
 .gx-rating { margin: 0; padding: 0; border: 0; }
 .gx-rating legend { display: block; margin-bottom: 4px; }
-.gx-stars { display: inline-flex; flex-direction: row-reverse; gap: 4px; }
 .gx-form__label { display: block; margin: 14px 0 6px; }
-.gx-stars input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-.gx-stars label { cursor: pointer; font-size: 1.8rem; color: #e2e8f0; transition: color .1s, transform .1s; }
-.gx-stars label:hover, .gx-stars label:hover ~ label, .gx-stars input:checked ~ label { color: #f59e0b; }
-.gx-stars input:focus-visible + label { transform: scale(1.15); }
 .gx-done { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 16px; border-radius: 14px; background: #ecfdf5; border: 1px solid #bbf7d0; }
 .gx-done__stars { color: #f59e0b; letter-spacing: 1px; }
 

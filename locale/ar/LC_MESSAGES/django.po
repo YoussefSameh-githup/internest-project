@@ -3764,3 +3764,18 @@ msgstr "امسح رمز QR لفتح هذه الصفحة والتأكد من أن
 
 msgid "QR code for this verification page"
 msgstr "رمز QR لصفحة التحقق هذه"
+
+msgid ""
+"Gig completed and rated. Ratings below 3.5 don't issue a verified letter."
+msgstr ""
+"تم إنهاء المهمة وتقييمها. التقييمات الأقل من 3.5 لا يصدر لها خطاب موثّق."
+
+msgid ""
+"5 = Excellence letter · 4–4.5 = Completion & recommendation · 3.5 = "
+"Internship completion certificate · below 3.5 = no letter"
+msgstr ""
+"5 = خطاب توصية وتقدير أداء متميز · 4–4.5 = شهادة إتمام وتوصية عمل · 3.5 = "
+"شهادة إتمام مهمة تدريبية · أقل من 3.5 = لا يصدر خطاب"
+
+msgid "Rated below 3.5: no verified letter was issued."
+msgstr "التقييم أقل من 3.5: لم يصدر خطاب موثّق."
