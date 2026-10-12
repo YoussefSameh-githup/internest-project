@@ -4622,3 +4622,64 @@ msgstr "انشر فرصة لتبدأ في استقبال المتقدمين."
 
 msgid "Open for applications"
 msgstr "مفتوحة للتقديم"
+
+msgid "Password changed"
+msgstr "تم تغيير كلمة المرور"
+
+msgid "Your password was changed successfully!"
+msgstr "تم تغيير كلمة المرور بنجاح!"
+
+msgid ""
+"Use your new password the next time you sign in. You're still signed in on "
+"this device."
+msgstr ""
+"استخدم كلمة المرور الجديدة عند تسجيل الدخول القادم. ما زلت مسجّلاً على هذا "
+"الجهاز."
+
+msgid "Enter your current password and a new one to keep your account safe."
+msgstr "أدخل كلمة المرور الحالية وكلمة المرور الجديدة لحماية حسابك"
+
+msgid "Current password"
+msgstr "كلمة المرور الحالية"
+
+msgid "New password"
+msgstr "كلمة المرور الجديدة"
+
+msgid "Confirm new password"
+msgstr "تأكيد كلمة المرور الجديدة"
+
+msgid "Show password"
+msgstr "إظهار كلمة المرور"
+
+msgid "Password requirements"
+msgstr "شروط كلمة المرور"
+
+msgid "At least 8 characters"
+msgstr "8 أحرف على الأقل"
+
+msgid "Includes letters (not only numbers)"
+msgstr "تحتوي على حروف (وليست أرقاماً فقط)"
+
+msgid "Includes a number"
+msgstr "تحتوي على رقم"
+
+msgid "Includes a symbol (e.g. ! @ # ?) — recommended"
+msgstr "تحتوي على رمز (مثل ! @ # ?) — يُنصح به"
+
+msgid "Save the new password"
+msgstr "حفظ كلمة المرور الجديدة"
+
+msgid "Hide password"
+msgstr "إخفاء كلمة المرور"
+
+msgid "Passwords match"
+msgstr "كلمتا المرور متطابقتان"
+
+msgid "Passwords don't match yet"
+msgstr "كلمتا المرور غير متطابقتين بعد"
+
+msgid "Return to your Student Hub"
+msgstr "العودة إلى مساحتك الطلابية"
+
+msgid "Back to your Student Hub"
+msgstr "الرجوع إلى مساحتك الطلابية"
