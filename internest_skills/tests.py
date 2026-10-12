@@ -299,26 +299,26 @@ def _llm_reply(content):
 @override_settings(AGENTROUTER_API_KEY="k", AGENTROUTER_BASE_URL="https://llm.test/v1")
 class LLMExtractionTests(Base):
     def test_llm_maps_known_skills_and_creates_new_ones(self):
-        reply = _llm_reply('{"skills":[{"n":"python","t":"i","d":"c"},{"n":"Supply Chain Planning","t":"e","d":"b"},'
-                           '{"n":"Excel","t":"e","d":"b"},{"n":"","t":"e"},{"n":"x","t":"e"}]}')
+        reply = _llm_reply('{"extracted_skills":["python","Supply Chain Planning","Excel","","x"],'
+                           '"implied_skills":["python"],"top_domains":["business"]}')
         with mock.patch("openai.resources.chat.completions.Completions.create", return_value=reply) as create:
             found = {e.skill.name: e.source for e in extract_skills("Automated reports for the finance team.")}
         self.assertEqual(found, {"Python": "implicit", "Supply Chain Planning": "explicit", "Excel": "explicit"})
         self.assertEqual(Skill.objects.get(name="Supply Chain Planning").discipline, "business")
         kwargs = create.call_args.kwargs
         self.assertEqual(kwargs["model"], "gpt-4o-mini")
-        self.assertEqual(kwargs["max_tokens"], 300)
+        self.assertEqual(kwargs["max_tokens"], 900)
         self.assertEqual(kwargs["response_format"], {"type": "json_object"})
         self.assertIn("ESCO / O*NET", kwargs["messages"][0]["content"])
 
     def test_api_result_is_authoritative_no_local_merge(self):
-        reply = _llm_reply('{"skills":[{"n":"Data Analysis","t":"e","d":"c"}]}')
+        reply = _llm_reply('{"extracted_skills":["Data Analysis"],"top_domains":["computing"]}')
         with mock.patch("openai.resources.chat.completions.Completions.create", return_value=reply):
             found = {e.skill.name for e in extract_skills("Skills: SQL and pivot tables")}
         self.assertEqual(found, {"Data Analysis"})
 
     def test_cv_upload_attaches_api_skills_to_student(self):
-        reply = _llm_reply('{"skills":[{"n":"Supply Chain Management","t":"e","d":"b"},{"n":"SQL","t":"i","d":"c"}]}')
+        reply = _llm_reply('{"extracted_skills":["Supply Chain Management","SQL"],"implied_skills":["SQL"],"top_domains":["business"]}')
         self.client.force_login(self.student_user)
         with mock.patch("openai.resources.chat.completions.Completions.create", return_value=reply):
             self.client.post(reverse("skills_hub"), {"cv_file": _docx_upload("Led procurement and logistics at a retail firm.")})

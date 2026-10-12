@@ -16,10 +16,37 @@
 <section class="section-sm">
     <div class="container">
 
+        <style>
+        /* Embedded so it shows even with an old cached stylesheet. */
+        .ai-notice { display: flex; gap: 12px; align-items: flex-start; margin: 0 0 16px; padding: 14px 16px; border-radius: 14px;
+          background: #fffbeb; border: 1px solid #fde68a; color: #78350f; }
+        .ai-notice--empty { background: #fef2f2; border-color: #fecaca; color: #7f1d1d; }
+        .ai-notice > i { font-size: 1.3rem; line-height: 1.2; }
+        .ai-notice strong { display: block; margin-bottom: 2px; }
+        .ai-notice p { margin: 0; font-size: var(--text-sm); }
+        .cv-summary { margin: 16px 0 0; padding: 12px 14px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
+        .cv-summary p { margin: 0 0 6px; color: #334155; font-size: var(--text-sm); }
+        .cv-summary__domains { display: flex; gap: 6px; flex-wrap: wrap; }
+        .cv-summary__domains span, .skill-years { padding: 2px 10px; border-radius: 999px; background: #eff6ff; color: #1d4ed8; font-size: 12px; font-weight: 700; }
+        .skill-years { display: inline-block; margin-top: 6px; }
+        </style>
         <div class="card mb-6">
             <h3 class="mb-4"><span class="skills-step">1</span> {% trans "Analyze your CV or LinkedIn" %}</h3>
             <form method="post" enctype="multipart/form-data" class="skills-source-form">
                 {% csrf_token %}
+                {% if ai_notice %}
+                    <div class="ai-notice{% if ai_notice == 'empty' %} ai-notice--empty{% endif %}" role="alert">
+                        <i class="bi bi-cloud-slash"></i>
+                        <div>
+                            <strong>{% trans "Our AI analysis is temporarily unavailable." %}</strong>
+                            {% if ai_notice == 'empty' %}
+                                <p>{% trans "Your file was read correctly, but our backup scanner found no skills in it. This try did not count toward your daily limit — please analyze it again in a few minutes." %}</p>
+                            {% else %}
+                                <p>{% trans "We used our backup scanner, so some skills may be missing. This try did not count toward your daily limit — analyze your CV again in a few minutes for the full AI analysis." %}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
                 {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
                 <div class="skills-source-grid">
                     {% for field in form %}
@@ -37,6 +64,12 @@
                     </span>
                 {% endif %}
             </form>
+            {% if skill_profile.cv_summary or top_domains %}
+                <div class="cv-summary">
+                    {% if skill_profile.cv_summary %}<p dir="auto"><i class="bi bi-person-badge"></i> {{ skill_profile.cv_summary }}</p>{% endif %}
+                    {% if top_domains %}<div class="cv-summary__domains">{% for d in top_domains %}<span>{{ d }}</span>{% endfor %}</div>{% endif %}
+                </div>
+            {% endif %}
         </div>
 
         {% if verified %}
@@ -98,6 +131,7 @@
                                 </span>
                             </div>
                             <div class="skill-tile__meta">{{ s.skill.get_discipline_display }}</div>
+                            {% if s.years_experience %}<span class="skill-years">{% blocktrans with n=s.years_experience|floatformat:"-1" %}{{ n }} yrs experience{% endblocktrans %}</span>{% endif %}
                             {% if s.evidence %}<div class="skill-tile__evidence">“{{ s.evidence|truncatechars:120 }}”</div>{% endif %}
                             {% if s.in_cooldown %}
                                 <div class="skill-tile__meta mt-2"><i class="bi bi-hourglass-split"></i> {% trans "Retest available" %}: {{ s.cooldown_until|date:"Y/m/d" }}</div>

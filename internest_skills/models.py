@@ -146,6 +146,8 @@ class SkillProfile(models.Model):
     last_extracted_at = models.DateTimeField(null=True, blank=True)
     extraction_count_today = models.PositiveSmallIntegerField(default=0)
     extraction_day = models.DateField(null=True, blank=True)
+    cv_summary = models.CharField(max_length=400, blank=True)
+    top_domains = models.JSONField(default=list, blank=True)
 
     def __str__(self):
         return f"Skill profile: {self.student}"
@@ -165,6 +167,7 @@ class StudentSkill(models.Model):
     skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name="student_skills")
     source = models.CharField(max_length=10, choices=SOURCE_CHOICES)
     evidence = models.CharField(max_length=300, blank=True)
+    years_experience = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_CLAIMED)
     score = models.PositiveSmallIntegerField(null=True, blank=True)
     percentile = models.PositiveSmallIntegerField(null=True, blank=True)

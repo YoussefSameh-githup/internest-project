@@ -3851,3 +3851,26 @@ msgstr "اختر محادثة لتبدأ الدردشة."
 
 msgid "Private chat"
 msgstr "محادثة خاصة"
+
+msgid "Our AI analysis is temporarily unavailable."
+msgstr "التحليل بالذكاء الاصطناعي غير متاح مؤقتاً."
+
+msgid ""
+"Your file was read correctly, but our backup scanner found no skills in it. "
+"This try did not count toward your daily limit — please analyze it again in "
+"a few minutes."
+msgstr ""
+"تمت قراءة ملفك بنجاح، لكن الفحص الاحتياطي لم يجد فيه مهارات. هذه المحاولة لم"
+" تُحسب من حدّك اليومي — يرجى تحليله مرة أخرى بعد دقائق."
+
+msgid ""
+"We used our backup scanner, so some skills may be missing. This try did not "
+"count toward your daily limit — analyze your CV again in a few minutes for "
+"the full AI analysis."
+msgstr ""
+"استخدمنا الفحص الاحتياطي، لذلك قد تكون بعض المهارات ناقصة. هذه المحاولة لم "
+"تُحسب من حدّك اليومي — حلّل سيرتك الذاتية مرة أخرى بعد دقائق للحصول على "
+"التحليل الكامل بالذكاء الاصطناعي."
+
+msgid "%(n)s yrs experience"
+msgstr "خبرة %(n)s سنة"

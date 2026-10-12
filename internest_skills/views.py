@@ -17,10 +17,10 @@ from internest_core.models import StudentProfile
 from internest_core.views import _get_partner_profile, get_user_context
 
 from . import challenge as engine
-from .extraction import ExtractionError, extract_skills, read_document_text, save_claimed_skills
+from .extraction import ExtractionError, analyze_cv, read_document_text, save_claimed_skills
 from .forms import SkillSourceForm
 from .llm import llm_enabled
-from .models import ChallengeAttempt, ChallengeItem, Skill, SkillProfile, StudentSkill
+from .models import ChallengeAttempt, ChallengeItem, Discipline, Skill, SkillProfile, StudentSkill
 from .permissions import is_verified_university, missing_profile_fields, skill_view_role, student_for
 from .quizgen import quiz_item_ids_for
 from .recommendations import recommendations_for
@@ -28,6 +28,7 @@ from .recommendations import recommendations_for
 logger = logging.getLogger(__name__)
 
 MAX_EXTRACTIONS_PER_DAY = 5
+AI_NOTICE_SESSION_KEY = "skills_ai_notice"  # shown inline on the hub after an analysis where every AI key failed
 
 
 def student_gate(api=False):
@@ -84,6 +85,8 @@ def skills_hub(request):
         "lagging": [s for s in skills if s.status == StudentSkill.STATUS_LAG],
         "claimed": [s for s in skills if s.status == StudentSkill.STATUS_CLAIMED],
         "can_generate_quiz": llm_enabled(),
+        "ai_notice": request.session.pop(AI_NOTICE_SESSION_KEY, None),
+        "top_domains": [Discipline(d).label for d in skill_profile.top_domains if d in Discipline.values],
     })
     return render(request, "skills/hub.html", context)
 
@@ -111,9 +114,20 @@ def _handle_extraction(request, student, skill_profile, data):
             skill_profile.save()
             messages.error(request, str(exc))
             return
-        extracted = extract_skills(text)
-        created, updated = save_claimed_skills(student, extracted)
-        skill_profile.extraction_count_today += 1
+        analysis = analyze_cv(text)
+        extracted = analysis.skills
+        if analysis.ai_failed:
+            # Every AI key failed: keep what the local matcher found, say so inline, and don't use up a daily try.
+            request.session[AI_NOTICE_SESSION_KEY] = "partial" if extracted else "empty"
+            if not extracted:
+                skill_profile.save()
+                return
+        else:
+            skill_profile.extraction_count_today += 1
+        if analysis.ai_used:
+            skill_profile.cv_summary = analysis.summary
+            skill_profile.top_domains = analysis.top_domains
+        created, updated = save_claimed_skills(student, extracted, analysis.years_by_skill)
         skill_profile.last_extracted_at = timezone.now()
         explicit = sum(1 for e in extracted if e.source == StudentSkill.SOURCE_EXPLICIT)
         messages.success(

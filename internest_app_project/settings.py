@@ -231,8 +231,14 @@ LOGGING = {
 }
 
 # --- Skill extraction LLM (OpenAI-compatible via AgentRouter); regex fallback when unset ---
-AGENTROUTER_API_KEY = os.getenv("AGENTROUTER_API_KEY", "")  # secret: set in .env, never commit
-AGENTROUTER_BASE_URL = os.getenv("AGENTROUTER_BASE_URL", "https://agentrouter.org/v1")
+# Secrets: set in .env, never commit. API_KEY_1 is the primary key (AGENTROUTER_API_KEY still works).
+AGENTROUTER_API_KEY = os.getenv("API_KEY_1") or os.getenv("AGENTROUTER_API_KEY", "")
+AGENTROUTER_BASE_URL = os.getenv("API_BASE_URL_1") or os.getenv("AGENTROUTER_BASE_URL", "https://agentrouter.org/v1")
+# Failover key, used when API_KEY_1 hits a quota/rate limit, timeout or HTTP error. May point to another
+# provider (e.g. Groq: https://api.groq.com/openai/v1); empty URL/model = same as the primary.
+LLM_BACKUP_API_KEY = os.getenv("API_KEY_2", "")
+LLM_BACKUP_BASE_URL = os.getenv("API_BASE_URL_2", "")
+LLM_BACKUP_MODEL = os.getenv("API_MODEL_2", "")
 # Empty = auto: gemini-2.5-flash for googleapis.com endpoints, gpt-4o-mini otherwise.
 SKILLS_LLM_MODEL = env.str("SKILLS_LLM_MODEL", default="")
 # Off by default: PythonAnywhere free accounts must reach external APIs through the platform proxy.
