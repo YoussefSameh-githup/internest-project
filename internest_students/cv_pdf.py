@@ -7,6 +7,8 @@ from xml.sax.saxutils import escape
 
 from internest_core.letters import ARABIC, _fonts, _visual
 
+from .cv_builder_service import clean_url, contact_items
+
 INK = "#1e293b"  # dark slate
 MUTED = "#475569"
 
@@ -41,9 +43,12 @@ def render_cv_pdf(cv: dict) -> bytes:
     bullet_s = style("bullet", 10, indent=12, after=1)
 
     story = [Paragraph(_p(cv["name"] or "Curriculum Vitae"), name_s)]
-    contacts = [cv[k] for k in ("email", "phone", "linkedin", "github") if cv.get(k)]
-    if contacts:
-        story.append(Paragraph(" | ".join(_p(c) for c in contacts), contact_s))
+    def link(href, text):
+        return f'<a href="{escape(href, {chr(34): "&quot;"})}" color="{MUTED}">{_p(text)}</a>'
+
+    contacts = [link(c["href"], c["text"]) if c["href"] else _p(c["text"]) for c in contact_items(cv)]
+    if contacts:  # clickable links that show only domain + path
+        story.append(Paragraph(" | ".join(contacts), contact_s))
 
     def section(title, blocks):
         if not blocks:
@@ -67,7 +72,7 @@ def render_cv_pdf(cv: dict) -> bytes:
         [Paragraph(_p(p["title"]), item_s)]
         + ([Paragraph(_p(p["description"]), body_s)] if p["description"] else [])
         + ([Paragraph(_p("Tech: " + p["tech_stack"]), meta_s)] if p["tech_stack"] else [])
-        + ([Paragraph(_p(p["link"]), meta_s)] if p["link"] else [])
+        + ([Paragraph(link(*clean_url(p["link"])), meta_s)] if clean_url(p["link"]).href_url else [])
     ) for p in cv.get("projects", [])])
     if cv.get("skills"):
         section("Skills", [Paragraph(_p(", ".join(cv["skills"])), body_s)])

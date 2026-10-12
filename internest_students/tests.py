@@ -269,7 +269,8 @@ class SaveAndPdfTests(Base):
     def test_preview_page(self):
         self._save()
         page = self.client.get(reverse("cv_builder_preview"))
-        self.assertContains(page, "mona@example.com | +20 100 000 0000 | https://linkedin.com/in/mona")
+        self.assertContains(page, '<a href="mailto:mona@example.com">mona@example.com</a> | +20 100 000 0000 | '
+                                  '<a href="https://linkedin.com/in/mona">linkedin.com/in/mona</a>')
         self.assertContains(page, "<h2>Experience</h2>", html=False)
 
     def test_arabic_cv_renders(self):

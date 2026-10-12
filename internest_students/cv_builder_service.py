@@ -6,6 +6,8 @@ they typed and gets a clear message, never a 500.
 import json
 import logging
 import re
+from typing import NamedTuple
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -47,15 +49,59 @@ def _text(value, limit):
     return re.sub(r"\s+", " ", str(value)).strip()[:limit]
 
 
-def _url(value):
-    url = _text(value, 200)
-    if url and not re.match(r"https?://", url, re.I):
-        url = "https://" + url
+# Query parameters that only track clicks/shares (LinkedIn, Google, Meta, mail tools); never part of the address.
+TRACKING_PARAMS = {"trackingid", "lipi", "trk", "trkinfo", "originalsubdomain", "midtoken", "midsig", "miniprofileurn",
+                   "fbclid", "gclid", "dclid", "msclkid", "igshid", "si", "ref", "ref_src", "mc_cid", "mc_eid", "_hsenc", "_hsmi"}
+
+
+class CleanURL(NamedTuple):
+    href_url: str     # sanitized link for <a href>: https, no tracking parameters or fragment
+    display_url: str  # what the CV shows: domain + path, e.g. linkedin.com/in/youssef-sameh
+
+
+def clean_url(url) -> CleanURL:
+    """Sanitize a pasted profile/project URL; ("", "") when it isn't a valid web address."""
+    raw = _text(url, 300)
+    if not raw:
+        return CleanURL("", "")
+    if not re.match(r"https?://", raw, re.I):
+        raw = "https://" + raw.lstrip("/")
+    parts = urlparse(raw)
+    host = (parts.hostname or "").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    if re.fullmatch(r"[a-z]{2}\.linkedin\.com", host):  # eg.linkedin.com → linkedin.com
+        host = "linkedin.com"
+    query = [(k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True)
+             if not k.lower().startswith("utm_") and k.lower() not in TRACKING_PARAMS]
+    path = re.sub(r"/{2,}", "/", parts.path).rstrip("/")
     try:
-        URLValidator(schemes=["http", "https"])(url)
+        port = f":{parts.port}" if parts.port else ""
+    except ValueError:  # "example.com:abc"
+        return CleanURL("", "")
+    href = urlunparse(("https", host + port, path, "", urlencode(query), ""))
+    try:
+        URLValidator(schemes=["https"])(href)
     except ValidationError:
-        return ""
-    return url
+        return CleanURL("", "")
+    display = host + port + path + (f"?{urlencode(query)}" if query else "")
+    return CleanURL(href[:200], display[:120])
+
+
+def _url(value):
+    return clean_url(value).href_url
+
+
+def contact_items(cv) -> list[dict]:
+    """CV header items: {"text", "href"}; links show the clean display_url and point to the sanitized href_url."""
+    items = [{"text": cv[k], "href": ""} for k in ("email", "phone") if cv.get(k)]
+    if items and cv.get("email"):
+        items[0]["href"] = f"mailto:{cv['email']}"
+    for key in ("linkedin", "github"):
+        link = clean_url(cv.get(key))
+        if link.href_url:
+            items.append({"text": link.display_url, "href": link.href_url})
+    return items
 
 
 def _email(value):

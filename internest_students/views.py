@@ -155,5 +155,6 @@ def cv_preview(request):
     cv = _saved_cv(request)
     if cv is None:
         return redirect("cv_builder")
-    contacts = [cv[k] for k in ("email", "phone", "linkedin", "github") if cv[k]]
-    return render(request, "students/cv_ats.html", {"cv": cv, "contacts": contacts})
+    for project in cv["projects"]:
+        project["link"], project["link_display"] = svc.clean_url(project["link"])
+    return render(request, "students/cv_ats.html", {"cv": cv, "contacts": svc.contact_items(cv)})
