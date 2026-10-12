@@ -4551,3 +4551,74 @@ msgstr "ما زلت أدرس"
 
 msgid "expected"
 msgstr "متوقع"
+
+msgid "Active applicants on your open opportunities"
+msgstr "المتقدمون النشطون على فرصك المفتوحة"
+
+msgid "Waiting for a decision on open opportunities"
+msgstr "بانتظار قرارك على الفرص المفتوحة"
+
+msgid ""
+"Students who applied to your opportunities, grouped by opportunity. Opening "
+"an applicant marks their application as under review."
+msgstr ""
+"الطلاب المتقدمون لفرصك، مرتبين حسب كل فرصة. فتح ملف المتقدم يحوّل طلبه إلى "
+"«قيد المراجعة»."
+
+msgid "Open opportunities"
+msgstr "الفرص المفتوحة"
+
+msgid "Archive / closed opportunities"
+msgstr "الأرشيف / الفرص المغلقة"
+
+msgid "Waiting for your decision"
+msgstr "بانتظار قرارك"
+
+msgid "Published"
+msgstr "تاريخ النشر"
+
+msgid "Applicants: %(n)s"
+msgstr "المتقدمون: %(n)s"
+
+msgid "%(n)s awaiting a decision"
+msgstr "%(n)s بانتظار القرار"
+
+msgid "Closed"
+msgstr "مغلقة"
+
+msgid "View profile & CV"
+msgstr "عرض الملف والـ CV"
+
+msgid "Change status"
+msgstr "تغيير الحالة"
+
+msgid ""
+"Final decision made. Open the profile for next steps (rating and "
+"recommendation letter)."
+msgstr ""
+"تم اتخاذ القرار النهائي. افتح الملف للخطوات التالية (التقييم وخطاب التوصية)."
+
+msgid "Send a message"
+msgstr "إرسال رسالة"
+
+msgid "Contact details unlock when you shortlist this applicant."
+msgstr "تُفتح بيانات التواصل عند ترشيح هذا المتقدم للمقابلة."
+
+msgid "No applicants for this opportunity yet"
+msgstr "لا يوجد متقدمون لهذه الفرصة حتى الآن"
+
+msgid ""
+"Share the opportunity link or invite verified students from the Talent Pool."
+msgstr "شارك رابط الفرصة أو ادعُ طلاباً موثقين من بنك المواهب."
+
+msgid "No closed opportunities yet"
+msgstr "لا توجد فرص مغلقة بعد"
+
+msgid "No open opportunities"
+msgstr "لا توجد فرص مفتوحة"
+
+msgid "Publish an opportunity to start receiving applicants."
+msgstr "انشر فرصة لتبدأ في استقبال المتقدمين."
+
+msgid "Open for applications"
+msgstr "مفتوحة للتقديم"

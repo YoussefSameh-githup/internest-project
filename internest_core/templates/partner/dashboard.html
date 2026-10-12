@@ -74,11 +74,11 @@
                 <i class="bi bi-chevron-left dash-card__go" aria-hidden="true"></i>
             </a>
 
-            <a href="{% url 'partner_dashboard_section' 'applicants' %}" class="dash-card">
+            <a href="{% url 'partner_dashboard_section' 'applicants' %}" class="dash-card" title="{% trans 'Waiting for a decision on open opportunities' %}">
                 <span class="dash-card__icon dash-card__icon--green"><i class="bi bi-inbox-fill"></i></span>
                 <span class="dash-card__text">
                     <span class="dash-card__title">{% trans "Applicants Inbox" %}</span>
-                    <span class="dash-card__sub">{% trans "Pre-screened student files" %}</span>
+                    <span class="dash-card__sub">{% trans "Active applicants on your open opportunities" %}</span>
                 </span>
                 <span class="dash-card__count">{{ applicant_count }}</span>
             </a>
@@ -202,64 +202,7 @@
         {% endif %}
 
         {% if section == "applicants" %}
-        <div class="card mb-6">
-            {% partner_is_pro partner as is_pro %}
-            {% partner_is_verified_university partner as is_university %}
-            <div class="flex items-center justify-between mb-4" style="flex-wrap: wrap; gap: var(--space-3);">
-                <h3 class="mb-0"><i class="bi bi-inbox text-accent"></i> {% trans "Applicant inbox" %}</h3>
-                {% if is_university %}
-                    <a href="{% url 'skills_university_dashboard' %}" class="btn btn--outline btn--sm"><i class="bi bi-bar-chart"></i> {% trans "Employability analytics" %}</a>
-                {% elif not is_pro %}
-                    <span class="badge badge--accent"><i class="bi bi-gem"></i> {% trans "Verified skills available on Internest Pro" %}</span>
-                {% endif %}
-            </div>
-            <p class="text-muted mb-5">{% trans "Students who applied to your opportunities. Opening an applicant marks their application as under review." %}</p>
-
-            {% if received_applicants %}
-                <div class="data-table-wrap" style="margin: 0; box-shadow: none;">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>{% trans "Student" %}</th>
-                                <th>{% trans "Applied to" %}</th>
-                                <th>{% trans "Major" %}</th>
-                                <th>{% trans "Applied on" %}</th>
-                                <th>{% trans "Status" %}</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for app in received_applicants %}
-                                {% with student=app.applicant.studentprofile %}
-                                <tr>
-                                    <td>
-                                        <div class="fw-bold">{{ app.applicant.get_full_name|default:app.applicant.username }}</div>
-                                        <div class="text-muted" style="font-size: var(--text-xs);">{{ student.university|default:"" }}</div>
-                                    </td>
-                                    <td>{{ app.internship.title }}</td>
-                                    <td>{{ student.major|default:"-" }}</td>
-                                    <td>{{ app.application_date|date:"Y/m/d" }}</td>
-                                    <td><span class="app-status app-status--{{ app.status }}">{{ app.get_status_display }}</span>{% if app.source == "invited" %} <span class="invited-badge">🎟️ {% trans "Invited by you" %}</span>{% endif %}</td>
-                                    <td>
-                                        <a href="{% url 'partner_applicant' app.pk %}" class="btn btn--primary btn--sm">
-                                            <i class="bi bi-person-lines-fill"></i> {% trans "Open" %}
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endwith %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="empty-state" style="padding: var(--space-8);">
-                    <div class="empty-state__icon"><i class="bi bi-inbox"></i></div>
-                    <h4>{% trans "No applicant files yet" %}</h4>
-                    <p>{% trans "Applications to your opportunities will appear here." %}</p>
-                </div>
-            {% endif %}
-        </div>
-
+            {% include "partner/_applicants_inbox.html" %}
         {% endif %}
 
         {% if section == "pending" %}

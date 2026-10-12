@@ -1,0 +1,216 @@
+{% load i18n skills_tags %}
+<style>
+/* Gig-grouped applicant inbox — embedded so it renders right even with an old cached stylesheet. */
+.ix { --ix-brand: #2563eb; --ix-ink: #0f172a; --ix-muted: #64748b; --ix-line: #e2e8f0; display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+.ix-card { padding: 20px; border-radius: 22px; background: rgba(255, 255, 255, .9); backdrop-filter: blur(10px); border: 1px solid var(--ix-line);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, .05); }
+.ix-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.ix-head h3 { margin: 0 0 4px; }
+.ix-head p { margin: 0; color: var(--ix-muted); font-size: 14px; }
+.ix-views { display: inline-flex; gap: 4px; padding: 4px; border-radius: 14px; background: #f1f5f9; }
+.ix-views a { padding: 8px 14px; border-radius: 11px; color: var(--ix-muted); font-weight: 700; font-size: 14px; text-decoration: none; white-space: nowrap; }
+.ix-views a[aria-current="page"] { background: #fff; color: var(--ix-ink); box-shadow: 0 2px 8px rgba(15, 23, 42, .08); }
+.ix-gigtabs { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; scrollbar-width: thin; }
+.ix-gigtab { flex-shrink: 0; display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--ix-line);
+  background: #fff; color: #334155; font-weight: 700; font-size: 14px; text-decoration: none; transition: border-color .15s, box-shadow .15s; }
+.ix-gigtab:hover { border-color: #93c5fd; color: var(--ix-ink); }
+.ix-gigtab[aria-selected="true"] { border-color: var(--ix-brand); background: #eff6ff; color: #1d4ed8; box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); }
+.ix-gigtab b { min-width: 22px; height: 22px; padding: 0 7px; border-radius: 999px; display: inline-grid; place-items: center; background: #e2e8f0; color: #334155; font-size: 12px; }
+.ix-gigtab[aria-selected="true"] b { background: var(--ix-brand); color: #fff; }
+.ix-new { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 3px rgba(34, 197, 94, .2); }
+.ix-gig[hidden] { display: none; }
+.ix-summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid #f1f5f9; }
+.ix-summary h4 { margin: 0 0 6px; font-size: 1.15rem; color: var(--ix-ink); }
+.ix-facts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--ix-muted); font-size: 13px; }
+.ix-facts span { display: inline-flex; align-items: center; gap: 5px; }
+.ix-state { padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.ix-state--open { background: #dcfce7; color: #166534; }
+.ix-state--expired { background: #f1f5f9; color: #475569; }
+.ix-state--closed { background: #fee2e2; color: #991b1b; }
+.ix-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.ix-app { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 18px; background: #f8fafc; border: 1px solid #eef2f7;
+  transition: transform .15s, box-shadow .2s, border-color .2s; }
+.ix-app { position: relative; z-index: 0; }
+.ix-app:has(.ix-menu[open]) { z-index: 6; }
+.ix-app:hover { transform: translateY(-2px); border-color: #bfdbfe; box-shadow: 0 14px 30px rgba(37, 99, 235, .1); }
+.ix-who { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.ix-avatar { flex-shrink: 0; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #fff; font-weight: 800; }
+.ix-who strong { display: block; color: var(--ix-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ix-who small { color: var(--ix-muted); }
+.ix-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.ix-tag { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+.ix-tag--submitted { background: #e0f2fe; color: #075985; }
+.ix-tag--under_review { background: #fef3c7; color: #92400e; }
+.ix-tag--shortlisted { background: #ede9fe; color: #5b21b6; }
+.ix-tag--accepted { background: #dcfce7; color: #166534; }
+.ix-tag--fulfilled { background: #f1f5f9; color: #475569; }
+.ix-tag--completed { background: #d1fae5; color: #065f46; }
+.ix-tag--invited { background: #fff7ed; color: #9a3412; }
+.ix-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+.ix-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px; border-radius: 11px; border: 1px solid var(--ix-line); background: #fff;
+  color: #334155; font: inherit; font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; }
+.ix-btn:hover { border-color: var(--ix-brand); color: var(--ix-brand); }
+.ix-btn--primary { background: var(--ix-brand); border-color: var(--ix-brand); color: #fff; }
+.ix-btn--primary:hover { background: #1d4ed8; color: #fff; }
+.ix-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+.ix-menu { position: relative; }
+.ix-menu summary { list-style: none; }
+.ix-menu summary::-webkit-details-marker { display: none; }
+.ix-menu__list { position: absolute; z-index: 5; top: calc(100% + 6px); inset-inline-start: 0; min-width: 220px; padding: 6px; border-radius: 14px; background: #fff;
+  border: 1px solid var(--ix-line); box-shadow: 0 18px 40px rgba(15, 23, 42, .15); }
+.ix-menu__list button { width: 100%; display: flex; align-items: center; gap: 8px; padding: 9px 10px; border: 0; border-radius: 10px; background: none;
+  font: inherit; font-size: 14px; color: #334155; text-align: start; cursor: pointer; }
+.ix-menu__list button:hover { background: #f1f5f9; }
+.ix-menu__list p { margin: 0; padding: 8px 10px; color: var(--ix-muted); font-size: 13px; }
+.ix-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 32px 16px; border-radius: 18px; border: 1px dashed #cbd5e1;
+  color: var(--ix-muted); text-align: center; }
+.ix-empty .bi { font-size: 2.2rem; color: var(--ix-brand); }
+@media (max-width: 640px) { .ix-summary { grid-template-columns: 1fr; } .ix-views { width: 100%; } .ix-views a { flex: 1; text-align: center; } }
+</style>
+
+{% partner_is_pro partner as is_pro %}
+{% partner_is_verified_university partner as is_university %}
+<div class="ix">
+    <div class="ix-card ix-head">
+        <div>
+            <h3><i class="bi bi-inbox text-accent"></i> {% trans "Applicant inbox" %}</h3>
+            <p>{% trans "Students who applied to your opportunities, grouped by opportunity. Opening an applicant marks their application as under review." %}</p>
+            {% if is_university %}
+                <a href="{% url 'skills_university_dashboard' %}" class="ix-btn mt-2"><i class="bi bi-bar-chart"></i> {% trans "Employability analytics" %}</a>
+            {% elif not is_pro %}
+                <span class="badge badge--accent mt-2"><i class="bi bi-gem"></i> {% trans "Verified skills available on Internest Pro" %}</span>
+            {% endif %}
+        </div>
+        <nav class="ix-views" aria-label="{% trans 'Opportunities' %}">
+            <a href="?view=open" {% if inbox_view == 'open' %}aria-current="page"{% endif %}>🟢 {% trans "Open opportunities" %} ({{ open_gigs|length }})</a>
+            <a href="?view=archive" {% if inbox_view == 'archive' %}aria-current="page"{% endif %}>🗄️ {% trans "Archive / closed opportunities" %} ({{ archived_gigs|length }})</a>
+        </nav>
+    </div>
+
+    {% if shown_gigs %}
+        <nav class="ix-gigtabs" role="tablist" aria-label="{% trans 'Opportunities' %}">
+            {% for g in shown_gigs %}
+                <a href="?view={{ inbox_view }}&gig={{ g.internship.pk }}" class="ix-gigtab" role="tab" data-gig="{{ g.internship.pk }}"
+                   aria-selected="{% if selected_gig == g.internship.pk|stringformat:'s' %}true{% else %}false{% endif %}">
+                    {% if g.active %}<span class="ix-new" title="{% trans 'Waiting for your decision' %}"></span>{% endif %}
+                    <span dir="auto">{{ g.internship.title|truncatechars:40 }}</span> <b>{{ g.total }}</b>
+                </a>
+            {% endfor %}
+        </nav>
+
+        {% for g in shown_gigs %}
+            {% with gig=g.internship %}
+            <section class="ix-card ix-gig" data-gig-panel="{{ gig.pk }}" role="tabpanel" {% if selected_gig != gig.pk|stringformat:'s' %}hidden{% endif %}>
+                <header class="ix-summary">
+                    <div>
+                        <h4 dir="auto">{{ gig.title }}</h4>
+                        <div class="ix-facts">
+                            <span><i class="bi bi-calendar-plus"></i> {% trans "Published" %}: {{ gig.created_at|date:"Y/m/d" }}</span>
+                            <span><i class="bi bi-calendar-x"></i> {% trans "Deadline" %}: {{ gig.deadline|date:"Y/m/d" }}</span>
+                            <span><i class="bi bi-people"></i> {% blocktrans with n=g.total %}Applicants: {{ n }}{% endblocktrans %}</span>
+                            {% if g.active %}<span><i class="bi bi-hourglass-split"></i> {% blocktrans with n=g.active %}{{ n }} awaiting a decision{% endblocktrans %}</span>{% endif %}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        {% if gig.is_open %}<span class="ix-state ix-state--open">● {% trans "Open for applications" %}</span>
+                        {% elif gig.is_active %}<span class="ix-state ix-state--expired">{% trans "Expired" %}</span>
+                        {% else %}<span class="ix-state ix-state--closed">{% trans "Closed" %}</span>{% endif %}
+                        {% if gig.is_active %}
+                            <form method="post" action="{% url 'partner_close_opportunity' gig.pk %}" style="margin: 0;"
+                                  onsubmit="return confirm('{% trans "Close this opportunity? Pending applicants will see “Position filled”." as close_text %}{{ close_text|escapejs }}');">
+                                {% csrf_token %}
+                                <button type="submit" class="ix-btn"><i class="bi bi-door-closed"></i> {% trans "Close" %}</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </header>
+
+                {% if g.applications %}
+                    <div class="ix-list">
+                        {% for app in g.applications %}
+                            {% with student=app.applicant.studentprofile name=app.applicant.get_full_name|default:app.applicant.username %}
+                            <article class="ix-app">
+                                <div class="ix-who">
+                                    <span class="ix-avatar">{{ name|slice:":1"|upper }}</span>
+                                    <div style="min-width: 0;">
+                                        <strong>{{ name }}</strong>
+                                        <small>{{ student.university|default:"" }}{% if student.university and student.major %} · {% endif %}{{ student.major|default:"" }}</small>
+                                    </div>
+                                </div>
+                                <div class="ix-tags">
+                                    <span class="ix-tag ix-tag--{{ app.status }} app-status--{{ app.status }}">{{ app.get_status_display }}</span>
+                                    {% if app.source == "invited" %}<span class="ix-tag ix-tag--invited invited-badge">🎟️ {% trans "Invited by you" %}</span>{% endif %}
+                                    <span class="ix-tag" style="background: none; color: var(--ix-muted); font-weight: 600;"><i class="bi bi-clock"></i> {{ app.application_date|date:"Y/m/d" }}</span>
+                                </div>
+                                <div class="ix-actions">
+                                    <a href="{% url 'partner_applicant' app.pk %}" class="ix-btn ix-btn--primary"><i class="bi bi-person-lines-fill"></i> {% trans "View profile & CV" %}</a>
+                                    <details class="ix-menu">
+                                        <summary class="ix-btn"><i class="bi bi-arrow-left-right"></i> {% trans "Change status" %}</summary>
+                                        <div class="ix-menu__list">
+                                            {% if app.status == "submitted" or app.status == "under_review" %}
+                                                <form method="post" action="{% url 'partner_applicant_decide' app.pk %}">{% csrf_token %}
+                                                    <input type="hidden" name="next" value="{{ request.get_full_path }}"><input type="hidden" name="decision" value="shortlist">
+                                                    <button type="submit">🎯 {% trans "Shortlist for interview" %}</button>
+                                                </form>
+                                            {% endif %}
+                                            {% if app.status != "accepted" and app.status != "completed" and app.status != "fulfilled" %}
+                                                <form method="post" action="{% url 'partner_applicant_decide' app.pk %}">{% csrf_token %}
+                                                    <input type="hidden" name="next" value="{{ request.get_full_path }}"><input type="hidden" name="decision" value="accept">
+                                                    <button type="submit">✅ {% trans "Accept" %}</button>
+                                                </form>
+                                                <form method="post" action="{% url 'partner_applicant_decide' app.pk %}">{% csrf_token %}
+                                                    <input type="hidden" name="next" value="{{ request.get_full_path }}"><input type="hidden" name="decision" value="fulfilled">
+                                                    <button type="submit">🚪 {% trans "Position filled" %}</button>
+                                                </form>
+                                            {% else %}
+                                                <p>{% trans "Final decision made. Open the profile for next steps (rating and recommendation letter)." %}</p>
+                                            {% endif %}
+                                        </div>
+                                    </details>
+                                    {% if app.contact_unlocked and student.personal_email %}
+                                        <a href="mailto:{{ student.personal_email }}" class="ix-btn"><i class="bi bi-envelope"></i> {% trans "Send a message" %}</a>
+                                    {% else %}
+                                        <span class="ix-btn" aria-disabled="true" title="{% trans 'Contact details unlock when you shortlist this applicant.' %}"><i class="bi bi-lock"></i> {% trans "Send a message" %}</span>
+                                    {% endif %}
+                                </div>
+                            </article>
+                            {% endwith %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="ix-empty"><i class="bi bi-inbox"></i><strong>{% trans "No applicants for this opportunity yet" %}</strong>
+                        <small>{% trans "Share the opportunity link or invite verified students from the Talent Pool." %}</small></div>
+                {% endif %}
+            </section>
+            {% endwith %}
+        {% endfor %}
+    {% else %}
+        <div class="ix-card ix-empty">
+            <i class="bi {% if inbox_view == 'archive' %}bi-archive{% else %}bi-inbox{% endif %}"></i>
+            {% if inbox_view == 'archive' %}
+                <strong>{% trans "No closed opportunities yet" %}</strong>
+            {% else %}
+                <strong>{% trans "No open opportunities" %}</strong>
+                <small>{% trans "Publish an opportunity to start receiving applicants." %}</small>
+                <a href="{% url 'partner_submit_choose' %}" class="ix-btn ix-btn--primary mt-2"><i class="bi bi-plus-lg"></i> {% trans "Add opportunity" %}</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+<script>
+(function () {
+  var tabs = document.querySelectorAll("[data-gig]");
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function (e) {
+      e.preventDefault();
+      tabs.forEach(function (t) { t.setAttribute("aria-selected", t === tab ? "true" : "false"); });
+      document.querySelectorAll("[data-gig-panel]").forEach(function (p) { p.hidden = p.dataset.gigPanel !== tab.dataset.gig; });
+      history.replaceState(null, "", tab.getAttribute("href"));
+    });
+  });
+  document.addEventListener("click", function (e) {  // close open status menus when clicking elsewhere
+    document.querySelectorAll(".ix-menu[open]").forEach(function (m) { if (!m.contains(e.target)) m.removeAttribute("open"); });
+  });
+})();
+</script>

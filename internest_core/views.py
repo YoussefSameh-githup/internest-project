@@ -7,11 +7,12 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
-from django.db.models import Case, F, IntegerField, Q, Value, When
+from django.db.models import Case, F, IntegerField, Prefetch, Q, Value, When
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext as _
 
@@ -648,6 +649,27 @@ def partner_profile_view(request):
 DASHBOARD_SECTIONS = ("overview", "applicants", "pending")
 
 
+def active_applications(partner):
+    """Applicants still being decided on open opportunities: the dashboard's inbox badge."""
+    return Application.objects.filter(
+        internship__partner=partner, internship__is_active=True, internship__deadline__gte=timezone.now().date(),
+        status__in=Application.ACTIVE_STATUSES,
+    )
+
+
+def _gig_groups(internships):
+    """One entry per opportunity with its own applicants, open opportunities first (newest first)."""
+    groups = []
+    for internship in internships:
+        apps = sorted(internship.application_set.all(), key=lambda a: a.application_date, reverse=True)
+        groups.append({
+            "internship": internship, "applications": apps, "total": len(apps),
+            "active": sum(1 for a in apps if a.status in Application.ACTIVE_STATUSES),
+        })
+    groups.sort(key=lambda g: g["internship"].created_at, reverse=True)
+    return [g for g in groups if g["internship"].is_open], [g for g in groups if not g["internship"].is_open]
+
+
 @login_required
 def partner_dashboard_view(request, section="overview"):
     partner_profile = _get_partner_profile(request.user)
@@ -666,7 +688,8 @@ def partner_dashboard_view(request, section="overview"):
         Internship.objects
         .filter(partner=partner_profile)
         .order_by("-deadline")
-        .prefetch_related("application_set")
+        .prefetch_related(Prefetch("application_set", queryset=Application.objects.select_related(
+            "applicant", "applicant__studentprofile")))
     )
     course_submissions = (
         PartnerCourseSubmission.objects
@@ -692,7 +715,7 @@ def partner_dashboard_view(request, section="overview"):
         "partner": partner_profile,
         "section": section,
         "pending_count": pending_count,
-        "applicant_count": received_applicants.count(),
+        "applicant_count": active_applications(partner_profile).count(),
         "active_opportunities": published_internships.filter(is_active=True, deadline__gte=timezone.now().date()).count(),
         "posting_block": posting_block,
         "is_pro": is_pro(partner_profile),
@@ -708,6 +731,17 @@ def partner_dashboard_view(request, section="overview"):
         "received_applicants": received_applicants,
         "published_internships": published_internships,
     })
+    if section == "applicants":
+        open_gigs, archived_gigs = _gig_groups(published_internships)
+        view = "archive" if request.GET.get("view") == "archive" and archived_gigs else "open"
+        shown = archived_gigs if view == "archive" else open_gigs
+        selected = request.GET.get("gig", "")
+        if not any(str(g["internship"].pk) == selected for g in shown):
+            # Default: the first opportunity with applicants waiting for a decision, else the newest one.
+            first = next((g for g in shown if g["active"]), shown[0] if shown else None)
+            selected = str(first["internship"].pk) if first else ""
+        context.update({"open_gigs": open_gigs, "archived_gigs": archived_gigs, "inbox_view": view,
+                        "shown_gigs": shown, "selected_gig": selected})
     return render(request, "partner/dashboard.html", context)
 
 
@@ -1125,7 +1159,7 @@ def partner_applicant_decide(request, app_id):
         app.save(update_fields=["status", "shortlisted_at"])
         notify_shortlisted(app)
         messages.success(request, _("Shortlisted for interview. The CV and contact details are now unlocked, and the student was notified."))
-        return redirect("partner_applicant", app_id=app.pk)
+        return _back_to(request, app)
     if decision == "accept":
         app.status = Application.STATUS_ACCEPTED
         messages.success(request, _("Applicant accepted. Their contact details are now visible to you."))
@@ -1133,9 +1167,17 @@ def partner_applicant_decide(request, app_id):
         app.status = Application.STATUS_FULFILLED
         messages.info(request, _("The applicant will see this position as filled."))
     else:
-        return redirect("partner_applicant", app_id=app.pk)
+        return _back_to(request, app)
     app.decided_at = timezone.now()
     app.save(update_fields=["status", "decided_at"])
+    return _back_to(request, app)
+
+
+def _back_to(request, app):
+    """Return to the inbox when the decision was made there, else to the applicant page."""
+    target = request.POST.get("next", "")
+    if target and url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        return redirect(target)
     return redirect("partner_applicant", app_id=app.pk)
 
 

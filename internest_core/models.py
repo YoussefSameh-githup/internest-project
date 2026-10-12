@@ -189,7 +189,13 @@ class Internship(models.Model):
     required_majors = models.CharField(max_length=255) 
     deadline = models.DateField()
     is_premium = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)  # False: closed by the company (position filled) or by an admin
+    created_at = models.DateTimeField(default=timezone.now, editable=False)
+
+    @property
+    def is_open(self):
+        """Accepting applicants: not closed and the deadline hasn't passed."""
+        return self.is_active and not self.is_expired
     
     @property
     def is_online(self):
@@ -241,6 +247,9 @@ class Application(models.Model):
     source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=SOURCE_DIRECT)
     # When the student agreed that their CV and contact details are shared once shortlisted.
     contact_consent_at = models.DateTimeField(null=True, blank=True)
+
+    # Still being decided: counted on the dashboard's active-applicants badge.
+    ACTIVE_STATUSES = (STATUS_SUBMITTED, STATUS_UNDER_REVIEW, STATUS_SHORTLISTED)
 
     # Skills-first funnel: the CV and contact details stay locked until the startup shortlists.
     CONTACT_UNLOCKED_STATUSES = (STATUS_SHORTLISTED, STATUS_ACCEPTED, STATUS_COMPLETED)
