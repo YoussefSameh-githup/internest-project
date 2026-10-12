@@ -3,6 +3,7 @@
 Every AI call goes through the llm.py key-failover chain; when AI is down the student keeps the data
 they typed and gets a clear message, never a 500.
 """
+import datetime
 import json
 import logging
 import re
@@ -25,12 +26,12 @@ logger = logging.getLogger(__name__)
 
 PERSONAL_FIELDS = ("name", "email", "phone", "linkedin", "github")
 SECTIONS = {  # section → (fields, max items)
-    "education": (("university", "major", "graduation_year"), 4),
+    "education": (("university", "major", "start_date", "end_date", "is_current"), 4),
     "experiences": (("title", "organization", "achievements"), 8),
     "projects": (("title", "description", "tech_stack", "link"), 8),
 }
 EMPTY_CV = {**{f: "" for f in PERSONAL_FIELDS}, "summary": "", "education": [], "experiences": [], "projects": [], "skills": []}
-TEXT_LIMITS = {"name": 80, "phone": 30, "summary": 600, "university": 120, "major": 120, "graduation_year": 20,
+TEXT_LIMITS = {"name": 80, "phone": 30, "summary": 600, "university": 120, "major": 120,
                "title": 120, "organization": 120, "description": 600, "tech_stack": 200}
 MAX_ACHIEVEMENTS, MAX_SKILLS = 6, 30
 PLACEHOLDER = re.compile(r"\[(?:X|N|\d*X)[^\]]{0,12}\]")  # "[X%]", "[N] users" — AI asks the student for a real number
@@ -104,6 +105,60 @@ def contact_items(cv) -> list[dict]:
     return items
 
 
+MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+_MONTH_NAMES = {m.lower(): i for i, m in enumerate(MONTHS, 1)} | {
+    "sept": 9, "january": 1, "february": 2, "march": 3, "april": 4, "june": 6, "july": 7, "august": 8,
+    "september": 9, "october": 10, "november": 11, "december": 12,
+    "يناير": 1, "فبراير": 2, "مارس": 3, "ابريل": 4, "أبريل": 4, "مايو": 5, "يونيو": 6, "يوليو": 7,
+    "اغسطس": 8, "أغسطس": 8, "سبتمبر": 9, "اكتوبر": 10, "أكتوبر": 10, "نوفمبر": 11, "ديسمبر": 12,
+}
+
+
+def month_year(value) -> str:
+    """"YYYY-MM" or "YYYY" from "2023-09", "09/2023", "Sep 2023", "سبتمبر 2023" or "2023"; "" if unreadable."""
+    text = _text(value, 30).lower()
+    year = re.search(r"\b(19[7-9]\d|20[0-4]\d)\b", text)
+    if not year:
+        return ""
+    rest = (text[:year.start()] + " " + text[year.end():]).strip(" -/.,")
+    month = None
+    if re.fullmatch(r"0?[1-9]|1[0-2]", rest):
+        month = int(rest)
+    else:
+        month = next((n for name, n in _MONTH_NAMES.items() if re.search(rf"(?<!\w){name}(?!\w)", rest)), None)
+    return f"{year.group(1)}-{month:02d}" if month else year.group(1)
+
+
+def _label(value) -> str:
+    year, _sep, month = value.partition("-")
+    return f"{MONTHS[int(month) - 1]} {year}" if month else year
+
+
+def format_period(start: str, end: str, is_current: bool = False, today=None) -> str:
+    """"Sep 2023 – Present", "2023 – 2027 (Expected)", "Mar 2026 – Aug 2026" or one side alone."""
+    today = today or datetime.date.today()
+    if is_current:
+        end_text = "Present"
+    elif end:
+        year, _sep, month = end.partition("-")
+        future = (int(year), int(month or 12)) > (today.year, today.month)
+        end_text = _label(end) + (" (Expected)" if future else "")
+    else:
+        end_text = ""
+    return " – ".join(v for v in (_label(start) if start else "", end_text) if v)
+
+
+def _education_row(raw) -> dict:
+    row = {"university": _text(raw.get("university"), 120), "major": _text(raw.get("major"), 120),
+           "start_date": month_year(raw.get("start_date")),
+           # Older saved CVs only had "graduation_year".
+           "end_date": month_year(raw.get("end_date") or raw.get("graduation_year")),
+           "is_current": raw.get("is_current") is True}
+    if row["is_current"]:
+        row["end_date"] = ""
+    return row
+
+
 def _email(value):
     email = _text(value, 120)
     try:
@@ -130,15 +185,15 @@ def clean_cv(data) -> dict:
         for raw in data.get(section) or [] if isinstance(data.get(section), list) else []:
             if not isinstance(raw, dict):
                 continue
-            row = {}
-            for f in fields:
+            row = _education_row(raw) if section == "education" else {}
+            for f in fields if section != "education" else ():
                 if f == "achievements":
                     row[f] = _lines(raw.get(f), MAX_ACHIEVEMENTS)
                 elif f == "link":
                     row[f] = _url(raw.get(f))
                 else:
                     row[f] = _text(raw.get(f), TEXT_LIMITS[f])
-            if any(row.values()):
+            if any(v for k, v in row.items() if k != "is_current"):
                 rows.append(row)
         cv[section] = rows[:max_items]
     seen, skills = set(), []
@@ -195,10 +250,12 @@ _POLISH_PROMPT = (
     "achievements: 2-4 bullets per experience, each starting with a strong past-tense action verb (Led, Developed, "
     "Optimized, Designed, Analyzed, Organized), max 25 words, quantified when the input gives figures; where a "
     "number would help but none was given, insert a placeholder like [X%] or [N] for the student to fill. "
+    "education dates: start_date and end_date as YYYY-MM (or YYYY if no month was given), e.g. 'from September "
+    "2023 until 2027' -> 2023-09 / 2027; is_current true only if they are still studying and give no end date. "
     "summary: 2-3 sentences, max 60 words. skills: max 20; if a skill is the same as a Known name, use that "
     "Known name exactly. JSON only, this schema: "
     '{"name":"","email":"","phone":"","linkedin":"","github":"","summary":"",'
-    '"education":[{"university":"","major":"","graduation_year":""}],'
+    '"education":[{"university":"","major":"","start_date":"YYYY-MM or YYYY","end_date":"YYYY-MM or YYYY, expected graduation allowed","is_current":false}],'
     '"experiences":[{"title":"","organization":"","achievements":[""]}],'
     '"projects":[{"title":"","description":"","tech_stack":"","link":""}],"skills":[""]}'
 )

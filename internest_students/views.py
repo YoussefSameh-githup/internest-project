@@ -155,6 +155,8 @@ def cv_preview(request):
     cv = _saved_cv(request)
     if cv is None:
         return redirect("cv_builder")
+    for e in cv["education"]:
+        e["period"] = svc.format_period(e["start_date"], e["end_date"], e["is_current"])
     for project in cv["projects"]:
         project["link"], project["link_display"] = svc.clean_url(project["link"])
     return render(request, "students/cv_ats.html", {"cv": cv, "contacts": svc.contact_items(cv)})

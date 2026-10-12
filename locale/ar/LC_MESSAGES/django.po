@@ -4293,3 +4293,35 @@ msgstr "موثقة من خلال اختبار مهارة موقوت"
 
 msgid "Verified skill ✅"
 msgstr "مهارة موثقة ✅"
+
+msgid ""
+"Your university, major, when you started and when you graduated (or expect "
+"to)."
+msgstr "جامعتك وتخصصك، ومتى بدأت ومتى تخرّجت (أو تتوقع التخرج)."
+
+msgid "Start date"
+msgstr "تاريخ البداية"
+
+msgid "Start month"
+msgstr "شهر البداية"
+
+msgid "Start year"
+msgstr "سنة البداية"
+
+msgid "End date / expected graduation"
+msgstr "تاريخ النهاية / المتوقع"
+
+msgid "End month"
+msgstr "شهر النهاية"
+
+msgid "End year"
+msgstr "سنة النهاية"
+
+msgid "I'm still studying here (show “Present”)"
+msgstr "ما زلت أدرس هنا (يظهر «Present»)"
+
+msgid "Month"
+msgstr "الشهر"
+
+msgid "Year"
+msgstr "السنة"

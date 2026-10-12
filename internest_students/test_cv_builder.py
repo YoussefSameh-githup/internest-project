@@ -1,4 +1,5 @@
 """CV builder links: tracking parameters stripped, clean display text, clickable in the PDF and the preview."""
+import datetime
 import io
 
 from django.test import SimpleTestCase
@@ -7,7 +8,8 @@ from pypdf import PdfReader
 
 from internest_skills.tests import Base
 
-from .cv_builder_service import CleanURL, clean_cv, clean_url, contact_items
+from . import cv_builder_service as svc
+from .cv_builder_service import CleanURL, clean_cv, clean_url, contact_items, format_period, month_year
 from .cv_pdf import render_cv_pdf
 
 PROFILE = "https://linkedin.com/in/youssef-sameh-448719256"
@@ -74,3 +76,69 @@ class PdfLinkTests(Base):
         self.assertContains(page, f'<a href="{PROFILE}">linkedin.com/in/youssef-sameh-448719256</a>', html=True)
         self.assertContains(page, '<a href="https://internest.example">internest.example</a>', html=True)
         self.assertNotContains(page, "utm_")
+
+
+class EducationDateTests(SimpleTestCase):
+    def test_month_year_accepts_common_formats(self):
+        cases = {"2023-09": "2023-09", "9/2023": "2023-09", "Sep 2023": "2023-09", "September 2023": "2023-09",
+                 "سبتمبر 2023": "2023-09", "2027": "2027", " 2027 (expected) ": "2027", "13/2023": "2023",
+                 "": "", "soon": "", None: "", "1850": ""}
+        for raw, expected in cases.items():
+            with self.subTest(raw=raw):
+                self.assertEqual(month_year(raw), expected)
+
+    def test_format_period(self):
+        today = datetime.date(2026, 10, 13)
+        self.assertEqual(format_period("2023-09", "", True, today), "Sep 2023 – Present")
+        self.assertEqual(format_period("2023", "2027", False, today), "2023 – 2027 (Expected)")
+        self.assertEqual(format_period("2026-03", "2026-08", False, today), "Mar 2026 – Aug 2026")
+        self.assertEqual(format_period("", "2026", False, today), "2026 (Expected)")  # year only counts as December
+        self.assertEqual(format_period("", "2025", False, today), "2025")
+        self.assertEqual(format_period("2022-10", "", False, today), "Oct 2022")
+        self.assertEqual(format_period("", "", False, today), "")
+
+    def test_clean_cv_education_and_backward_compatibility(self):
+        cv = clean_cv({"education": [
+            {"university": "Cairo University", "major": "CS", "start_date": "Sep 2023", "end_date": "June 2027"},
+            {"university": "AUC", "start_date": "2024", "end_date": "2026", "is_current": True},
+            {"university": "Ain Shams", "graduation_year": "2025"},  # CV saved before the date fields existed
+            {"university": "Helwan", "is_current": "yes"},
+        ]})
+        self.assertEqual(cv["education"], [
+            {"university": "Cairo University", "major": "CS", "start_date": "2023-09", "end_date": "2027-06", "is_current": False},
+            {"university": "AUC", "major": "", "start_date": "2024", "end_date": "", "is_current": True},
+            {"university": "Ain Shams", "major": "", "start_date": "", "end_date": "2025", "is_current": False},
+            {"university": "Helwan", "major": "", "start_date": "", "end_date": "", "is_current": False},
+        ])
+        self.assertEqual(clean_cv({"education": [{"is_current": True}]})["education"], [])
+
+
+class EducationRenderTests(Base):
+    CV = {"name": "Youssef Sameh", "education": [
+        {"university": "Cairo University", "major": "Computer Science", "start_date": "2023-09", "end_date": "2027-06"},
+        {"university": "ITI", "major": "Web Development", "start_date": "2025-03", "is_current": True}]}
+
+    def test_pdf_and_preview_show_periods(self):
+        text = PdfReader(io.BytesIO(render_cv_pdf(clean_cv(self.CV)))).pages[0].extract_text()
+        self.assertIn("Computer Science | Sep 2023 – Jun 2027 (Expected)", text)
+        self.assertIn("Web Development | Mar 2025 – Present", text)
+        self.client.force_login(self.student_user)
+        self.client.post(reverse("cv_builder_save"), {"cv": self.CV}, content_type="application/json")
+        page = self.client.get(reverse("cv_builder_preview"))
+        self.assertContains(page, "Computer Science | Sep 2023 – Jun 2027 (Expected)")
+
+    def test_builder_has_date_pickers_and_prompt_asks_for_dates(self):
+        self.client.force_login(self.student_user)
+        page = self.client.get(reverse("cv_builder"))
+        for marker in ('data-date="start_date"', 'data-date="end_date"', 'data-flag="is_current"', "bindDate"):
+            self.assertContains(page, marker)
+        self.assertNotContains(page, "graduation_year")
+        self.assertIn('"start_date":"YYYY-MM or YYYY"', svc._POLISH_PROMPT)
+        self.assertIn("is_current", svc._POLISH_PROMPT)
+
+    def test_arabic_labels(self):
+        self.client.force_login(self.student_user)
+        self.client.cookies["internest_lang"] = "ar"
+        page = self.client.get(reverse("cv_builder"))
+        self.assertContains(page, "تاريخ البداية")
+        self.assertContains(page, "تاريخ النهاية / المتوقع")

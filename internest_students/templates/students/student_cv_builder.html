@@ -63,6 +63,11 @@
 .cvb-field input:focus, .cvb-field textarea:focus { outline: none; border-color: var(--cv-accent); box-shadow: 0 0 0 4px rgba(37, 99, 235, .12); }
 .cvb-field small { color: var(--cv-muted); font-size: 12px; }
 .cvb-field .is-placeholder { border-color: #f59e0b; background: #fffbeb; }
+.cvb-date { display: flex; gap: 6px; }
+.cvb-date select { flex: 1; min-width: 0; padding: 10px 8px; border: 1px solid #cbd5e1; border-radius: 12px; font: inherit; background: #fff; }
+.cvb-date select:focus { outline: none; border-color: var(--cv-accent); box-shadow: 0 0 0 4px rgba(37, 99, 235, .12); }
+.cvb-date select:disabled { background: #f1f5f9; color: #94a3b8; }
+.cvb-check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #334155; cursor: pointer; }
 .cvb-item { position: relative; margin-bottom: 12px; padding: 16px; border-radius: 16px; border: 1px solid var(--cv-line); background: #f8fafc; }
 .cvb-item__remove { position: absolute; top: 10px; inset-inline-end: 10px; border: 0; background: none; color: #94a3b8; font-size: 1.1rem; cursor: pointer; }
 .cvb-item__remove:hover { color: #dc2626; }
@@ -161,7 +166,7 @@ button.is-busy { opacity: .7; pointer-events: none; }
 
             <section class="cvb-step" data-step hidden>
                 <h2>{% trans "Education" %}</h2>
-                <p>{% trans "Your university, major and (expected) graduation year." %}</p>
+                <p>{% trans "Your university, major, when you started and when you graduated (or expect to)." %}</p>
                 <div data-list="education"></div>
                 <button type="button" class="cvb-add" data-add="education">+ {% trans "Add education" %}</button>
             </section>
@@ -219,8 +224,18 @@ button.is-busy { opacity: .7; pointer-events: none; }
     <div class="cvb-item"><button type="button" class="cvb-item__remove" data-remove aria-label="{% trans 'Remove' %}"><i class="bi bi-x-lg"></i></button>
         <div class="cvb-grid">
             <div class="cvb-field full"><label>{% trans "University" %}</label><input data-key="university" maxlength="120" dir="auto"></div>
-            <div class="cvb-field"><label>{% trans "Major" %}</label><input data-key="major" maxlength="120" dir="auto"></div>
-            <div class="cvb-field"><label>{% trans "Graduation year" %}</label><input data-key="graduation_year" maxlength="20" inputmode="numeric" placeholder="2027"></div>
+            <div class="cvb-field full"><label>{% trans "Major" %}</label><input data-key="major" maxlength="120" dir="auto"></div>
+            <div class="cvb-field"><label>{% trans "Start date" %}</label>
+                <div class="cvb-date" data-date="start_date">
+                    <select data-part="month" aria-label="{% trans 'Start month' %}"></select><select data-part="year" aria-label="{% trans 'Start year' %}"></select>
+                </div>
+            </div>
+            <div class="cvb-field"><label>{% trans "End date / expected graduation" %}</label>
+                <div class="cvb-date" data-date="end_date">
+                    <select data-part="month" aria-label="{% trans 'End month' %}"></select><select data-part="year" aria-label="{% trans 'End year' %}"></select>
+                </div>
+            </div>
+            <label class="cvb-check full"><input type="checkbox" data-flag="is_current"> {% trans "I'm still studying here (show “Present”)" %}</label>
         </div>
     </div>
 </template>
@@ -254,17 +269,18 @@ button.is-busy { opacity: .7; pointer-events: none; }
 {% trans "Listening…" as t_listening %}{% trans "Your browser can't record audio. Try Chrome, Edge or Safari, or fill in the form." as t_norec %}
 {% trans "We need microphone access to record. Allow it in your browser and try again." as t_mic %}{% trans "Analyzing your voice note — this can take up to a minute…" as t_processing %}
 {% trans "Done! We filled in the form from your voice note. Review each step, then save." as t_voice_done %}{% trans "Connection problem. Your data is still in the form — please try again." as t_network %}
-{% trans "Polishing your CV…" as t_polishing %}{% trans "Saving…" as t_saving %}
+{% trans "Polishing your CV…" as t_polishing %}{% trans "Saving…" as t_saving %}{% trans "Month" as t_month %}{% trans "Year" as t_year %}
 <script>
 (function () {
   var T = {
     empty: "{{ t_empty|escapejs }}", pick: "{{ t_pick|escapejs }}", free: "{{ t_free|escapejs }}", remove: "{{ t_remove|escapejs }}",
     polished: "{{ t_polished|escapejs }}", placeholders: "{{ t_ph|escapejs }}", listening: "{{ t_listening|escapejs }}",
     noRecorder: "{{ t_norec|escapejs }}", mic: "{{ t_mic|escapejs }}", processing: "{{ t_processing|escapejs }}",
-    voiceDone: "{{ t_voice_done|escapejs }}", network: "{{ t_network|escapejs }}", polishing: "{{ t_polishing|escapejs }}", saving: "{{ t_saving|escapejs }}"
+    voiceDone: "{{ t_voice_done|escapejs }}", network: "{{ t_network|escapejs }}", polishing: "{{ t_polishing|escapejs }}", saving: "{{ t_saving|escapejs }}",
+    month: "{{ t_month|escapejs }}", year: "{{ t_year|escapejs }}"
   };
   var BLANK = {
-    education: {university: "", major: "", graduation_year: ""},
+    education: {university: "", major: "", start_date: "", end_date: "", is_current: false},
     experiences: {title: "", organization: "", achievements: []},
     projects: {title: "", description: "", tech_stack: "", link: ""}
   };
@@ -307,6 +323,32 @@ button.is-busy { opacity: .7; pointer-events: none; }
     else if (alertBox.classList.contains("cvb-alert--warn") && alertBox.textContent === T.placeholders) showAlert("");
   }
 
+  // Month/year pickers stored as "YYYY-MM" (or "YYYY" when no month is chosen).
+  var monthNames = [], thisYear = new Date().getFullYear();
+  for (var mi = 0; mi < 12; mi++) {
+    try { monthNames.push(new Date(2000, mi, 1).toLocaleDateString(document.documentElement.lang || "en", {month: "short"})); }
+    catch (e) { monthNames.push(String(mi + 1)); }
+  }
+  function option(select, value, text) {
+    var o = document.createElement("option");
+    o.value = value;
+    o.textContent = text;
+    select.appendChild(o);
+  }
+  function bindDate(box, item) {
+    var key = box.dataset.date, month = box.querySelector('[data-part="month"]'), year = box.querySelector('[data-part="year"]');
+    option(month, "", T.month);
+    monthNames.forEach(function (n, i) { option(month, (i < 9 ? "0" : "") + (i + 1), n); });
+    option(year, "", T.year);
+    for (var y = thisYear + 8; y >= 1970; y--) option(year, String(y), String(y));
+    var parts = (item[key] || "").split("-");
+    year.value = parts[0] || "";
+    month.value = parts[1] || "";
+    function sync() { item[key] = year.value ? year.value + (month.value ? "-" + month.value : "") : ""; }
+    month.addEventListener("change", sync);
+    year.addEventListener("change", sync);
+  }
+
   function renderList(name) {
     var box = form.querySelector('[data-list="' + name + '"]');
     var tpl = document.querySelector('template[data-tpl="' + name + '"]');
@@ -321,6 +363,18 @@ button.is-busy { opacity: .7; pointer-events: none; }
           item[el.dataset.key] = el.hasAttribute("data-lines") ? el.value.split("\n") : el.value;
           flagPlaceholders();
         });
+      });
+      node.querySelectorAll("[data-date]").forEach(function (box) { bindDate(box, item); });
+      node.querySelectorAll("[data-flag]").forEach(function (box) {
+        var endSelects = node.querySelectorAll('[data-date="end_date"] select');
+        function apply() {
+          item[box.dataset.flag] = box.checked;
+          endSelects.forEach(function (s) { s.disabled = box.checked; if (box.checked) s.value = ""; });
+          if (box.checked) item.end_date = "";
+        }
+        box.checked = !!item[box.dataset.flag];
+        box.addEventListener("change", apply);
+        apply();
       });
       node.querySelector("[data-remove]").addEventListener("click", function () { cv[name].splice(index, 1); renderList(name); });
       box.appendChild(node);

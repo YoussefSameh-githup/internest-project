@@ -7,7 +7,7 @@ from xml.sax.saxutils import escape
 
 from internest_core.letters import ARABIC, _fonts, _visual
 
-from .cv_builder_service import clean_url, contact_items
+from .cv_builder_service import clean_url, contact_items, format_period
 
 INK = "#1e293b"  # dark slate
 MUTED = "#475569"
@@ -61,7 +61,8 @@ def render_cv_pdf(cv: dict) -> bytes:
         section("Summary", [Paragraph(_p(cv["summary"]), body_s)])
     section("Education", [KeepTogether([
         Paragraph(_p(e["university"] or e["major"]), item_s),
-        Paragraph(_p(" | ".join(v for v in (e["major"] if e["university"] else "", e["graduation_year"]) if v)), meta_s),
+        Paragraph(_p(" | ".join(v for v in (e["major"] if e["university"] else "",
+                                            format_period(e["start_date"], e["end_date"], e["is_current"])) if v)), meta_s),
     ]) for e in cv.get("education", [])])
     section("Experience", [KeepTogether(
         [Paragraph(_p(" | ".join(v for v in (x["title"], x["organization"]) if v)), item_s)]
