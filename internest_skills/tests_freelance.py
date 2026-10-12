@@ -89,9 +89,15 @@ class ParsingTests(Base):
     @override_settings(FREELANCE_AUTO_VERIFY=True)
     def test_auto_verify_setting_verifies_immediately(self):
         with mock.patch(CHAT, return_value=_llm_reply(json.dumps(PARSED))):
-            resp = _post(self.client)
+            resp = _post(self.client, link="https://mostaql.com/u/stud")  # handle matches the username
         self.assertEqual(StudentFreelanceGig.objects.get().status, "verified")
         self.assertContains(resp, "Verified skill ✅")
+
+    @override_settings(FREELANCE_AUTO_VERIFY=True)
+    def test_auto_verify_never_skips_review_without_owner_match(self):
+        with mock.patch(CHAT, return_value=_llm_reply(json.dumps(PARSED))):
+            _post(self.client)  # portfolio link: no username to match
+        self.assertEqual(StudentFreelanceGig.objects.get().status, "pending")
 
 
 class VerificationTests(Base):

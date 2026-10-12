@@ -15,6 +15,7 @@ from .extraction import _clean_str, compact_cv_text, extract_skills_local
 from .llm import LLMUnavailable, chat_json, llm_enabled
 from .models import Skill, StudentFreelanceGig, StudentSkill
 from .taxonomy import TaxonomyIndex
+from .utils import OWNER_MATCH_THRESHOLD, best_owner_match, extract_platform_username
 
 logger = logging.getLogger(__name__)
 
@@ -68,14 +69,39 @@ def parse_gig(platform: str, link: str, text: str) -> dict:
             "deliverables": [], "skills": [e.skill for e in extract_skills_local(text, skills)][:MAX_GIG_SKILLS], "ai_parsed": False}
 
 
+def student_identifiers(student) -> list[str]:
+    """Who the student is: full name, username, email prefixes, and LinkedIn / GitHub / portfolio handles."""
+    user = student.user
+    ids = [user.get_full_name(), user.username]
+    ids += [e.split("@")[0] for e in (user.email, student.personal_email, student.university_email) if e]
+    links = [student.linkedin_url, student.portfolio_url]
+    cv = getattr(student, "cv", None)  # CV builder record, if any
+    if cv and isinstance(cv.data, dict):
+        links += [cv.data.get("linkedin"), cv.data.get("github")]
+    ids += [h for h in (extract_platform_username(u) for u in links) if h]
+    return [i for i in dict.fromkeys(i.strip() for i in ids if i and i.strip())]
+
+
+def ownership_check(student, link: str) -> tuple[str, bool | None]:
+    """(handle in the link, matched?). matched is None when the link has no readable username (e.g. a gig id)."""
+    handle = extract_platform_username(link) or ""
+    if not handle:
+        return "", None
+    return handle, best_owner_match(handle, student_identifiers(student)) >= OWNER_MATCH_THRESHOLD
+
+
 @transaction.atomic
 def import_gig(student, platform: str, link: str, text: str, proof=None) -> StudentFreelanceGig:
     parsed = parse_gig(platform, link, text)
+    handle, matched = ownership_check(student, link)
     gig = StudentFreelanceGig.objects.create(
         student=student, platform=platform, link=link, raw_text=text, proof=proof,
+        platform_username=handle[:100], owner_matched=bool(matched),
+        # A handle that doesn't look like the student: the reviewer must see proof of account ownership.
+        status=StudentFreelanceGig.STATUS_NEEDS_PROOF if matched is False else StudentFreelanceGig.STATUS_PENDING,
         **{k: parsed[k] for k in ("project_title", "client_feedback", "rating", "deliverables", "ai_parsed")})
     gig.skills.set(parsed["skills"])
-    if settings.FREELANCE_AUTO_VERIFY and gig.skills.exists():
+    if settings.FREELANCE_AUTO_VERIFY and gig.owner_matched and gig.skills.exists():
         verify_gig(gig)
     return gig
 

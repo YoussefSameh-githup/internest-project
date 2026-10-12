@@ -4325,3 +4325,28 @@ msgstr "الشهر"
 
 msgid "Year"
 msgstr "السنة"
+
+msgid "Needs proof review"
+msgstr "بحاجة لمراجعة الإثبات"
+
+msgid ""
+"Note: the username in the platform link doesn't directly match the account "
+"owner's name. Please upload a screenshot that shows you own the account to "
+"speed up verification."
+msgstr ""
+"تنبيه: اسم المستخدم في رابط المنصة لا يطابق اسم صاحب الحساب الحالي بشكل "
+"مباشر. يرجى التأكد من رفع لقطة شاشة للإثبات تظهر ملكية الحساب لسرعة التوثيق."
+
+msgid "Import anyway without a screenshot"
+msgstr "استيراد على أي حال بدون لقطة شاشة"
+
+msgid "The username in the link matches your profile"
+msgstr "اسم المستخدم في الرابط يطابق ملفك الشخصي"
+
+msgid "Account matches you"
+msgstr "الحساب مطابق لك"
+
+msgid ""
+"“%(handle)s” doesn't match your name, so our team will check your proof of "
+"account ownership."
+msgstr "«%(handle)s» لا يطابق اسمك، لذلك سيراجع فريقنا إثبات ملكيتك للحساب."

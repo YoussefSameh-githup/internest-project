@@ -96,11 +96,11 @@ class SkillRelationAdmin(admin.ModelAdmin):
 class StudentFreelanceGigAdmin(admin.ModelAdmin):
     """Review queue: open the link and proof, then approve (skills become Verified) or reject."""
 
-    list_display = ("project_title", "student", "platform", "rating", "status", "ai_parsed", "created_at")
-    list_filter = ("status", "platform", "ai_parsed")
+    list_display = ("project_title", "student", "platform", "platform_username", "owner_matched", "rating", "status", "created_at")
+    list_filter = ("status", "owner_matched", "platform", "ai_parsed")
     search_fields = ("project_title", "link", "student__user__username")
     filter_horizontal = ("skills",)
-    readonly_fields = ("student", "raw_text", "ai_parsed", "reviewed_at", "created_at")
+    readonly_fields = ("student", "raw_text", "platform_username", "owner_matched", "ai_parsed", "reviewed_at", "created_at")
     actions = ["approve", "reject"]
 
     @admin.action(description="Approve: verify the selected gigs' skills")
@@ -110,6 +110,6 @@ class StudentFreelanceGigAdmin(admin.ModelAdmin):
 
     @admin.action(description="Reject the selected gigs")
     def reject(self, request, queryset):
-        for gig in queryset.filter(status=StudentFreelanceGig.STATUS_PENDING):
+        for gig in queryset.filter(status__in=[StudentFreelanceGig.STATUS_PENDING, StudentFreelanceGig.STATUS_NEEDS_PROOF]):
             reject_gig(gig)  # the student sees a translated default reason
         self.message_user(request, "Rejected.")

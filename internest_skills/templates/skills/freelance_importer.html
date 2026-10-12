@@ -49,6 +49,13 @@
 .fl-status--pending { background: #fef3c7; color: #92400e; }
 .fl-status--verified { background: #dcfce7; color: #166534; }
 .fl-status--rejected { background: #fee2e2; color: #991b1b; }
+.fl-status--needs_proof { background: #ffedd5; color: #9a3412; }
+.fl-owner { display: flex; gap: 12px; align-items: flex-start; margin: 0 0 16px; padding: 14px 16px; border-radius: 14px;
+  background: #fff7ed; border: 1px solid #fed7aa; color: #7c2d12; }
+.fl-owner > span { font-size: 1.3rem; line-height: 1.2; }
+.fl-owner p { margin: 0 0 10px; font-size: 14px; line-height: 1.6; }
+.fl-owner .btn { margin-inline-end: 6px; }
+.fl-owner-hint { margin: 4px 0 0; color: #9a3412; font-size: 13px; }
 @media (max-width: 720px) { .fl-platforms { grid-template-columns: repeat(3, minmax(0, 1fr)); } .fl-how { grid-template-columns: 1fr; } }
 </style>
 
@@ -109,6 +116,16 @@
                 {% if form.proof.errors %}<div class="fl-error">{{ form.proof.errors|join:" " }}</div>{% endif %}
             </div>
 
+            {% if ownership_warning %}
+                <div class="fl-owner" role="alert" data-owner-warning>
+                    <span aria-hidden="true">⚠️</span>
+                    <div>
+                        <p>{% trans "Note: the username in the platform link doesn't directly match the account owner's name. Please upload a screenshot that shows you own the account to speed up verification." %}</p>
+                        <button type="submit" name="confirm_unmatched" value="1" class="btn btn--ghost btn--sm">{% trans "Import anyway without a screenshot" %}</button>
+                    </div>
+                </div>
+            {% endif %}
+
             <div class="fl-submit">
                 <button type="submit" class="btn btn--primary btn--lg" data-fl-submit><span class="fl-spin" aria-hidden="true"></span> ✨ {% trans "Analyze & import" %}</button>
                 <small>{% trans "Analysis takes a few seconds." %}</small>
@@ -122,10 +139,12 @@
                     <div class="fl-gig__body">
                         <div class="fl-gig__title">
                             <span dir="auto">{{ g.project_title|default:g.get_platform_display }}</span>
-                            <span class="fl-status fl-status--{{ g.status }}">{% if g.status == 'verified' %}✅ {% elif g.status == 'pending' %}⏳ {% endif %}{{ g.get_status_display }}</span>
+                            <span class="fl-status fl-status--{{ g.status }}">{% if g.status == 'verified' %}✅ {% elif g.status == 'pending' %}⏳ {% elif g.status == 'needs_proof' %}📎 {% endif %}{{ g.get_status_display }}</span>
+                            {% if g.owner_matched %}<span class="fl-status fl-status--verified" title="{% trans 'The username in the link matches your profile' %}">👤 {% trans "Account matches you" %}</span>{% endif %}
                             {% if g.rating %}<span style="color: #f59e0b;">★ {{ g.rating }}</span>{% endif %}
                         </div>
                         <div class="fl-gig__meta">{{ g.get_platform_display }} · <a href="{{ g.link }}" target="_blank" rel="noopener nofollow" dir="ltr">{{ g.link|truncatechars:60 }}</a> · {{ g.created_at|date:"Y/m/d" }}</div>
+                        {% if g.status == 'needs_proof' %}<p class="fl-owner-hint"><i class="bi bi-person-exclamation"></i> {% blocktrans with handle=g.platform_username %}“{{ handle }}” doesn't match your name, so our team will check your proof of account ownership.{% endblocktrans %}</p>{% endif %}
                         {% if g.client_feedback %}<p class="fl-gig__quote" dir="auto">“{{ g.client_feedback|truncatechars:220 }}”</p>{% endif %}
                         {% if g.status == 'rejected' %}<p class="fl-error">{% if g.review_note %}{{ g.review_note }}{% else %}{% trans "We couldn't confirm this work from the link and proof. Add a clearer screenshot and import it again." %}{% endif %}</p>{% endif %}
                         <div class="fl-chips">

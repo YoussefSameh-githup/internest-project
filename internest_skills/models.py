@@ -328,12 +328,17 @@ class StudentFreelanceGig(models.Model):
 
     PLATFORM_CHOICES = [("mostaql", "Mostaql | مستقل"), ("khamsat", "Khamsat | خمسات"), ("upwork", "Upwork"),
                         ("fiverr", "Fiverr"), ("portfolio", _("Portfolio link"))]
-    STATUS_PENDING, STATUS_VERIFIED, STATUS_REJECTED = "pending", "verified", "rejected"
-    STATUS_CHOICES = [(STATUS_PENDING, _("Under review")), (STATUS_VERIFIED, _("Verified")), (STATUS_REJECTED, _("Not accepted"))]
+    STATUS_PENDING, STATUS_NEEDS_PROOF = "pending", "needs_proof"
+    STATUS_VERIFIED, STATUS_REJECTED = "verified", "rejected"
+    STATUS_CHOICES = [(STATUS_PENDING, _("Under review")), (STATUS_NEEDS_PROOF, _("Needs proof review")),
+                      (STATUS_VERIFIED, _("Verified")), (STATUS_REJECTED, _("Not accepted"))]
 
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="freelance_gigs")
     platform = models.CharField(max_length=12, choices=PLATFORM_CHOICES)
     link = models.URLField(max_length=300)
+    # Handle parsed from the link and whether it matches the student's name / email / LinkedIn / GitHub.
+    platform_username = models.CharField(max_length=100, blank=True)
+    owner_matched = models.BooleanField(default=False)
     raw_text = models.TextField(max_length=6000)
     proof = models.FileField(upload_to="freelance_proofs/", blank=True, validators=[
         FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size])
@@ -343,7 +348,7 @@ class StudentFreelanceGig(models.Model):
     deliverables = models.JSONField(default=list, blank=True)
     skills = models.ManyToManyField(Skill, blank=True, related_name="freelance_gigs")
     ai_parsed = models.BooleanField(default=False)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING, db_index=True)
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default=STATUS_PENDING, db_index=True)
     review_note = models.CharField(max_length=300, blank=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
