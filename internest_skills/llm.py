@@ -6,6 +6,7 @@ logic; nothing here may turn into an HTTP 500.
 """
 import json
 import logging
+import re
 from dataclasses import dataclass
 
 import httpx
@@ -74,18 +75,72 @@ def _client(timeout: float, provider: Provider | None = None, max_retries: int =
     return OpenAI(api_key=provider.api_key, base_url=provider.base_url, timeout=timeout, max_retries=max_retries, **kwargs)
 
 
+_FENCE = re.compile(r"^\s*```[a-z]*\s*|\s*```\s*$", re.I)
+
+
+def _close_truncated(text: str) -> str:
+    """Make a JSON object that was cut off (max_tokens) parseable: drop the unfinished last element, close brackets."""
+    stack, in_string, escaped, cut = [], False, False, None
+    for i, ch in enumerate(text):
+        if in_string:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_string = False
+        elif ch == '"':
+            in_string = True
+        elif ch in "{[":
+            stack.append("}" if ch == "{" else "]")
+            cut = (i + 1, list(stack))
+        elif ch in "}]":
+            if stack:
+                stack.pop()
+            cut = (i + 1, list(stack))
+        elif ch == ",":
+            cut = (i, list(stack))
+    if cut is None:
+        raise ValueError("no JSON object in LLM reply")
+    end, still_open = cut
+    return text[:end].rstrip().rstrip(",") + "".join(reversed(still_open))
+
+
+def parse_json_object(text: str) -> dict:
+    """LLM reply → dict. Tolerates ```json fences, text around the object and a reply truncated mid-string."""
+    text = _FENCE.sub("", (text or "").strip())
+    start = text.find("{")
+    if start == -1:
+        raise ValueError("no JSON object in LLM reply")
+    text = text[start:]
+    try:
+        data, _end = json.JSONDecoder().raw_decode(text)  # ignores anything after the object
+    except json.JSONDecodeError:
+        data = json.loads(_close_truncated(text))
+        logger.info("LLM reply was incomplete JSON; repaired it")
+    if not isinstance(data, dict):
+        raise ValueError("LLM did not return a JSON object")
+    return data
+
+
 def _ask(provider: Provider, system: str, user: str, max_tokens: int, timeout: float, max_retries: int) -> dict:
+    extra = {}
+    if "googleapis.com" in provider.base_url and "flash" in provider.model:
+        # Gemini Flash "thinking" spends max_tokens before the answer, which truncated the JSON; not needed here.
+        extra["reasoning_effort"] = "none"
     resp = _client(timeout, provider, max_retries).chat.completions.create(
         model=provider.model,
         response_format={"type": "json_object"},
         max_tokens=max_tokens,
         temperature=0,
-        messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+        messages=[{"role": "system", "content": system + " Reply with one JSON object only, no markdown."},
+                  {"role": "user", "content": user}],
+        **extra,
     )
-    data = json.loads(resp.choices[0].message.content or "")
-    if not isinstance(data, dict):
-        raise ValueError("LLM did not return a JSON object")
-    return data
+    choice = resp.choices[0]
+    if getattr(choice, "finish_reason", None) == "length":
+        logger.warning("LLM reply hit max_tokens (%s) via %s; repairing the JSON", max_tokens, provider.label)
+    return parse_json_object(choice.message.content or "")
 
 
 def chat_json(system: str, user: str, max_tokens: int = 1000, timeout: float | None = None) -> dict:

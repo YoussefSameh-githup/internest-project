@@ -45,7 +45,7 @@ def parse_gig(platform: str, link: str, text: str) -> dict:
     if llm_enabled():
         try:
             data = chat_json(_PROMPT, f"Known: {', '.join(s.name for s in skills)}\nPlatform: {platform}\nLink: {link}\n"
-                                      f"Text:\n{compact_cv_text(text)[:8000]}", max_tokens=700)
+                                      f"Text:\n{compact_cv_text(text)[:8000]}", max_tokens=700, timeout=45)
             names = data.get("extracted_skills") if isinstance(data.get("extracted_skills"), list) else []
             matched = []
             for name in names:

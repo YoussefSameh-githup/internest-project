@@ -244,7 +244,7 @@ LLM_BACKUP_MODEL = os.getenv("API_MODEL_2", "")
 SKILLS_LLM_MODEL = env.str("SKILLS_LLM_MODEL", default="")
 # Off by default: PythonAnywhere free accounts must reach external APIs through the platform proxy.
 ENABLE_PROXY_BYPASS = env.bool("ENABLE_PROXY_BYPASS", default=False)
-SKILLS_LLM_TIMEOUT = env.float("SKILLS_LLM_TIMEOUT", default=15.0)
+SKILLS_LLM_TIMEOUT = env.float("SKILLS_LLM_TIMEOUT", default=30.0)
 # Voice-to-CV transcription (OpenAI-compatible Whisper). Without it, a Groq/OpenAI key above is reused.
 WHISPER_API_KEY = os.getenv("WHISPER_API_KEY", "")
 WHISPER_BASE_URL = os.getenv("WHISPER_BASE_URL", "https://api.groq.com/openai/v1")

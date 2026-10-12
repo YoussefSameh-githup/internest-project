@@ -307,7 +307,7 @@ class LLMExtractionTests(Base):
         self.assertEqual(Skill.objects.get(name="Supply Chain Planning").discipline, "business")
         kwargs = create.call_args.kwargs
         self.assertEqual(kwargs["model"], "gpt-4o-mini")
-        self.assertEqual(kwargs["max_tokens"], 900)
+        self.assertEqual(kwargs["max_tokens"], 700)
         self.assertEqual(kwargs["response_format"], {"type": "json_object"})
         self.assertIn("ESCO / O*NET", kwargs["messages"][0]["content"])
 

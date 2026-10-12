@@ -19,7 +19,8 @@ from .models import Discipline, Skill, StudentSkill
 from .taxonomy import TaxonomyIndex
 
 MAX_TEXT_CHARS = 200_000
-LLM_INPUT_CHARS = 14_000
+LLM_INPUT_CHARS = 10_000  # long CVs made calls time out; contacts and repeated lines are stripped first
+LLM_TIMEOUT = 45.0
 LLM_MAX_SKILLS = 20
 
 logger = logging.getLogger(__name__)
@@ -145,10 +146,10 @@ _SYSTEM_PROMPT = (
     "Every skill name MUST be a standard taxonomy name: if it is the same skill as a name in Known, return that "
     "Known name EXACTLY (e.g. Python3, py, python developer -> Python); otherwise use the global ESCO / O*NET "
     "preferred label (1-4 words, English, no versions or job titles). "
-    "Reply with JSON only, exactly this schema: "
-    '{"candidate_name":"","summary":"one sentence, max 40 words","extracted_skills":["Skill"],'
-    '"implied_skills":["the extracted_skills that are only implied, not written"],'
-    '"years_experience_by_skill":{"Skill":1.5},'
+    "Keep it short: compact JSON only, skills first (a cut-off reply still keeps them), exactly this schema: "
+    '{"extracted_skills":["Skill"],"implied_skills":["the extracted_skills that are only implied, not written"],'
+    '"candidate_name":"","summary":"one sentence, max 25 words",'
+    '"years_experience_by_skill":{"Skill":1.5, only skills with years stated in the CV},'
     f'"top_domains":["1-3 of: {", ".join(_DOMAINS)}"]}}'
 )
 
@@ -205,7 +206,7 @@ def compact_cv_text(text: str) -> str:
 def analyze_cv_llm(text: str, skills) -> CVAnalysis:
     cv = compact_cv_text(text)[:LLM_INPUT_CHARS]
     known = ", ".join(s.name for s in skills)
-    data = chat_json(_SYSTEM_PROMPT, f"Known: {known}\nCV:\n{cv}", max_tokens=900)
+    data = chat_json(_SYSTEM_PROMPT, f"Known: {known}\nCV:\n{cv}", max_tokens=700, timeout=LLM_TIMEOUT)
     names = data.get("extracted_skills")
     if not isinstance(names, list):
         raise ValueError("LLM response missing 'extracted_skills' list")
