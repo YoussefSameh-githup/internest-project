@@ -20,7 +20,7 @@ from internest_core.views import _get_partner_profile, get_user_context
 from . import challenge as engine
 from .extraction import ExtractionError, analyze_cv, read_document_text, save_claimed_skills
 from . import freelance_service
-from .forms import FreelanceImportForm, SkillSourceForm
+from .forms import FreelanceImportForm, GigProofForm, SkillSourceForm, UniversityShareForm
 from .llm import llm_enabled
 from .models import ChallengeAttempt, ChallengeItem, Discipline, Skill, SkillProfile, StudentFreelanceGig, StudentSkill
 from .permissions import is_verified_university, missing_profile_fields, skill_view_role, student_for
@@ -188,6 +188,36 @@ def _import_freelance_gig(request, student, d, matched):
     if matched is False:
         messages.warning(request, OWNERSHIP_WARNING)
     return redirect("freelance_importer")
+
+
+@student_gate()
+@require_POST
+def freelance_gig_proof(request, gig_id):
+    """Attach a screenshot/PDF proving account ownership to a gig still under review."""
+    gig = get_object_or_404(StudentFreelanceGig, pk=gig_id, student=request.student,
+                            status__in=[StudentFreelanceGig.STATUS_PENDING, StudentFreelanceGig.STATUS_NEEDS_PROOF])
+    form = GigProofForm(request.POST, request.FILES)
+    if form.is_valid():
+        if gig.proof:
+            gig.proof.delete(save=False)
+        gig.proof = form.cleaned_data["proof"]
+        gig.save(update_fields=["proof"])
+        messages.success(request, _("Proof uploaded. Our team will review it soon."))
+    else:
+        messages.error(request, " ".join(form.errors.get("proof", [])))
+    return redirect(f"{reverse('profile')}?tab=portfolio")
+
+
+@student_gate()
+@require_POST
+def skills_share_university(request):
+    form = UniversityShareForm(request.POST)
+    if form.is_valid():
+        skill_profile, _created = SkillProfile.objects.get_or_create(student=request.student)
+        skill_profile.partner_university = form.cleaned_data["partner_university"]
+        skill_profile.save(update_fields=["partner_university"])
+        messages.success(request, _("Your sharing preference was saved."))
+    return redirect(f"{reverse('profile')}?tab=settings")
 
 
 # ---------------------------------------------------------------- challenge flow

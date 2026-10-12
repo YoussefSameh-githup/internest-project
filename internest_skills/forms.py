@@ -71,3 +71,14 @@ class FreelanceImportForm(forms.Form):
         if link and self.student and self.student.freelance_gigs.filter(link=link).exists():
             self.add_error("link", _("You already imported this link."))
         return data
+
+
+class UniversityShareForm(forms.Form):
+    partner_university = forms.ModelChoiceField(
+        queryset=PartnerProfile.objects.filter(is_academic=True, is_fully_verified=True).order_by("company_name"),
+        required=False, empty_label=_("— Do not share —"), label=_("Share my skill analytics with my university"))
+
+
+class GigProofForm(forms.Form):
+    proof = forms.FileField(label=_("Proof (screenshot or PDF, optional)"),
+                            validators=[FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size])

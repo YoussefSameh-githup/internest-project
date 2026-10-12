@@ -74,6 +74,8 @@ class StudentProfile(models.Model):
     portfolio_url = models.URLField(blank=True, default="", verbose_name=_("Portfolio link"))
     # Explicit opt-in to appear in the Pro Talent Pool (name, studies and verified skills only — never contacts).
     talent_pool_visible = models.BooleanField(default=False, db_index=True, verbose_name=_("Show me in the Talent Pool"))
+    # Bulk "new opportunity" emails only; account emails (verification, shortlist, invitations) are always sent.
+    email_new_opportunities = models.BooleanField(default=True, verbose_name=_("Email me about new opportunities"))
 
     class Meta:
         indexes = [

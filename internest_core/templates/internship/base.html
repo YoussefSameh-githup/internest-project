@@ -27,6 +27,14 @@
     <link rel="stylesheet" href="{% asset 'css/styles.css' %}">
 
     {% block extra_head %}{% endblock %}
+    <style>
+    /* Phones: navbar actions shrink to icons so the page never scrolls sideways (embedded: survives a stale stylesheet). */
+    @media (max-width: 560px) {
+      .nav__cta { gap: 6px; flex-shrink: 1; min-width: 0; }
+      .nav__cta .nav__cta-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+      .nav__cta .btn, .nav__cta .lang-switcher__toggle { padding-inline: 10px; }
+    }
+    </style>
 </head>
 <body>
 
@@ -79,19 +87,19 @@
                     <button type="submit" class="lang-switcher__toggle" lang="{{ other_lang.code }}"
                             aria-label="{% trans 'Switch language' %}: {{ other_lang.name_local }}">
                         <i class="bi bi-translate"></i>
-                        <span>{{ other_lang.name_local }}</span>
+                        <span class="nav__cta-label">{{ other_lang.name_local }}</span>
                     </button>
                 </form>
 
                 {% if user.is_authenticated %}
                     {% is_student_user user as show_skills_cta %}
                     {% if show_skills_cta %}
-                        <a href="{% url 'skills_hub' %}" class="btn btn--primary btn--sm">
-                            <i class="bi bi-shield-check"></i> {% trans "Analyze & Verify Skills" %}
+                        <a href="{% url 'skills_hub' %}" class="btn btn--primary btn--sm" title="{% trans 'Analyze & Verify Skills' %}">
+                            <i class="bi bi-shield-check"></i> <span class="nav__cta-label">{% trans "Analyze & Verify Skills" %}</span>
                         </a>
                     {% endif %}
-                    <a href="{% url 'logout' %}" class="btn btn--ghost btn--sm">
-                        <i class="bi bi-box-arrow-right"></i> {% trans "Logout" %}
+                    <a href="{% url 'logout' %}" class="btn btn--ghost btn--sm" title="{% trans 'Logout' %}">
+                        <i class="bi bi-box-arrow-right"></i> <span class="nav__cta-label">{% trans "Logout" %}</span>
                     </a>
                 {% else %}
                     <a href="{% url 'login' %}" class="btn btn--ghost btn--sm">{% trans "Partner login" %}</a>

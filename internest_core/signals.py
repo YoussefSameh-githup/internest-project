@@ -36,7 +36,7 @@ def send_new_internship_notification(sender, instance, created, **kwargs):
 
         student_emails = list(
             StudentProfile.objects
-            .filter(personal_email__isnull=False)
+            .filter(personal_email__isnull=False, email_new_opportunities=True)
             .exclude(personal_email="")
             .values_list("personal_email", flat=True)
         )

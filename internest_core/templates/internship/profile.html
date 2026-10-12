@@ -1,138 +1,465 @@
 {% extends 'internship/base.html' %}
-{% load static i18n skills_tags cv_tags %}
+{% load static i18n %}
 
-{% block title %}{% trans "My profile" %} — Internest{% endblock %}
+{% block title %}{% trans "Your Student Hub" %} — Internest{% endblock %}
 
 {% block content %}
-<section class="pf-page">
-    <div class="container">
+<style>
+/* Student Hub — embedded so the design ships even when the server serves an old cached stylesheet. */
+.px { --px-brand: #2563eb; --px-brand-2: #7c3aed; --px-ink: #0f172a; --px-muted: #64748b; --px-line: #e2e8f0; --px-soft: #f8fafc;
+  --px-ok: #16a34a; --px-warn: #c2410c; padding: 28px 0 64px; background: radial-gradient(900px 380px at 85% -10%, #dbeafe, transparent 70%),
+  radial-gradient(700px 320px at 0% 0%, #ede9fe, transparent 65%), #f8fafc; }
+.px-card { position: relative; padding: 22px; border-radius: 22px; background: rgba(255, 255, 255, .86); backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, .9); box-shadow: 0 10px 30px rgba(15, 23, 42, .05); transition: box-shadow .2s, transform .2s, border-color .2s; }
+.px-card:hover { box-shadow: 0 18px 40px rgba(15, 23, 42, .09); border-color: #cbd5e1; }
+.px-card__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.px-card__title { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 1.08rem; color: var(--px-ink); }
+.px-card__title .px-ico { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; background: #eff6ff; color: var(--px-brand); font-size: 1.05rem; }
+.px-card__sub { margin: -6px 0 14px; color: var(--px-muted); font-size: 13.5px; }
 
+/* Hero */
+.px-hero { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; padding: 26px; margin-bottom: 22px; border-radius: 28px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #4c1d95 100%); color: #e2e8f0; box-shadow: 0 30px 60px rgba(30, 58, 138, .28); overflow: hidden; position: relative; }
+.px-hero::after { content: ""; position: absolute; inset: auto -80px -120px auto; width: 320px; height: 320px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(96, 165, 250, .35), transparent 70%); pointer-events: none; }
+.px-id { display: flex; gap: 18px; align-items: center; min-width: 0; }
+.px-avatar { position: relative; flex-shrink: 0; width: 88px; height: 88px; border-radius: 26px; display: grid; place-items: center; overflow: visible;
+  background: linear-gradient(135deg, #60a5fa, #a78bfa); color: #fff; font-size: 2rem; font-weight: 800; box-shadow: 0 0 0 4px rgba(255, 255, 255, .15); }
+.px-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 26px; }
+.px-avatar__check { position: absolute; bottom: -6px; inset-inline-end: -6px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  background: #22c55e; color: #fff; font-size: 14px; border: 3px solid #1e3a8a; }
+.px-kicker { margin: 0; color: #93c5fd; font-weight: 800; font-size: 13px; letter-spacing: .02em; }
+.px-name { margin: 2px 0 4px; font-size: clamp(1.45rem, 3vw, 2rem); color: #fff; overflow-wrap: anywhere; }
+.px-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 12px; color: #cbd5e1; font-size: 14px; }
+.px-meta span { display: inline-flex; align-items: center; gap: 5px; }
+.px-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.px-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700;
+  background: rgba(255, 255, 255, .1); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, .18); text-decoration: none; }
+.px-badge--ok { background: rgba(34, 197, 94, .18); color: #bbf7d0; border-color: rgba(34, 197, 94, .35); }
+.px-badge--warn { background: rgba(251, 146, 60, .18); color: #fed7aa; border-color: rgba(251, 146, 60, .35); }
+.px-badge--gold { background: rgba(250, 204, 21, .18); color: #fef08a; border-color: rgba(250, 204, 21, .35); }
+a.px-badge:hover { background: rgba(255, 255, 255, .2); color: #fff; }
+.px-strength { align-self: stretch; display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 20px;
+  background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); }
+.px-strength__row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.px-strength__row span { color: #cbd5e1; font-size: 13px; font-weight: 700; }
+.px-strength__row strong { color: #fff; font-size: 1.9rem; line-height: 1; }
+.px-bar { height: 10px; border-radius: 999px; background: rgba(255, 255, 255, .15); overflow: hidden; }
+.px-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #22c55e, #4ade80); }
+.px-missing { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.px-missing li { padding: 3px 9px; border-radius: 999px; background: rgba(255, 255, 255, .1); color: #e2e8f0; font-size: 12px; }
+.px-complete-btn { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 12px; background: #fff;
+  color: #1e3a8a; font-weight: 800; font-size: 14px; text-decoration: none; }
+.px-complete-btn:hover { background: #dbeafe; color: #1e3a8a; }
+.px-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.px-cta { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 18px; color: #fff; text-decoration: none; font-weight: 800;
+  border: 1px solid rgba(255, 255, 255, .2); transition: transform .15s, box-shadow .2s; }
+.px-cta small { display: block; font-weight: 500; font-size: 12px; opacity: .85; }
+.px-cta i { font-size: 1.4rem; }
+.px-cta:hover { transform: translateY(-2px); color: #fff; }
+.px-cta--pdf { background: linear-gradient(135deg, #2563eb, #3b82f6); box-shadow: 0 10px 26px rgba(59, 130, 246, .45); }
+.px-cta--ai { background: linear-gradient(135deg, #7c3aed, #c026d3); box-shadow: 0 10px 26px rgba(192, 38, 211, .4); }
+.px-cta--import { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 10px 26px rgba(16, 185, 129, .4); }
+.px-stats { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.px-stat { padding: 12px 14px; border-radius: 16px; background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .1); color: #e2e8f0; text-decoration: none; }
+.px-stat strong { display: block; color: #fff; font-size: 1.35rem; }
+.px-stat span { font-size: 12.5px; color: #cbd5e1; }
+a.px-stat:hover { background: rgba(255, 255, 255, .12); color: #fff; }
+
+/* Layout + tabs */
+.px-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 22px; align-items: start; }
+.px-layout > * { min-width: 0; }
+.px-aside { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 16px; }
+.px-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; padding: 6px; border-radius: 18px; background: #fff; border: 1px solid var(--px-line);
+  overflow-x: auto; scrollbar-width: none; position: sticky; top: 76px; z-index: 4; box-shadow: 0 8px 20px rgba(15, 23, 42, .05); }
+.px-tab { flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; border-radius: 13px;
+  color: var(--px-muted); font-weight: 700; font-size: 14px; text-decoration: none; white-space: nowrap; }
+.px-tab:hover { background: #f1f5f9; color: var(--px-ink); }
+.px-tab[aria-selected="true"] { background: linear-gradient(135deg, var(--px-brand), var(--px-brand-2)); color: #fff; box-shadow: 0 8px 18px rgba(37, 99, 235, .3); }
+.px-tab b { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center; font-size: 11px; background: #fee2e2; color: #b91c1c; }
+.px-tab[aria-selected="true"] b { background: rgba(255, 255, 255, .25); color: #fff; }
+.px-panel { display: flex; flex-direction: column; gap: 16px; }
+.px-panel[hidden] { display: none; }
+.px-bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.px-bento > .px-wide { grid-column: 1 / -1; }
+
+/* Form fields inside cards */
+.px .pf-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.px .pf-field--full { grid-column: 1 / -1; }
+.px-savebar { position: sticky; bottom: 12px; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 12px 16px; border-radius: 18px; background: rgba(15, 23, 42, .92); color: #e2e8f0; box-shadow: 0 16px 34px rgba(15, 23, 42, .3); }
+.px-savebar small { color: #cbd5e1; }
+.px-ghost { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 11px; border: 1px solid var(--px-line); background: #fff;
+  color: #334155; font: inherit; font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; }
+.px-ghost:hover { border-color: var(--px-brand); color: var(--px-brand); }
+.px-edu { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.px-edu li { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 14px; background: var(--px-soft); border: 1px solid #eef2f7; font-size: 14px; }
+.px-edu span { color: var(--px-muted); }
+.px-links { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Skills */
+.px-legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 14px; color: var(--px-muted); font-size: 12.5px; }
+.px-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.px-dot { width: 10px; height: 10px; border-radius: 50%; }
+.px-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.px-chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 12px; font-size: 13px; font-weight: 700; border: 1px solid; }
+.px-chip--verified { background: #f0fdf4; border-color: #bbf7d0; color: #14532d; }
+.px-chip--explicit { background: #eff6ff; border-color: #bfdbfe; color: #1e3a8a; }
+.px-chip--inferred { background: #faf5ff; border-color: #e9d5ff; border-style: dashed; color: #581c87; }
+.px-chip small { font-weight: 600; opacity: .75; }
+.px-group + .px-group { margin-top: 16px; }
+.px-group h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 14px; color: #334155; }
+.px-empty { padding: 18px; border-radius: 16px; border: 1px dashed #cbd5e1; color: var(--px-muted); text-align: center; font-size: 14px; }
+.px-primary { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: 0; border-radius: 13px; color: #fff; font: inherit; font-weight: 800;
+  background: linear-gradient(135deg, var(--px-brand), var(--px-brand-2)); box-shadow: 0 10px 22px rgba(79, 70, 229, .3); cursor: pointer; text-decoration: none; }
+.px-primary:hover { color: #fff; filter: brightness(1.05); }
+.px-dialog { width: min(520px, calc(100vw - 32px)); padding: 24px; border: 0; border-radius: 22px; box-shadow: 0 30px 70px rgba(15, 23, 42, .35); }
+.px-dialog::backdrop { background: rgba(15, 23, 42, .5); backdrop-filter: blur(3px); }
+.px-options { display: grid; gap: 10px; margin: 14px 0 0; }
+.px-option { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; border: 1px solid var(--px-line); color: var(--px-ink); text-decoration: none; }
+.px-option:hover { border-color: var(--px-brand); background: #eff6ff; color: var(--px-ink); }
+.px-option > span:first-child { font-size: 1.6rem; }
+.px-option small { display: block; color: var(--px-muted); }
+
+/* Portfolio */
+.px-gigs { display: grid; gap: 12px; }
+.px-gig { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 14px; border-radius: 18px; background: var(--px-soft); border: 1px solid #eef2f7; }
+.px-gig__logo { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; color: #fff; font-weight: 800; }
+.px-gig__top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.px-gig__top strong { color: var(--px-ink); }
+.px-gig__meta { color: var(--px-muted); font-size: 13px; overflow-wrap: anywhere; }
+.px-pill { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+.px-pill--verified { background: #dcfce7; color: #166534; }
+.px-pill--pending { background: #fef3c7; color: #92400e; }
+.px-pill--needs_proof { background: #ffedd5; color: #9a3412; }
+.px-pill--rejected { background: #fee2e2; color: #991b1b; }
+.px-alert { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; margin-top: 10px; padding: 10px 12px; border-radius: 14px; background: #fff7ed;
+  border: 1px solid #fed7aa; color: #7c2d12; font-size: 13px; }
+.px-alert p { flex: 1 1 220px; margin: 0; }
+.px-upload { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 11px; background: #ea580c; color: #fff; font-weight: 800; cursor: pointer; }
+.px-upload:hover { background: #c2410c; }
+.px-upload input { display: none; }
+.px-projects { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.px-project { padding: 14px; border-radius: 16px; background: var(--px-soft); border: 1px solid #eef2f7; }
+.px-project strong { display: block; color: var(--px-ink); }
+.px-project p { margin: 4px 0 6px; color: #475569; font-size: 13.5px; }
+.px-project small { color: var(--px-muted); }
+
+/* Settings */
+.px-setting { display: flex; gap: 14px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.px-setting + .px-setting { margin-top: 14px; padding-top: 14px; border-top: 1px solid #f1f5f9; }
+.px-setting p { margin: 2px 0 0; color: var(--px-muted); font-size: 13px; }
+.px-select { min-width: 220px; padding: 9px 12px; border-radius: 12px; border: 1px solid #cbd5e1; font: inherit; background: #fff; }
+.px-toggle { position: relative; display: inline-flex; flex-shrink: 0; }
+.px-toggle input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.px-toggle span { width: 48px; height: 28px; border-radius: 999px; background: #cbd5e1; transition: .2s; position: relative; }
+.px-toggle span::after { content: ""; position: absolute; top: 3px; inset-inline-start: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: .2s; box-shadow: 0 2px 4px rgba(0, 0, 0, .2); }
+.px-toggle input:checked + span { background: var(--px-ok); }
+.px-toggle input:checked + span::after { inset-inline-start: 23px; }
+.px-toggle input:focus-visible + span { outline: 3px solid #93c5fd; outline-offset: 2px; }
+
+@media (max-width: 1100px) { .px-layout { grid-template-columns: minmax(0, 1fr); } .px-aside { position: static; } }
+@media (max-width: 860px) {
+  .px-hero { grid-template-columns: 1fr; padding: 20px; }
+  .px-actions { grid-template-columns: 1fr; }
+  .px-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .px-bento, .px .pf-grid, .px-projects { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) { .px-id { flex-direction: column; align-items: flex-start; } .px-tabs { flex-wrap: nowrap; position: static; } .px-tab { flex: 0 0 auto; } .px-select { min-width: 0; width: 100%; } }
+</style>
+
+<section class="px">
+    <div class="container">
         {% if profile.has_any_pending_email_verification %}
-            <div class="alert alert-warning fade-up mb-5">
+            <div class="alert alert-warning mb-5">
                 <strong><i class="bi bi-envelope-exclamation-fill"></i> {% trans "Email verification required." %}</strong>
                 {% trans "We sent a 6-digit code to your unverified email(s)." %}
                 <a href="{% url 'verify_email' %}" class="fw-bold" style="margin-inline-start: var(--space-2);">{% trans "Verify now" %} ➔</a>
             </div>
         {% endif %}
 
-        {# ---------- Summary header ---------- #}
-        <header class="pf-hero fade-up">
-            <div class="pf-hero__id">
-                <div class="pf-avatar">
-                    {% if profile.profile_picture %}<img src="{{ profile.profile_picture.url }}" alt="">{% else %}<i class="bi bi-person-fill"></i>{% endif %}
-                    {% if profile.is_personal_email_verified %}<span class="pf-avatar__check" title="{% trans 'Verified' %}"><i class="bi bi-patch-check-fill"></i></span>{% endif %}
-                </div>
-                <div>
-                    <h1 class="pf-hero__name">{{ user.get_full_name|default:user.username }}</h1>
-                    <p class="pf-hero__meta"><bdi dir="ltr">@{{ user.username }}</bdi>{% if profile.university %} · {{ profile.university }}{% endif %}{% if profile.major %} · {{ profile.major }}{% endif %}</p>
-                    <div class="pf-badges">
-                        {% if profile.is_personal_email_verified %}
-                            <span class="badge badge--success"><i class="bi bi-envelope-check-fill"></i> {% trans "Verified" %}</span>
-                        {% elif profile.personal_email %}
-                            <span class="badge badge--accent"><i class="bi bi-exclamation-circle-fill"></i> {% trans "Unverified" %}</span>
-                        {% endif %}
-                        {% if profile.is_university_email_verified %}
-                            <span class="badge badge--success"><i class="bi bi-mortarboard-fill"></i> {% trans "Verified student" %}</span>
-                        {% endif %}
-                        {% if proof.top %}<span class="badge badge--accent">🏅 {% trans "Top Verified Candidate" %}</span>{% endif %}
-                        {% if profile.talent_pool_visible and talent_pool_eligible %}
-                            <span class="badge badge--success"><i class="bi bi-eye-fill"></i> {% trans "Visible to Pro startups" %}</span>
-                        {% elif profile.talent_pool_visible %}
-                            <span class="badge badge--accent"><i class="bi bi-hourglass-split"></i> {% trans "Waiting for a verified skill" %}</span>
-                        {% endif %}
-                        {% if profile.linkedin_url %}<a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener" class="badge badge--outline"><i class="bi bi-linkedin"></i> LinkedIn</a>{% endif %}
+        {# ================= Hero ================= #}
+        <header class="px-hero">
+            <div>
+                <div class="px-id">
+                    <div class="px-avatar">
+                        {% if profile.profile_picture %}<img src="{{ profile.profile_picture.url }}" alt="">{% else %}{{ user.get_full_name|default:user.username|slice:":1"|upper }}{% endif %}
+                        {% if profile.is_personal_email_verified %}<span class="px-avatar__check" title="{% trans 'Verified' %}"><i class="bi bi-check-lg"></i></span>{% endif %}
+                    </div>
+                    <div style="min-width: 0;">
+                        <p class="px-kicker">{% trans "Your Student Hub" %}</p>
+                        <h1 class="px-name">{{ user.get_full_name|default:user.username }}</h1>
+                        <p class="px-meta">
+                            <span><bdi dir="ltr">@{{ user.username }}</bdi></span>
+                            {% if profile.university %}<span><i class="bi bi-bank"></i> {{ profile.university }}</span>{% endif %}
+                            {% if profile.major %}<span><i class="bi bi-book"></i> {{ profile.major }}</span>{% endif %}
+                            {% if expected_graduation %}<span><i class="bi bi-mortarboard"></i> {% trans "Graduation" %}: {% if expected_graduation == "Present" %}{% trans "still studying" %}{% else %}<bdi dir="ltr">{{ expected_graduation }}</bdi>{% if graduation_expected %} ({% trans "expected" %}){% endif %}{% endif %}</span>
+                            {% elif profile.study_level %}<span><i class="bi bi-calendar3"></i> {{ profile.get_study_level_display }}</span>{% endif %}
+                        </p>
+                        <div class="px-badges">
+                            {% if profile.is_personal_email_verified %}<span class="px-badge px-badge--ok"><i class="bi bi-envelope-check-fill"></i> {% trans "Verified" %}</span>
+                            {% elif profile.personal_email %}<a href="{% url 'verify_email' %}" class="px-badge px-badge--warn"><i class="bi bi-exclamation-circle-fill"></i> {% trans "Unverified" %}</a>{% endif %}
+                            {% if profile.is_university_email_verified %}<span class="px-badge px-badge--ok"><i class="bi bi-mortarboard-fill"></i> {% trans "Verified student" %}</span>{% endif %}
+                            {% if proof.top %}<span class="px-badge px-badge--gold">🏅 {% trans "Top Verified Candidate" %}</span>{% endif %}
+                            {% if profile.talent_pool_visible and talent_pool_eligible %}<span class="px-badge px-badge--ok"><i class="bi bi-eye-fill"></i> {% trans "Visible to Pro startups" %}</span>
+                            {% elif profile.talent_pool_visible %}<span class="px-badge px-badge--warn"><i class="bi bi-hourglass-split"></i> {% trans "Waiting for a verified skill" %}</span>{% endif %}
+                            {% if profile.linkedin_url %}<a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener" class="px-badge"><i class="bi bi-linkedin"></i> {% trans "LinkedIn connected" %}</a>{% endif %}
+                            {% if github_url %}<a href="{{ github_url }}" target="_blank" rel="noopener" class="px-badge"><i class="bi bi-github"></i> {% trans "GitHub connected" %}</a>{% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="pf-stats">
-                <div class="pf-stat pf-stat--wide">
-                    <span class="pf-stat__label">{% trans "Profile completion" %}</span>
-                    <span class="pf-stat__value">{{ profile.profile_completion_score }}%</span>
-                    <div class="progress"><div class="progress__bar {% if profile.profile_completion_score == 100 %}progress__bar--success{% endif %}" style="width: {{ profile.profile_completion_score }}%;"></div></div>
-                    {% if profile.profile_completion_score < 100 %}
-                        <small class="pf-stat__hint pf-stat__hint--warn"><i class="bi bi-exclamation-triangle-fill"></i> {% trans "Complete to unlock applying" %}</small>
-                    {% else %}
-                        <small class="pf-stat__hint pf-stat__hint--ok"><i class="bi bi-check-circle-fill"></i> {% trans "Ready to apply" %}</small>
-                    {% endif %}
-                </div>
-                <div class="pf-stat">
-                    <span class="pf-stat__label">{% trans "Verified skills" %}</span>
-                    <span class="pf-stat__value"><i class="bi bi-patch-check-fill text-success"></i> {{ verified_skills_count }}</span>
-                </div>
-                <a class="pf-stat" href="{% url 'task_list' %}">
-                    <span class="pf-stat__label">{% trans "Performance points" %}</span>
-                    <span class="pf-stat__value"><i class="bi bi-trophy-fill" style="color: #f59e0b;"></i> {{ profile.gamification_score }}</span>
-                </a>
+            <div class="px-strength">
+                <div class="px-strength__row"><span>{% trans "Profile strength" %}</span><strong>{{ profile.profile_completion_score }}%</strong></div>
+                <div class="px-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ profile.profile_completion_score }}"
+                     aria-label="{% trans 'Profile completion' %}"><span style="width: {{ profile.profile_completion_score }}%;"></span></div>
+                {% if missing %}
+                    <ul class="px-missing" aria-label="{% trans 'Still missing' %}">{% for m in missing %}<li>+ {{ m }}</li>{% endfor %}</ul>
+                    <a href="?tab=details#pf-form" class="px-complete-btn" data-tab-link="details"><i class="bi bi-pencil-square"></i> {% trans "Complete your profile" %}</a>
+                    <small style="color: #fcd34d;"><i class="bi bi-exclamation-triangle-fill"></i> {% trans "Complete to unlock applying" %}</small>
+                {% else %}
+                    <small style="color: #86efac;"><i class="bi bi-check-circle-fill"></i> {% trans "Ready to apply" %}</small>
+                {% endif %}
+            </div>
+
+            <nav class="px-actions" aria-label="{% trans 'Quick actions' %}">
+                {% if cv %}
+                    <a href="{% url 'cv_builder_pdf' %}" class="px-cta px-cta--pdf"><i class="bi bi-file-earmark-pdf-fill"></i><span>{% trans "Download your professional CV (PDF)" %}<small>{% trans "ATS-friendly, ready to send" %}</small></span></a>
+                {% else %}
+                    <a href="{% url 'cv_builder' %}" class="px-cta px-cta--pdf"><i class="bi bi-file-earmark-pdf-fill"></i><span>{% trans "Download your professional CV (PDF)" %}<small>{% trans "Build it first in 5 quick steps" %}</small></span></a>
+                {% endif %}
+                <a href="{% url 'cv_builder' %}" class="px-cta px-cta--ai"><i class="bi bi-stars"></i><span>{% trans "Generate a new CV with AI" %}<small>{% trans "Type it or just talk 🎙️" %}</small></span></a>
+                <a href="{% url 'freelance_importer' %}" class="px-cta px-cta--import"><i class="bi bi-briefcase-fill"></i><span>{% trans "Import new freelance work" %}<small>Mostaql · Khamsat · Upwork · Fiverr</small></span></a>
+            </nav>
+
+            <div class="px-stats">
+                <a class="px-stat" href="?tab=skills" data-tab-link="skills"><strong><i class="bi bi-patch-check-fill" style="color: #4ade80;"></i> {{ verified_skills_count }}</strong><span>{% trans "Verified skills" %}</span></a>
+                <a class="px-stat" href="?tab=portfolio" data-tab-link="portfolio"><strong>{{ proof.count|default:0 }}</strong><span>{% trans "Verified gigs" %}</span></a>
+                <a class="px-stat" href="?tab=portfolio" data-tab-link="portfolio"><strong>{{ gigs|length }}</strong><span>{% trans "Imported freelance work" %}</span></a>
+                <a class="px-stat" href="{% url 'task_list' %}"><strong><i class="bi bi-trophy-fill" style="color: #fbbf24;"></i> {{ profile.gamification_score }}</strong><span>{% trans "Performance points" %}</span></a>
             </div>
         </header>
 
-        <div class="pf-layout">
-            {# ---------- Edit form ---------- #}
-            <form method="POST" enctype="multipart/form-data" class="pf-main" novalidate>
-                {% csrf_token %}
-                {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+        <div class="px-layout" id="hub">
+            <div>
+                <nav class="px-tabs" role="tablist" aria-label="{% trans 'Your Student Hub' %}">
+                    <a class="px-tab" role="tab" id="tab-details" href="?tab=details#hub" data-tab="details" aria-controls="panel-details" aria-selected="{% if active_tab == 'details' %}true{% else %}false{% endif %}"><i class="bi bi-person-vcard"></i> {% trans "Personal & academic" %}</a>
+                    <a class="px-tab" role="tab" id="tab-skills" href="?tab=skills#hub" data-tab="skills" aria-controls="panel-skills" aria-selected="{% if active_tab == 'skills' %}true{% else %}false{% endif %}"><i class="bi bi-patch-check"></i> {% trans "Verified skills bank" %}</a>
+                    <a class="px-tab" role="tab" id="tab-portfolio" href="?tab=portfolio#hub" data-tab="portfolio" aria-controls="panel-portfolio" aria-selected="{% if active_tab == 'portfolio' %}true{% else %}false{% endif %}"><i class="bi bi-briefcase"></i> {% trans "Freelance & projects" %}{% if needs_proof %} <b title="{% trans 'Needs proof review' %}">{{ needs_proof }}</b>{% endif %}</a>
+                    <a class="px-tab" role="tab" id="tab-settings" href="?tab=settings#hub" data-tab="settings" aria-controls="panel-settings" aria-selected="{% if active_tab == 'settings' %}true{% else %}false{% endif %}"><i class="bi bi-shield-lock"></i> {% trans "Account & privacy" %}</a>
+                </nav>
 
-                <section class="pf-card">
-                    <h2 class="pf-card__title"><span class="pf-step">1</span> {% trans "Personal and university details" %}</h2>
-                    <div class="pf-grid">
-                        {% include "internship/_pf_field.html" with field=form.personal_email %}
-                        {% include "internship/_pf_field.html" with field=form.university_email %}
-                        {% include "internship/_pf_field.html" with field=form.phone_number %}
-                        {% include "internship/_pf_field.html" with field=form.study_level %}
-                        {% include "internship/_pf_field.html" with field=form.university %}
-                        {% include "internship/_pf_field.html" with field=form.major %}
+                {# ================= Personal & academic ================= #}
+                <section class="px-panel" id="panel-details" role="tabpanel" aria-labelledby="tab-details" data-panel="details" {% if active_tab != 'details' %}hidden{% endif %}>
+                    <form method="POST" enctype="multipart/form-data" id="pf-form" novalidate class="px-panel">
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+                        <div class="px-bento">
+                            <section class="px-card">
+                                <div class="px-card__head"><h2 class="px-card__title"><span class="px-ico"><i class="bi bi-person-lines-fill"></i></span> {% trans "Contact details" %}</h2></div>
+                                <div class="pf-grid" style="grid-template-columns: 1fr;">
+                                    {% include "internship/_pf_field.html" with field=form.personal_email %}
+                                    {% include "internship/_pf_field.html" with field=form.university_email %}
+                                    {% include "internship/_pf_field.html" with field=form.phone_number %}
+                                </div>
+                            </section>
+                            <section class="px-card">
+                                <div class="px-card__head"><h2 class="px-card__title"><span class="px-ico"><i class="bi bi-mortarboard-fill"></i></span> {% trans "Academic details" %}</h2></div>
+                                <div class="pf-grid" style="grid-template-columns: 1fr;">
+                                    {% include "internship/_pf_field.html" with field=form.university %}
+                                    {% include "internship/_pf_field.html" with field=form.major %}
+                                    {% include "internship/_pf_field.html" with field=form.study_level %}
+                                </div>
+                            </section>
+                            <section class="px-card px-wide">
+                                <div class="px-card__head">
+                                    <h2 class="px-card__title"><span class="px-ico"><i class="bi bi-journal-bookmark"></i></span> {% trans "Education, programs & certificates" %}</h2>
+                                    <a href="{% url 'cv_builder' %}" class="px-ghost"><i class="bi bi-pencil"></i> {% trans "Edit in the CV builder" %}</a>
+                                </div>
+                                {% if education %}
+                                    <ul class="px-edu">{% for e in education %}<li><strong dir="auto">{{ e.university|default:e.major }}{% if e.university and e.major %} · {{ e.major }}{% endif %}</strong><span dir="ltr">{{ e.period }}</span></li>{% endfor %}</ul>
+                                {% else %}
+                                    <p class="px-empty mb-0">{% trans "Add your degrees, exchange programs and certificates with start and end dates in the CV builder." %}</p>
+                                {% endif %}
+                            </section>
+                            <section class="px-card px-wide">
+                                <div class="px-card__head"><h2 class="px-card__title"><span class="px-ico"><i class="bi bi-link-45deg"></i></span> {% trans "About me & professional links" %}</h2></div>
+                                <div class="pf-grid">
+                                    {% trans "Startups see this with your verified skills before your CV and contact details are shared. Mention projects, tools and achievements." as bio_help %}
+                                    {% include "internship/_pf_field.html" with field=form.bio help=bio_help full=True %}
+                                    {% include "internship/_pf_field.html" with field=form.linkedin_url %}
+                                    {% trans "Shown to Pro startups in your Talent Pool profile. Don't use a link that shows your phone or email." as portfolio_help %}
+                                    {% include "internship/_pf_field.html" with field=form.portfolio_url help=portfolio_help %}
+                                </div>
+                            </section>
+                            <section class="px-card px-wide">
+                                <div class="px-card__head"><h2 class="px-card__title"><span class="px-ico"><i class="bi bi-paperclip"></i></span> {% trans "Attachments (photo and CV)" %}</h2></div>
+                                <div class="pf-grid">
+                                    {% include "internship/_pf_dropzone.html" with field=form.profile_picture current=profile.profile_picture kind="image" accept="image/png,image/jpeg,image/webp" hint="JPG / PNG / WEBP" %}
+                                    {% include "internship/_pf_dropzone.html" with field=form.cv_file current=profile.cv_file kind="doc" accept=".pdf,.doc,.docx" hint="PDF / DOC / DOCX" %}
+                                </div>
+                            </section>
+                        </div>
+                        <div class="px-savebar">
+                            <small><i class="bi bi-info-circle"></i> {% trans "Changes are saved for your whole profile." %}</small>
+                            <button type="submit" class="btn btn--primary"><i class="bi bi-save"></i> {% trans "Save changes" %}</button>
+                        </div>
+                    </form>
+                </section>
+
+                {# ================= Skills bank ================= #}
+                <section class="px-panel" id="panel-skills" role="tabpanel" aria-labelledby="tab-skills" data-panel="skills" {% if active_tab != 'skills' %}hidden{% endif %}>
+                    <div class="px-card">
+                        <div class="px-card__head">
+                            <h2 class="px-card__title"><span class="px-ico"><i class="bi bi-patch-check-fill"></i></span> {% trans "Verified skills bank" %}</h2>
+                            <button type="button" class="px-primary" data-open-dialog="skill-dialog"><i class="bi bi-plus-lg"></i> {% trans "Add / verify a new skill" %}</button>
+                        </div>
+                        <div class="px-legend">
+                            <span><i class="px-dot" style="background: #22c55e;"></i> {% trans "Verified (challenge or reviewed freelance work)" %}</span>
+                            <span><i class="px-dot" style="background: #3b82f6;"></i> {% trans "Explicit — written in your CV" %}</span>
+                            <span><i class="px-dot" style="background: #a855f7;"></i> {% trans "AI-inferred from your projects" %}</span>
+                        </div>
+                        {% if skill_groups.verified or skill_groups.explicit or skill_groups.inferred %}
+                            {% if skill_groups.verified %}
+                                <div class="px-group">
+                                    <h3>✅ {% trans "Verified" %} ({{ skill_groups.verified|length }})</h3>
+                                    <div class="px-chips">
+                                        {% for s in skill_groups.verified %}
+                                            <span class="px-chip px-chip--verified">{{ s.skill.name }}{% if s.score is not None %} <small>{{ s.score }}%{% if s.percentile is not None %} · P{{ s.percentile }}{% endif %}</small>{% elif s.verified_via == 'freelance' %} <small>💼</small>{% endif %} {% include "skills/_verified_badge.html" %}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if skill_groups.explicit %}
+                                <div class="px-group">
+                                    <h3><i class="bi bi-file-earmark-text" style="color: #3b82f6;"></i> {% trans "Explicit skills" %} ({{ skill_groups.explicit|length }})</h3>
+                                    <div class="px-chips">{% for s in skill_groups.explicit %}<a href="{% url 'skills_hub' %}" class="px-chip px-chip--explicit" title="{% trans 'Take the challenge to verify it' %}">{{ s.skill.name }}{% if s.years_experience %} <small>{{ s.years_experience|floatformat:"-1" }}y</small>{% endif %}</a>{% endfor %}</div>
+                                </div>
+                            {% endif %}
+                            {% if skill_groups.inferred %}
+                                <div class="px-group">
+                                    <h3><i class="bi bi-stars" style="color: #a855f7;"></i> {% trans "AI-inferred skills" %} ({{ skill_groups.inferred|length }})</h3>
+                                    <div class="px-chips">{% for s in skill_groups.inferred %}<a href="{% url 'skills_hub' %}" class="px-chip px-chip--inferred" title="{% trans 'Take the challenge to verify it' %}">{{ s.skill.name }}</a>{% endfor %}</div>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <p class="px-empty mb-0">{% trans "No skills yet. Analyze your CV or import freelance work to fill your skills bank." %}</p>
+                        {% endif %}
                     </div>
                 </section>
 
-                <section class="pf-card">
-                    <h2 class="pf-card__title"><span class="pf-step">2</span> {% trans "Skills and professional links" %}</h2>
-                    <div class="pow-banner{% if proof.top %} pow-banner--top{% endif %}">
-                        <span class="pow-banner__icon">{% if proof.top %}🏅{% else %}<i class="bi bi-briefcase-fill"></i>{% endif %}</span>
-                        <div>
-                            {% if proof.count %}
-                                <strong>{% blocktrans with n=proof.count avg=proof.avg|stringformat:".1f" %}Completed {{ n }} verified gigs | Average rating ⭐️ {{ avg }}/5{% endblocktrans %}</strong>
-                                {% if proof.top %}<small>{% trans "Top Verified Candidate 🏅 — you're shown first to Pro startups." %}</small>
-                                {% else %}<small>{% blocktrans with n=top_min %}Complete {{ n }} verified gigs to earn the Top Verified Candidate 🏅 badge.{% endblocktrans %}</small>{% endif %}
-                            {% else %}
-                                <strong>{% trans "No verified gigs yet" %}</strong>
-                                <small>{% trans "When a startup marks your gig as completed and rates it, it appears here with a verified recommendation letter." %}</small>
-                            {% endif %}
+                {# ================= Freelance & projects ================= #}
+                <section class="px-panel" id="panel-portfolio" role="tabpanel" aria-labelledby="tab-portfolio" data-panel="portfolio" {% if active_tab != 'portfolio' %}hidden{% endif %}>
+                    <div class="px-card">
+                        <div class="px-card__head"><h2 class="px-card__title"><span class="px-ico"><i class="bi bi-award-fill"></i></span> {% trans "Verified Internest gigs" %}</h2></div>
+                        <div class="pow-banner{% if proof.top %} pow-banner--top{% endif %}">
+                            <span class="pow-banner__icon">{% if proof.top %}🏅{% else %}<i class="bi bi-briefcase-fill"></i>{% endif %}</span>
+                            <div>
+                                {% if proof.count %}
+                                    <strong>{% blocktrans with n=proof.count avg=proof.avg|stringformat:".1f" %}Completed {{ n }} verified gigs | Average rating ⭐️ {{ avg }}/5{% endblocktrans %}</strong>
+                                    {% if proof.top %}<small>{% trans "Top Verified Candidate 🏅 — you're shown first to Pro startups." %}</small>
+                                    {% else %}<small>{% blocktrans with n=top_min %}Complete {{ n }} verified gigs to earn the Top Verified Candidate 🏅 badge.{% endblocktrans %}</small>{% endif %}
+                                {% else %}
+                                    <strong>{% trans "No verified gigs yet" %}</strong>
+                                    <small>{% trans "When a startup marks your gig as completed and rates it, it appears here with a verified recommendation letter." %}</small>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    {% if experiences %}
-                        <ul class="pow-list">
-                            {% for e in experiences %}
-                                <li class="pow-item">
-                                    <span class="ol-logo">{% if e.company.logo %}<img src="{{ e.company.logo.url }}" alt="">{% else %}{{ e.company.company_name|slice:":1"|upper }}{% endif %}</span>
-                                    <div class="pow-item__body">
-                                        <strong>{{ e.gig_title }}</strong>
-                                        <span>{{ e.company.company_name }} · {{ e.completion_date|date:"Y/m/d" }}</span>
-                                        <span class="pow-item__stars">{% for icon in e.star_icons %}<i class="bi {% if icon == 'full' %}bi-star-fill{% elif icon == 'half' %}bi-star-half{% else %}bi-star{% endif %}"></i>{% endfor %}</span>
-                                    </div>
-                                    <span class="pow-verified"><i class="bi bi-patch-check-fill"></i> {% trans "Verified" %}</span>
-                                    <a href="{% url 'experience_letter' e.verification_uuid %}" class="btn btn--outline btn--sm">{% trans "Download the verified recommendation letter" %} 📄</a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                    <div class="pf-grid">
-                        {% trans "Startups see this with your verified skills before your CV and contact details are shared. Mention projects, tools and achievements." as bio_help %}
-                        {% include "internship/_pf_field.html" with field=form.bio help=bio_help full=True %}
-                        {% include "internship/_pf_field.html" with field=form.linkedin_url %}
-                        {% trans "Shown to Pro startups in your Talent Pool profile. Don't use a link that shows your phone or email." as portfolio_help %}
-                        {% include "internship/_pf_field.html" with field=form.portfolio_url help=portfolio_help %}
+                        {% if experiences %}
+                            <ul class="pow-list">
+                                {% for e in experiences %}
+                                    <li class="pow-item">
+                                        <span class="ol-logo">{% if e.company.logo %}<img src="{{ e.company.logo.url }}" alt="">{% else %}{{ e.company.company_name|slice:":1"|upper }}{% endif %}</span>
+                                        <div class="pow-item__body">
+                                            <strong>{{ e.gig_title }}</strong>
+                                            <span>{{ e.company.company_name }} · {{ e.completion_date|date:"Y/m/d" }}</span>
+                                            <span class="pow-item__stars">{% for icon in e.star_icons %}<i class="bi {% if icon == 'full' %}bi-star-fill{% elif icon == 'half' %}bi-star-half{% else %}bi-star{% endif %}"></i>{% endfor %}</span>
+                                        </div>
+                                        <span class="pow-verified"><i class="bi bi-patch-check-fill"></i> {% trans "Verified" %}</span>
+                                        <a href="{% url 'experience_letter' e.verification_uuid %}" class="btn btn--outline btn--sm">{% trans "Download the verified recommendation letter" %} 📄</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
                     </div>
 
-                    <div class="pf-pool" id="talent-pool">
-                        <label class="pf-switch">
-                            {{ form.talent_pool_visible }}
-                            <span class="pf-switch__track" aria-hidden="true"></span>
-                            <span class="pf-switch__text">
-                                <strong>{{ form.talent_pool_visible.label }}</strong>
-                                <small>{% trans "Pro startups can find you by your verified skills and invite you to apply. They see your name, university, major, study year, bio and verified skills — never your phone, email or CV." %}</small>
-                            </span>
-                        </label>
+                    <div class="px-card">
+                        <div class="px-card__head">
+                            <h2 class="px-card__title"><span class="px-ico"><i class="bi bi-briefcase-fill"></i></span> {% trans "Freelance work" %}</h2>
+                            <a href="{% url 'freelance_importer' %}" class="px-ghost"><i class="bi bi-plus-lg"></i> {% trans "Import new freelance work" %}</a>
+                        </div>
+                        {% if gigs %}
+                            <div class="px-gigs">
+                                {% for g in gigs %}
+                                    <article class="px-gig">
+                                        <span class="px-gig__logo" style="background: {% if g.platform == 'mostaql' %}#2386c8{% elif g.platform == 'khamsat' %}#f37b22{% elif g.platform == 'upwork' %}#14a800{% elif g.platform == 'fiverr' %}#1dbf73{% else %}#475569{% endif %};">{% if g.platform == 'mostaql' %}م{% elif g.platform == 'khamsat' %}خ{% elif g.platform == 'upwork' %}Up{% elif g.platform == 'fiverr' %}fi{% else %}<i class="bi bi-link-45deg"></i>{% endif %}</span>
+                                        <div style="min-width: 0;">
+                                            <div class="px-gig__top">
+                                                <strong dir="auto">{{ g.project_title|default:g.get_platform_display }}</strong>
+                                                <span class="px-pill px-pill--{{ g.status }}">{% if g.status == 'verified' %}✅ {% trans "Approved & verified" %}{% elif g.status == 'needs_proof' %}📎 {{ g.get_status_display }}{% elif g.status == 'pending' %}⏳ {{ g.get_status_display }}{% else %}{{ g.get_status_display }}{% endif %}</span>
+                                                {% if g.owner_matched %}<span class="px-pill px-pill--verified">👤 {% trans "Account matches you" %}</span>{% endif %}
+                                                {% if g.rating %}<span style="color: #f59e0b; font-weight: 800;">★ {{ g.rating }}</span>{% endif %}
+                                            </div>
+                                            <div class="px-gig__meta">{{ g.get_platform_display }}{% if g.platform_username %} · @{{ g.platform_username }}{% endif %} · <a href="{{ g.link }}" target="_blank" rel="noopener nofollow" dir="ltr">{{ g.link|truncatechars:48 }}</a></div>
+                                            {% if g.skills.all %}<div class="px-chips mt-2">{% for skill in g.skills.all %}<span class="px-chip {% if g.status == 'verified' %}px-chip--verified{% else %}px-chip--explicit{% endif %}" style="padding: 4px 10px;">{{ skill.name }}</span>{% endfor %}</div>{% endif %}
+                                            {% if g.status == 'needs_proof' or g.status == 'pending' and not g.proof %}
+                                                <form method="post" action="{% url 'freelance_gig_proof' g.pk %}" enctype="multipart/form-data" class="px-alert">
+                                                    {% csrf_token %}
+                                                    <p>{% if g.status == 'needs_proof' %}⚠️ {% blocktrans with handle=g.platform_username %}“{{ handle }}” doesn't match your name, so our team will check your proof of account ownership.{% endblocktrans %}{% else %}{% trans "A screenshot of the completed order or review speeds up verification. Max 5 MB." %}{% endif %}
+                                                        {% if g.proof %}<br><strong>✓ {% trans "Proof uploaded — waiting for review." %}</strong>{% endif %}</p>
+                                                    <label class="px-upload"><i class="bi bi-upload"></i> {% if g.proof %}{% trans "Replace screenshot" %}{% else %}{% trans "Upload a proof screenshot" %}{% endif %}
+                                                        <input type="file" name="proof" accept="image/png,image/jpeg,image/webp,application/pdf" data-autosubmit>
+                                                    </label>
+                                                </form>
+                                            {% elif g.status == 'rejected' %}
+                                                <p class="px-alert">{% if g.review_note %}{{ g.review_note }}{% else %}{% trans "We couldn't confirm this work from the link and proof. Add a clearer screenshot and import it again." %}{% endif %}</p>
+                                            {% endif %}
+                                        </div>
+                                    </article>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="px-empty mb-0">{% trans "Done real work on Mostaql, Khamsat, Upwork or Fiverr? Import it and turn it into verified skills." %}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="px-card">
+                        <div class="px-card__head">
+                            <h2 class="px-card__title"><span class="px-ico"><i class="bi bi-kanban-fill"></i></span> {% trans "Projects" %}</h2>
+                            <a href="{% url 'cv_builder' %}" class="px-ghost"><i class="bi bi-pencil"></i> {% trans "Manage in the CV builder" %}</a>
+                        </div>
+                        {% if projects %}
+                            <div class="px-projects">
+                                {% for p in projects %}
+                                    <article class="px-project">
+                                        <strong dir="auto">{{ p.title }}</strong>
+                                        {% if p.description %}<p dir="auto">{{ p.description|truncatechars:140 }}</p>{% endif %}
+                                        {% if p.tech_stack %}<small><i class="bi bi-cpu"></i> {{ p.tech_stack }}</small>{% endif %}
+                                        {% if p.link %}<div><a href="{{ p.link }}" target="_blank" rel="noopener nofollow" class="px-ghost mt-2" aria-label="{% trans 'Open project' %}"><i class="bi bi-box-arrow-up-right"></i> {% trans "Open project" %}</a></div>{% endif %}
+                                    </article>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="px-empty mb-0">{% trans "Course, graduation or personal projects. They are also added to your Internest profile." %}</p>
+                        {% endif %}
+                    </div>
+                </section>
+
+                {# ================= Account & privacy ================= #}
+                <section class="px-panel" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" data-panel="settings" {% if active_tab != 'settings' %}hidden{% endif %}>
+                    <div class="px-card" id="talent-pool">
+                        <div class="px-card__head"><h2 class="px-card__title"><span class="px-ico"><i class="bi bi-eye"></i></span> {% trans "Visibility & sharing" %}</h2></div>
+                        <div class="px-setting">
+                            <label class="pf-switch" style="flex: 1;">
+                                <input type="checkbox" name="{{ form.talent_pool_visible.html_name }}" id="{{ form.talent_pool_visible.id_for_label }}" form="pf-form" {% if form.talent_pool_visible.value %}checked{% endif %}>
+                                <span class="pf-switch__track" aria-hidden="true"></span>
+                                <span class="pf-switch__text">
+                                    <strong>{{ form.talent_pool_visible.label }}</strong>
+                                    <small>{% trans "Pro startups can find you by your verified skills and invite you to apply. They see your name, university, major, study year, bio and verified skills — never your phone, email or CV." %}</small>
+                                </span>
+                            </label>
+                        </div>
                         <p class="pf-pool__privacy"><i class="bi bi-shield-lock-fill"></i> {% trans "Your phone, email and CV are shared only if you apply and a startup shortlists you for an interview." %}</p>
                         {% if not talent_pool_eligible %}
                             <small class="talent-hint"><i class="bi bi-info-circle"></i>
@@ -140,43 +467,124 @@
                                 <a href="{% url 'skills_hub' %}">{% trans "Verify a skill" %}</a>
                             </small>
                         {% endif %}
+                        {% if share_form %}
+                            <form method="post" action="{% url 'skills_share_university' %}" class="px-setting">
+                                {% csrf_token %}
+                                <div><strong>{{ share_form.partner_university.label }}</strong><p>{% trans "Your university sees your skill analytics only — never your contact details." %}</p></div>
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <select name="partner_university" class="px-select" aria-label="{{ share_form.partner_university.label }}">
+                                        {% for value, label in share_form.partner_university.field.choices %}<option value="{{ value }}" {% if share_form.partner_university.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                                    </select>
+                                    <button type="submit" class="px-ghost">{% trans "Save" %}</button>
+                                </div>
+                            </form>
+                        {% endif %}
+                        <div class="px-savebar mt-4" style="position: static;">
+                            <small>{% trans "Save to apply your visibility choice." %}</small>
+                            <button type="submit" form="pf-form" class="btn btn--primary btn--sm"><i class="bi bi-save"></i> {% trans "Save changes" %}</button>
+                        </div>
+                    </div>
+
+                    <div class="px-card">
+                        <div class="px-card__head"><h2 class="px-card__title"><span class="px-ico"><i class="bi bi-bell"></i></span> {% trans "Email notifications" %}</h2></div>
+                        <div class="px-setting">
+                            <div><strong>{{ form.email_new_opportunities.label }}</strong>
+                                <p>{% trans "Account emails (verification codes, shortlist news and invitations) are always sent." %}</p></div>
+                            <label class="px-toggle"><input type="checkbox" name="{{ form.email_new_opportunities.html_name }}" form="pf-form" aria-label="{{ form.email_new_opportunities.label }}" {% if form.email_new_opportunities.value %}checked{% endif %}><span></span></label>
+                        </div>
+                        <div class="px-setting"><span></span><button type="submit" form="pf-form" class="btn btn--primary btn--sm"><i class="bi bi-save"></i> {% trans "Save changes" %}</button></div>
+                    </div>
+
+                    <div class="px-card">
+                        <div class="px-card__head"><h2 class="px-card__title"><span class="px-ico"><i class="bi bi-key"></i></span> {% trans "Account & security" %}</h2></div>
+                        <div class="px-setting">
+                            <div><strong>{% trans "Personal email" %}</strong><p dir="ltr" style="text-align: start;">{{ profile.personal_email|default:"—" }}</p></div>
+                            {% if profile.has_any_pending_email_verification %}<a href="{% url 'verify_email' %}" class="px-ghost">{% trans "Verify now" %}</a>{% endif %}
+                        </div>
+                        <div class="px-setting">
+                            <div><strong>{% trans "Password" %}</strong><p>{% trans "Use a strong password you don't use anywhere else." %}</p></div>
+                            <a href="{% url 'password_change' %}" class="px-ghost"><i class="bi bi-shield-lock"></i> {% trans "Change password" %}</a>
+                        </div>
+                        <div class="px-setting">
+                            <div><strong>{% trans "Sign out" %}</strong><p>{% trans "Sign out of Internest on this device." %}</p></div>
+                            <a href="{% url 'logout' %}" class="px-ghost"><i class="bi bi-box-arrow-right"></i> {% trans "Logout" %}</a>
+                        </div>
                     </div>
                 </section>
+            </div>
 
-                <section class="pf-card">
-                    <h2 class="pf-card__title"><span class="pf-step">3</span> {% trans "Attachments (photo and CV)" %}</h2>
-                    <div class="pf-grid">
-                        {% include "internship/_pf_dropzone.html" with field=form.profile_picture current=profile.profile_picture kind="image" accept="image/png,image/jpeg,image/webp" hint="JPG / PNG / WEBP" %}
-                        {% include "internship/_pf_dropzone.html" with field=form.cv_file current=profile.cv_file kind="doc" accept=".pdf,.doc,.docx" hint="PDF / DOC / DOCX" %}
-                    </div>
-                </section>
-
-                <div class="pf-save">
-                    <button type="submit" class="btn btn--primary btn--lg"><i class="bi bi-save"></i> {% trans "Save changes" %}</button>
-                </div>
-            </form>
-
-            {# ---------- Sidebar ---------- #}
-            <aside class="pf-aside">
-                {% skills_profile_card profile %}
-                {% cv_builder_card profile %}
+            <aside class="px-aside">
                 {% include "campus/_cta.html" %}
             </aside>
         </div>
     </div>
 </section>
+
+<dialog class="px-dialog" id="skill-dialog" aria-labelledby="skill-dialog-title">
+    <h2 id="skill-dialog-title" style="margin: 0; font-size: 1.2rem;">{% trans "Add / verify a new skill" %}</h2>
+    <p class="text-muted mb-0" style="font-size: 14px;">{% trans "Choose how you want to add or prove a skill." %}</p>
+    <div class="px-options">
+        <a href="{% url 'skills_hub' %}" class="px-option"><span>📄</span><span><strong>{% trans "Analyze your CV or LinkedIn" %}</strong><small>{% trans "AI detects your skills from your CV." %}</small></span></a>
+        <a href="{% url 'skills_hub' %}#claimed" class="px-option"><span>⏱️</span><span><strong>{% trans "Take a skill challenge" %}</strong><small>{% trans "A short timed test turns a claimed skill into a verified badge." %}</small></span></a>
+        <a href="{% url 'freelance_importer' %}" class="px-option"><span>💼</span><span><strong>{% trans "Import freelance work" %}</strong><small>{% trans "Real gigs from Mostaql, Khamsat, Upwork or Fiverr, reviewed by our team." %}</small></span></a>
+    </div>
+    <div style="margin-top: 16px; text-align: end;"><button type="button" class="px-ghost" data-close-dialog>{% trans "Close" %}</button></div>
+</dialog>
 {% endblock %}
 
 {% block extra_scripts %}
 {% trans "File is larger than 5 MB." as too_big %}{% trans "Ready to upload" as ready %}
 <script>
 (function () {
+  // Tabs: links work without JS (?tab=…); with JS they switch in place and keep the URL shareable.
+  var tabs = document.querySelectorAll("[data-tab]"), panels = document.querySelectorAll("[data-panel]");
+  function show(name, focus) {
+    var found = false;
+    tabs.forEach(function (t) { var on = t.dataset.tab === name; t.setAttribute("aria-selected", on ? "true" : "false"); t.tabIndex = on ? 0 : -1; if (on) found = true; });
+    if (!found) return;
+    panels.forEach(function (p) { p.hidden = p.dataset.panel !== name; });
+    history.replaceState(null, "", "?tab=" + name + location.hash);
+    if (focus) document.getElementById("tab-" + name).focus();
+  }
+  tabs.forEach(function (t, i) {
+    t.addEventListener("click", function (e) { e.preventDefault(); show(t.dataset.tab); });
+    t.addEventListener("keydown", function (e) {
+      var dir = {ArrowRight: 1, ArrowLeft: -1}[e.key];
+      if (!dir) return;
+      if (document.dir === "rtl") dir = -dir;
+      var next = tabs[(i + dir + tabs.length) % tabs.length];
+      e.preventDefault();
+      show(next.dataset.tab, true);
+    });
+  });
+  document.querySelectorAll("[data-tab-link]").forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      e.preventDefault();
+      show(a.dataset.tabLink);
+      document.getElementById("hub").scrollIntoView({behavior: "smooth"});
+    });
+  });
+
+  // "Add / verify a skill" dialog
+  document.querySelectorAll("[data-open-dialog]").forEach(function (b) {
+    b.addEventListener("click", function () { document.getElementById(b.dataset.openDialog).showModal(); });
+  });
+  document.querySelectorAll("[data-close-dialog]").forEach(function (b) {
+    b.addEventListener("click", function () { b.closest("dialog").close(); });
+  });
+
+  // Proof screenshots upload as soon as a file is picked.
+  document.querySelectorAll("[data-autosubmit]").forEach(function (input) {
+    input.addEventListener("change", function () { if (input.files.length) input.form.submit(); });
+  });
+
+  // Dropzones: drag & drop, live preview, 5 MB check.
   document.querySelectorAll("[data-dropzone]").forEach(function (box) {
     var input = box.querySelector("input[type=file]"), zone = box.querySelector(".pf-drop__zone");
     var preview = box.querySelector("[data-preview]"), status = box.querySelector("[data-status]");
     var max = +box.dataset.maxBytes;
     function chip(cls, icon, text) { return '<span class="pf-chip ' + cls + '"><i class="bi ' + icon + '"></i> ' + text + "</span>"; }
-    function show() {
+    function update() {
       var f = input.files[0];
       if (!f) return;
       var size = (f.size / 1048576).toFixed(1) + " MB";
@@ -197,12 +605,12 @@
         preview.innerHTML = '<i class="bi bi-file-earmark-check-fill"></i>';
       }
     }
-    input.addEventListener("change", show);
+    input.addEventListener("change", update);
     ["dragenter", "dragover"].forEach(function (ev) { zone.addEventListener(ev, function (e) { e.preventDefault(); box.classList.add("is-drag"); }); });
     ["dragleave", "drop"].forEach(function (ev) { zone.addEventListener(ev, function () { box.classList.remove("is-drag"); }); });
     zone.addEventListener("drop", function (e) {
       e.preventDefault();
-      if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; show(); }
+      if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; update(); }
     });
   });
 })();

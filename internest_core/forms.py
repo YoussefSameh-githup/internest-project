@@ -37,7 +37,7 @@ class ProfileForm(forms.ModelForm):
         fields = [
             'personal_email', 'university_email', 'university', 'major', 
             'study_level', 'phone_number', 'cv_file', 'profile_picture', 
-            'linkedin_url', 'bio', 'portfolio_url', 'talent_pool_visible',
+            'linkedin_url', 'bio', 'portfolio_url', 'talent_pool_visible', 'email_new_opportunities',
         ]
         
         labels = {
@@ -49,6 +49,7 @@ class ProfileForm(forms.ModelForm):
             'bio': _("About me & projects"),
             'portfolio_url': _("Portfolio link (GitHub, Behance, website)"),
             'talent_pool_visible': _("Show me in the Talent Pool"),
+            'email_new_opportunities': _("Email me about new opportunities"),
         }
         
         widgets = {

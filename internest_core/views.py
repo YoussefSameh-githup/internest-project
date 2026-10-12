@@ -454,8 +454,68 @@ def profile_view(request):
         "proof": proof_of_work(profile) if profile.pk else None,
         "top_min": TOP_VERIFIED_MIN_GIGS,
         "experiences": profile.gig_experiences.verified().select_related("company") if profile.pk else [],
+        "active_tab": "details" if form.errors or request.GET.get("tab") not in HUB_TABS else request.GET["tab"],
+        **_profile_hub(profile),
     })
     return render(request, "internship/profile.html", context)
+
+
+HUB_TABS = ("details", "skills", "portfolio", "settings")
+
+
+def _profile_hub(profile):
+    """Student Hub extras: skill chips, freelance gigs, projects, CV links, sharing and completion hints.
+    Every query is optional: the page must render even if the skills/CV tables are unavailable."""
+    from django.db import DatabaseError
+
+    from internest_skills.forms import UniversityShareForm
+    from internest_skills.models import SkillProfile, StudentSkill
+    from internest_students.cv_builder_service import clean_url, format_period
+    from internest_students.models import StudentCV
+
+    missing = [label for done, label in (
+        (profile.university or profile.major, _("University & major")), (profile.study_level, _("Study level")),
+        (profile.cv_file, _("CV file")), (profile.profile_picture, _("Profile picture")),
+        ((profile.linkedin_url or "").startswith("http"), _("LinkedIn URL")),
+    ) if not done]
+    hub = {"missing": missing, "skill_groups": {}, "gigs": [], "projects": [], "cv": None, "education": [],
+           "expected_graduation": "", "graduation_expected": False, "github_url": "", "share_form": None, "needs_proof": 0}
+    if not profile.pk:
+        return hub
+    try:
+        with transaction.atomic():
+            skills = list(profile.skills.select_related("skill").order_by("skill__name"))
+            hub["skill_groups"] = {
+                "verified": [s for s in skills if s.status == StudentSkill.STATUS_VERIFIED],
+                "explicit": [s for s in skills if s.status != StudentSkill.STATUS_VERIFIED and s.source == StudentSkill.SOURCE_EXPLICIT],
+                "inferred": [s for s in skills if s.status != StudentSkill.STATUS_VERIFIED and s.source == StudentSkill.SOURCE_IMPLICIT],
+            }
+            hub["gigs"] = list(profile.freelance_gigs.prefetch_related("skills"))
+            hub["needs_proof"] = sum(1 for g in hub["gigs"] if g.status == g.STATUS_NEEDS_PROOF)
+            hub["projects"] = list(profile.projects.all())
+            record = StudentCV.objects.filter(student=profile).exclude(data={}).first()
+            skill_profile = SkillProfile.objects.filter(student=profile).first()
+            hub["share_form"] = UniversityShareForm(initial={"partner_university": skill_profile.partner_university_id if skill_profile else None})
+    except DatabaseError:
+        logger.exception("Student Hub data unavailable")
+        return hub
+    cv = record.data if record else {}
+    hub["cv"] = record
+    for e in cv.get("education") or []:
+        hub["education"].append({**e, "period": format_period(e.get("start_date", ""), e.get("end_date", ""), e.get("is_current", False))})
+    graduation = next((e for e in cv.get("education") or [] if e.get("end_date") or e.get("is_current")), None)
+    if graduation:
+        if graduation.get("is_current"):
+            hub["expected_graduation"] = "Present"
+        else:
+            period = format_period("", graduation["end_date"])
+            hub["expected_graduation"] = period.replace(" (Expected)", "")
+            hub["graduation_expected"] = period.endswith("(Expected)")
+    for url in (profile.portfolio_url, cv.get("github")):
+        if url and "github.com" in url:
+            hub["github_url"] = clean_url(url).href_url
+            break
+    return hub
 
 
 @login_required

@@ -4350,3 +4350,204 @@ msgid ""
 "“%(handle)s” doesn't match your name, so our team will check your proof of "
 "account ownership."
 msgstr "«%(handle)s» لا يطابق اسمك، لذلك سيراجع فريقنا إثبات ملكيتك للحساب."
+
+msgid "Email me about new opportunities"
+msgstr "أرسل لي بريداً عند نشر فرص جديدة"
+
+msgid "University & major"
+msgstr "الجامعة والتخصص"
+
+msgid "Your Student Hub"
+msgstr "مساحتك الطلابية"
+
+msgid "Graduation"
+msgstr "التخرج"
+
+msgid "LinkedIn connected"
+msgstr "LinkedIn مرتبط"
+
+msgid "GitHub connected"
+msgstr "GitHub مرتبط"
+
+msgid "Profile strength"
+msgstr "قوة الملف الشخصي"
+
+msgid "Still missing"
+msgstr "ما زال ناقصاً"
+
+msgid "Complete your profile"
+msgstr "إكمال بيانات الملف"
+
+msgid "Quick actions"
+msgstr "إجراءات سريعة"
+
+msgid "Download your professional CV (PDF)"
+msgstr "تحميل الـ CV الاحترافي (PDF)"
+
+msgid "ATS-friendly, ready to send"
+msgstr "متوافق مع أنظمة ATS وجاهز للإرسال"
+
+msgid "Build it first in 5 quick steps"
+msgstr "أنشئه أولاً في 5 خطوات سريعة"
+
+msgid "Generate a new CV with AI"
+msgstr "توليد CV جديد بالذكاء الاصطناعي"
+
+msgid "Type it or just talk 🎙️"
+msgstr "اكتبه أو تحدّث فقط 🎙️"
+
+msgid "Import new freelance work"
+msgstr "استيراد عمل حر جديد"
+
+msgid "Verified gigs"
+msgstr "مهام موثقة"
+
+msgid "Imported freelance work"
+msgstr "أعمال حرة مستوردة"
+
+msgid "Personal & academic"
+msgstr "البيانات الشخصية والتعليم"
+
+msgid "Verified skills bank"
+msgstr "بنك المهارات الموثقة"
+
+msgid "Freelance & projects"
+msgstr "سجل الأعمال الحرة والمشاريع"
+
+msgid "Account & privacy"
+msgstr "إعدادات الحساب والسرية"
+
+msgid "Academic details"
+msgstr "البيانات الأكاديمية"
+
+msgid "Education, programs & certificates"
+msgstr "التعليم والبرامج والشهادات"
+
+msgid "Edit in the CV builder"
+msgstr "تعديل في منشئ السيرة الذاتية"
+
+msgid ""
+"Add your degrees, exchange programs and certificates with start and end "
+"dates in the CV builder."
+msgstr ""
+"أضف مؤهلاتك وبرامج التبادل والشهادات بتواريخ البداية والنهاية في منشئ السيرة"
+" الذاتية."
+
+msgid "About me & professional links"
+msgstr "نبذة عني والروابط المهنية"
+
+msgid "Changes are saved for your whole profile."
+msgstr "يتم حفظ التغييرات لملفك الشخصي بالكامل."
+
+msgid "Add / verify a new skill"
+msgstr "إضافة / توثيق مهارة جديدة"
+
+msgid "Verified (challenge or reviewed freelance work)"
+msgstr "موثقة (اختبار أو عمل حر تمت مراجعته)"
+
+msgid "Explicit — written in your CV"
+msgstr "صريحة — مكتوبة في سيرتك الذاتية"
+
+msgid "AI-inferred from your projects"
+msgstr "مستنتجة بالذكاء الاصطناعي من مشاريعك"
+
+msgid "Explicit skills"
+msgstr "مهارات صريحة"
+
+msgid "Take the challenge to verify it"
+msgstr "خُض الاختبار لتوثيقها"
+
+msgid "AI-inferred skills"
+msgstr "مهارات مستنتجة بالذكاء الاصطناعي"
+
+msgid ""
+"No skills yet. Analyze your CV or import freelance work to fill your skills "
+"bank."
+msgstr ""
+"لا توجد مهارات بعد. حلّل سيرتك الذاتية أو استورد أعمالك الحرة لملء بنك "
+"مهاراتك."
+
+msgid "Verified Internest gigs"
+msgstr "مهام Internest الموثقة"
+
+msgid "Freelance work"
+msgstr "الأعمال الحرة"
+
+msgid "Approved & verified"
+msgstr "تمت الموافقة والتوثيق"
+
+msgid "Proof uploaded — waiting for review."
+msgstr "تم رفع الإثبات — بانتظار المراجعة."
+
+msgid "Replace screenshot"
+msgstr "استبدال لقطة الشاشة"
+
+msgid "Upload a proof screenshot"
+msgstr "رفع لقطة شاشة للإثبات"
+
+msgid "Manage in the CV builder"
+msgstr "الإدارة من منشئ السيرة الذاتية"
+
+msgid "Visibility & sharing"
+msgstr "الظهور والمشاركة"
+
+msgid ""
+"Your university sees your skill analytics only — never your contact details."
+msgstr "ترى جامعتك تحليلات مهاراتك فقط — وليس بيانات التواصل الخاصة بك أبداً."
+
+msgid "Save"
+msgstr "حفظ"
+
+msgid "Save to apply your visibility choice."
+msgstr "احفظ لتطبيق اختيارك للظهور."
+
+msgid "Email notifications"
+msgstr "إشعارات البريد الإلكتروني"
+
+msgid ""
+"Account emails (verification codes, shortlist news and invitations) are "
+"always sent."
+msgstr "رسائل الحساب (رموز التحقق وأخبار الترشيح والدعوات) تُرسل دائماً."
+
+msgid "Account & security"
+msgstr "الحساب والأمان"
+
+msgid "Use a strong password you don't use anywhere else."
+msgstr "استخدم كلمة مرور قوية لا تستخدمها في أي مكان آخر."
+
+msgid "Change password"
+msgstr "تغيير كلمة المرور"
+
+msgid "Sign out"
+msgstr "تسجيل الخروج"
+
+msgid "Sign out of Internest on this device."
+msgstr "تسجيل الخروج من Internest على هذا الجهاز."
+
+msgid "Choose how you want to add or prove a skill."
+msgstr "اختر طريقة إضافة مهارة أو إثباتها."
+
+msgid "AI detects your skills from your CV."
+msgstr "يكتشف الذكاء الاصطناعي مهاراتك من سيرتك الذاتية."
+
+msgid "Take a skill challenge"
+msgstr "خُض اختبار مهارة"
+
+msgid "A short timed test turns a claimed skill into a verified badge."
+msgstr "اختبار قصير موقوت يحوّل المهارة المُدّعاة إلى شارة موثقة."
+
+msgid ""
+"Real gigs from Mostaql, Khamsat, Upwork or Fiverr, reviewed by our team."
+msgstr "أعمال حقيقية من مستقل أو خمسات أو Upwork أو Fiverr يراجعها فريقنا."
+
+msgid "Proof uploaded. Our team will review it soon."
+msgstr "تم رفع الإثبات. سيراجعه فريقنا قريباً."
+
+msgid "Your sharing preference was saved."
+msgstr "تم حفظ تفضيل المشاركة."
+
+msgid "still studying"
+msgstr "ما زلت أدرس"
+
+msgid "expected"
+msgstr "متوقع"

@@ -264,7 +264,7 @@ class ProfileRedesignTests(ApplicationsBase):
 
     def test_sections_dropzones_and_pool_switch(self):
         page = self.client.get(reverse("profile"))
-        for marker in ("Personal and university details", "Skills and professional links", "Attachments (photo and CV)",
+        for marker in ("Contact details", "Academic details", "Attachments (photo and CV)", "form=\"pf-form\"",
                        "data-dropzone", 'name="cv_file"', 'name="profile_picture"', "Max 5 MB", 'class="pf-switch"',
                        "Your phone, email and CV are shared only if you apply"):
             self.assertContains(page, marker)
