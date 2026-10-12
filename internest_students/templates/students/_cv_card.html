@@ -1,0 +1,19 @@
+{% load i18n %}{% if profile %}
+<div class="pf-card" style="margin-bottom: 16px; padding: 18px; border-radius: 18px; background: linear-gradient(135deg, #eff6ff, #fff); border: 1px solid #bfdbfe;">
+    <h3 style="margin: 0 0 6px; font-size: 1.05rem;">📄 {% trans "ATS CV Builder" %}</h3>
+    <p style="margin: 0 0 12px; color: #475569; font-size: 13px;">{% trans "Create a clean, ATS-friendly CV by typing or by voice, and download it as a PDF." %}</p>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="{% url 'cv_builder' %}" class="btn btn--primary btn--sm">{% if has_cv %}{% trans "Edit my CV" %}{% else %}{% trans "Build my CV" %}{% endif %}</a>
+        {% if has_cv %}<a href="{% url 'cv_builder_pdf' %}" class="btn btn--ghost btn--sm"><i class="bi bi-download"></i> PDF</a>{% endif %}
+    </div>
+    {% if projects %}
+        <h4 style="margin: 16px 0 6px; font-size: 14px;">{% trans "Projects" %}</h4>
+        <ul style="margin: 0; padding: 0; list-style: none; display: grid; gap: 6px;">
+            {% for p in projects %}
+                <li style="font-size: 13px;"><strong dir="auto">{{ p.title }}</strong>{% if p.tech_stack %} <span style="color: #64748b;">· {{ p.tech_stack }}</span>{% endif %}
+                    {% if p.link %}<a href="{{ p.link }}" target="_blank" rel="noopener nofollow" aria-label="{% trans 'Open project' %}"><i class="bi bi-box-arrow-up-right"></i></a>{% endif %}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+{% endif %}

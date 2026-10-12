@@ -1,5 +1,5 @@
 {% extends 'internship/base.html' %}
-{% load static i18n skills_tags %}
+{% load static i18n skills_tags cv_tags %}
 
 {% block title %}{% trans "My profile" %} — Internest{% endblock %}
 
@@ -159,6 +159,7 @@
             {# ---------- Sidebar ---------- #}
             <aside class="pf-aside">
                 {% skills_profile_card profile %}
+                {% cv_builder_card profile %}
                 {% include "campus/_cta.html" %}
             </aside>
         </div>

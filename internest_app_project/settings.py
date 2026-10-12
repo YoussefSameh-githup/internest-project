@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "internest_lounge.apps.InternestLoungeConfig",
     "internest_campus.apps.InternestCampusConfig",
     "internest_startups.apps.InternestStartupsConfig",
+    "internest_students.apps.InternestStudentsConfig",
 ]
 
 SITE_ID = 1
@@ -244,6 +245,10 @@ SKILLS_LLM_MODEL = env.str("SKILLS_LLM_MODEL", default="")
 # Off by default: PythonAnywhere free accounts must reach external APIs through the platform proxy.
 ENABLE_PROXY_BYPASS = env.bool("ENABLE_PROXY_BYPASS", default=False)
 SKILLS_LLM_TIMEOUT = env.float("SKILLS_LLM_TIMEOUT", default=15.0)
+# Voice-to-CV transcription (OpenAI-compatible Whisper). Without it, a Groq/OpenAI key above is reused.
+WHISPER_API_KEY = os.getenv("WHISPER_API_KEY", "")
+WHISPER_BASE_URL = os.getenv("WHISPER_BASE_URL", "https://api.groq.com/openai/v1")
+WHISPER_MODEL = os.getenv("WHISPER_MODEL", "whisper-large-v3")
 
 # --- Regional Pro pricing (internest_startups.pricing) ---
 DEFAULT_PRICING_COUNTRY = env("DEFAULT_PRICING_COUNTRY", default="EG")

@@ -3874,3 +3874,290 @@ msgstr ""
 
 msgid "%(n)s yrs experience"
 msgstr "خبرة %(n)s سنة"
+
+msgid "Description"
+msgstr "الوصف"
+
+msgid "Tech stack"
+msgstr "التقنيات المستخدمة"
+
+msgid "Link"
+msgstr "الرابط"
+
+msgid ""
+"You've reached today's AI limit for the CV builder. Your data is saved in "
+"the form — try again tomorrow."
+msgstr ""
+"وصلت للحد اليومي لاستخدام الذكاء الاصطناعي في منشئ السيرة الذاتية. بياناتك "
+"محفوظة في النموذج — حاول مرة أخرى غداً."
+
+msgid "Save your CV first, then download it."
+msgstr "احفظ سيرتك الذاتية أولاً، ثم قم بتحميلها."
+
+msgid ""
+"AI polishing isn't available right now. You can still finish and download "
+"your CV."
+msgstr ""
+"التحسين بالذكاء الاصطناعي غير متاح حالياً. يمكنك إكمال سيرتك الذاتية "
+"وتحميلها بشكل عادي."
+
+msgid "Please record a voice note first (WebM, OGG, MP3, M4A or WAV)."
+msgstr "يرجى تسجيل رسالة صوتية أولاً (WebM أو OGG أو MP3 أو M4A أو WAV)."
+
+msgid "The recording is too long. Keep it under 3 minutes."
+msgstr "التسجيل طويل جداً. اجعله أقل من 3 دقائق."
+
+msgid ""
+"Voice input isn't available right now. Please fill in the form instead."
+msgstr "الإدخال الصوتي غير متاح حالياً. يرجى ملء النموذج بدلاً من ذلك."
+
+msgid ""
+"We couldn't hear enough in this recording. Speak a little closer to the "
+"microphone and try again."
+msgstr ""
+"لم نتمكن من سماع ما يكفي في هذا التسجيل. تحدّث بالقرب من الميكروفون وحاول "
+"مرة أخرى."
+
+msgid "Add your full name in Personal info."
+msgstr "أضف اسمك الكامل في خطوة البيانات الشخصية."
+
+msgid ""
+"CV saved. %(skills)s skills and %(projects)s projects were added to your "
+"profile."
+msgstr ""
+"تم حفظ السيرة الذاتية. تمت إضافة %(skills)s مهارة و%(projects)s مشروع إلى "
+"ملفك الشخصي."
+
+msgid ""
+"Our AI is busy right now, so your text was kept as is. Try polishing again "
+"in a few minutes."
+msgstr ""
+"الذكاء الاصطناعي مشغول حالياً، لذلك احتفظنا بنصك كما هو. جرّب التحسين مرة "
+"أخرى بعد دقائق."
+
+msgid ""
+"We couldn't process your voice note right now. Please try again in a few "
+"minutes or fill in the form."
+msgstr ""
+"لم نتمكن من معالجة رسالتك الصوتية الآن. حاول مرة أخرى بعد دقائق أو املأ "
+"النموذج."
+
+msgid ""
+"We transcribed your voice note, but the AI couldn't organize it right now. "
+"Copy the details from the transcript below into the form."
+msgstr ""
+"حوّلنا رسالتك الصوتية إلى نص، لكن الذكاء الاصطناعي لم يتمكن من تنظيمها الآن."
+" انسخ التفاصيل من النص أدناه إلى النموذج."
+
+msgid "Replace the placeholders with real numbers before saving: %(items)s"
+msgstr "استبدل الخانات المؤقتة بأرقام حقيقية قبل الحفظ: %(items)s"
+
+msgid "Back to the builder"
+msgstr "العودة إلى منشئ السيرة الذاتية"
+
+msgid "Download CV (PDF)"
+msgstr "تحميل الـ CV (PDF)"
+
+msgid "ATS CV Builder"
+msgstr "منشئ السيرة الذاتية (ATS)"
+
+msgid ""
+"Build a clean CV that applicant tracking systems can read — type it step by "
+"step or just talk."
+msgstr ""
+"أنشئ سيرة ذاتية واضحة تقرؤها أنظمة فرز المتقدمين (ATS) — اكتبها خطوة بخطوة "
+"أو تحدّث فقط."
+
+msgid "Preview"
+msgstr "معاينة"
+
+msgid "Record your details by voice 🎙️"
+msgstr "سجّل بياناتك بصوتك 🎙️"
+
+msgid ""
+"Talk for up to 3 minutes in Arabic, English or both: your studies, jobs, "
+"activities, projects and skills. The AI fills in the form below for you to "
+"review."
+msgstr ""
+"تحدّث حتى 3 دقائق بالعربية أو الإنجليزية أو الاثنين معاً: دراستك وخبراتك "
+"وأنشطتك ومشاريعك ومهاراتك. سيملأ الذكاء الاصطناعي النموذج بالأسفل لتراجعه."
+
+msgid "Voice input isn't set up yet — fill in the steps below instead."
+msgstr "الإدخال الصوتي غير مُفعّل بعد — املأ الخطوات بالأسفل بدلاً من ذلك."
+
+msgid "Stop"
+msgstr "إيقاف"
+
+msgid "Build my CV from this note"
+msgstr "أنشئ سيرتي الذاتية من هذا التسجيل"
+
+msgid "Re-record"
+msgstr "إعادة التسجيل"
+
+msgid "What we heard"
+msgstr "ما سمعناه"
+
+msgid "Personal info"
+msgstr "البيانات الشخصية"
+
+msgid "Experience"
+msgstr "الخبرات"
+
+msgid "Projects"
+msgstr "المشاريع"
+
+msgid "Skills"
+msgstr "المهارات"
+
+msgid ""
+"Recruiters and ATS software read these first. Use a professional email."
+msgstr ""
+"مسؤولو التوظيف وأنظمة ATS يقرؤون هذه البيانات أولاً. استخدم بريداً "
+"إلكترونياً احترافياً."
+
+msgid "Email"
+msgstr "البريد الإلكتروني"
+
+msgid "Phone"
+msgstr "رقم الهاتف"
+
+msgid "Professional summary"
+msgstr "نبذة مهنية"
+
+msgid ""
+"2–3 sentences: who you are, what you're good at, what you're looking for."
+msgstr "جملتان أو ثلاث: من أنت، وما الذي تجيده، وما الذي تبحث عنه."
+
+msgid "Your university, major and (expected) graduation year."
+msgstr "جامعتك وتخصصك وسنة التخرج (المتوقعة)."
+
+msgid "Add education"
+msgstr "إضافة مؤهل دراسي"
+
+msgid "Experience, gigs & activities"
+msgstr "الخبرات والمهام والأنشطة"
+
+msgid ""
+"Internships, Internest gigs, jobs, volunteering and student activities. One "
+"achievement per line — start with a verb and add numbers when you can."
+msgstr ""
+"التدريبات ومهام Internest والوظائف والتطوع والأنشطة الطلابية. إنجاز واحد في "
+"كل سطر — ابدأ بفعل وأضف أرقاماً متى أمكن."
+
+msgid "Add experience"
+msgstr "إضافة خبرة"
+
+msgid ""
+"Course, graduation or personal projects. They are also added to your "
+"Internest profile."
+msgstr ""
+"مشاريع المواد أو التخرج أو المشاريع الشخصية. تُضاف أيضاً إلى ملفك على "
+"Internest."
+
+msgid "Add project"
+msgstr "إضافة مشروع"
+
+msgid ""
+"Pick from the Internest skill list so your skills link to verification "
+"challenges and the Talent Pool."
+msgstr ""
+"اختر من قائمة مهارات Internest لتُربط مهاراتك باختبارات التوثيق وبنك "
+"المواهب."
+
+msgid "Add a skill"
+msgstr "إضافة مهارة"
+
+msgid "Start typing, e.g. Python, Excel, Marketing…"
+msgstr "ابدأ الكتابة، مثل Python أو Excel أو Marketing…"
+
+msgid "Add"
+msgstr "إضافة"
+
+msgid "Polish with AI"
+msgstr "تحسين بالذكاء الاصطناعي"
+
+msgid "Save & create my CV"
+msgstr "حفظ وإنشاء سيرتي الذاتية"
+
+msgid "Graduation year"
+msgstr "سنة التخرج"
+
+msgid "Title / role"
+msgstr "المسمى / الدور"
+
+msgid "Company / organization"
+msgstr "الشركة / الجهة"
+
+msgid "Key achievements (one per line)"
+msgstr "أهم الإنجازات (إنجاز في كل سطر)"
+
+msgid "Tech stack / tools"
+msgstr "التقنيات / الأدوات"
+
+msgid "Nothing here yet."
+msgstr "لا يوجد شيء هنا بعد."
+
+msgid "Choose a skill from the list."
+msgstr "اختر مهارة من القائمة."
+
+msgid ""
+"Not in the Internest skill list — shown on your CV only. Click to remove."
+msgstr ""
+"ليست ضمن قائمة مهارات Internest — تظهر في سيرتك الذاتية فقط. اضغط للحذف."
+
+msgid "Click to remove"
+msgstr "اضغط للحذف"
+
+msgid "Your CV was polished. Review each step before saving."
+msgstr "تم تحسين سيرتك الذاتية. راجع كل خطوة قبل الحفظ."
+
+msgid "Replace the highlighted [X] placeholders with your real numbers."
+msgstr "استبدل الخانات المؤقتة [X] المميزة بأرقامك الحقيقية."
+
+msgid "Listening…"
+msgstr "جارٍ الاستماع…"
+
+msgid ""
+"Your browser can't record audio. Try Chrome, Edge or Safari, or fill in the "
+"form."
+msgstr ""
+"متصفحك لا يدعم تسجيل الصوت. جرّب Chrome أو Edge أو Safari، أو املأ النموذج."
+
+msgid ""
+"We need microphone access to record. Allow it in your browser and try again."
+msgstr ""
+"نحتاج إذن الوصول إلى الميكروفون للتسجيل. اسمح به من المتصفح وحاول مرة أخرى."
+
+msgid "Analyzing your voice note — this can take up to a minute…"
+msgstr "جارٍ تحليل رسالتك الصوتية — قد يستغرق ذلك حتى دقيقة…"
+
+msgid ""
+"Done! We filled in the form from your voice note. Review each step, then "
+"save."
+msgstr "تم! ملأنا النموذج من رسالتك الصوتية. راجع كل خطوة ثم احفظ."
+
+msgid "Connection problem. Your data is still in the form — please try again."
+msgstr ""
+"مشكلة في الاتصال. بياناتك ما زالت في النموذج — يرجى المحاولة مرة أخرى."
+
+msgid "Polishing your CV…"
+msgstr "جارٍ تحسين سيرتك الذاتية…"
+
+msgid "Saving…"
+msgstr "جارٍ الحفظ…"
+
+msgid ""
+"Create a clean, ATS-friendly CV by typing or by voice, and download it as a "
+"PDF."
+msgstr ""
+"أنشئ سيرة ذاتية واضحة ومتوافقة مع أنظمة ATS بالكتابة أو بصوتك، وحمّلها كملف "
+"PDF."
+
+msgid "Edit my CV"
+msgstr "تعديل سيرتي الذاتية"
+
+msgid "Build my CV"
+msgstr "أنشئ سيرتي الذاتية"
+
+msgid "Open project"
+msgstr "فتح المشروع"

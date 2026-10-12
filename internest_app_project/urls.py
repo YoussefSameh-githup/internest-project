@@ -25,6 +25,7 @@ urlpatterns = [
     path('', include('internest_lounge.urls')),
     path('', include('internest_campus.urls')),
     path('', include('internest_startups.urls')),
+    path('', include('internest_students.urls')),
     path('', include('internest_core.urls')),
 ]
 

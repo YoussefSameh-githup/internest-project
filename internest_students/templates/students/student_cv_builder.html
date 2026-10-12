@@ -1,0 +1,510 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "ATS CV Builder" %} — Internest{% endblock %}
+
+{% block content %}
+<style>
+/* Embedded so the builder renders right even with an old cached stylesheet. */
+.cvb { --cv-accent: #2563eb; --cv-ink: #0f172a; --cv-muted: #64748b; --cv-line: #e2e8f0; padding: 32px 0 64px; background: #f8fafc; }
+.cvb-wrap { max-width: 880px; }
+.cvb-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.cvb-head h1 { margin: 0; font-size: clamp(1.5rem, 3vw, 2rem); color: var(--cv-ink); }
+.cvb-head p { margin: 4px 0 0; color: var(--cv-muted); }
+.cvb-head__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.cvb-card { padding: 22px; border-radius: 20px; background: #fff; border: 1px solid var(--cv-line); box-shadow: 0 10px 30px rgba(15, 23, 42, .06); }
+
+/* Voice */
+.cvb-voice { margin-bottom: 20px; background: linear-gradient(135deg, #eff6ff, #fff 60%); border-color: #bfdbfe; }
+.cvb-voice__intro { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.cvb-voice__intro p { flex: 1; min-width: 220px; margin: 0; color: #334155; font-size: 14px; }
+.cvb-mic { display: inline-flex; align-items: center; gap: 8px; padding: 14px 22px; border: 0; border-radius: 999px; background: #dc2626; color: #fff;
+  font: inherit; font-size: 1.05rem; font-weight: 800; cursor: pointer; box-shadow: 0 10px 24px rgba(220, 38, 38, .3); }
+.cvb-mic:hover { background: #b91c1c; }
+.cvb-mic:disabled { background: #94a3b8; box-shadow: none; cursor: not-allowed; }
+.cvb-rec { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px 16px; border-radius: 16px; background: #fef2f2; border: 1px solid #fecaca; }
+.cvb-rec__dot { width: 14px; height: 14px; border-radius: 50%; background: #dc2626; animation: cvb-pulse 1.2s ease-in-out infinite; }
+.cvb-rec__time { font-variant-numeric: tabular-nums; font-size: 1.25rem; color: #991b1b; min-width: 64px; }
+.cvb-rec__limit { color: #b91c1c; font-size: 13px; }
+.cvb-wave { display: flex; align-items: center; gap: 4px; height: 32px; }
+.cvb-wave i { width: 5px; height: 100%; border-radius: 3px; background: #ef4444; animation: cvb-wave 1s ease-in-out infinite; }
+.cvb-wave i:nth-child(2) { animation-delay: -.8s; } .cvb-wave i:nth-child(3) { animation-delay: -.6s; } .cvb-wave i:nth-child(4) { animation-delay: -.4s; }
+.cvb-wave i:nth-child(5) { animation-delay: -.2s; } .cvb-wave i:nth-child(6) { animation-delay: -.7s; } .cvb-wave i:nth-child(7) { animation-delay: -.3s; }
+.cvb-rec .btn { margin-inline-start: auto; }
+@keyframes cvb-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, .55); } 50% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); } }
+@keyframes cvb-wave { 0%, 100% { transform: scaleY(.25); } 50% { transform: scaleY(1); } }
+.cvb-review { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cvb-review audio { flex: 1; min-width: 220px; height: 40px; }
+.cvb-status { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; padding: 10px 14px; border-radius: 12px; font-size: 14px; }
+.cvb-status--busy { background: #eff6ff; color: #1e40af; }
+.cvb-status--ok { background: #f0fdf4; color: #166534; }
+.cvb-status--error { background: #fef2f2; color: #991b1b; }
+.cvb-spin { width: 16px; height: 16px; flex-shrink: 0; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: cvb-spin .8s linear infinite; }
+@keyframes cvb-spin { to { transform: rotate(360deg); } }
+.cvb-transcript { margin-top: 10px; font-size: 14px; color: #334155; }
+.cvb-transcript summary { cursor: pointer; font-weight: 700; }
+.cvb-transcript p { margin: 8px 0 0; padding: 10px 12px; border-radius: 10px; background: #f8fafc; white-space: pre-wrap; }
+
+/* Wizard */
+.cvb-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 0 0 14px; padding: 0; list-style: none; }
+.cvb-steps button { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; border: 1px solid var(--cv-line); border-radius: 14px;
+  background: #fff; color: var(--cv-muted); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.cvb-steps b { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: #f1f5f9; color: var(--cv-ink); }
+.cvb-steps button.is-active { border-color: var(--cv-accent); color: var(--cv-accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); }
+.cvb-steps button.is-active b { background: var(--cv-accent); color: #fff; }
+.cvb-steps button.is-done b { background: #dcfce7; color: #166534; }
+.cvb-step h2 { margin: 0 0 4px; font-size: 1.2rem; }
+.cvb-step > p { margin: 0 0 16px; color: var(--cv-muted); font-size: 14px; }
+.cvb-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
+.cvb-grid .full { grid-column: 1 / -1; }
+.cvb-field label { display: block; margin-bottom: 4px; font-size: 13px; font-weight: 700; color: #334155; }
+.cvb-field input, .cvb-field textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 12px; font: inherit; background: #fff; }
+.cvb-field textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
+.cvb-field input:focus, .cvb-field textarea:focus { outline: none; border-color: var(--cv-accent); box-shadow: 0 0 0 4px rgba(37, 99, 235, .12); }
+.cvb-field small { color: var(--cv-muted); font-size: 12px; }
+.cvb-field .is-placeholder { border-color: #f59e0b; background: #fffbeb; }
+.cvb-item { position: relative; margin-bottom: 12px; padding: 16px; border-radius: 16px; border: 1px solid var(--cv-line); background: #f8fafc; }
+.cvb-item__remove { position: absolute; top: 10px; inset-inline-end: 10px; border: 0; background: none; color: #94a3b8; font-size: 1.1rem; cursor: pointer; }
+.cvb-item__remove:hover { color: #dc2626; }
+.cvb-item .cvb-grid { padding-inline-end: 24px; }
+.cvb-empty { margin: 0 0 12px; padding: 16px; border: 1px dashed #cbd5e1; border-radius: 14px; color: var(--cv-muted); text-align: center; }
+.cvb-add { padding: 8px 14px; border: 1px dashed var(--cv-accent); border-radius: 999px; background: #eff6ff; color: var(--cv-accent); font: inherit; font-weight: 700; cursor: pointer; }
+.cvb-skill-row { display: flex; gap: 8px; }
+.cvb-skill-row input { flex: 1; }
+.cvb-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.cvb-chip { padding: 6px 12px; border-radius: 999px; border: 1px solid #bfdbfe; background: #eff6ff; color: #1d4ed8; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.cvb-chip--free { border-style: dashed; background: #fff; color: #475569; border-color: #cbd5e1; }
+.cvb-chip:hover { border-color: #dc2626; color: #dc2626; }
+.cvb-alert { margin: 16px 0 0; padding: 10px 14px; border-radius: 12px; font-size: 14px; }
+.cvb-alert--error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.cvb-alert--warn { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.cvb-alert--ok { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.cvb-nav { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--cv-line); }
+.cvb-nav [data-next], .cvb-nav [data-save] { margin-inline-start: auto; }
+.cvb-done { margin-top: 16px; padding: 18px; border-radius: 16px; background: #f0fdf4; border: 1px solid #bbf7d0; text-align: center; }
+.cvb-done p { margin: 0 0 12px; color: #166534; font-weight: 700; }
+.cvb-done__actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+button.is-busy { opacity: .7; pointer-events: none; }
+@media (max-width: 640px) {
+  .cvb-grid { grid-template-columns: 1fr; }
+  .cvb-steps span { display: none; }
+  .cvb-mic { width: 100%; justify-content: center; }
+}
+</style>
+
+<section class="cvb">
+    <div class="container cvb-wrap">
+        <header class="cvb-head">
+            <div>
+                <h1>📄 {% trans "ATS CV Builder" %}</h1>
+                <p>{% trans "Build a clean CV that applicant tracking systems can read — type it step by step or just talk." %}</p>
+            </div>
+            <div class="cvb-head__actions" data-saved-actions {% if not has_saved_cv %}hidden{% endif %}>
+                <a href="{% url 'cv_builder_preview' %}" class="btn btn--ghost btn--sm" target="_blank" rel="noopener"><i class="bi bi-eye"></i> {% trans "Preview" %}</a>
+                <a href="{% url 'cv_builder_pdf' %}" class="btn btn--primary btn--sm"><i class="bi bi-download"></i> {% trans "Download CV (PDF)" %}</a>
+            </div>
+        </header>
+
+        {# ---------- Voice-to-CV ---------- #}
+        <div class="cvb-card cvb-voice" data-voice data-max="{{ max_seconds }}" data-url="{% url 'cv_builder_voice' %}">
+            <div class="cvb-voice__intro" data-rec-intro>
+                <button type="button" class="cvb-mic" data-rec-start {% if not voice_enabled %}disabled{% endif %}>{% trans "Record your details by voice 🎙️" %}</button>
+                <p>{% if voice_enabled %}{% trans "Talk for up to 3 minutes in Arabic, English or both: your studies, jobs, activities, projects and skills. The AI fills in the form below for you to review." %}{% else %}{% trans "Voice input isn't set up yet — fill in the steps below instead." %}{% endif %}</p>
+            </div>
+            <div class="cvb-rec" data-rec-panel hidden>
+                <span class="cvb-rec__dot" aria-hidden="true"></span>
+                <div class="cvb-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                <strong class="cvb-rec__time" data-rec-time role="timer">00:00</strong>
+                <span class="cvb-rec__limit">/ 03:00</span>
+                <button type="button" class="btn btn--primary btn--sm" data-rec-stop><i class="bi bi-stop-fill"></i> {% trans "Stop" %}</button>
+            </div>
+            <div class="cvb-review" data-rec-review hidden>
+                <audio controls data-rec-audio></audio>
+                <button type="button" class="btn btn--primary" data-rec-send>✨ {% trans "Build my CV from this note" %}</button>
+                <button type="button" class="btn btn--ghost" data-rec-redo><i class="bi bi-arrow-counterclockwise"></i> {% trans "Re-record" %}</button>
+            </div>
+            <p class="cvb-status" data-voice-status role="status" hidden></p>
+            <details class="cvb-transcript" data-transcript hidden>
+                <summary>{% trans "What we heard" %}</summary>
+                <p dir="auto" data-transcript-text></p>
+            </details>
+        </div>
+
+        {# ---------- Wizard ---------- #}
+        <ol class="cvb-steps">
+            <li><button type="button" data-goto="0"><b>1</b><span>{% trans "Personal info" %}</span></button></li>
+            <li><button type="button" data-goto="1"><b>2</b><span>{% trans "Education" %}</span></button></li>
+            <li><button type="button" data-goto="2"><b>3</b><span>{% trans "Experience" %}</span></button></li>
+            <li><button type="button" data-goto="3"><b>4</b><span>{% trans "Projects" %}</span></button></li>
+            <li><button type="button" data-goto="4"><b>5</b><span>{% trans "Skills" %}</span></button></li>
+        </ol>
+
+        <form class="cvb-card" data-cv-form novalidate
+              data-polish-url="{% url 'cv_builder_polish' %}" data-save-url="{% url 'cv_builder_save' %}">
+            {% csrf_token %}
+            <section class="cvb-step" data-step>
+                <h2>{% trans "Personal info" %}</h2>
+                <p>{% trans "Recruiters and ATS software read these first. Use a professional email." %}</p>
+                <div class="cvb-grid">
+                    <div class="cvb-field full"><label for="cv-name">{% trans "Full name" %}</label><input id="cv-name" data-field="name" maxlength="80" autocomplete="name" dir="auto"></div>
+                    <div class="cvb-field"><label for="cv-email">{% trans "Email" %}</label><input id="cv-email" type="email" data-field="email" maxlength="120" autocomplete="email" dir="ltr"></div>
+                    <div class="cvb-field"><label for="cv-phone">{% trans "Phone" %}</label><input id="cv-phone" type="tel" data-field="phone" maxlength="30" autocomplete="tel" dir="ltr"></div>
+                    <div class="cvb-field"><label for="cv-linkedin">LinkedIn</label><input id="cv-linkedin" type="url" data-field="linkedin" maxlength="200" placeholder="https://linkedin.com/in/…" dir="ltr"></div>
+                    <div class="cvb-field"><label for="cv-github">GitHub</label><input id="cv-github" type="url" data-field="github" maxlength="200" placeholder="https://github.com/…" dir="ltr"></div>
+                    <div class="cvb-field full">
+                        <label for="cv-summary">{% trans "Professional summary" %}</label>
+                        <textarea id="cv-summary" data-field="summary" maxlength="600" dir="auto"></textarea>
+                        <small>{% trans "2–3 sentences: who you are, what you're good at, what you're looking for." %}</small>
+                    </div>
+                </div>
+            </section>
+
+            <section class="cvb-step" data-step hidden>
+                <h2>{% trans "Education" %}</h2>
+                <p>{% trans "Your university, major and (expected) graduation year." %}</p>
+                <div data-list="education"></div>
+                <button type="button" class="cvb-add" data-add="education">+ {% trans "Add education" %}</button>
+            </section>
+
+            <section class="cvb-step" data-step hidden>
+                <h2>{% trans "Experience, gigs & activities" %}</h2>
+                <p>{% trans "Internships, Internest gigs, jobs, volunteering and student activities. One achievement per line — start with a verb and add numbers when you can." %}</p>
+                <div data-list="experiences"></div>
+                <button type="button" class="cvb-add" data-add="experiences">+ {% trans "Add experience" %}</button>
+            </section>
+
+            <section class="cvb-step" data-step hidden>
+                <h2>{% trans "Projects" %}</h2>
+                <p>{% trans "Course, graduation or personal projects. They are also added to your Internest profile." %}</p>
+                <div data-list="projects"></div>
+                <button type="button" class="cvb-add" data-add="projects">+ {% trans "Add project" %}</button>
+            </section>
+
+            <section class="cvb-step" data-step hidden>
+                <h2>{% trans "Skills" %}</h2>
+                <p>{% trans "Pick from the Internest skill list so your skills link to verification challenges and the Talent Pool." %}</p>
+                <div class="cvb-field">
+                    <label for="cv-skill">{% trans "Add a skill" %}</label>
+                    <div class="cvb-skill-row">
+                        <input id="cv-skill" list="cv-skill-options" data-skill-input autocomplete="off" placeholder="{% trans 'Start typing, e.g. Python, Excel, Marketing…' %}">
+                        <button type="button" class="btn btn--primary" data-skill-add>{% trans "Add" %}</button>
+                    </div>
+                    <small data-skill-hint></small>
+                </div>
+                <div class="cvb-chips" data-skill-chips></div>
+            </section>
+
+            <p class="cvb-alert" data-alert role="alert" hidden></p>
+
+            <footer class="cvb-nav">
+                <button type="button" class="btn btn--ghost" data-prev>← {% trans "Back" %}</button>
+                {% if ai_enabled %}<button type="button" class="btn btn--ghost" data-polish>✨ {% trans "Polish with AI" %}</button>{% endif %}
+                <button type="button" class="btn btn--primary" data-next>{% trans "Next" %} →</button>
+                <button type="button" class="btn btn--accent" data-save hidden><i class="bi bi-save"></i> {% trans "Save & create my CV" %}</button>
+            </footer>
+
+            <div class="cvb-done" data-done hidden>
+                <p data-done-text></p>
+                <div class="cvb-done__actions">
+                    <a href="{% url 'cv_builder_pdf' %}" class="btn btn--primary btn--lg"><i class="bi bi-file-earmark-pdf"></i> {% trans "Download CV (PDF)" %}</a>
+                    <a href="{% url 'cv_builder_preview' %}" class="btn btn--ghost btn--lg" target="_blank" rel="noopener">{% trans "Preview" %}</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+{# Repeater rows #}
+<template data-tpl="education">
+    <div class="cvb-item"><button type="button" class="cvb-item__remove" data-remove aria-label="{% trans 'Remove' %}"><i class="bi bi-x-lg"></i></button>
+        <div class="cvb-grid">
+            <div class="cvb-field full"><label>{% trans "University" %}</label><input data-key="university" maxlength="120" dir="auto"></div>
+            <div class="cvb-field"><label>{% trans "Major" %}</label><input data-key="major" maxlength="120" dir="auto"></div>
+            <div class="cvb-field"><label>{% trans "Graduation year" %}</label><input data-key="graduation_year" maxlength="20" inputmode="numeric" placeholder="2027"></div>
+        </div>
+    </div>
+</template>
+<template data-tpl="experiences">
+    <div class="cvb-item"><button type="button" class="cvb-item__remove" data-remove aria-label="{% trans 'Remove' %}"><i class="bi bi-x-lg"></i></button>
+        <div class="cvb-grid">
+            <div class="cvb-field"><label>{% trans "Title / role" %}</label><input data-key="title" maxlength="120" dir="auto"></div>
+            <div class="cvb-field"><label>{% trans "Company / organization" %}</label><input data-key="organization" maxlength="120" dir="auto"></div>
+            <div class="cvb-field full"><label>{% trans "Key achievements (one per line)" %}</label><textarea data-key="achievements" data-lines dir="auto"></textarea></div>
+        </div>
+    </div>
+</template>
+<template data-tpl="projects">
+    <div class="cvb-item"><button type="button" class="cvb-item__remove" data-remove aria-label="{% trans 'Remove' %}"><i class="bi bi-x-lg"></i></button>
+        <div class="cvb-grid">
+            <div class="cvb-field"><label>{% trans "Title" %}</label><input data-key="title" maxlength="120" dir="auto"></div>
+            <div class="cvb-field"><label>{% trans "Tech stack / tools" %}</label><input data-key="tech_stack" maxlength="200" dir="auto"></div>
+            <div class="cvb-field full"><label>{% trans "Description" %}</label><textarea data-key="description" maxlength="600" dir="auto"></textarea></div>
+            <div class="cvb-field full"><label>{% trans "Link" %}</label><input data-key="link" type="url" maxlength="200" dir="ltr" placeholder="https://"></div>
+        </div>
+    </div>
+</template>
+<datalist id="cv-skill-options">{% for name in taxonomy %}<option value="{{ name }}">{% endfor %}</datalist>
+{{ cv|json_script:"cv-data" }}
+{{ taxonomy|json_script:"cv-taxonomy" }}
+{% endblock %}
+
+{% block extra_scripts %}
+{% trans "Nothing here yet." as t_empty %}{% trans "Choose a skill from the list." as t_pick %}{% trans "Not in the Internest skill list — shown on your CV only. Click to remove." as t_free %}
+{% trans "Click to remove" as t_remove %}{% trans "Your CV was polished. Review each step before saving." as t_polished %}{% trans "Replace the highlighted [X] placeholders with your real numbers." as t_ph %}
+{% trans "Listening…" as t_listening %}{% trans "Your browser can't record audio. Try Chrome, Edge or Safari, or fill in the form." as t_norec %}
+{% trans "We need microphone access to record. Allow it in your browser and try again." as t_mic %}{% trans "Analyzing your voice note — this can take up to a minute…" as t_processing %}
+{% trans "Done! We filled in the form from your voice note. Review each step, then save." as t_voice_done %}{% trans "Connection problem. Your data is still in the form — please try again." as t_network %}
+{% trans "Polishing your CV…" as t_polishing %}{% trans "Saving…" as t_saving %}
+<script>
+(function () {
+  var T = {
+    empty: "{{ t_empty|escapejs }}", pick: "{{ t_pick|escapejs }}", free: "{{ t_free|escapejs }}", remove: "{{ t_remove|escapejs }}",
+    polished: "{{ t_polished|escapejs }}", placeholders: "{{ t_ph|escapejs }}", listening: "{{ t_listening|escapejs }}",
+    noRecorder: "{{ t_norec|escapejs }}", mic: "{{ t_mic|escapejs }}", processing: "{{ t_processing|escapejs }}",
+    voiceDone: "{{ t_voice_done|escapejs }}", network: "{{ t_network|escapejs }}", polishing: "{{ t_polishing|escapejs }}", saving: "{{ t_saving|escapejs }}"
+  };
+  var BLANK = {
+    education: {university: "", major: "", graduation_year: ""},
+    experiences: {title: "", organization: "", achievements: []},
+    projects: {title: "", description: "", tech_stack: "", link: ""}
+  };
+  var PLACEHOLDER = /\[(?:X|N|\d*X)[^\]]{0,12}\]/;
+  var cv = JSON.parse(document.getElementById("cv-data").textContent);
+  var known = {};
+  JSON.parse(document.getElementById("cv-taxonomy").textContent).forEach(function (n) { known[n.toLowerCase()] = n; });
+
+  var form = document.querySelector("[data-cv-form]");
+  var csrf = form.querySelector("[name=csrfmiddlewaretoken]").value;
+  var steps = Array.prototype.slice.call(form.querySelectorAll("[data-step]"));
+  var stepButtons = Array.prototype.slice.call(document.querySelectorAll("[data-goto]"));
+  var prev = form.querySelector("[data-prev]"), next = form.querySelector("[data-next]"), save = form.querySelector("[data-save]");
+  var polish = form.querySelector("[data-polish]"), alertBox = form.querySelector("[data-alert]");
+  var current = 0;
+
+  function showAlert(text, kind) {
+    alertBox.textContent = text || "";
+    alertBox.className = "cvb-alert cvb-alert--" + (kind || "error");
+    alertBox.hidden = !text;
+  }
+
+  function go(n) {
+    current = Math.max(0, Math.min(steps.length - 1, n));
+    steps.forEach(function (s, i) { s.hidden = i !== current; });
+    stepButtons.forEach(function (b, i) { b.classList.toggle("is-active", i === current); b.classList.toggle("is-done", i < current); });
+    prev.disabled = current === 0;
+    next.hidden = current === steps.length - 1;
+    save.hidden = current !== steps.length - 1;
+  }
+
+  function flagPlaceholders() {
+    var any = false;
+    form.querySelectorAll("input, textarea").forEach(function (el) {
+      var hit = PLACEHOLDER.test(el.value);
+      el.classList.toggle("is-placeholder", hit);
+      any = any || hit;
+    });
+    if (any) showAlert(T.placeholders, "warn");
+    else if (alertBox.classList.contains("cvb-alert--warn") && alertBox.textContent === T.placeholders) showAlert("");
+  }
+
+  function renderList(name) {
+    var box = form.querySelector('[data-list="' + name + '"]');
+    var tpl = document.querySelector('template[data-tpl="' + name + '"]');
+    box.innerHTML = "";
+    cv[name] = cv[name] || [];
+    cv[name].forEach(function (item, index) {
+      var node = tpl.content.firstElementChild.cloneNode(true);
+      node.querySelectorAll("[data-key]").forEach(function (el) {
+        var value = item[el.dataset.key];
+        el.value = Array.isArray(value) ? value.join("\n") : (value || "");
+        el.addEventListener("input", function () {
+          item[el.dataset.key] = el.hasAttribute("data-lines") ? el.value.split("\n") : el.value;
+          flagPlaceholders();
+        });
+      });
+      node.querySelector("[data-remove]").addEventListener("click", function () { cv[name].splice(index, 1); renderList(name); });
+      box.appendChild(node);
+    });
+    if (!cv[name].length) {
+      var empty = document.createElement("p");
+      empty.className = "cvb-empty";
+      empty.textContent = T.empty;
+      box.appendChild(empty);
+    }
+  }
+
+  var skillInput = form.querySelector("[data-skill-input]"), chips = form.querySelector("[data-skill-chips]");
+  var skillHint = form.querySelector("[data-skill-hint]");
+  function renderSkills() {
+    chips.innerHTML = "";
+    cv.skills = cv.skills || [];
+    cv.skills.forEach(function (skill, index) {
+      var chip = document.createElement("button");
+      var free = !known[skill.toLowerCase()];
+      chip.type = "button";
+      chip.className = "cvb-chip" + (free ? " cvb-chip--free" : "");
+      chip.textContent = skill + " ×";
+      chip.title = free ? T.free : T.remove;
+      chip.addEventListener("click", function () { cv.skills.splice(index, 1); renderSkills(); });
+      chips.appendChild(chip);
+    });
+  }
+  function addSkill() {
+    var name = known[skillInput.value.trim().toLowerCase()];
+    if (!name) { skillHint.textContent = skillInput.value.trim() ? T.pick : ""; return; }
+    if (!cv.skills.some(function (s) { return s.toLowerCase() === name.toLowerCase(); })) cv.skills.push(name);
+    skillInput.value = "";
+    skillHint.textContent = "";
+    renderSkills();
+  }
+  form.querySelector("[data-skill-add]").addEventListener("click", addSkill);
+  skillInput.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); addSkill(); } });
+  skillInput.addEventListener("change", function () { if (known[skillInput.value.trim().toLowerCase()]) addSkill(); });
+
+  function fill() {
+    form.querySelectorAll("[data-field]").forEach(function (el) { el.value = cv[el.dataset.field] || ""; });
+    ["education", "experiences", "projects"].forEach(renderList);
+    renderSkills();
+    flagPlaceholders();
+  }
+  form.querySelectorAll("[data-field]").forEach(function (el) {
+    el.addEventListener("input", function () { cv[el.dataset.field] = el.value; flagPlaceholders(); });
+  });
+  form.querySelectorAll("[data-add]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var name = btn.dataset.add;
+      cv[name].push(JSON.parse(JSON.stringify(BLANK[name])));
+      renderList(name);
+      var rows = form.querySelectorAll('[data-list="' + name + '"] .cvb-item');
+      rows[rows.length - 1].querySelector("input, textarea").focus();
+    });
+  });
+
+  function post(url, body, button) {
+    if (button) button.classList.add("is-busy");
+    var isForm = body instanceof FormData;
+    return fetch(url, {
+      method: "POST", credentials: "same-origin", body: isForm ? body : JSON.stringify(body),
+      headers: Object.assign({"X-CSRFToken": csrf, "X-Requested-With": "fetch"}, isForm ? {} : {"Content-Type": "application/json"})
+    }).then(function (r) {
+      return r.json().catch(function () { return {error: T.network}; }).then(function (d) { return {ok: r.ok, d: d}; });
+    }).catch(function () { return {ok: false, d: {error: T.network}}; })
+      .finally(function () { if (button) button.classList.remove("is-busy"); });
+  }
+
+  form.addEventListener("submit", function (e) { e.preventDefault(); });
+  prev.addEventListener("click", function () { go(current - 1); });
+  next.addEventListener("click", function () { go(current + 1); });
+  stepButtons.forEach(function (b, i) { b.addEventListener("click", function () { go(i); }); });
+
+  if (polish) polish.addEventListener("click", function () {
+    showAlert(T.polishing, "ok");
+    post(form.dataset.polishUrl, {cv: cv}, polish).then(function (res) {
+      if (res.d.cv) { cv = res.d.cv; fill(); }
+      if (res.d.error) showAlert(res.d.error, "warn");
+      else { showAlert(T.polished, "ok"); flagPlaceholders(); }
+    });
+  });
+
+  save.addEventListener("click", function () {
+    showAlert(T.saving, "ok");
+    post(form.dataset.saveUrl, {cv: cv}, save).then(function (res) {
+      if (!res.ok) {
+        showAlert(res.d.error || T.network, "error");
+        if (typeof res.d.step === "number") go(res.d.step);
+        return;
+      }
+      cv = res.d.cv;
+      fill();
+      showAlert("");
+      form.querySelector("[data-done-text]").textContent = res.d.message;
+      form.querySelector("[data-done]").hidden = false;
+      document.querySelector("[data-saved-actions]").hidden = false;
+      form.querySelector("[data-done]").scrollIntoView({behavior: "smooth", block: "center"});
+    });
+  });
+
+  fill();
+  go(0);
+
+  // ---------- Voice-to-CV (MediaRecorder) ----------
+  var voice = document.querySelector("[data-voice]");
+  var startBtn = voice.querySelector("[data-rec-start]");
+  if (!startBtn || startBtn.disabled) return;
+  var intro = voice.querySelector("[data-rec-intro]"), panel = voice.querySelector("[data-rec-panel]"), review = voice.querySelector("[data-rec-review]");
+  var timeEl = voice.querySelector("[data-rec-time]"), audioEl = voice.querySelector("[data-rec-audio]"), status = voice.querySelector("[data-voice-status]");
+  var sendBtn = voice.querySelector("[data-rec-send]"), transcriptBox = voice.querySelector("[data-transcript]");
+  var maxSeconds = +voice.dataset.max || 180;
+  var recorder = null, stream = null, chunks = [], blob = null, timer = null, startedAt = 0;
+
+  function setStatus(text, kind) {
+    status.hidden = !text;
+    status.className = "cvb-status cvb-status--" + (kind || "busy");
+    status.innerHTML = "";
+    if (kind === "busy") { var s = document.createElement("span"); s.className = "cvb-spin"; status.appendChild(s); }
+    status.appendChild(document.createTextNode(text || ""));
+  }
+  function mimeType() {
+    var types = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"];
+    for (var i = 0; i < types.length; i++) if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(types[i])) return types[i];
+    return "";
+  }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function tick() {
+    var secs = Math.floor((Date.now() - startedAt) / 1000);
+    timeEl.textContent = pad(Math.floor(secs / 60)) + ":" + pad(secs % 60);
+    if (secs >= maxSeconds) stop();
+  }
+  function stop() {
+    clearInterval(timer);
+    if (recorder && recorder.state !== "inactive") recorder.stop();
+  }
+  function start() {
+    if (!navigator.mediaDevices || !window.MediaRecorder) { setStatus(T.noRecorder, "error"); return; }
+    navigator.mediaDevices.getUserMedia({audio: true}).then(function (s) {
+      stream = s;
+      chunks = [];
+      var type = mimeType();
+      recorder = new MediaRecorder(s, type ? {mimeType: type} : undefined);
+      recorder.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+      recorder.onstop = function () {
+        stream.getTracks().forEach(function (t) { t.stop(); });
+        blob = new Blob(chunks, {type: (recorder.mimeType || "audio/webm").split(";")[0]});
+        audioEl.src = URL.createObjectURL(blob);
+        panel.hidden = true;
+        review.hidden = false;
+        setStatus("");
+      };
+      recorder.start(1000);
+      startedAt = Date.now();
+      tick();
+      timer = setInterval(tick, 250);
+      intro.hidden = true;
+      review.hidden = true;
+      panel.hidden = false;
+      setStatus("");
+    }).catch(function () { setStatus(T.mic, "error"); });
+  }
+  startBtn.addEventListener("click", start);
+  voice.querySelector("[data-rec-stop]").addEventListener("click", stop);
+  voice.querySelector("[data-rec-redo]").addEventListener("click", function () { blob = null; start(); });
+  sendBtn.addEventListener("click", function () {
+    if (!blob) return;
+    var ext = {"audio/webm": "webm", "audio/ogg": "ogg", "audio/mp4": "m4a"}[blob.type] || "webm";
+    var data = new FormData();
+    data.append("audio", blob, "voice." + ext);
+    data.append("cv", JSON.stringify(cv));
+    setStatus(T.processing, "busy");
+    post(voice.dataset.url, data, sendBtn).then(function (res) {
+      if (res.d.transcript) {
+        transcriptBox.hidden = false;
+        transcriptBox.querySelector("[data-transcript-text]").textContent = res.d.transcript;
+      }
+      if (res.d.cv) { cv = res.d.cv; fill(); go(0); }
+      if (res.d.error) { setStatus(res.d.error, "error"); if (res.d.transcript) transcriptBox.open = true; }
+      else { setStatus(T.voiceDone, "ok"); intro.hidden = false; review.hidden = true; flagPlaceholders(); }
+    });
+  });
+})();
+</script>
+{% endblock %}

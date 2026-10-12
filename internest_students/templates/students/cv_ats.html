@@ -1,0 +1,59 @@
+{% load i18n %}<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ cv.name|default:"CV" }} — Resume</title>
+<style>
+/* ATS-friendly: one column, standard fonts, plain headings, real text, no tables/images. */
+body { margin: 0; background: #f1f5f9; color: #1e293b; font: 10.5pt/1.45 Arial, Helvetica, sans-serif; }
+.toolbar { display: flex; gap: 8px; justify-content: center; padding: 12px; font-family: system-ui, sans-serif; }
+.toolbar a, .toolbar button { padding: 8px 14px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #1e293b; font: inherit; text-decoration: none; cursor: pointer; }
+.toolbar .primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+.page { max-width: 794px; margin: 0 auto 32px; padding: 56px 64px; background: #fff; box-shadow: 0 10px 30px rgba(15, 23, 42, .08); box-sizing: border-box; }
+h1 { margin: 0 0 2px; font-size: 20pt; }
+.contact { margin: 0 0 10px; color: #475569; font-size: 9.5pt; overflow-wrap: anywhere; }
+h2 { margin: 16px 0 6px; padding-bottom: 2px; border-bottom: 1px solid #1e293b; font-size: 11.5pt; text-transform: uppercase; letter-spacing: .04em; }
+h3 { margin: 6px 0 1px; font-size: 10.5pt; }
+.meta { margin: 0 0 4px; color: #475569; font-size: 9.5pt; }
+p { margin: 0 0 4px; }
+ul { margin: 2px 0 8px; padding-left: 18px; }
+@media (max-width: 640px) { .page { padding: 28px 20px; } }
+@media print { body { background: #fff; } .toolbar { display: none; } .page { box-shadow: none; margin: 0; padding: 0; max-width: none; } }
+</style>
+</head>
+<body>
+<nav class="toolbar">
+    <a href="{% url 'cv_builder' %}">← {% trans "Back to the builder" %}</a>
+    <a href="{% url 'cv_builder_pdf' %}" class="primary">{% trans "Download CV (PDF)" %}</a>
+</nav>
+<main class="page">
+    <h1 dir="auto">{{ cv.name }}</h1>
+    {% if contacts %}<p class="contact">{{ contacts|join:" | " }}</p>{% endif %}
+
+    {% if cv.summary %}<h2>Summary</h2><p dir="auto">{{ cv.summary }}</p>{% endif %}
+
+    {% if cv.education %}<h2>Education</h2>
+        {% for e in cv.education %}<h3 dir="auto">{{ e.university|default:e.major }}</h3><p class="meta">{% if e.university %}{{ e.major }}{% endif %}{% if e.major and e.university and e.graduation_year %} | {% endif %}{{ e.graduation_year }}</p>{% endfor %}
+    {% endif %}
+
+    {% if cv.experiences %}<h2>Experience</h2>
+        {% for x in cv.experiences %}
+            <h3 dir="auto">{{ x.title }}{% if x.title and x.organization %} | {% endif %}{{ x.organization }}</h3>
+            {% if x.achievements %}<ul>{% for a in x.achievements %}<li dir="auto">{{ a }}</li>{% endfor %}</ul>{% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {% if cv.projects %}<h2>Projects</h2>
+        {% for p in cv.projects %}
+            <h3 dir="auto">{{ p.title }}</h3>
+            {% if p.description %}<p dir="auto">{{ p.description }}</p>{% endif %}
+            {% if p.tech_stack %}<p class="meta">Tech: {{ p.tech_stack }}</p>{% endif %}
+            {% if p.link %}<p class="meta">{{ p.link }}</p>{% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {% if cv.skills %}<h2>Skills</h2><p>{{ cv.skills|join:", " }}</p>{% endif %}
+</main>
+</body>
+</html>
