@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 GEMINI_DEFAULT_MODEL = "gemini-2.5-flash"
 OPENAI_DEFAULT_MODEL = "gpt-4o-mini"
 GROQ_DEFAULT_MODEL = "llama-3.3-70b-versatile"
+GEMINI_THINKING_HEADROOM = 2048  # extra max_tokens for Gemini's hidden reasoning
 
 # Listed explicitly for readability; Exception also covers API status, timeout and parsing errors.
 LLM_ERRORS = (httpx.ProxyError, openai.APIConnectionError, RuntimeError, Exception)
@@ -124,10 +125,9 @@ def parse_json_object(text: str) -> dict:
 
 
 def _ask(provider: Provider, system: str, user: str, max_tokens: int, timeout: float, max_retries: int) -> dict:
-    extra = {}
-    if "googleapis.com" in provider.base_url and "flash" in provider.model:
-        # Gemini Flash "thinking" spends max_tokens before the answer, which truncated the JSON; not needed here.
-        extra["reasoning_effort"] = "none"
+    if "googleapis.com" in provider.base_url:
+        # Gemini 2.5 "thinking" tokens count against max_tokens and used to cut the JSON short; leave headroom.
+        max_tokens += GEMINI_THINKING_HEADROOM
     resp = _client(timeout, provider, max_retries).chat.completions.create(
         model=provider.model,
         response_format={"type": "json_object"},
@@ -135,7 +135,6 @@ def _ask(provider: Provider, system: str, user: str, max_tokens: int, timeout: f
         temperature=0,
         messages=[{"role": "system", "content": system + " Reply with one JSON object only, no markdown."},
                   {"role": "user", "content": user}],
-        **extra,
     )
     choice = resp.choices[0]
     if getattr(choice, "finish_reason", None) == "length":

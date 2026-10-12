@@ -67,10 +67,12 @@ class ExtractionCallTests(Base):
         self.assertNotIn("reasoning_effort", kwargs)
 
     @override_settings(AGENTROUTER_BASE_URL="https://generativelanguage.googleapis.com/v1beta/openai/")
-    def test_gemini_flash_thinking_is_turned_off(self):
+    def test_gemini_gets_no_reasoning_effort_but_extra_token_headroom(self):
         with mock.patch(CREATE, return_value=_reply('{"ok": true}')) as create:
-            llm.chat_json("s", "u")
-        self.assertEqual(create.call_args.kwargs["reasoning_effort"], "none")
+            llm.chat_json("s", "u", max_tokens=700)
+        kwargs = create.call_args.kwargs
+        self.assertNotIn("reasoning_effort", kwargs)  # Google's endpoint rejects it
+        self.assertEqual(kwargs["max_tokens"], 700 + llm.GEMINI_THINKING_HEADROOM)
 
     @override_settings(SKILLS_LLM_TIMEOUT=30.0)
     def test_default_timeout(self):
