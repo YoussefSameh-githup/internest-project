@@ -56,7 +56,7 @@
             <tbody>
                 {% for s in skills %}
                     <tr>
-                        <td>{{ s.skill.name }}</td>
+                        <td>{{ s.skill.name }} {% if s.is_verified %}{% include "skills/_verified_badge.html" %}{% endif %}</td>
                         <td><span class="cp__score">{{ s.score|default_if_none:"—" }}{% if s.score is not None %}%{% endif %}</span></td>
                         <td>{% if s.percentile is not None %}P{{ s.percentile }}{% else %}—{% endif %}</td>
                         <td>{{ s.verified_at|date:"Y/m/d"|default:"—" }}</td>

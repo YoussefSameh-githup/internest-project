@@ -6,6 +6,8 @@ from django.utils.translation import gettext_lazy as _
 
 from internest_core.models import PartnerProfile, validate_max_file_size
 
+from .models import StudentFreelanceGig
+
 _doc_validators = [FileExtensionValidator(["pdf", "docx"]), validate_max_file_size]
 
 
@@ -39,4 +41,33 @@ class SkillSourceForm(forms.Form):
         data = super().clean()
         if not (data.get("cv_file") or data.get("linkedin_pdf") or data.get("linkedin_url")):
             raise forms.ValidationError(_("Upload your CV, your LinkedIn PDF export, or add your LinkedIn URL."))
+        return data
+
+
+PLATFORM_HOSTS = {"mostaql": "mostaql.com", "khamsat": "khamsat.com", "upwork": "upwork.com", "fiverr": "fiverr.com"}
+
+
+class FreelanceImportForm(forms.Form):
+    platform = forms.ChoiceField(choices=StudentFreelanceGig.PLATFORM_CHOICES, widget=forms.RadioSelect, label=_("Platform"))
+    link = forms.URLField(max_length=300, label=_("Portfolio / gig link"), assume_scheme="https")
+    raw_text = forms.CharField(min_length=40, max_length=6000, widget=forms.Textarea(attrs={"rows": 7, "dir": "auto"}),
+                               label=_("Work description / client review"))
+    proof = forms.FileField(required=False, label=_("Proof (screenshot or PDF, optional)"),
+                            validators=[FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size])
+
+    def __init__(self, *args, student=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.student = student
+        self.fields["proof"].widget.attrs["accept"] = "image/png,image/jpeg,image/webp,application/pdf"
+
+    def clean(self):
+        data = super().clean()
+        link, platform = data.get("link"), data.get("platform")
+        if link and platform in PLATFORM_HOSTS:
+            host = (urlparse(link).hostname or "").lower()
+            expected = PLATFORM_HOSTS[platform]
+            if not (host == expected or host.endswith("." + expected)):
+                self.add_error("link", _("This link isn't on %(site)s. Choose the right platform or use “Portfolio link”.") % {"site": expected})
+        if link and self.student and self.student.freelance_gigs.filter(link=link).exists():
+            self.add_error("link", _("You already imported this link."))
         return data

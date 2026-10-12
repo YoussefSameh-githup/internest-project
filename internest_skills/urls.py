@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path("app/skills/", views.skills_hub, name="skills_hub"),
+    path("app/skills/freelance/", views.freelance_importer, name="freelance_importer"),
     path("app/skills/<int:student_skill_id>/start/", views.challenge_start, name="skills_challenge_start"),
     path("app/skills/test/<int:skill_id>/", views.challenge_start_for_skill, name="skills_challenge_start_for_skill"),
     path("app/skills/challenge/<uuid:token>/", views.challenge_run, name="skills_challenge"),

@@ -1,12 +1,14 @@
 import uuid
 from datetime import timedelta
 
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy as _
 
-from internest_core.models import Internship, PartnerInternshipSubmission, PartnerProfile, StudentProfile
+from internest_core.models import (
+    Internship, PartnerInternshipSubmission, PartnerProfile, StudentProfile, validate_max_file_size,
+)
 
 RETEST_COOLDOWN_DAYS = 14
 
@@ -163,6 +165,10 @@ class StudentSkill(models.Model):
     STATUS_LAG = "lag"
     STATUS_CHOICES = [(STATUS_CLAIMED, _("Claimed")), (STATUS_VERIFIED, _("Verified")), (STATUS_LAG, _("Skill lag detected"))]
 
+    VIA_CHALLENGE = "challenge"
+    VIA_FREELANCE = "freelance"
+    VIA_CHOICES = [(VIA_CHALLENGE, _("Skill challenge")), (VIA_FREELANCE, _("Reviewed freelance work"))]
+
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="skills")
     skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name="student_skills")
     source = models.CharField(max_length=10, choices=SOURCE_CHOICES)
@@ -173,6 +179,7 @@ class StudentSkill(models.Model):
     percentile = models.PositiveSmallIntegerField(null=True, blank=True)
     lag_sub_skills = models.JSONField(default=list, blank=True)
     verified_at = models.DateTimeField(null=True, blank=True)
+    verified_via = models.CharField(max_length=10, choices=VIA_CHOICES, blank=True)
     cooldown_until = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -188,6 +195,10 @@ class StudentSkill(models.Model):
 
     def __str__(self):
         return f"{self.student} · {self.skill} ({self.status})"
+
+    @property
+    def is_verified(self):
+        return self.status == self.STATUS_VERIFIED
 
     @property
     def in_cooldown(self):
@@ -306,3 +317,39 @@ class SkillRelation(models.Model):
 
     def __str__(self):
         return f"{self.skill} ↔ {self.related} ({self.weight:.2f})"
+
+
+class StudentFreelanceGig(models.Model):
+    """Freelance work a student imported (Mostaql, Khamsat, Upwork, Fiverr, portfolio) as proof of skills.
+
+    The AI reads the pasted description/review; the skills become Verified once the gig is approved
+    (by an admin, or immediately when settings.FREELANCE_AUTO_VERIFY is on).
+    """
+
+    PLATFORM_CHOICES = [("mostaql", "Mostaql | مستقل"), ("khamsat", "Khamsat | خمسات"), ("upwork", "Upwork"),
+                        ("fiverr", "Fiverr"), ("portfolio", _("Portfolio link"))]
+    STATUS_PENDING, STATUS_VERIFIED, STATUS_REJECTED = "pending", "verified", "rejected"
+    STATUS_CHOICES = [(STATUS_PENDING, _("Under review")), (STATUS_VERIFIED, _("Verified")), (STATUS_REJECTED, _("Not accepted"))]
+
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="freelance_gigs")
+    platform = models.CharField(max_length=12, choices=PLATFORM_CHOICES)
+    link = models.URLField(max_length=300)
+    raw_text = models.TextField(max_length=6000)
+    proof = models.FileField(upload_to="freelance_proofs/", blank=True, validators=[
+        FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size])
+    project_title = models.CharField(max_length=160, blank=True)
+    client_feedback = models.TextField(max_length=1000, blank=True)
+    rating = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
+    deliverables = models.JSONField(default=list, blank=True)
+    skills = models.ManyToManyField(Skill, blank=True, related_name="freelance_gigs")
+    ai_parsed = models.BooleanField(default=False)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING, db_index=True)
+    review_note = models.CharField(max_length=300, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.get_platform_display()} · {self.project_title or self.link}"

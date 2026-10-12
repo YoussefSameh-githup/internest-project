@@ -249,6 +249,9 @@ SKILLS_LLM_TIMEOUT = env.float("SKILLS_LLM_TIMEOUT", default=15.0)
 WHISPER_API_KEY = os.getenv("WHISPER_API_KEY", "")
 WHISPER_BASE_URL = os.getenv("WHISPER_BASE_URL", "https://api.groq.com/openai/v1")
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "whisper-large-v3")
+# Freelance importer: False = an admin approves each imported gig (link + proof) before its skills get the
+# "Verified skill" badge. True = skills are verified as soon as the AI reads the gig (easy to game with fake text).
+FREELANCE_AUTO_VERIFY = env.bool("FREELANCE_AUTO_VERIFY", default=False)
 
 # --- Regional Pro pricing (internest_startups.pricing) ---
 DEFAULT_PRICING_COUNTRY = env("DEFAULT_PRICING_COUNTRY", default="EG")

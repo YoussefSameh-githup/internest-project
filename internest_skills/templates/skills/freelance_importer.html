@@ -1,0 +1,151 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Import freelance work" %} — Internest{% endblock %}
+
+{% block content %}
+<style>
+/* Embedded so the page renders right even with an old cached stylesheet. */
+.fl { --fl-accent: #2563eb; --fl-line: #e2e8f0; --fl-muted: #64748b; padding: 32px 0 64px; background: #f8fafc; }
+.fl-wrap { max-width: 900px; }
+.fl-head { margin-bottom: 20px; }
+.fl-head a { color: var(--fl-muted); font-size: 14px; text-decoration: none; }
+.fl-head h1 { margin: 6px 0 4px; font-size: clamp(1.5rem, 3vw, 2rem); }
+.fl-head p { margin: 0; color: var(--fl-muted); }
+.fl-card { padding: 22px; border-radius: 20px; background: #fff; border: 1px solid var(--fl-line); box-shadow: 0 10px 30px rgba(15, 23, 42, .06); margin-bottom: 20px; }
+.fl-label { display: block; margin: 0 0 6px; font-weight: 800; font-size: 14px; color: #0f172a; }
+.fl-platforms { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-bottom: 18px; }
+.fl-platform input { position: absolute; opacity: 0; pointer-events: none; }
+.fl-platform span { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 6px; border: 1px solid var(--fl-line); border-radius: 16px;
+  background: #fff; font-size: 13px; font-weight: 700; color: #334155; text-align: center; cursor: pointer; transition: .15s; }
+.fl-platform b { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; color: #fff; font-size: 1.05rem; }
+.fl-platform input:checked + span { border-color: var(--fl-accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); color: var(--fl-accent); }
+.fl-platform input:focus-visible + span { outline: 2px solid var(--fl-accent); outline-offset: 2px; }
+.fl-field { margin-bottom: 16px; }
+.fl-field input[type=url], .fl-field textarea { width: 100%; box-sizing: border-box; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 12px; font: inherit; background: #fff; }
+.fl-field textarea { resize: vertical; line-height: 1.55; }
+.fl-field input:focus, .fl-field textarea:focus { outline: none; border-color: var(--fl-accent); box-shadow: 0 0 0 4px rgba(37, 99, 235, .12); }
+.fl-field small { display: block; margin-top: 4px; color: var(--fl-muted); font-size: 12px; }
+.fl-error { margin-top: 4px; color: #b91c1c; font-size: 13px; }
+.fl-drop { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px dashed #94a3b8; border-radius: 14px; background: #f8fafc; cursor: pointer; }
+.fl-drop input { max-width: 100%; }
+.fl-submit { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.fl-submit small { color: var(--fl-muted); }
+.fl-spin { display: none; width: 16px; height: 16px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: fl-spin .8s linear infinite; }
+.is-busy .fl-spin { display: inline-block; }
+@keyframes fl-spin { to { transform: rotate(360deg); } }
+.fl-how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0 0 20px; padding: 0; list-style: none; }
+.fl-how li { padding: 12px 14px; border-radius: 14px; background: #eff6ff; color: #1e3a8a; font-size: 13px; }
+.fl-how b { display: block; margin-bottom: 2px; }
+.fl-gig { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-top: 1px solid #f1f5f9; }
+.fl-gig:first-of-type { border-top: 0; }
+.fl-gig__body { flex: 1; min-width: 0; }
+.fl-gig__title { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-weight: 800; }
+.fl-gig__meta { color: var(--fl-muted); font-size: 13px; overflow-wrap: anywhere; }
+.fl-gig__quote { margin: 6px 0; color: #334155; font-style: italic; font-size: 14px; }
+.fl-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.fl-chip { padding: 3px 10px; border-radius: 999px; background: #f1f5f9; color: #334155; font-size: 12px; font-weight: 700; }
+.fl-status { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+.fl-status--pending { background: #fef3c7; color: #92400e; }
+.fl-status--verified { background: #dcfce7; color: #166534; }
+.fl-status--rejected { background: #fee2e2; color: #991b1b; }
+@media (max-width: 720px) { .fl-platforms { grid-template-columns: repeat(3, minmax(0, 1fr)); } .fl-how { grid-template-columns: 1fr; } }
+</style>
+
+<section class="fl">
+    <div class="container fl-wrap">
+        <header class="fl-head">
+            <a href="{% url 'skills_hub' %}">← {% trans "Verify Your Skills" %}</a>
+            <h1>💼 {% trans "Import freelance work" %}</h1>
+            <p>{% trans "Done real work on Mostaql, Khamsat, Upwork or Fiverr? Import it and turn it into verified skills." %}</p>
+        </header>
+
+        <ol class="fl-how">
+            <li><b>1. {% trans "Add your gig" %}</b>{% trans "The link plus the job description and the client's review." %}</li>
+            <li><b>2. {% trans "AI reads it" %}</b>{% trans "We pull out the title, rating, deliverables and skills." %}</li>
+            <li><b>3. {% trans "We verify it" %}</b>{% trans "After a quick check of your proof, each skill gets the “Verified skill ✅” badge." %}</li>
+        </ol>
+
+        <form method="post" enctype="multipart/form-data" class="fl-card" data-fl-form novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+            <span class="fl-label">{% trans "Platform" %}</span>
+            <div class="fl-platforms" role="radiogroup" aria-label="{% trans 'Platform' %}">
+                {% for value, label in platforms %}
+                    <label class="fl-platform">
+                        <input type="radio" name="platform" value="{{ value }}" required {% if form.platform.value == value or not form.platform.value and forloop.first %}checked{% endif %}>
+                        <span>
+                            <b style="background: {% if value == 'mostaql' %}#2386c8{% elif value == 'khamsat' %}#f37b22{% elif value == 'upwork' %}#14a800{% elif value == 'fiverr' %}#1dbf73{% else %}#475569{% endif %};">
+                                {% if value == 'mostaql' %}م{% elif value == 'khamsat' %}خ{% elif value == 'upwork' %}Up{% elif value == 'fiverr' %}fi{% else %}<i class="bi bi-link-45deg"></i>{% endif %}
+                            </b>
+                            {{ label }}
+                        </span>
+                    </label>
+                {% endfor %}
+            </div>
+            {% if form.platform.errors %}<div class="fl-error">{{ form.platform.errors|join:" " }}</div>{% endif %}
+
+            <div class="fl-field">
+                <label class="fl-label" for="{{ form.link.id_for_label }}">{{ form.link.label }}</label>
+                <input type="url" name="link" id="{{ form.link.id_for_label }}" value="{{ form.link.value|default:'' }}" maxlength="300" required dir="ltr" placeholder="https://mostaql.com/u/…">
+                {% if form.link.errors %}<div class="fl-error">{{ form.link.errors|join:" " }}</div>{% endif %}
+            </div>
+
+            <div class="fl-field">
+                <label class="fl-label" for="{{ form.raw_text.id_for_label }}">{{ form.raw_text.label }}</label>
+                <textarea name="raw_text" id="{{ form.raw_text.id_for_label }}" rows="7" maxlength="6000" required dir="auto"
+                          placeholder="{% trans 'Paste the project description, what you delivered and the client review (and rating) here…' %}">{{ form.raw_text.value|default:'' }}</textarea>
+                <small>{% trans "We don't log in to these platforms, so the pasted text is what our AI reads." %}</small>
+                {% if form.raw_text.errors %}<div class="fl-error">{{ form.raw_text.errors|join:" " }}</div>{% endif %}
+            </div>
+
+            <div class="fl-field">
+                <label class="fl-label" for="{{ form.proof.id_for_label }}">{{ form.proof.label }}</label>
+                <label class="fl-drop"><i class="bi bi-image" style="font-size: 1.4rem; color: #64748b;"></i>
+                    <input type="file" name="proof" id="{{ form.proof.id_for_label }}" accept="image/png,image/jpeg,image/webp,application/pdf">
+                </label>
+                <small>{% trans "A screenshot of the completed order or review speeds up verification. Max 5 MB." %}</small>
+                {% if form.proof.errors %}<div class="fl-error">{{ form.proof.errors|join:" " }}</div>{% endif %}
+            </div>
+
+            <div class="fl-submit">
+                <button type="submit" class="btn btn--primary btn--lg" data-fl-submit><span class="fl-spin" aria-hidden="true"></span> ✨ {% trans "Analyze & import" %}</button>
+                <small>{% trans "Analysis takes a few seconds." %}</small>
+            </div>
+        </form>
+
+        <div class="fl-card">
+            <h2 style="margin: 0 0 8px; font-size: 1.2rem;">{% trans "Your imported work" %}</h2>
+            {% for g in gigs %}
+                <article class="fl-gig">
+                    <div class="fl-gig__body">
+                        <div class="fl-gig__title">
+                            <span dir="auto">{{ g.project_title|default:g.get_platform_display }}</span>
+                            <span class="fl-status fl-status--{{ g.status }}">{% if g.status == 'verified' %}✅ {% elif g.status == 'pending' %}⏳ {% endif %}{{ g.get_status_display }}</span>
+                            {% if g.rating %}<span style="color: #f59e0b;">★ {{ g.rating }}</span>{% endif %}
+                        </div>
+                        <div class="fl-gig__meta">{{ g.get_platform_display }} · <a href="{{ g.link }}" target="_blank" rel="noopener nofollow" dir="ltr">{{ g.link|truncatechars:60 }}</a> · {{ g.created_at|date:"Y/m/d" }}</div>
+                        {% if g.client_feedback %}<p class="fl-gig__quote" dir="auto">“{{ g.client_feedback|truncatechars:220 }}”</p>{% endif %}
+                        {% if g.status == 'rejected' %}<p class="fl-error">{% if g.review_note %}{{ g.review_note }}{% else %}{% trans "We couldn't confirm this work from the link and proof. Add a clearer screenshot and import it again." %}{% endif %}</p>{% endif %}
+                        <div class="fl-chips">
+                            {% for skill in g.skills.all %}<span class="fl-chip">{% if g.status == 'verified' %}✅ {% endif %}{{ skill.name }}</span>{% empty %}<span class="fl-gig__meta">{% trans "No skills detected" %}</span>{% endfor %}
+                        </div>
+                    </div>
+                </article>
+            {% empty %}
+                <p class="text-muted mb-0">{% trans "Nothing imported yet." %}</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  var form = document.querySelector("[data-fl-form]");
+  if (form) form.addEventListener("submit", function () { form.querySelector("[data-fl-submit]").classList.add("is-busy"); });
+})();
+</script>
+{% endblock %}

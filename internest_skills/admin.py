@@ -2,8 +2,9 @@ from django.contrib import admin
 
 from .models import (
     ChallengeAttempt, ChallengeItem, ChallengeResponse, EmployerSubscription,
-    ExternalCourse, Skill, SkillProfile, StudentSkill, SubSkill,
+    ExternalCourse, Skill, SkillProfile, StudentFreelanceGig, StudentSkill, SubSkill,
 )
+from .freelance_service import reject_gig, verify_gig
 
 
 class SubSkillInline(admin.TabularInline):
@@ -45,8 +46,8 @@ class ExternalCourseAdmin(admin.ModelAdmin):
 
 @admin.register(StudentSkill)
 class StudentSkillAdmin(admin.ModelAdmin):
-    list_display = ("student", "skill", "source", "status", "score", "percentile", "cooldown_until")
-    list_filter = ("status", "source", "skill__discipline")
+    list_display = ("student", "skill", "source", "status", "verified_via", "score", "percentile", "cooldown_until")
+    list_filter = ("status", "verified_via", "source", "skill__discipline")
     search_fields = ("student__user__username", "skill__name")
     readonly_fields = ("created_at", "updated_at")
 
@@ -89,3 +90,26 @@ class SkillRelationAdmin(admin.ModelAdmin):
     list_filter = ("source",)
     search_fields = ("skill__name", "related__name")
     autocomplete_fields = ("skill", "related")
+
+
+@admin.register(StudentFreelanceGig)
+class StudentFreelanceGigAdmin(admin.ModelAdmin):
+    """Review queue: open the link and proof, then approve (skills become Verified) or reject."""
+
+    list_display = ("project_title", "student", "platform", "rating", "status", "ai_parsed", "created_at")
+    list_filter = ("status", "platform", "ai_parsed")
+    search_fields = ("project_title", "link", "student__user__username")
+    filter_horizontal = ("skills",)
+    readonly_fields = ("student", "raw_text", "ai_parsed", "reviewed_at", "created_at")
+    actions = ["approve", "reject"]
+
+    @admin.action(description="Approve: verify the selected gigs' skills")
+    def approve(self, request, queryset):
+        upgraded = sum(verify_gig(gig) for gig in queryset.exclude(status=StudentFreelanceGig.STATUS_VERIFIED))
+        self.message_user(request, f"Approved. {upgraded} student skills are now verified.")
+
+    @admin.action(description="Reject the selected gigs")
+    def reject(self, request, queryset):
+        for gig in queryset.filter(status=StudentFreelanceGig.STATUS_PENDING):
+            reject_gig(gig)  # the student sees a translated default reason
+        self.message_user(request, "Rejected.")

@@ -148,7 +148,7 @@
                         <ul class="tp-skills" aria-label="{% trans 'Verified skills' %}">
                             {% for s in c.pool_skills|slice:":4" %}
                                 <li class="tp-skill">
-                                    <span class="tp-skill__name"><i class="bi bi-patch-check-fill"></i> {{ s.skill.name }}</span>
+                                    <span class="tp-skill__name">{{ s.skill.name }} {% if s.is_verified %}{% include "skills/_verified_badge.html" %}{% endif %}</span>
                                     {% if s.score is not None %}<span class="tp-skill__score">{{ s.score }}%</span>
                                     <span class="tp-skill__bar" aria-hidden="true"><span style="width: {{ s.score }}%;"></span></span>{% endif %}
                                 </li>

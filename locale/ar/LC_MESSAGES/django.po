@@ -4161,3 +4161,135 @@ msgstr "أنشئ سيرتي الذاتية"
 
 msgid "Open project"
 msgstr "فتح المشروع"
+
+msgid "Portfolio / gig link"
+msgstr "رابط معرض الأعمال / الخدمة"
+
+msgid "Work description / client review"
+msgstr "وصف العمل / تقييم العميل"
+
+msgid "Proof (screenshot or PDF, optional)"
+msgstr "إثبات (لقطة شاشة أو PDF، اختياري)"
+
+msgid "You already imported this link."
+msgstr "سبق أن استوردت هذا الرابط."
+
+msgid ""
+"This link isn't on %(site)s. Choose the right platform or use “Portfolio "
+"link”."
+msgstr ""
+"هذا الرابط ليس على %(site)s. اختر المنصة الصحيحة أو استخدم «رابط معرض "
+"أعمال»."
+
+msgid "Reviewed freelance work"
+msgstr "عمل حر تمت مراجعته"
+
+msgid "Not accepted"
+msgstr "لم يُقبل"
+
+msgid "You can import up to %(n)s gigs a day. Try again tomorrow."
+msgstr "يمكنك استيراد %(n)s أعمال كحد أقصى يومياً. حاول مرة أخرى غداً."
+
+msgid ""
+"Gig imported and verified. Your skills now carry the “Verified skill ✅” "
+"badge: %(skills)s"
+msgstr ""
+"تم استيراد العمل وتوثيقه. مهاراتك تحمل الآن شارة «مهارة موثقة ✅»: %(skills)s"
+
+msgid ""
+"Gig saved, but we couldn't find skills from our list in the text. Add more "
+"detail about what you delivered (tools, tasks, results)."
+msgstr ""
+"تم حفظ العمل، لكن لم نجد في النص مهارات من قائمتنا. أضف تفاصيل أكثر عمّا "
+"سلّمته (الأدوات والمهام والنتائج)."
+
+msgid ""
+"Gig imported. We found: %(skills)s. Our team reviews the link and proof, "
+"usually within 48 hours, then your skills get the “Verified skill ✅” badge."
+msgstr ""
+"تم استيراد العمل. وجدنا: %(skills)s. يراجع فريقنا الرابط والإثبات خلال 48 "
+"ساعة عادةً، ثم تحصل مهاراتك على شارة «مهارة موثقة ✅»."
+
+msgid "Import freelance work"
+msgstr "استيراد أعمالك الحرة"
+
+msgid ""
+"Done real work on Mostaql, Khamsat, Upwork or Fiverr? Import it and turn it "
+"into verified skills."
+msgstr ""
+"أنجزت أعمالاً حقيقية على مستقل أو خمسات أو Upwork أو Fiverr؟ استوردها "
+"وحوّلها إلى مهارات موثقة."
+
+msgid "Add your gig"
+msgstr "أضف عملك"
+
+msgid "The link plus the job description and the client's review."
+msgstr "الرابط مع وصف العمل وتقييم العميل."
+
+msgid "AI reads it"
+msgstr "الذكاء الاصطناعي يقرؤه"
+
+msgid "We pull out the title, rating, deliverables and skills."
+msgstr "نستخرج العنوان والتقييم والمخرجات والمهارات."
+
+msgid "We verify it"
+msgstr "نوثّقه"
+
+msgid ""
+"After a quick check of your proof, each skill gets the “Verified skill ✅” "
+"badge."
+msgstr "بعد مراجعة سريعة للإثبات، تحصل كل مهارة على شارة «مهارة موثقة ✅»."
+
+msgid ""
+"Paste the project description, what you delivered and the client review (and"
+" rating) here…"
+msgstr "الصق هنا وصف المشروع وما سلّمته وتقييم العميل (والنجوم)…"
+
+msgid ""
+"We don't log in to these platforms, so the pasted text is what our AI reads."
+msgstr ""
+"لا نسجّل الدخول إلى هذه المنصات، لذلك يقرأ الذكاء الاصطناعي النص الذي تلصقه."
+
+msgid ""
+"A screenshot of the completed order or review speeds up verification. Max 5 "
+"MB."
+msgstr ""
+"لقطة شاشة للطلب المكتمل أو التقييم تُسرّع التوثيق. الحد الأقصى 5 ميجابايت."
+
+msgid "Analyze & import"
+msgstr "تحليل واستيراد"
+
+msgid "Analysis takes a few seconds."
+msgstr "يستغرق التحليل بضع ثوانٍ."
+
+msgid "Your imported work"
+msgstr "أعمالك المستوردة"
+
+msgid ""
+"We couldn't confirm this work from the link and proof. Add a clearer "
+"screenshot and import it again."
+msgstr ""
+"لم نتمكن من تأكيد هذا العمل من الرابط والإثبات. أضف لقطة شاشة أوضح واستورده "
+"مرة أخرى."
+
+msgid "No skills detected"
+msgstr "لم يتم اكتشاف مهارات"
+
+msgid "Nothing imported yet."
+msgstr "لم تستورد أي عمل بعد."
+
+msgid ""
+"Done gigs on Mostaql, Khamsat, Upwork or Fiverr? Import them to earn the "
+"“Verified skill ✅” badge."
+msgstr ""
+"أنجزت أعمالاً على مستقل أو خمسات أو Upwork أو Fiverr؟ استوردها لتحصل على "
+"شارة «مهارة موثقة ✅»."
+
+msgid "Verified through reviewed freelance work"
+msgstr "موثقة من خلال عمل حر تمت مراجعته"
+
+msgid "Verified through a timed skill challenge"
+msgstr "موثقة من خلال اختبار مهارة موقوت"
+
+msgid "Verified skill ✅"
+msgstr "مهارة موثقة ✅"

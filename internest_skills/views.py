@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import timedelta
 from functools import wraps
 
 from django.contrib import messages
@@ -18,9 +19,10 @@ from internest_core.views import _get_partner_profile, get_user_context
 
 from . import challenge as engine
 from .extraction import ExtractionError, analyze_cv, read_document_text, save_claimed_skills
-from .forms import SkillSourceForm
+from . import freelance_service
+from .forms import FreelanceImportForm, SkillSourceForm
 from .llm import llm_enabled
-from .models import ChallengeAttempt, ChallengeItem, Discipline, Skill, SkillProfile, StudentSkill
+from .models import ChallengeAttempt, ChallengeItem, Discipline, Skill, SkillProfile, StudentFreelanceGig, StudentSkill
 from .permissions import is_verified_university, missing_profile_fields, skill_view_role, student_for
 from .quizgen import quiz_item_ids_for
 from .recommendations import recommendations_for
@@ -28,6 +30,7 @@ from .recommendations import recommendations_for
 logger = logging.getLogger(__name__)
 
 MAX_EXTRACTIONS_PER_DAY = 5
+MAX_FREELANCE_IMPORTS_PER_DAY = 5
 AI_NOTICE_SESSION_KEY = "skills_ai_notice"  # shown inline on the hub after an analysis where every AI key failed
 
 
@@ -143,6 +146,32 @@ def _handle_extraction(request, student, skill_profile, data):
               "(LinkedIn profile → More → Save to PDF) to analyze it."),
         )
     skill_profile.save()
+
+
+# ---------------------------------------------------------------- freelance importer
+@student_gate()
+def freelance_importer(request):
+    student = request.student
+    gigs = student.freelance_gigs.prefetch_related("skills")
+    form = FreelanceImportForm(request.POST or None, request.FILES or None, student=student)
+    if request.method == "POST" and form.is_valid():
+        since = timezone.now() - timedelta(days=1)
+        if gigs.filter(created_at__gte=since).count() >= MAX_FREELANCE_IMPORTS_PER_DAY:
+            messages.error(request, _("You can import up to %(n)s gigs a day. Try again tomorrow.") % {"n": MAX_FREELANCE_IMPORTS_PER_DAY})
+            return redirect("freelance_importer")
+        d = form.cleaned_data
+        gig = freelance_service.import_gig(student, d["platform"], d["link"], d["raw_text"], d.get("proof"))
+        names = ", ".join(gig.skills.values_list("name", flat=True))
+        if gig.status == StudentFreelanceGig.STATUS_VERIFIED:
+            messages.success(request, _("Gig imported and verified. Your skills now carry the “Verified skill ✅” badge: %(skills)s") % {"skills": names})
+        elif names:
+            messages.success(request, _("Gig imported. We found: %(skills)s. Our team reviews the link and proof, usually within 48 hours, then your skills get the “Verified skill ✅” badge.") % {"skills": names})
+        else:
+            messages.warning(request, _("Gig saved, but we couldn't find skills from our list in the text. Add more detail about what you delivered (tools, tasks, results)."))
+        return redirect("freelance_importer")
+    context = get_user_context(request)
+    context.update({"form": form, "gigs": gigs, "platforms": StudentFreelanceGig.PLATFORM_CHOICES})
+    return render(request, "skills/freelance_importer.html", context)
 
 
 # ---------------------------------------------------------------- challenge flow
