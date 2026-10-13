@@ -9,12 +9,16 @@ from internest_core.models import PartnerProfile, validate_max_file_size
 from .models import StudentFreelanceGig
 
 _doc_validators = [FileExtensionValidator(["pdf", "docx"]), validate_max_file_size]
+MIN_PASTED_CHARS = 80
 
 
 class SkillSourceForm(forms.Form):
     cv_file = forms.FileField(required=False, validators=_doc_validators, label=_("CV (PDF or DOCX)"))
     linkedin_pdf = forms.FileField(required=False, validators=_doc_validators, label=_("LinkedIn profile PDF export"))
     linkedin_url = forms.URLField(required=False, label=_("LinkedIn profile URL"))
+    # No PDF? Students can paste their LinkedIn "About", "Experience" and "Skills" sections instead.
+    pasted_text = forms.CharField(required=False, max_length=20000, label=_("Paste your LinkedIn or CV text"),
+                                  widget=forms.Textarea(attrs={"rows": 8, "dir": "auto"}))
     partner_university = forms.ModelChoiceField(
         queryset=PartnerProfile.objects.filter(is_academic=True, is_fully_verified=True).order_by("company_name"),
         required=False,
@@ -37,10 +41,16 @@ class SkillSourceForm(forms.Form):
                 raise forms.ValidationError(_("Enter a linkedin.com profile URL."))
         return url
 
+    def clean_pasted_text(self):
+        text = (self.cleaned_data.get("pasted_text") or "").strip()
+        if text and len(text) < MIN_PASTED_CHARS:
+            raise forms.ValidationError(_("Paste a few more lines (at least %(n)s characters) — for example your About, Experience and Skills sections.") % {"n": MIN_PASTED_CHARS})
+        return text
+
     def clean(self):
         data = super().clean()
-        if not (data.get("cv_file") or data.get("linkedin_pdf") or data.get("linkedin_url")):
-            raise forms.ValidationError(_("Upload your CV, your LinkedIn PDF export, or add your LinkedIn URL."))
+        if not (data.get("cv_file") or data.get("linkedin_pdf") or data.get("pasted_text") or data.get("linkedin_url")) and not self.errors:
+            raise forms.ValidationError(_("Upload your CV or LinkedIn PDF, or paste your LinkedIn / CV text."))
         return data
 
 

@@ -1,0 +1,103 @@
+{% load i18n %}
+{# Skill analysis input: upload a CV / LinkedIn PDF, or paste LinkedIn text. Used inside a <form> on the skills hub and the Student Hub dialog. #}
+<style>
+.sx { display: flex; flex-direction: column; gap: 14px; }
+.sx-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 14px; background: #f1f5f9; }
+.sx-modes button { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 8px; border: 0; border-radius: 11px; background: none;
+  color: #64748b; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.sx-modes button[aria-selected="true"] { background: #fff; color: #0f172a; box-shadow: 0 2px 8px rgba(15, 23, 42, .08); }
+.sx-panel[hidden] { display: none; }
+.sx-drop { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 26px 16px; border: 2px dashed #cbd5e1; border-radius: 16px;
+  background: #f8fafc; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
+.sx-drop:hover, .sx-drop.is-drag { border-color: #2563eb; background: #eff6ff; }
+.sx-drop .bi { font-size: 2rem; color: #2563eb; }
+.sx-drop strong { color: #0f172a; }
+.sx-drop small, .sx-hint { color: #64748b; font-size: 13px; }
+.sx-drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.sx-file { padding: 4px 10px; border-radius: 999px; background: #dcfce7; color: #166534; font-size: 13px; font-weight: 700; }
+.sx textarea { width: 100%; box-sizing: border-box; min-height: 170px; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 14px; font: inherit;
+  line-height: 1.6; resize: vertical; background: #fff; }
+.sx textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, .12); }
+.sx-row { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.sx-error { color: #b91c1c; font-size: 13px; }
+.sx-submit { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; border: 0; border-radius: 14px; color: #fff;
+  font: inherit; font-weight: 800; cursor: pointer; background: linear-gradient(135deg, #2563eb, #7c3aed); box-shadow: 0 12px 26px rgba(79, 70, 229, .3); }
+.sx-submit:disabled { opacity: .7; cursor: progress; }
+.sx-spin { display: none; width: 16px; height: 16px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: sx-spin .8s linear infinite; }
+.sx-submit.is-busy .sx-spin { display: inline-block; }
+@keyframes sx-spin { to { transform: rotate(360deg); } }
+</style>
+
+{% with text_mode=form.pasted_text.value|default_if_none:""|length %}
+<div class="sx" data-analyze>
+    <div class="sx-modes" role="tablist" aria-label="{% trans 'How do you want to add your skills?' %}">
+        <button type="button" role="tab" data-mode="file" aria-selected="{% if text_mode or form.pasted_text.errors %}false{% else %}true{% endif %}"><i class="bi bi-file-earmark-arrow-up"></i> {% trans "Upload a file" %}</button>
+        <button type="button" role="tab" data-mode="text" aria-selected="{% if text_mode or form.pasted_text.errors %}true{% else %}false{% endif %}"><i class="bi bi-clipboard-check"></i> {% trans "Paste text" %}</button>
+    </div>
+
+    <div class="sx-panel" data-mode-panel="file" {% if text_mode or form.pasted_text.errors %}hidden{% endif %}>
+        <label class="sx-drop" data-drop>
+            <i class="bi bi-cloud-arrow-up"></i>
+            <strong>{% trans "Drop your CV or LinkedIn PDF here, or click to choose" %}</strong>
+            <small>{% trans "PDF or DOCX · up to 5 MB" %}</small>
+            <span class="sx-file" data-file-name hidden></span>
+            <input type="file" name="{{ form.cv_file.html_name }}" accept=".pdf,.docx">
+        </label>
+        {% if form.cv_file.errors %}<div class="sx-error">{{ form.cv_file.errors|join:" " }}</div>{% endif %}
+        <p class="sx-hint mb-0 mt-2"><i class="bi bi-info-circle"></i> {% trans "LinkedIn PDF: open your profile → More → Save to PDF. Can't find it? Use “Paste text” instead." %}</p>
+    </div>
+
+    <div class="sx-panel" data-mode-panel="text" {% if not text_mode and not form.pasted_text.errors %}hidden{% endif %}>
+        <textarea name="{{ form.pasted_text.html_name }}" dir="auto" maxlength="20000" aria-label="{{ form.pasted_text.label }}"
+                  placeholder="{% trans 'Paste your LinkedIn About, Experience and Skills sections — or any part of your CV…' %}">{{ form.pasted_text.value|default_if_none:"" }}</textarea>
+        <div class="sx-row">
+            <small class="sx-hint">{% trans "Plain text in Arabic or English works. We only read it to detect your skills." %}</small>
+            <small class="sx-hint" data-count dir="ltr">0 / 20000</small>
+        </div>
+        {% if form.pasted_text.errors %}<div class="sx-error">{{ form.pasted_text.errors|join:" " }}</div>{% endif %}
+    </div>
+
+    {% if form.non_field_errors %}<div class="sx-error" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+    <button type="submit" class="sx-submit" data-analyze-submit><span class="sx-spin" aria-hidden="true"></span><i class="bi bi-cpu"></i> {% trans "Analyze my skills" %}</button>
+</div>
+{% endwith %}
+<script>
+(function () {
+  document.querySelectorAll("[data-analyze]:not([data-ready])").forEach(function (box) {
+    box.dataset.ready = "1";
+    var form = box.closest("form"), tabs = box.querySelectorAll("[data-mode]"), panels = box.querySelectorAll("[data-mode-panel]");
+    function setMode(mode) {
+      tabs.forEach(function (t) { t.setAttribute("aria-selected", t.dataset.mode === mode ? "true" : "false"); });
+      panels.forEach(function (p) {
+        var on = p.dataset.modePanel === mode;
+        p.hidden = !on;
+        p.querySelectorAll("input, textarea").forEach(function (el) { el.disabled = !on; });  // send only the chosen input
+      });
+    }
+    tabs.forEach(function (t) { t.addEventListener("click", function () { setMode(t.dataset.mode); }); });
+    setMode(box.querySelector('[data-mode][aria-selected="true"]').dataset.mode);
+
+    var drop = box.querySelector("[data-drop]"), input = drop.querySelector("input"), name = box.querySelector("[data-file-name]");
+    function showFile() {
+      var f = input.files[0];
+      name.hidden = !f;
+      if (f) name.textContent = "✓ " + f.name;
+    }
+    input.addEventListener("change", showFile);
+    ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("is-drag"); }); });
+    ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function () { drop.classList.remove("is-drag"); }); });
+    drop.addEventListener("drop", function (e) { e.preventDefault(); if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; showFile(); } });
+
+    var area = box.querySelector("textarea"), count = box.querySelector("[data-count]");
+    function updateCount() { count.textContent = area.value.length + " / 20000"; }
+    area.addEventListener("input", updateCount);
+    updateCount();
+
+    form.addEventListener("submit", function () {
+      var btn = box.querySelector("[data-analyze-submit]");
+      btn.classList.add("is-busy");
+      setTimeout(function () { btn.disabled = true; }, 0);  // after the browser collects the form data
+    });
+  });
+})();
+</script>

@@ -11,6 +11,7 @@ from django.http import Http404, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _, gettext_lazy as _lazy
 from django.views.decorators.http import require_GET, require_POST
 
@@ -18,7 +19,7 @@ from internest_core.models import StudentProfile
 from internest_core.views import _get_partner_profile, get_user_context
 
 from . import challenge as engine
-from .extraction import ExtractionError, analyze_cv, read_document_text, save_claimed_skills
+from .extraction import ExtractionError, analyze_cv, read_document_text, sanitize_text, save_claimed_skills
 from . import freelance_service
 from .forms import FreelanceImportForm, GigProofForm, SkillSourceForm, UniversityShareForm
 from .llm import llm_enabled
@@ -75,6 +76,9 @@ def skills_hub(request):
         form = SkillSourceForm(request.POST, request.FILES)
         if form.is_valid():
             _handle_extraction(request, student, skill_profile, form.cleaned_data)
+            target = request.POST.get("next", "")  # e.g. the Student Hub dialog sends people back to their skills tab
+            if target and url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+                return redirect(target)
             return redirect("skills_hub")
     else:
         form = SkillSourceForm(initial={
@@ -103,23 +107,26 @@ def _handle_extraction(request, student, skill_profile, data):
         skill_profile.extraction_day = today
         skill_profile.extraction_count_today = 0
 
-    skill_profile.partner_university = data.get("partner_university")
+    if "partner_university" in request.POST:  # only the hub form has this field; the profile dialog doesn't
+        skill_profile.partner_university = data.get("partner_university")
     if data.get("linkedin_url"):
         skill_profile.linkedin_url = data["linkedin_url"]
 
     files = [f for f in (data.get("cv_file"), data.get("linkedin_pdf")) if f]
-    if files and skill_profile.extraction_count_today >= MAX_EXTRACTIONS_PER_DAY:
+    pasted = data.get("pasted_text") or ""
+    if (files or pasted) and skill_profile.extraction_count_today >= MAX_EXTRACTIONS_PER_DAY:
         skill_profile.save()
         messages.error(request, _("Daily analysis limit reached. Try again tomorrow."))
         return
 
-    if files:
+    if files or pasted:
         try:
-            text = "\n\n".join(read_document_text(f) for f in files)
+            parts = [read_document_text(f) for f in files] + ([sanitize_text(pasted)] if pasted else [])
         except ExtractionError as exc:
             skill_profile.save()
             messages.error(request, str(exc))
             return
+        text = "\n\n".join(parts)
         analysis = analyze_cv(text)
         extracted = analysis.skills
         if analysis.ai_failed:
@@ -145,8 +152,8 @@ def _handle_extraction(request, student, skill_profile, data):
     else:
         messages.info(
             request,
-            _("LinkedIn URL saved. LinkedIn does not allow automated profile reading — upload the PDF export "
-              "(LinkedIn profile → More → Save to PDF) to analyze it."),
+            _("LinkedIn URL saved. To analyze your skills, upload your CV or LinkedIn PDF, or paste your "
+              "About, Experience and Skills text."),
         )
     skill_profile.save()
 

@@ -469,7 +469,7 @@ def _profile_hub(profile):
     Every query is optional: the page must render even if the skills/CV tables are unavailable."""
     from django.db import DatabaseError
 
-    from internest_skills.forms import UniversityShareForm
+    from internest_skills.forms import SkillSourceForm, UniversityShareForm
     from internest_skills.models import SkillProfile, StudentSkill
     from internest_students.cv_builder_service import clean_url, format_period
     from internest_students.models import StudentCV
@@ -479,7 +479,7 @@ def _profile_hub(profile):
         (profile.cv_file, _("CV file")), (profile.profile_picture, _("Profile picture")),
         ((profile.linkedin_url or "").startswith("http"), _("LinkedIn URL")),
     ) if not done]
-    hub = {"missing": missing, "skill_groups": {}, "gigs": [], "projects": [], "cv": None, "education": [],
+    hub = {"missing": missing, "analyze_form": SkillSourceForm(), "skill_groups": {}, "gigs": [], "projects": [], "cv": None, "education": [],
            "expected_graduation": "", "graduation_expected": False, "github_url": "", "share_form": None, "needs_proof": 0}
     if not profile.pk:
         return hub

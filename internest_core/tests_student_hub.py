@@ -52,7 +52,8 @@ class StudentHubTests(Base):
         self.assertEqual(page.count(f'href="{reverse("freelance_importer")}"'), 1)  # only the hero button
         dialog = page[page.index('id="skill-dialog"'):]
         self.assertNotIn(reverse("freelance_importer"), dialog)
-        self.assertIn("Analyze your CV or LinkedIn", dialog)
+        for marker in ('name="pasted_text"', 'name="cv_file"', 'data-mode="text"', f'value="{reverse("profile")}?tab=skills"'):
+            self.assertIn(marker, dialog)
         self.assertIn("Take a skill challenge", dialog)
 
     def test_tabs(self):
@@ -128,7 +129,7 @@ class StudentHubTests(Base):
     def test_arabic_labels(self):
         self.client.cookies["internest_lang"] = "ar"
         page = self._page()
-        for text in ("مساحتك الطلابية", "أنشئ سيرتك الذاتية بالذكاء الاصطناعي", "استيراد عمل حر", "حلّل سيرتك الذاتية أو ملف LinkedIn", "خُض اختبار مهارة",
+        for text in ("مساحتك الطلابية", "أنشئ سيرتك الذاتية بالذكاء الاصطناعي", "استيراد عمل حر", "لصق نص", "حلّل مهاراتي", "خُض اختبار مهارة",
                      "إكمال بيانات الملف", "البيانات الشخصية والتعليم", "بنك المهارات الموثقة", "سجل الأعمال الحرة والمشاريع",
                      "إعدادات الحساب والسرية", "إضافة / توثيق مهارة جديدة"):
             self.assertContains(page, text)

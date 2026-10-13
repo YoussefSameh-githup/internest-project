@@ -47,17 +47,16 @@
                         </div>
                     </div>
                 {% endif %}
-                {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
-                <div class="skills-source-grid">
-                    {% for field in form %}
+                <div class="skills-source-grid mb-4">
+                    {% for field in form %}{% if field.name == "linkedin_url" or field.name == "partner_university" %}
                         <div>
-                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }} <small class="text-muted">({% trans "optional" %})</small></label>
                             {{ field }}
                             {% if field.errors %}<div class="text-danger" style="font-size: var(--text-xs);">{{ field.errors|join:" " }}</div>{% endif %}
                         </div>
-                    {% endfor %}
+                    {% endif %}{% endfor %}
                 </div>
-                <button type="submit" class="btn btn--primary mt-4"><i class="bi bi-cpu"></i> {% trans "Analyze skills" %}</button>
+                {% include "skills/_analyze_inputs.html" %}
                 {% if skill_profile.last_extracted_at %}
                     <span class="text-muted" style="font-size: var(--text-xs); margin-inline-start: var(--space-3);">
                         {% trans "Last analysis" %}: {{ skill_profile.last_extracted_at|date:"Y/m/d H:i" }}

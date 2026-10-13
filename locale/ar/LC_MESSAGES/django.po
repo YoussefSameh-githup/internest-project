@@ -4938,3 +4938,71 @@ msgstr "استيراد عمل حر"
 
 msgid "Freelance work you import appears here with its review status."
 msgstr "الأعمال الحرة التي تستوردها تظهر هنا مع حالة مراجعتها."
+
+msgid ""
+"Upload your CV or LinkedIn PDF, or paste your profile text — our AI finds "
+"your skills."
+msgstr ""
+"ارفع سيرتك الذاتية أو ملف LinkedIn PDF، أو الصق نص بروفايلك — وسيكتشف الذكاء"
+" الاصطناعي مهاراتك."
+
+msgid "Paste your LinkedIn or CV text"
+msgstr "الصق نص بروفايل LinkedIn أو سيرتك الذاتية"
+
+msgid "Upload your CV or LinkedIn PDF, or paste your LinkedIn / CV text."
+msgstr ""
+"ارفع سيرتك الذاتية أو ملف LinkedIn PDF، أو الصق نص LinkedIn / سيرتك الذاتية."
+
+msgid ""
+"Paste a few more lines (at least %(n)s characters) — for example your About,"
+" Experience and Skills sections."
+msgstr ""
+"الصق سطوراً أكثر (%(n)s حرفاً على الأقل) — مثل أقسام About والخبرات "
+"والمهارات."
+
+msgid ""
+"LinkedIn URL saved. To analyze your skills, upload your CV or LinkedIn PDF, "
+"or paste your About, Experience and Skills text."
+msgstr ""
+"تم حفظ رابط LinkedIn. لتحليل مهاراتك، ارفع سيرتك الذاتية أو ملف LinkedIn "
+"PDF، أو الصق نص أقسام About والخبرات والمهارات."
+
+msgid "optional"
+msgstr "اختياري"
+
+msgid "How do you want to add your skills?"
+msgstr "كيف تريد إضافة مهاراتك؟"
+
+msgid "Upload a file"
+msgstr "رفع ملف"
+
+msgid "Paste text"
+msgstr "لصق نص"
+
+msgid "Drop your CV or LinkedIn PDF here, or click to choose"
+msgstr "اسحب سيرتك الذاتية أو ملف LinkedIn PDF هنا، أو اضغط للاختيار"
+
+msgid "PDF or DOCX · up to 5 MB"
+msgstr "PDF أو DOCX · حتى 5 ميجابايت"
+
+msgid ""
+"LinkedIn PDF: open your profile → More → Save to PDF. Can't find it? Use "
+"“Paste text” instead."
+msgstr ""
+"ملف LinkedIn PDF: افتح بروفايلك ← المزيد ← حفظ كـ PDF. لم تجده؟ استخدم «لصق "
+"نص» بدلاً من ذلك."
+
+msgid ""
+"Paste your LinkedIn About, Experience and Skills sections — or any part of "
+"your CV…"
+msgstr ""
+"الصق أقسام About والخبرات والمهارات من LinkedIn — أو أي جزء من سيرتك "
+"الذاتية…"
+
+msgid ""
+"Plain text in Arabic or English works. We only read it to detect your "
+"skills."
+msgstr "يمكنك اللصق بالعربية أو الإنجليزية. نقرأ النص فقط لاكتشاف مهاراتك."
+
+msgid "Analyze my skills"
+msgstr "حلّل مهاراتي"
