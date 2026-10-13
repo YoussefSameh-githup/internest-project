@@ -1,0 +1,37 @@
+{% load i18n %}
+<style>
+.pm { margin: 18px 0 4px; padding: 16px; border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0; }
+.pm h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 15px; color: #0f172a; }
+.pm-group + .pm-group { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e2e8f0; }
+.pm-group h4 { margin: 0 0 8px; font-size: 13px; color: #64748b; font-weight: 700; }
+.pm-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.pm-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #fff; border: 1px solid #eef2f7; }
+.pm-item > i { flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-size: 1.05rem; color: #fff; }
+.pm-item strong { display: block; font-size: 14px; color: #0f172a; }
+.pm-item small { color: #64748b; font-size: 12.5px; }
+.pm-note { margin: 10px 0 0; color: #64748b; font-size: 12px; }
+</style>
+<section class="pm" aria-label="{% trans 'Payment methods' %}" data-payment-methods>
+    <h3><i class="bi bi-wallet2"></i> {% trans "Payment methods via Fawaterak" %}</h3>
+    <div class="pm-group">
+        <h4><i class="bi bi-geo-alt-fill"></i> {% trans "Inside Egypt" %}</h4>
+        <ul class="pm-list">
+            <li class="pm-item"><i class="bi bi-credit-card-2-front" style="background: #2563eb;"></i>
+                <span><strong>{% trans "Bank cards" %}</strong><small>Visa · Mastercard · {% trans "Meeza" %}</small></span></li>
+            <li class="pm-item"><i class="bi bi-phone" style="background: #dc2626;"></i>
+                <span><strong>{% trans "Mobile wallets" %}</strong><small>{% trans "Vodafone Cash, Orange Cash, Etisalat Cash, WE Pay, Ahly Pay and more" %}</small></span></li>
+            <li class="pm-item"><i class="bi bi-lightning-charge" style="background: #7c3aed;"></i>
+                <span><strong>{% trans "InstaPay" %}</strong><small>{% trans "Instant bank transfer" %}</small></span></li>
+            <li class="pm-item"><i class="bi bi-shop" style="background: #f59e0b;"></i>
+                <span><strong>{% trans "Cash at payment outlets" %}</strong><small>{% trans "Fawry · Aman · Masary — pay with a reference number" %}</small></span></li>
+        </ul>
+    </div>
+    <div class="pm-group">
+        <h4><i class="bi bi-globe-americas"></i> {% trans "Outside Egypt" %}</h4>
+        <ul class="pm-list">
+            <li class="pm-item"><i class="bi bi-globe2" style="background: #0f766e;"></i>
+                <span><strong>{% trans "International bank cards" %}</strong><small>{% trans "Visa and Mastercard credit / debit cards issued outside Egypt" %}</small></span></li>
+        </ul>
+    </div>
+    <p class="pm-note"><i class="bi bi-info-circle"></i> {% trans "You choose the method on Fawaterak's secure page; the methods offered there are final." %}</p>
+</section>

@@ -37,6 +37,8 @@
 .co-plan { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
 .co-plan__icon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 1.4rem; background: linear-gradient(135deg, #fde68a, #f59e0b); }
 .co-perks { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; color: #334155; }
+.co-alert--pending { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.co-alert__actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .co-alert { margin-bottom: 16px; padding: 14px 16px; border-radius: 14px; background: #fffbeb; border: 1px solid #fde68a; color: #78350f; font-size: 14px; }
 @media (max-width: 860px) { .co-grid { grid-template-columns: 1fr; } .co-summary { order: -1; } }
 </style>
@@ -50,10 +52,18 @@
         </header>
 
         {% if pending_request %}
-            <div class="co-alert" role="status">
-                <strong>{% trans "You already have a Pro request awaiting payment." %}</strong>
-                {% if pending_request.payment_url %}<a href="{{ pending_request.payment_url }}">{% trans "Continue to payment" %} →</a>
-                {% else %}{% trans "Our team will contact you shortly." %}{% endif %}
+            <div class="co-alert co-alert--pending" role="status">
+                <div>
+                    <strong>{% blocktrans with price=pending_request.price_label %}You have an unpaid order ({{ price }}).{% endblocktrans %}</strong>
+                    {% if pending_request.payment_url %}{% trans "Continue paying it, or cancel it to place a new order." %}{% else %}{% trans "Our team will contact you to complete it — or cancel it to place a new order now." %}{% endif %}
+                </div>
+                <div class="co-alert__actions">
+                    {% if pending_request.payment_url %}<a href="{{ pending_request.payment_url }}" class="btn btn--primary btn--sm">{% trans "Continue to payment" %}</a>{% endif %}
+                    <form method="post" style="margin: 0;">
+                        {% csrf_token %}<input type="hidden" name="period" value="{{ period }}">
+                        <button type="submit" name="action" value="cancel_pending" class="btn btn--ghost btn--sm">{% trans "Cancel it and start a new order" %}</button>
+                    </form>
+                </div>
             </div>
         {% endif %}
 
@@ -84,9 +94,10 @@
                     {% if online %}<i class="bi bi-credit-card-2-front-fill"></i> {% blocktrans with total=quote.final_label %}Pay {{ total }} with Fawaterak{% endblocktrans %}
                     {% else %}<i class="bi bi-send-check-fill"></i> {% trans "Confirm order" %}{% endif %}
                 </button>
+                {% include "startups/_payment_methods.html" %}
                 <p class="co-secure">
                     <i class="bi bi-shield-lock-fill"></i>
-                    {% if online %}{% trans "You'll be redirected to Fawaterak's secure page to pay by card, mobile wallet or Fawry. We never see your card details." %}
+                    {% if online %}{% trans "You'll be redirected to Fawaterak's secure page to choose your payment method. We never see your card details." %}
                     {% else %}{% trans "Our team will contact you within 24 hours to complete payment, then activate Pro." %}{% endif %}
                 </p>
             </form>

@@ -141,3 +141,47 @@ class PromoFieldTests(ApplicationsBase):
         page = self.client.get(CHECKOUT)
         self.assertEqual(page.context["quote"]["final_price"], 400)
         self.assertContains(page, "Promo code STARTUP50")
+
+
+class UpgradeNavigationAndMethodsTests(ApplicationsBase):
+    def setUp(self):
+        super().setUp()
+        PartnerProfile.objects.filter(pk=self.partner.pk).update(country_of_registration="EG")
+        self.client.force_login(self.founder)
+
+    def test_cta_always_goes_to_checkout_with_plan(self):
+        ProUpgradeRequest.objects.create(partner=self.partner, list_price=800, final_price=800)  # an old unpaid order
+        page = self.client.get(reverse("startup_upgrade"), {"period": "year"})
+        self.assertContains(page, f'href="{CHECKOUT}?period=year" class="btn btn--gold btn--lg btn--block" data-checkout-cta')
+        self.assertNotContains(page, 'aria-disabled="true"')
+        self.assertContains(page, "Pay now or change the order")
+        self.assertEqual(self.client.get(f"{CHECKOUT}?period=year").context["quote"]["months"], 12)
+
+    def test_payment_methods_section(self):
+        page = self.client.get(CHECKOUT)
+        for text in ("Payment methods via Fawaterak", "Inside Egypt", "Visa · Mastercard · Meeza", "Mobile wallets",
+                     "InstaPay", "Fawry · Aman · Masary", "Outside Egypt", "International bank cards"):
+            self.assertContains(page, text)
+        self.client.cookies["internest_lang"] = "ar"
+        page = self.client.get(CHECKOUT)
+        for text in ("داخل مصر", "فودافون كاش", "أهلي فاي", "انستاباي (InstaPay)", "فوري · أمان · مصاري", "خارج مصر"):
+            self.assertContains(page, text)
+
+    def test_unpaid_order_can_be_cancelled_and_replaced(self):
+        old = ProUpgradeRequest.objects.create(partner=self.partner, list_price=800, final_price=800)
+        page = self.client.get(CHECKOUT)
+        self.assertContains(page, "You have an unpaid order")
+        self.assertContains(page, 'value="cancel_pending"')
+        self.client.post(CHECKOUT, {"action": "cancel_pending"})
+        old.refresh_from_db()
+        self.assertEqual(old.status, ProUpgradeRequest.STATUS_CANCELLED)
+        self.client.post(CHECKOUT, BUYER)
+        self.assertEqual(ProUpgradeRequest.objects.filter(status="pending").count(), 1)
+
+    def test_pay_button_needs_consent_and_falls_back_to_manual(self):
+        page = self.client.get(CHECKOUT)
+        self.assertContains(page, "data-consent")
+        self.assertContains(page, "pay.disabled = !consent.checked")
+        self.assertContains(page, "Confirm order")  # no FAWATERAK_API_KEY in tests → manual handoff
+        self.assertEqual(self.client.post(CHECKOUT, {**BUYER, "accept_terms": ""}).status_code, 200)
+        self.assertFalse(ProUpgradeRequest.objects.exists())

@@ -20,6 +20,7 @@
             <div class="alert alert-warning text-center mb-6">
                 <i class="bi bi-hourglass-split"></i>
                 {% blocktrans with price=pending_request.price_label %}Your Pro request ({{ price }}) is awaiting payment. Our team will contact you within 24 hours.{% endblocktrans %}
+                <a href="{% url 'checkout' %}" class="fw-bold" style="margin-inline-start: 6px;">{% trans "Pay now or change the order" %} →</a>
             </div>
         {% endif %}
 
@@ -93,8 +94,7 @@
                     <div class="checkout-summary__total"><span>{% trans "Total" %}</span><span dir="ltr">{{ quote.final_label }}</span></div>
                 </div>
 
-                <a href="{% url 'checkout' %}{% if period == 'year' %}?period=year{% endif %}" class="btn btn--gold btn--lg btn--block{% if pending_request %} is-disabled{% endif %}"
-                   {% if pending_request %}aria-disabled="true" style="pointer-events: none; opacity: .6;"{% endif %}>
+                <a href="{% url 'checkout' %}{% if period == 'year' %}?period=year{% endif %}" class="btn btn--gold btn--lg btn--block" data-checkout-cta>
                     {% trans "Subscribe now and unlock every feature" %}
                 </a>
                 <p class="text-muted text-center mt-3 mb-0" style="font-size: var(--text-xs);">

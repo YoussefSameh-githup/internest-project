@@ -338,6 +338,12 @@ def checkout(request):
     q = quote(promo, period, currency)
     online = currency == "EGP" and fawaterak.enabled()
     pending = ProUpgradeRequest.objects.filter(partner=partner, status=ProUpgradeRequest.STATUS_PENDING).first()
+    if request.method == "POST" and request.POST.get("action") == "cancel_pending":
+        if pending:  # an unpaid order must never lock the company out of checkout
+            pending.status = ProUpgradeRequest.STATUS_CANCELLED
+            pending.save(update_fields=["status"])
+            messages.info(request, _("Your previous unpaid order was cancelled. You can place a new one now."))
+        return redirect(reverse("checkout") + ("?period=year" if period == "year" else ""))
     user = request.user
     form = CheckoutForm(request.POST or None, egypt=currency == "EGP", initial={
         "customer_name": user.get_full_name() or partner.company_name,

@@ -5161,3 +5161,78 @@ msgstr "دفع آمن: راجع طلبك، ووافق على الشروط، ثم
 
 msgid "Enter promo code"
 msgstr "أدخل كود الخصم"
+
+msgid "Your previous unpaid order was cancelled. You can place a new one now."
+msgstr "تم إلغاء طلبك السابق غير المدفوع. يمكنك الآن إنشاء طلب جديد."
+
+msgid "You have an unpaid order (%(price)s)."
+msgstr "لديك طلب غير مدفوع (%(price)s)."
+
+msgid "Continue paying it, or cancel it to place a new order."
+msgstr "أكمل دفعه، أو ألغِه لإنشاء طلب جديد."
+
+msgid ""
+"Our team will contact you to complete it — or cancel it to place a new order"
+" now."
+msgstr "سيتواصل معك فريقنا لإتمامه — أو ألغِه لإنشاء طلب جديد الآن."
+
+msgid "Cancel it and start a new order"
+msgstr "إلغاؤه وبدء طلب جديد"
+
+msgid ""
+"You'll be redirected to Fawaterak's secure page to choose your payment "
+"method. We never see your card details."
+msgstr ""
+"سيتم تحويلك إلى صفحة فواتيرك الآمنة لاختيار طريقة الدفع. لا نطّلع أبداً على "
+"بيانات بطاقتك."
+
+msgid "Pay now or change the order"
+msgstr "ادفع الآن أو عدّل الطلب"
+
+msgid "Payment methods"
+msgstr "طرق الدفع"
+
+msgid "Payment methods via Fawaterak"
+msgstr "طرق الدفع المتاحة عبر فواتيرك"
+
+msgid "Inside Egypt"
+msgstr "داخل مصر"
+
+msgid "Bank cards"
+msgstr "البطاقات البنكية"
+
+msgid "Meeza"
+msgstr "ميزة"
+
+msgid "Mobile wallets"
+msgstr "المحافظ الإلكترونية"
+
+msgid "Vodafone Cash, Orange Cash, Etisalat Cash, WE Pay, Ahly Pay and more"
+msgstr "فودافون كاش، أورنج كاش، اتصالات كاش، وي كاش، أهلي فاي، وغيرها"
+
+msgid "Instant bank transfer"
+msgstr "تحويل بنكي لحظي"
+
+msgid "Cash at payment outlets"
+msgstr "منافذ الدفع الفوري"
+
+msgid "Fawry · Aman · Masary — pay with a reference number"
+msgstr "فوري · أمان · مصاري — الدفع برقم مرجعي"
+
+msgid "Outside Egypt"
+msgstr "خارج مصر"
+
+msgid "International bank cards"
+msgstr "البطاقات البنكية الدولية"
+
+msgid "Visa and Mastercard credit / debit cards issued outside Egypt"
+msgstr "بطاقات فيزا وماستركارد الائتمانية ومسبقة الدفع الصادرة خارج مصر"
+
+msgid ""
+"You choose the method on Fawaterak's secure page; the methods offered there "
+"are final."
+msgstr ""
+"تختار طريقة الدفع في صفحة فواتيرك الآمنة، والطرق المتاحة هناك هي المعتمدة."
+
+msgid "InstaPay"
+msgstr "انستاباي (InstaPay)"
