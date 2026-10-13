@@ -14,4 +14,4 @@ reportlab==4.2.5
 arabic-reshaper==3.0.0
 python-bidi==0.4.2
 qrcode==8.0
-django-unfold==0.110.0
+django-unfold==0.81.0

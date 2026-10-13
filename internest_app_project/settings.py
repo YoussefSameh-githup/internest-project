@@ -261,7 +261,7 @@ DEFAULT_PRICING_COUNTRY = env("DEFAULT_PRICING_COUNTRY", default="EG")
 GEOIP_PATH = env("GEOIP_PATH", default="") or None
 PAYMENT_GATEWAYS = {"EGP": env("PAYMENT_GATEWAY_EGP", default="fawaterak"), "default": env("PAYMENT_GATEWAY_INTL", default="stripe")}
 
-# --- Admin panel (django-unfold): branding, theme and grouped sidebar ---
+# --- Admin panel (django-unfold 0.81.0: last line we pin that runs on Python 3.10, used on PythonAnywhere) ---
 from django.templatetags.static import static  # noqa: E402
 from django.urls import reverse, reverse_lazy  # noqa: E402
 
