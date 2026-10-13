@@ -1,0 +1,41 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Payment status" %} — Internest Pro{% endblock %}
+
+{% block content %}
+<style>
+.cr { min-height: 60vh; display: grid; place-items: center; padding: 48px 16px; background: #f8fafc; }
+.cr-card { width: min(480px, 100%); padding: 32px 26px; border-radius: 24px; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 24px 60px rgba(15, 23, 42, .1); text-align: center; }
+.cr-icon { width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; font-size: 1.8rem; color: #fff; }
+.cr-icon--success { background: linear-gradient(135deg, #22c55e, #15803d); }
+.cr-icon--pending { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.cr-icon--fail { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+.cr-card h1 { margin: 0 0 8px; font-size: 1.4rem; }
+.cr-card p { color: #475569; line-height: 1.7; }
+.cr-meta { margin: 14px 0 20px; padding: 12px; border-radius: 14px; background: #f8fafc; font-size: 14px; color: #334155; }
+</style>
+<section class="cr">
+    <div class="cr-card" role="status">
+        {% if outcome == "success" %}
+            <div class="cr-icon cr-icon--success"><i class="bi bi-check-lg"></i></div>
+            <h1>{% trans "Thank you! We're confirming your payment" %}</h1>
+            <p>{% trans "Internest Pro is activated as soon as Fawaterak confirms the payment — usually within a few hours. You'll see it on your dashboard." %}</p>
+        {% elif outcome == "pending" %}
+            <div class="cr-icon cr-icon--pending"><i class="bi bi-hourglass-split"></i></div>
+            <h1>{% trans "Payment pending" %}</h1>
+            <p>{% trans "Complete the payment using the reference you received (for example at a Fawry outlet). Pro is activated once the payment is confirmed." %}</p>
+        {% else %}
+            <div class="cr-icon cr-icon--fail"><i class="bi bi-x-lg"></i></div>
+            <h1>{% trans "The payment didn't go through" %}</h1>
+            <p>{% trans "The payment wasn't completed. You can try again, or contact us and we'll help you finish it." %}</p>
+        {% endif %}
+        <div class="cr-meta">Internest Pro · {{ order.price_label }}{% if order.gateway_reference %} · #{{ order.gateway_reference }}{% endif %}</div>
+        {% if outcome != "success" and order.payment_url and order.status == "pending" %}
+            <a href="{{ order.payment_url }}" class="btn btn--primary btn--block">{% trans "Try the payment again" %}</a>
+        {% endif %}
+        <a href="{% url 'partner_dashboard' %}" class="btn btn--ghost btn--block mt-3">{% trans "Back to dashboard" %}</a>
+        <p class="mt-4 mb-0" style="font-size: 13px;">{% trans "Questions?" %} <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a> · <a href="tel:{{ SUPPORT_PHONE_INTL }}" dir="ltr">{{ SUPPORT_PHONE }}</a></p>
+    </div>
+</section>
+{% endblock %}

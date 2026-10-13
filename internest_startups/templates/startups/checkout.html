@@ -1,0 +1,133 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Checkout" %} — Internest Pro{% endblock %}
+
+{% block content %}
+<style>
+/* Checkout — embedded so it renders right even with an old cached stylesheet. */
+.co { padding: 36px 0 72px; background: radial-gradient(800px 320px at 85% -10%, #dbeafe, transparent 70%), #f8fafc; }
+.co-wrap { max-width: 1000px; }
+.co-head { margin-bottom: 20px; }
+.co-head a { color: #64748b; font-size: 14px; text-decoration: none; }
+.co-head h1 { margin: 6px 0 4px; font-size: clamp(1.5rem, 3vw, 2rem); }
+.co-head p { margin: 0; color: #64748b; }
+.co-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.co-card { padding: 24px; border-radius: 22px; background: rgba(255, 255, 255, .9); border: 1px solid #e2e8f0; box-shadow: 0 12px 34px rgba(15, 23, 42, .06); }
+.co-card h2 { margin: 0 0 16px; font-size: 1.1rem; }
+.co-field { margin-bottom: 14px; }
+.co-field label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 14px; color: #334155; }
+.co-field input { width: 100%; box-sizing: border-box; height: 46px; padding: 0 14px; border: 1px solid #cbd5e1; border-radius: 13px; font: inherit; background: #fff; }
+.co-field input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, .12); }
+.co-field.has-error input { border-color: #ef4444; }
+.co-error { margin-top: 5px; color: #b91c1c; font-size: 13px; }
+.co-consent { display: flex; gap: 10px; align-items: flex-start; margin: 6px 0 16px; padding: 14px; border-radius: 14px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 14px; line-height: 1.7; cursor: pointer; }
+.co-consent input { width: 18px; height: 18px; margin-top: 3px; flex-shrink: 0; accent-color: #2563eb; }
+.co-consent.has-error { border-color: #fca5a5; background: #fef2f2; }
+.co-pay { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 52px; border: 0; border-radius: 14px; color: #fff;
+  font: inherit; font-weight: 800; font-size: 1.05rem; cursor: pointer; background: linear-gradient(135deg, #2563eb, #7c3aed); box-shadow: 0 14px 28px rgba(79, 70, 229, .32); }
+.co-pay:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
+.co-secure { display: flex; gap: 8px; align-items: center; justify-content: center; margin: 12px 0 0; color: #64748b; font-size: 13px; text-align: center; }
+.co-lines { margin: 0; padding: 0; list-style: none; }
+.co-lines li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px dashed #e2e8f0; font-size: 15px; }
+.co-lines li span:last-child { font-weight: 700; direction: ltr; }
+.co-lines .co-discount span:last-child { color: #15803d; }
+.co-total { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-top: 12px; padding: 14px 16px; border-radius: 14px; background: #eff6ff; }
+.co-total strong { font-size: 1.5rem; color: #1d4ed8; direction: ltr; }
+.co-plan { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+.co-plan__icon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 1.4rem; background: linear-gradient(135deg, #fde68a, #f59e0b); }
+.co-perks { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; color: #334155; }
+.co-alert { margin-bottom: 16px; padding: 14px 16px; border-radius: 14px; background: #fffbeb; border: 1px solid #fde68a; color: #78350f; font-size: 14px; }
+@media (max-width: 860px) { .co-grid { grid-template-columns: 1fr; } .co-summary { order: -1; } }
+</style>
+
+<section class="co">
+    <div class="container co-wrap">
+        <header class="co-head">
+            <a href="{% url 'startup_upgrade' %}{% if period == 'year' %}?period=year{% endif %}"><i class="bi bi-arrow-right-short"></i> {% trans "Back to plans" %}</a>
+            <h1>🔒 {% trans "Checkout" %}</h1>
+            <p>{% trans "Review your order, confirm your details and pay securely." %}</p>
+        </header>
+
+        {% if pending_request %}
+            <div class="co-alert" role="status">
+                <strong>{% trans "You already have a Pro request awaiting payment." %}</strong>
+                {% if pending_request.payment_url %}<a href="{{ pending_request.payment_url }}">{% trans "Continue to payment" %} →</a>
+                {% else %}{% trans "Our team will contact you shortly." %}{% endif %}
+            </div>
+        {% endif %}
+
+        <div class="co-grid">
+            <form method="post" class="co-card" novalidate data-checkout>
+                {% csrf_token %}
+                <input type="hidden" name="period" value="{{ period }}">
+                <h2>{% trans "Billing details" %}</h2>
+                {% for field in form %}{% if field.name != "accept_terms" %}
+                    <div class="co-field{% if field.errors %} has-error{% endif %}">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <input type="{% if field.name == 'customer_email' %}email{% elif field.name == 'customer_phone' %}tel{% else %}text{% endif %}"
+                               name="{{ field.html_name }}" id="{{ field.id_for_label }}" value="{{ field.value|default_if_none:'' }}" required
+                               autocomplete="{% if field.name == 'customer_email' %}email{% elif field.name == 'customer_phone' %}tel{% else %}name{% endif %}"
+                               {% if field.name != 'customer_name' %}dir="ltr"{% endif %}>
+                        {% if field.errors %}<div class="co-error">{{ field.errors|join:" " }}</div>{% endif %}
+                    </div>
+                {% endif %}{% endfor %}
+
+                <label class="co-consent{% if form.accept_terms.errors %} has-error{% endif %}">
+                    <input type="checkbox" name="accept_terms" required {% if form.accept_terms.value %}checked{% endif %} data-consent>
+                    {% url 'terms' as terms_url %}{% url 'refund_policy' as refund_url %}
+                    <span>{% blocktrans %}I agree to the <a href="{{ terms_url }}" target="_blank" rel="noopener">Terms &amp; Conditions</a> and the <a href="{{ refund_url }}" target="_blank" rel="noopener">Refund Policy</a>.{% endblocktrans %}</span>
+                </label>
+                {% if form.accept_terms.errors %}<div class="co-error" style="margin: -8px 0 12px;">{{ form.accept_terms.errors|join:" " }}</div>{% endif %}
+
+                <button type="submit" class="co-pay" data-pay {% if pending_request %}disabled{% endif %}>
+                    {% if online %}<i class="bi bi-credit-card-2-front-fill"></i> {% blocktrans with total=quote.final_label %}Pay {{ total }} with Fawaterak{% endblocktrans %}
+                    {% else %}<i class="bi bi-send-check-fill"></i> {% trans "Confirm order" %}{% endif %}
+                </button>
+                <p class="co-secure">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    {% if online %}{% trans "You'll be redirected to Fawaterak's secure page to pay by card, mobile wallet or Fawry. We never see your card details." %}
+                    {% else %}{% trans "Our team will contact you within 24 hours to complete payment, then activate Pro." %}{% endif %}
+                </p>
+            </form>
+
+            <aside class="co-card co-summary" aria-label="{% trans 'Order summary' %}">
+                <h2>{% trans "Order summary" %}</h2>
+                <div class="co-plan">
+                    <span class="co-plan__icon">👑</span>
+                    <div><strong>Internest Pro</strong><br>
+                        <small class="text-muted">{% if period == "year" %}{% trans "Annual plan · 12 months" %}{% else %}{% trans "Monthly plan · 1 month" %}{% endif %}</small></div>
+                </div>
+                <ul class="co-lines">
+                    <li><span>{% trans "Subtotal" %}</span><span>{{ quote.list_label }}</span></li>
+                    {% if quote.discount_percent %}<li class="co-discount"><span>{% blocktrans with code=promo.code p=quote.discount_percent %}Promo code {{ code }} (−{{ p }}%){% endblocktrans %}</span><span>−{{ quote.discount_label }}</span></li>{% endif %}
+                    <li><span>{% trans "Renewal" %}</span><span>{% trans "No automatic renewal" %}</span></li>
+                </ul>
+                <div class="co-total"><span>{% trans "Total due" %}</span><strong>{{ quote.final_label }}</strong></div>
+                <ul class="co-perks">
+                    <li>✅ {% trans "Unlimited opportunity posts" %}</li>
+                    <li>✅ {% trans "Talent Pool search and invitations" %}</li>
+                    <li>✅ {% trans "Full scores + percentile reports" %}</li>
+                </ul>
+                <p class="co-secure" style="justify-content: flex-start;"><i class="bi bi-arrow-counterclockwise"></i>
+                    <span>{% trans "Full refund within 7 days if you haven't used Pro features." %} <a href="{% url 'refund_policy' %}">{% trans "Refund policy" %}</a></span></p>
+            </aside>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  var form = document.querySelector("[data-checkout]");
+  if (!form) return;
+  var consent = form.querySelector("[data-consent]"), pay = form.querySelector("[data-pay]");
+  if (pay.disabled) return;
+  function sync() { pay.disabled = !consent.checked; }
+  consent.addEventListener("change", sync);
+  sync();
+  form.addEventListener("submit", function () { setTimeout(function () { pay.disabled = true; }, 0); });
+})();
+</script>
+{% endblock %}

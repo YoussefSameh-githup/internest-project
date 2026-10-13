@@ -44,9 +44,10 @@
             </p>
 
             <div class="btn-group" style="justify-content: center;">
-                <a href="mailto:partnerships@internest.com?subject=Partner%20code%20request&body=We%20at%20[company%20name]%20would%20like%20to%20obtain%20a%20verified%20partner%20code." class="btn btn--accent btn--lg">
-                    <i class="bi bi-envelope-fill"></i> partnerships@internest.com
+                <a href="mailto:{{ SUPPORT_EMAIL }}?subject=Partner%20code%20request&body=We%20at%20[company%20name]%20would%20like%20to%20obtain%20a%20verified%20partner%20code." class="btn btn--accent btn--lg">
+                    <i class="bi bi-envelope-fill"></i> {{ SUPPORT_EMAIL }}
                 </a>
+                <a href="tel:{{ SUPPORT_PHONE_INTL }}" class="btn btn--white btn--lg"><i class="bi bi-telephone-fill"></i> <bdi dir="ltr">{{ SUPPORT_PHONE }}</bdi></a>
                 <a href="{% url 'partner_login' %}" class="btn btn--white btn--lg">
                     {% trans "I am a partner with a code" %} <i class="bi bi-arrow-left-short"></i>
                 </a>

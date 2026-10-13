@@ -1,7 +1,10 @@
 from django.urls import path
-from . import views
+from . import legal_views, views
 
 urlpatterns = [
+    path('privacy/', legal_views.privacy, name='privacy'),
+    path('terms/', legal_views.terms, name='terms'),
+    path('refund-policy/', legal_views.refund_policy, name='refund_policy'),
     # 1. Landing & smart redirect
     path('home/', views.home_redirect_view, name='home_redirect'),
     path('', views.landing_view, name='landing'),

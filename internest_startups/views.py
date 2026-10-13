@@ -312,3 +312,81 @@ def talent_pool_candidate(request, student_id):
         "experiences": candidate.gig_experiences.verified().select_related("company"),
         "proof": proof_of_work(candidate),
     })
+
+
+# ---------------------------------------------------------------- checkout (Fawaterak)
+CHECKOUT_OUTCOMES = ("success", "fail", "pending")
+
+
+@login_required
+def checkout(request):
+    """Order summary, buyer details and terms consent, then hand off to Fawaterak (EGP) or to our team."""
+    from . import fawaterak
+    from .forms import CheckoutForm
+    from .models import ProUpgradeRequest
+    from .pricing import PERIOD_MONTHS, currency_for, gateway_for, pricing_country
+    from .tiers import is_pro, quote
+
+    partner = _startup_or_redirect(request)
+    if partner is None:
+        return redirect("home_redirect")
+    country = pricing_country(request, partner)
+    currency = currency_for(country)
+    period = request.POST.get("period") or request.GET.get("period")
+    period = period if period in PERIOD_MONTHS else "month"
+    promo = _session_promo(request)
+    q = quote(promo, period, currency)
+    online = currency == "EGP" and fawaterak.enabled()
+    pending = ProUpgradeRequest.objects.filter(partner=partner, status=ProUpgradeRequest.STATUS_PENDING).first()
+    user = request.user
+    form = CheckoutForm(request.POST or None, egypt=currency == "EGP", initial={
+        "customer_name": user.get_full_name() or partner.company_name,
+        "customer_email": partner.official_email or user.email,
+        "customer_phone": partner.official_phone or "",
+    })
+
+    if request.method == "POST" and form.is_valid():
+        if pending:
+            messages.info(request, _("You already have a Pro request awaiting payment. Our team will contact you shortly."))
+            return redirect("checkout")
+        d = form.cleaned_data
+        order = ProUpgradeRequest.objects.create(
+            partner=partner, months=q["months"], list_price=q["list_price"], promo_code=promo,
+            discount_percent=q["discount_percent"], final_price=q["final_price"], currency=currency, country=country,
+            gateway=gateway_for(currency), customer_name=d["customer_name"], customer_email=d["customer_email"],
+            customer_phone=d["customer_phone"], terms_accepted_at=timezone.now(),
+        )
+        request.session.pop(PROMO_SESSION_KEY, None)
+        if online:
+            back = {o: request.build_absolute_uri(reverse("checkout_return", args=[order.pk, o])) for o in CHECKOUT_OUTCOMES}
+            item = _("Internest Pro — %(n)s month(s)") % {"n": order.months}
+            try:
+                order.payment_url, order.gateway_reference = fawaterak.create_invoice_link(order, item, back)
+                order.save(update_fields=["payment_url", "gateway_reference"])
+                return redirect(order.payment_url)
+            except fawaterak.FawaterakError:
+                messages.warning(request, _("Online payment is unavailable right now. Your order is saved and our team will contact you within 24 hours to complete payment."))
+                return redirect("startup_upgrade")
+        messages.success(request, _("Request received! Our team will contact you within 24 hours to complete payment and activate Pro."))
+        return redirect("startup_upgrade")
+
+    context = get_user_context(request)
+    context.update({"partner": partner, "quote": q, "period": period, "currency": currency, "promo": promo, "form": form,
+                    "online": online, "pending_request": pending, "is_pro": is_pro(partner)})
+    return render(request, "startups/checkout.html", context)
+
+
+@login_required
+def checkout_return(request, order_id, outcome):
+    """Where Fawaterak sends the buyer back. Shows the outcome only — Pro is activated after we confirm the payment."""
+    from .models import ProUpgradeRequest
+
+    partner = _startup_or_redirect(request)
+    if partner is None or outcome not in CHECKOUT_OUTCOMES:
+        return redirect("home_redirect")
+    order = ProUpgradeRequest.objects.filter(pk=order_id, partner=partner).first()
+    if order is None:
+        return redirect("startup_upgrade")
+    context = get_user_context(request)
+    context.update({"order": order, "outcome": outcome})
+    return render(request, "startups/checkout_result.html", context)

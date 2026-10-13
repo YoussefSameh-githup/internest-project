@@ -106,13 +106,13 @@ def cancel_requests(modeladmin, request, queryset):
 
 @admin.register(ProUpgradeRequest)
 class ProUpgradeRequestAdmin(ModelAdmin):
-    list_display = ("partner", "status_col", "list_price", "promo_code", "discount_percent", "final_price", "pro_until", "created_at", "activated_at")
+    list_display = ("partner", "status_col", "final_price", "currency", "gateway", "gateway_reference", "customer_phone", "pro_until", "created_at", "activated_at")
     list_filter = ("status", "promo_code", "created_at")
     date_hierarchy = "created_at"
     status_col = status_badge("status", {ProUpgradeRequest.STATUS_PENDING: WAIT, ProUpgradeRequest.STATUS_ACTIVE: OK,
                                          ProUpgradeRequest.STATUS_CANCELLED: BAD})
-    search_fields = ("partner__company_name", "partner__user__email")
-    readonly_fields = ("created_at", "activated_at")
+    search_fields = ("partner__company_name", "partner__user__email", "customer_email", "customer_phone", "gateway_reference")
+    readonly_fields = ("created_at", "activated_at", "terms_accepted_at", "gateway_reference", "payment_url")
     actions = [activate_requests, cancel_requests]
 
     @admin.display(description="Pro valid until")

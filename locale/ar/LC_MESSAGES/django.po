@@ -5006,3 +5006,155 @@ msgstr "يمكنك اللصق بالعربية أو الإنجليزية. نقر
 
 msgid "Analyze my skills"
 msgstr "حلّل مهاراتي"
+
+msgid "Cairo, Egypt"
+msgstr "القاهرة، مصر"
+
+msgid "Internest Pro pricing"
+msgstr "أسعار Internest Pro"
+
+msgid "Refund & cancellation policy"
+msgstr "سياسة الاسترجاع والإلغاء"
+
+msgid "Policies"
+msgstr "السياسات"
+
+msgid "Mobile number"
+msgstr "رقم الموبايل"
+
+msgid "Please accept the terms and the refund policy to continue."
+msgstr "يرجى الموافقة على الشروط والأحكام وسياسة الاسترجاع للمتابعة."
+
+msgid "Enter an Egyptian mobile number, e.g. 01012345678."
+msgstr "أدخل رقم موبايل مصري، مثل 01012345678."
+
+msgid "Enter a valid phone number with its country code."
+msgstr "أدخل رقم هاتف صحيحاً مع كود الدولة."
+
+msgid "Internest Pro — %(n)s month(s)"
+msgstr "Internest Pro — %(n)s شهر"
+
+msgid ""
+"Online payment is unavailable right now. Your order is saved and our team "
+"will contact you within 24 hours to complete payment."
+msgstr ""
+"الدفع الإلكتروني غير متاح حالياً. تم حفظ طلبك وسيتواصل معك فريقنا خلال 24 "
+"ساعة لإتمام الدفع."
+
+msgid "Back to plans"
+msgstr "العودة إلى الباقات"
+
+msgid "Review your order, confirm your details and pay securely."
+msgstr "راجع طلبك وأكّد بياناتك وادفع بأمان."
+
+msgid "You already have a Pro request awaiting payment."
+msgstr "لديك طلب Pro بانتظار الدفع بالفعل."
+
+msgid "Continue to payment"
+msgstr "متابعة الدفع"
+
+msgid "Our team will contact you shortly."
+msgstr "سيتواصل معك فريقنا قريباً."
+
+msgid "Billing details"
+msgstr "بيانات الفاتورة"
+
+msgid ""
+"I agree to the <a href=\"%(terms_url)s\" target=\"_blank\" "
+"rel=\"noopener\">Terms &amp; Conditions</a> and the <a "
+"href=\"%(refund_url)s\" target=\"_blank\" rel=\"noopener\">Refund "
+"Policy</a>."
+msgstr ""
+"أوافق على <a href=\"%(terms_url)s\" target=\"_blank\" "
+"rel=\"noopener\">الشروط والأحكام</a> و<a href=\"%(refund_url)s\" "
+"target=\"_blank\" rel=\"noopener\">سياسة الاسترجاع</a>."
+
+msgid "Pay %(total)s with Fawaterak"
+msgstr "ادفع %(total)s عبر فواتيرك"
+
+msgid "Confirm order"
+msgstr "تأكيد الطلب"
+
+msgid ""
+"You'll be redirected to Fawaterak's secure page to pay by card, mobile "
+"wallet or Fawry. We never see your card details."
+msgstr ""
+"سيتم تحويلك إلى صفحة فواتيرك الآمنة للدفع بالبطاقة أو المحفظة الإلكترونية أو"
+" فوري. لا نطّلع أبداً على بيانات بطاقتك."
+
+msgid ""
+"Our team will contact you within 24 hours to complete payment, then activate"
+" Pro."
+msgstr "سيتواصل معك فريقنا خلال 24 ساعة لإتمام الدفع ثم تفعيل Pro."
+
+msgid "Annual plan · 12 months"
+msgstr "الباقة السنوية · 12 شهراً"
+
+msgid "Monthly plan · 1 month"
+msgstr "الباقة الشهرية · شهر واحد"
+
+msgid "Promo code %(code)s (−%(p)s%%)"
+msgstr "كود الخصم %(code)s (−%(p)s%%)"
+
+msgid "Renewal"
+msgstr "التجديد"
+
+msgid "No automatic renewal"
+msgstr "بدون تجديد تلقائي"
+
+msgid "Total due"
+msgstr "المبلغ الكلي المستحق"
+
+msgid "Unlimited opportunity posts"
+msgstr "نشر فرص بلا حدود"
+
+msgid "Talent Pool search and invitations"
+msgstr "البحث في بنك المواهب وإرسال الدعوات"
+
+msgid "Full refund within 7 days if you haven't used Pro features."
+msgstr "استرجاع كامل خلال 7 أيام إذا لم تستخدم مزايا Pro."
+
+msgid "Refund policy"
+msgstr "سياسة الاسترجاع"
+
+msgid "Payment status"
+msgstr "حالة الدفع"
+
+msgid "Thank you! We're confirming your payment"
+msgstr "شكراً لك! جارٍ تأكيد عملية الدفع"
+
+msgid ""
+"Internest Pro is activated as soon as Fawaterak confirms the payment — "
+"usually within a few hours. You'll see it on your dashboard."
+msgstr ""
+"يتم تفعيل Internest Pro فور تأكيد فواتيرك للدفع — عادةً خلال ساعات قليلة. "
+"ستراه في لوحة التحكم."
+
+msgid "Payment pending"
+msgstr "الدفع قيد الانتظار"
+
+msgid ""
+"Complete the payment using the reference you received (for example at a "
+"Fawry outlet). Pro is activated once the payment is confirmed."
+msgstr ""
+"أكمل الدفع باستخدام الرقم المرجعي الذي حصلت عليه (مثلاً في أحد منافذ فوري). "
+"يتم تفعيل Pro بعد تأكيد الدفع."
+
+msgid "The payment didn't go through"
+msgstr "لم تتم عملية الدفع"
+
+msgid ""
+"The payment wasn't completed. You can try again, or contact us and we'll "
+"help you finish it."
+msgstr ""
+"لم تكتمل عملية الدفع. يمكنك المحاولة مرة أخرى، أو التواصل معنا وسنساعدك على "
+"إتمامها."
+
+msgid "Try the payment again"
+msgstr "إعادة محاولة الدفع"
+
+msgid "Questions?"
+msgstr "لديك استفسار؟"
+
+msgid "Secure checkout: review your order, accept the terms, then pay."
+msgstr "دفع آمن: راجع طلبك، ووافق على الشروط، ثم ادفع."

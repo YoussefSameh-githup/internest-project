@@ -1,0 +1,76 @@
+{% extends 'legal/_layout.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Refund & cancellation policy" %} — Internest{% endblock %}
+
+{% block ar %}
+<h1>سياسة الاسترجاع والإلغاء</h1>
+<p class="lg-updated">آخر تحديث: {{ updated|date:"Y/m/d" }}</p>
+<p>تنطبق هذه السياسة على المدفوعات التي تتم على Internest، وأهمها اشتراك <strong>Internest Pro</strong> للشركات (800 جنيه شهرياً أو 8,000 جنيه سنوياً داخل مصر)، والكورسات المدفوعة المقدمة عبر المنصة.</p>
+
+<h2>1. الإلغاء</h2>
+<ul>
+    <li>اشتراك Pro <strong>لا يتجدد تلقائياً</strong>، فلا حاجة لإلغاء أي تجديد.</li>
+    <li>يمكنك طلب إلغاء اشتراكك في أي وقت بمراسلتنا، ويبقى Pro فعالاً حتى نهاية المدة المدفوعة ما لم يُسترد المبلغ وفق البنود التالية.</li>
+    <li>يمكن إلغاء أي طلب اشتراك لم يُدفع بعد دون أي رسوم.</li>
+</ul>
+
+<h2>2. حالات استحقاق الاسترجاع</h2>
+<ul>
+    <li><strong>خلال 7 أيام من الدفع:</strong> استرجاع كامل للمبلغ إذا لم تستخدم مزايا Pro استخداماً فعلياً (مثل إرسال دعوات من بنك المواهب أو نشر فرص إضافية فوق حد الباقة المجانية).</li>
+    <li><strong>الاشتراك السنوي بعد 7 أيام:</strong> استرجاع جزئي يعادل الأشهر الكاملة غير المستخدمة، محسوبة بسعر الشهر في الباقة الشهرية، بعد خصم رسوم بوابة الدفع إن وُجدت.</li>
+    <li><strong>الخصم المكرر أو الخطأ الفني:</strong> استرجاع كامل للمبلغ الزائد في جميع الأحوال.</li>
+    <li><strong>الكورسات المدفوعة:</strong> استرجاع كامل خلال 7 أيام من الشراء إذا لم تبدأ الكورس أو لم تحصل على شهادته.</li>
+</ul>
+
+<h2>3. حالات لا يُسترد فيها المبلغ</h2>
+<ul>
+    <li>الاشتراك الشهري بعد مرور 7 أيام على الدفع.</li>
+    <li>الحسابات التي تم إيقافها بسبب مخالفة <a href="{% url 'terms' %}">الشروط والأحكام</a>.</li>
+</ul>
+
+<h2>4. كيفية طلب الاسترجاع</h2>
+<p>أرسل بريداً إلى <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a> أو تواصل معنا على <a href="tel:{{ SUPPORT_PHONE_INTL }}" dir="ltr">{{ SUPPORT_PHONE }}</a> متضمناً: اسم الشركة أو الحساب، رقم الفاتورة، وسبب الطلب. نرد على الطلب خلال 3 أيام عمل.</p>
+
+<h2>5. مدة تنفيذ الاسترجاع</h2>
+<div class="lg-box">بعد الموافقة على الطلب، يُعاد المبلغ إلى وسيلة الدفع الأصلية عبر بوابة «فواتيرك» خلال <strong>7 إلى 14 يوم عمل</strong>. قد تختلف مدة ظهور المبلغ في حسابك حسب البنك أو المحفظة الإلكترونية.</div>
+
+<h2>6. التواصل</h2>
+<p>Internest — القاهرة، مصر · <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a> · <a href="tel:{{ SUPPORT_PHONE_INTL }}" dir="ltr">{{ SUPPORT_PHONE }}</a></p>
+{% endblock %}
+
+{% block en %}
+<h1>Refund &amp; Cancellation Policy</h1>
+<p class="lg-updated">Last updated: {{ updated|date:"F j, Y" }}</p>
+<p>This policy covers payments made on Internest, mainly the <strong>Internest Pro</strong> subscription for companies (EGP 800 per month or EGP 8,000 per year in Egypt) and paid courses offered through the platform.</p>
+
+<h2>1. Cancellation</h2>
+<ul>
+    <li>Pro <strong>does not renew automatically</strong>, so there is no renewal to cancel.</li>
+    <li>You can ask us to cancel your subscription at any time; Pro stays active until the end of the paid period unless a refund is issued under the terms below.</li>
+    <li>An unpaid subscription request can be cancelled at no charge.</li>
+</ul>
+
+<h2>2. When you are eligible for a refund</h2>
+<ul>
+    <li><strong>Within 7 days of payment:</strong> a full refund if you have not materially used Pro features (such as sending Talent Pool invitations or posting more opportunities than the free plan allows).</li>
+    <li><strong>Annual plan after 7 days:</strong> a partial refund for the full unused months, valued at the monthly plan price, minus any payment-gateway fees.</li>
+    <li><strong>Duplicate charges or technical errors:</strong> the extra amount is always refunded in full.</li>
+    <li><strong>Paid courses:</strong> a full refund within 7 days of purchase if you have not started the course or received its certificate.</li>
+</ul>
+
+<h2>3. When refunds are not available</h2>
+<ul>
+    <li>Monthly subscriptions more than 7 days after payment.</li>
+    <li>Accounts suspended for breaking our <a href="{% url 'terms' %}">Terms &amp; Conditions</a>.</li>
+</ul>
+
+<h2>4. How to request a refund</h2>
+<p>Email <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a> or call <a href="tel:{{ SUPPORT_PHONE_INTL }}">{{ SUPPORT_PHONE }}</a> with your company or account name, invoice number and the reason. We reply within 3 business days.</p>
+
+<h2>5. Processing time</h2>
+<div class="lg-box">Once approved, the amount is returned to your original payment method through the Fawaterak gateway within <strong>7–14 business days</strong>. The time it takes to appear in your account may vary by bank or e-wallet.</div>
+
+<h2>6. Contact</h2>
+<p>Internest — Cairo, Egypt · <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a> · <a href="tel:{{ SUPPORT_PHONE_INTL }}">{{ SUPPORT_PHONE }}</a></p>
+{% endblock %}

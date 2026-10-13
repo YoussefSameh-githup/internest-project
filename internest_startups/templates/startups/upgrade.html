@@ -93,15 +93,13 @@
                     <div class="checkout-summary__total"><span>{% trans "Total" %}</span><span dir="ltr">{{ quote.final_label }}</span></div>
                 </div>
 
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="period" value="{{ period }}">
-                    <button type="submit" name="action" value="subscribe" class="btn btn--gold btn--lg btn--block" {% if pending_request %}disabled{% endif %}>
-                        {% trans "Subscribe now and unlock every feature" %}
-                    </button>
-                </form>
+                <a href="{% url 'checkout' %}{% if period == 'year' %}?period=year{% endif %}" class="btn btn--gold btn--lg btn--block{% if pending_request %} is-disabled{% endif %}"
+                   {% if pending_request %}aria-disabled="true" style="pointer-events: none; opacity: .6;"{% endif %}>
+                    {% trans "Subscribe now and unlock every feature" %}
+                </a>
                 <p class="text-muted text-center mt-3 mb-0" style="font-size: var(--text-xs);">
-                    <i class="bi bi-shield-lock"></i> {% trans "No card needed now: our team contacts you to complete payment, then activates Pro." %}
+                    <i class="bi bi-shield-lock"></i> {% trans "Secure checkout: review your order, accept the terms, then pay." %}
+                    <a href="{% url 'refund_policy' %}">{% trans "Refund policy" %}</a>
                     {% if currency != "EGP" %}<br>{% blocktrans with c=currency %}Prices in {{ c }} based on your company's country.{% endblocktrans %}{% endif %}
                 </p>
             </div>

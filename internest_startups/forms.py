@@ -1,3 +1,4 @@
+import re
 import secrets
 
 from django import forms
@@ -159,3 +160,26 @@ class CompanyProfileForm(forms.ModelForm):
         return year
 
 
+
+
+class CheckoutForm(forms.Form):
+    """Buyer details sent to the payment gateway, plus explicit consent to the terms and refund policy."""
+
+    customer_name = forms.CharField(label=_("Full name"), min_length=3, max_length=120)
+    customer_email = forms.EmailField(label=_("Email"))
+    customer_phone = forms.CharField(label=_("Mobile number"), max_length=20)
+    accept_terms = forms.BooleanField(error_messages={"required": _("Please accept the terms and the refund policy to continue.")})
+
+    def __init__(self, *args, egypt=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.egypt = egypt
+
+    def clean_customer_phone(self):
+        digits = re.sub(r"[\s\-()]", "", self.cleaned_data["customer_phone"])
+        if self.egypt:
+            digits = re.sub(r"^(\+?20)(?=1)", "0", digits)
+            if not re.fullmatch(r"01[0125]\d{8}", digits):
+                raise forms.ValidationError(_("Enter an Egyptian mobile number, e.g. 01012345678."))
+        elif not re.fullmatch(r"\+?\d{8,15}", digits):
+            raise forms.ValidationError(_("Enter a valid phone number with its country code."))
+        return digits

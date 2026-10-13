@@ -1,0 +1,108 @@
+{% extends 'legal/_layout.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Terms & conditions" %} — Internest{% endblock %}
+
+{% block ar %}
+<h1>الشروط والأحكام</h1>
+<p class="lg-updated">آخر تحديث: {{ updated|date:"Y/m/d" }}</p>
+<p>تنظم هذه الشروط استخدامك لمنصة Internest، وهي منصة مصرية مقرها القاهرة تربط الطلاب بالشركات الناشئة والجامعات من خلال مهارات موثقة وفرص عمل حقيقية. بإنشاء حساب أو استخدام المنصة فإنك توافق على هذه الشروط وعلى <a href="{% url 'privacy' %}">سياسة الخصوصية</a> و<a href="{% url 'refund_policy' %}">سياسة الاسترجاع والإلغاء</a>.</p>
+
+<h2>1. الحسابات</h2>
+<ul>
+    <li>يجب أن تكون البيانات التي تقدمها صحيحة ومحدّثة، وأن تحافظ على سرية كلمة المرور.</li>
+    <li>حساب واحد لكل شخص أو شركة. يلزم التحقق من البريد الإلكتروني لاستخدام المنصة.</li>
+    <li>يحق لنا إيقاف أي حساب ينتهك هذه الشروط.</li>
+</ul>
+
+<h2>2. التزامات الطلاب</h2>
+<ul>
+    <li>تقديم سيرة ذاتية ومهارات وأعمال حرة صحيحة وتخصك أنت.</li>
+    <li>اختبارات المهارات موقوتة ويجب أن تُحل بنفسك دون مساعدة. النسخ واللصق معطّلان، ومغادرة الصفحة أكثر من مرتين تُنهي الاختبار. أي محاولة غش تؤدي إلى إلغاء الشارات الموثقة وقد تؤدي إلى إيقاف الحساب.</li>
+    <li>الأعمال الحرة المستوردة يجب أن تكون من إنجازك فعلاً؛ نراجع الروابط والإثباتات قبل منح شارة «مهارة موثقة».</li>
+</ul>
+
+<h2>3. التزامات الشركات وأصحاب العمل</h2>
+<ul>
+    <li>تقديم بيانات شركة وسجل تجاري صحيحين؛ نراجعها قبل تفعيل نشر الفرص.</li>
+    <li>استخدام بيانات المرشحين لأغراض التوظيف فقط، وعدم مشاركتها مع أي طرف آخر، والالتزام بعدم التمييز.</li>
+    <li>تظهر السيرة الذاتية وبيانات التواصل للمرشح فقط بعد ترشيحه للمقابلة؛ لا يجوز محاولة الوصول إليها بطرق أخرى.</li>
+    <li>الالتزام بآداب التواصل المهني في «شبكة رواد الأعمال» والرسائل الخاصة؛ المحتوى المسيء يُحجب تلقائياً.</li>
+    <li>تقييمات الطلاب وخطابات التوصية التي تصدرها الشركة يجب أن تكون صادقة وتعكس العمل الفعلي.</li>
+</ul>
+
+<h2>4. الاشتراكات (Internest Pro)</h2>
+<ul>
+    <li>الباقة المجانية تتيح نشر فرصة واحدة شهرياً ومزايا محدودة. باقة Pro تتيح نشراً غير محدود وبنك المواهب وتقارير المهارات الكاملة.</li>
+    <li>سعر Pro في مصر: <strong>800 جنيه مصري شهرياً</strong> أو <strong>8,000 جنيه سنوياً</strong>، ويُعرض السعر بالدولار أو اليورو للشركات المسجلة خارج مصر. المبلغ الظاهر عند الدفع هو المبلغ النهائي.</li>
+    <li>يُدفع الاشتراك مقدماً عبر بوابة «فواتيرك» أو بفاتورة من فريقنا، ويُفعّل بعد تأكيد الدفع.</li>
+    <li>الاشتراك <strong>لا يتجدد تلقائياً</strong>؛ يمكنك تجديده من صفحة الترقية عند انتهاء المدة إن رغبت.</li>
+    <li>أكواد الخصم تُطبق مرة واحدة على الطلب ولا تُستبدل نقداً.</li>
+    <li>الإلغاء والاسترجاع يخضعان لـ<a href="{% url 'refund_policy' %}">سياسة الاسترجاع والإلغاء</a>.</li>
+</ul>
+
+<h2>5. المحتوى والملكية الفكرية</h2>
+<p>تحتفظ بملكية المحتوى الذي ترفعه، وتمنحنا ترخيصاً محدوداً لعرضه ومعالجته لتقديم الخدمة. العلامة التجارية والتصميم والكود ملك لـ Internest.</p>
+
+<h2>6. حدود المسؤولية</h2>
+<p>Internest منصة وسيطة؛ لا نضمن الحصول على وظيفة أو مرشح، ولسنا طرفاً في عقود العمل بين الطلاب والشركات. توثيق المهارة يعني اجتياز اختبارنا أو مراجعة عمل حر، ولا يُعد شهادة مهنية رسمية.</p>
+
+<h2>7. القانون الحاكم</h2>
+<p>تخضع هذه الشروط لقوانين جمهورية مصر العربية، وتختص محاكم القاهرة بأي نزاع ينشأ عنها.</p>
+
+<h2>8. التعديلات والتواصل</h2>
+<p>قد نحدّث هذه الشروط ونُخطرك بالتغييرات الجوهرية. للاستفسار:</p>
+<div class="lg-box">Internest — القاهرة، مصر<br>البريد: <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a><br>الهاتف: <a href="tel:{{ SUPPORT_PHONE_INTL }}" dir="ltr">{{ SUPPORT_PHONE }}</a></div>
+{% endblock %}
+
+{% block en %}
+<h1>Terms &amp; Conditions</h1>
+<p class="lg-updated">Last updated: {{ updated|date:"F j, Y" }}</p>
+<p>These terms govern your use of Internest, an Egyptian platform based in Cairo that connects students with startups and universities through verified skills and real work. By creating an account or using the platform you accept these terms, our <a href="{% url 'privacy' %}">Privacy Policy</a> and our <a href="{% url 'refund_policy' %}">Refund &amp; Cancellation Policy</a>.</p>
+
+<h2>1. Accounts</h2>
+<ul>
+    <li>The information you provide must be accurate and up to date, and you must keep your password confidential.</li>
+    <li>One account per person or company. Email verification is required to use the platform.</li>
+    <li>We may suspend any account that breaks these terms.</li>
+</ul>
+
+<h2>2. Students</h2>
+<ul>
+    <li>Your CV, skills and freelance work must be truthful and your own.</li>
+    <li>Skill challenges are timed and must be completed by you alone. Copy/paste is disabled and leaving the page more than twice ends the challenge. Any cheating removes verified badges and may suspend the account.</li>
+    <li>Imported freelance work must be work you actually did; we review links and proof before granting the "Verified skill" badge.</li>
+</ul>
+
+<h2>3. Companies and employers</h2>
+<ul>
+    <li>Company and commercial-register details must be accurate; we review them before posting is enabled.</li>
+    <li>Candidate data may be used for hiring only, must not be shared with third parties, and hiring must be non-discriminatory.</li>
+    <li>A candidate's CV and contact details unlock only after you shortlist them for an interview; do not try to obtain them otherwise.</li>
+    <li>Keep communication professional in the Founders Network and private messages; offensive content is blocked automatically.</li>
+    <li>Ratings and recommendation letters you issue must be honest and reflect the actual work.</li>
+</ul>
+
+<h2>4. Subscriptions (Internest Pro)</h2>
+<ul>
+    <li>The free plan includes one opportunity per month and limited features. Pro adds unlimited posting, the Talent Pool and full skill reports.</li>
+    <li>Pro in Egypt costs <strong>EGP 800 per month</strong> or <strong>EGP 8,000 per year</strong>; companies registered outside Egypt see prices in USD or EUR. The amount shown at checkout is the final amount.</li>
+    <li>Subscriptions are paid in advance through the Fawaterak gateway or an invoice from our team and are activated once payment is confirmed.</li>
+    <li>Subscriptions <strong>do not renew automatically</strong>; you can renew from the upgrade page when your period ends.</li>
+    <li>Promo codes apply once per order and cannot be exchanged for cash.</li>
+    <li>Cancellations and refunds follow our <a href="{% url 'refund_policy' %}">Refund &amp; Cancellation Policy</a>.</li>
+</ul>
+
+<h2>5. Content and intellectual property</h2>
+<p>You keep ownership of the content you upload and grant us a limited licence to display and process it to provide the service. The Internest brand, design and code belong to Internest.</p>
+
+<h2>6. Limitation of liability</h2>
+<p>Internest is an intermediary: we do not guarantee a job or a candidate, and we are not a party to employment agreements between students and companies. A verified skill means our challenge was passed or freelance work was reviewed; it is not an official professional certification.</p>
+
+<h2>7. Governing law</h2>
+<p>These terms are governed by the laws of the Arab Republic of Egypt, and the courts of Cairo have jurisdiction over any dispute.</p>
+
+<h2>8. Changes and contact</h2>
+<p>We may update these terms and will notify you of material changes. Questions:</p>
+<div class="lg-box">Internest — Cairo, Egypt<br>Email: <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a><br>Phone: <a href="tel:{{ SUPPORT_PHONE_INTL }}">{{ SUPPORT_PHONE }}</a></div>
+{% endblock %}

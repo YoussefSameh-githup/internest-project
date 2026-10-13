@@ -94,6 +94,13 @@ class ProUpgradeRequest(models.Model):
     currency = models.CharField(max_length=3, default="EGP")
     country = models.CharField(max_length=2, blank=True, default="")
     gateway = models.CharField(max_length=20, default="manual")  # e.g. fawaterak / stripe
+    # Checkout details (sent to the payment gateway) and the buyer's consent to the terms and refund policy.
+    customer_name = models.CharField(max_length=120, blank=True)
+    customer_email = models.EmailField(blank=True)
+    customer_phone = models.CharField(max_length=20, blank=True)
+    terms_accepted_at = models.DateTimeField(null=True, blank=True)
+    gateway_reference = models.CharField(max_length=64, blank=True)  # Fawaterak invoice id
+    payment_url = models.URLField(max_length=500, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     activated_at = models.DateTimeField(null=True, blank=True)

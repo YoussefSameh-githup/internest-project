@@ -109,6 +109,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "internest_core.context_processors.skill_gate",
+                "internest_core.context_processors.site_contact",
             ],
         },
     },
@@ -260,6 +261,13 @@ DEFAULT_PRICING_COUNTRY = env("DEFAULT_PRICING_COUNTRY", default="EG")
 # Optional MaxMind GeoLite2 folder (needs the geoip2 package). Without it: Cloudflare header, then the default.
 GEOIP_PATH = env("GEOIP_PATH", default="") or None
 PAYMENT_GATEWAYS = {"EGP": env("PAYMENT_GATEWAY_EGP", default="fawaterak"), "default": env("PAYMENT_GATEWAY_INTL", default="stripe")}
+# Fawaterak (EGP checkout). Without an API key, checkout falls back to "our team contacts you to pay".
+FAWATERAK_API_KEY = os.getenv("FAWATERAK_API_KEY", "")  # secret: set in .env, never commit
+FAWATERAK_BASE_URL = os.getenv("FAWATERAK_BASE_URL", "https://app.fawaterk.com")  # staging: https://staging.fawaterk.com
+
+# --- Public contact details (footer, policies, checkout) ---
+SUPPORT_PHONE = env("SUPPORT_PHONE", default="01113999387")
+SUPPORT_EMAIL = env("SUPPORT_EMAIL", default="engineerthe973@gmail.com")
 
 # --- Admin panel (django-unfold 0.81.0: last line we pin that runs on Python 3.10, used on PythonAnywhere) ---
 from django.templatetags.static import static  # noqa: E402

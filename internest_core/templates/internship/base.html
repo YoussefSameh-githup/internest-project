@@ -35,6 +35,10 @@
       .nav__cta .btn, .nav__cta .lang-switcher__toggle { padding-inline: 10px; }
     }
     </style>
+    <style>
+    .footer__contact { margin-top: 14px; }
+    .footer__contact a, .footer__contact span { display: inline-flex; align-items: center; gap: 8px; overflow-wrap: anywhere; }
+    </style>
 </head>
 <body>
 
@@ -166,12 +170,11 @@
                     <p class="footer__tagline">
                         {% trans "The verified student talent marketplace: students get real work and verified experience, startups hire pre-tested talent, and universities prove their outcomes." %}
                     </p>
-                    <div class="footer__socials">
-                        <a href="#" class="footer__social" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
-                        <a href="#" class="footer__social" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
-                        <a href="#" class="footer__social" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-                        <a href="#" class="footer__social" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-                    </div>
+                    <ul class="footer__list footer__contact" aria-label="{% trans 'Contact us' %}">
+                        <li><a href="tel:{{ SUPPORT_PHONE_INTL }}"><i class="bi bi-telephone-fill"></i> <bdi dir="ltr">{{ SUPPORT_PHONE }}</bdi></a></li>
+                        <li><a href="mailto:{{ SUPPORT_EMAIL }}"><i class="bi bi-envelope-fill"></i> {{ SUPPORT_EMAIL }}</a></li>
+                        <li><span><i class="bi bi-geo-alt-fill"></i> {% trans "Cairo, Egypt" %}</span></li>
+                    </ul>
                 </div>
 
                 <div>
@@ -189,18 +192,17 @@
                     <ul class="footer__list">
                         <li><a href="{% url 'contact_partner' %}">{% trans "Join as partner" %}</a></li>
                         <li><a href="{% url 'login' %}">{% trans "Partner login" %}</a></li>
-                        <li><a href="#">{% trans "Company guide" %}</a></li>
-                        <li><a href="mailto:partnerships@internest.com">partnerships@internest.com</a></li>
+                        <li><a href="{% url 'startup_upgrade' %}">{% trans "Internest Pro pricing" %}</a></li>
                     </ul>
                 </div>
 
                 <div>
                     <h4 class="footer__heading">{% trans "Platform" %}</h4>
                     <ul class="footer__list">
-                        <li><a href="#">{% trans "About Internest" %}</a></li>
-                        <li><a href="#">{% trans "Privacy policy" %}</a></li>
-                        <li><a href="#">{% trans "Terms & conditions" %}</a></li>
-                        <li><a href="mailto:hello@internest.com">{% trans "Contact us" %}</a></li>
+                        <li><a href="{% url 'privacy' %}">{% trans "Privacy policy" %}</a></li>
+                        <li><a href="{% url 'terms' %}">{% trans "Terms & conditions" %}</a></li>
+                        <li><a href="{% url 'refund_policy' %}">{% trans "Refund & cancellation policy" %}</a></li>
+                        <li><a href="mailto:{{ SUPPORT_EMAIL }}">{% trans "Contact us" %}</a></li>
                     </ul>
                 </div>
             </div>
