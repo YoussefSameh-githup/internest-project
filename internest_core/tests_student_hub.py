@@ -38,10 +38,22 @@ class StudentHubTests(Base):
                        "Sep 2023 – Jun 2027 (Expected)"):
             self.assertContains(page, marker)
 
-    def test_without_saved_cv_the_pdf_action_leads_to_the_builder(self):
+        self.assertContains(page, "Edit / regenerate")
+        self.assertNotContains(page, "Create your CV with AI")
+
+    def test_without_saved_cv_one_create_action(self):
         page = self._page()
         self.assertNotContains(page, reverse("cv_builder_pdf"))
-        self.assertContains(page, "Build it first in 5 quick steps")
+        self.assertNotContains(page, "Edit / regenerate")
+        self.assertContains(page, "Create your CV with AI", count=1)
+
+    def test_single_entry_points(self):
+        page = self._page().content.decode()
+        self.assertEqual(page.count(f'href="{reverse("freelance_importer")}"'), 1)  # only the hero button
+        dialog = page[page.index('id="skill-dialog"'):]
+        self.assertNotIn(reverse("freelance_importer"), dialog)
+        self.assertIn("Analyze your CV or LinkedIn", dialog)
+        self.assertIn("Take a skill challenge", dialog)
 
     def test_tabs(self):
         page = self._page(tab="skills")
@@ -116,7 +128,7 @@ class StudentHubTests(Base):
     def test_arabic_labels(self):
         self.client.cookies["internest_lang"] = "ar"
         page = self._page()
-        for text in ("مساحتك الطلابية", "تحميل الـ CV الاحترافي (PDF)", "توليد CV جديد بالذكاء الاصطناعي", "استيراد عمل حر جديد",
+        for text in ("مساحتك الطلابية", "أنشئ سيرتك الذاتية بالذكاء الاصطناعي", "استيراد عمل حر", "حلّل سيرتك الذاتية أو ملف LinkedIn", "خُض اختبار مهارة",
                      "إكمال بيانات الملف", "البيانات الشخصية والتعليم", "بنك المهارات الموثقة", "سجل الأعمال الحرة والمشاريع",
                      "إعدادات الحساب والسرية", "إضافة / توثيق مهارة جديدة"):
             self.assertContains(page, text)

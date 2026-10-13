@@ -51,7 +51,11 @@ a.px-badge:hover { background: rgba(255, 255, 255, .2); color: #fff; }
 .px-complete-btn { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 12px; background: #fff;
   color: #1e3a8a; font-weight: 800; font-size: 14px; text-decoration: none; }
 .px-complete-btn:hover { background: #dbeafe; color: #1e3a8a; }
-.px-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.px-actions { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 12px; align-items: stretch; }
+.px-cta-group { display: flex; flex-direction: column; gap: 6px; }
+.px-cta-group .px-cta { flex: 1; }
+.px-cta-edit { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 2px 4px; color: #bfdbfe; font-size: 13px; font-weight: 700; text-decoration: none; }
+.px-cta-edit:hover { color: #fff; text-decoration: underline; }
 .px-cta { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 18px; color: #fff; text-decoration: none; font-weight: 800;
   border: 1px solid rgba(255, 255, 255, .2); transition: transform .15s, box-shadow .2s; }
 .px-cta small { display: block; font-weight: 500; font-size: 12px; opacity: .85; }
@@ -224,13 +228,16 @@ a.px-stat:hover { background: rgba(255, 255, 255, .12); color: #fff; }
             </div>
 
             <nav class="px-actions" aria-label="{% trans 'Quick actions' %}">
-                {% if cv %}
-                    <a href="{% url 'cv_builder_pdf' %}" class="px-cta px-cta--pdf"><i class="bi bi-file-earmark-pdf-fill"></i><span>{% trans "Download your professional CV (PDF)" %}<small>{% trans "ATS-friendly, ready to send" %}</small></span></a>
-                {% else %}
-                    <a href="{% url 'cv_builder' %}" class="px-cta px-cta--pdf"><i class="bi bi-file-earmark-pdf-fill"></i><span>{% trans "Download your professional CV (PDF)" %}<small>{% trans "Build it first in 5 quick steps" %}</small></span></a>
-                {% endif %}
-                <a href="{% url 'cv_builder' %}" class="px-cta px-cta--ai"><i class="bi bi-stars"></i><span>{% trans "Generate a new CV with AI" %}<small>{% trans "Type it or just talk 🎙️" %}</small></span></a>
-                <a href="{% url 'freelance_importer' %}" class="px-cta px-cta--import"><i class="bi bi-briefcase-fill"></i><span>{% trans "Import new freelance work" %}<small>Mostaql · Khamsat · Upwork · Fiverr</small></span></a>
+                {# One primary CV action, depending on whether the student already has a CV. #}
+                <div class="px-cta-group">
+                    {% if cv %}
+                        <a href="{% url 'cv_builder_pdf' %}" class="px-cta px-cta--pdf"><i class="bi bi-file-earmark-pdf-fill"></i><span>{% trans "Download your professional CV (PDF)" %}<small>{% trans "ATS-friendly, ready to send" %}</small></span></a>
+                        <a href="{% url 'cv_builder' %}" class="px-cta-edit"><i class="bi bi-pencil-square"></i> {% trans "Edit / regenerate" %}</a>
+                    {% else %}
+                        <a href="{% url 'cv_builder' %}" class="px-cta px-cta--ai"><i class="bi bi-stars"></i><span>{% trans "Create your CV with AI" %}<small>{% trans "Type it or just talk 🎙️" %}</small></span></a>
+                    {% endif %}
+                </div>
+                <a href="{% url 'freelance_importer' %}" class="px-cta px-cta--import"><i class="bi bi-briefcase-fill"></i><span>{% trans "Import a freelance gig" %}<small>Mostaql · Khamsat · Upwork · Fiverr</small></span></a>
             </nav>
 
             <div class="px-stats">
@@ -387,7 +394,6 @@ a.px-stat:hover { background: rgba(255, 255, 255, .12); color: #fff; }
                     <div class="px-card">
                         <div class="px-card__head">
                             <h2 class="px-card__title"><span class="px-ico"><i class="bi bi-briefcase-fill"></i></span> {% trans "Freelance work" %}</h2>
-                            <a href="{% url 'freelance_importer' %}" class="px-ghost"><i class="bi bi-plus-lg"></i> {% trans "Import new freelance work" %}</a>
                         </div>
                         {% if gigs %}
                             <div class="px-gigs">
@@ -420,7 +426,7 @@ a.px-stat:hover { background: rgba(255, 255, 255, .12); color: #fff; }
                                 {% endfor %}
                             </div>
                         {% else %}
-                            <p class="px-empty mb-0">{% trans "Done real work on Mostaql, Khamsat, Upwork or Fiverr? Import it and turn it into verified skills." %}</p>
+                            <p class="px-empty mb-0">{% trans "Freelance work you import appears here with its review status." %}</p>
                         {% endif %}
                     </div>
 
@@ -526,7 +532,6 @@ a.px-stat:hover { background: rgba(255, 255, 255, .12); color: #fff; }
     <div class="px-options">
         <a href="{% url 'skills_hub' %}" class="px-option"><span>📄</span><span><strong>{% trans "Analyze your CV or LinkedIn" %}</strong><small>{% trans "AI detects your skills from your CV." %}</small></span></a>
         <a href="{% url 'skills_hub' %}#claimed" class="px-option"><span>⏱️</span><span><strong>{% trans "Take a skill challenge" %}</strong><small>{% trans "A short timed test turns a claimed skill into a verified badge." %}</small></span></a>
-        <a href="{% url 'freelance_importer' %}" class="px-option"><span>💼</span><span><strong>{% trans "Import freelance work" %}</strong><small>{% trans "Real gigs from Mostaql, Khamsat, Upwork or Fiverr, reviewed by our team." %}</small></span></a>
     </div>
     <div style="margin-top: 16px; text-align: end;"><button type="button" class="px-ghost" data-close-dialog>{% trans "Close" %}</button></div>
 </dialog>

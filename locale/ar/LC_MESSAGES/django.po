@@ -4926,3 +4926,15 @@ msgstr "علاقات المهارات"
 
 msgid "External courses"
 msgstr "الكورسات الخارجية"
+
+msgid "Edit / regenerate"
+msgstr "تعديل / إعادة توليد"
+
+msgid "Create your CV with AI"
+msgstr "أنشئ سيرتك الذاتية بالذكاء الاصطناعي"
+
+msgid "Import a freelance gig"
+msgstr "استيراد عمل حر"
+
+msgid "Freelance work you import appears here with its review status."
+msgstr "الأعمال الحرة التي تستوردها تظهر هنا مع حالة مراجعتها."
