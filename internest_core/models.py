@@ -590,3 +590,31 @@ def proof_of_work(student):
     stats = student.gig_experiences.verified().aggregate(count=models.Count("id"), avg=models.Avg("star_rating"))
     count = stats["count"] or 0
     return {"count": count, "avg": round(float(stats["avg"] or 0), 1), "top": count >= TOP_VERIFIED_MIN_GIGS}
+
+
+class UniversityInquiry(models.Model):
+    """Demo / free-pilot request from the /universities/ page. Universities never buy online: we contact them."""
+
+    STATUS_NEW, STATUS_CONTACTED, STATUS_PILOT, STATUS_CLOSED = "new", "contacted", "pilot", "closed"
+    STATUS_CHOICES = [(STATUS_NEW, _("New")), (STATUS_CONTACTED, _("Contacted")), (STATUS_PILOT, _("Pilot agreed")),
+                      (STATUS_CLOSED, _("Closed"))]
+    CHANNEL_CHOICES = [("wa", "WhatsApp"), ("mail", _("Email"))]
+
+    name = models.CharField(_("Name"), max_length=120)
+    position = models.CharField(_("Position"), max_length=120)
+    university = models.CharField(_("University"), max_length=160)
+    faculty = models.CharField(_("Faculty"), max_length=160, blank=True)
+    email = models.EmailField(_("Email"), blank=True)
+    phone = models.CharField(_("Mobile number"), max_length=30, blank=True)
+    message = models.TextField(_("Message"), max_length=2000, blank=True)
+    channel = models.CharField(max_length=5, choices=CHANNEL_CHOICES, default="wa")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_NEW, db_index=True)
+    notes = models.TextField(blank=True, help_text="Internal notes (not shown to the university).")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name_plural = "University inquiries"
+
+    def __str__(self):
+        return f"{self.university} · {self.name}"

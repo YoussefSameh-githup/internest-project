@@ -17,7 +17,7 @@ from .admin_base import BAD, INFO, OK, WAIT, ModelAdmin, StackedInline, TabularI
 from .models import (
     Application, DiscountCode, EmailVerification, GamificationTask, GigExperience, GoldenListStudent, Internship,
     PartnerApplicantData, PartnerCourseSubmission, PartnerInternshipSubmission, PartnerProfile, StudentEnrollment,
-    StudentProfile, StudentTaskRecord, TaskAnswer, TaskQuestion,
+    StudentProfile, StudentTaskRecord, TaskAnswer, TaskQuestion, UniversityInquiry,
 )
 
 SUBMISSION_COLORS = {"Pending": WAIT, "Approved": OK, "Rejected": BAD}
@@ -408,4 +408,20 @@ class StudentEnrollmentAdmin(ModelAdmin):
         return False
 
     def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(UniversityInquiry)
+class UniversityInquiryAdmin(ModelAdmin):
+    """Demo / free-pilot requests from /universities/."""
+
+    list_display = ("university", "faculty", "name", "position", "email", "phone", "channel", "status_col", "created_at")
+    list_filter = ("status", "channel", "created_at")
+    search_fields = ("university", "faculty", "name", "email", "phone")
+    readonly_fields = ("name", "position", "university", "faculty", "email", "phone", "message", "channel", "created_at")
+    date_hierarchy = "created_at"
+    status_col = status_badge("status", {UniversityInquiry.STATUS_NEW: WAIT, UniversityInquiry.STATUS_CONTACTED: INFO,
+                                         UniversityInquiry.STATUS_PILOT: OK, UniversityInquiry.STATUS_CLOSED: None})
+
+    def has_add_permission(self, request):
         return False

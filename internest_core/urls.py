@@ -1,7 +1,9 @@
 from django.urls import path
-from . import legal_views, views
+from . import legal_views, university_views, views
 
 urlpatterns = [
+    path('universities/', university_views.university_landing, name='university_landing'),
+    path('universities/inquiry/', university_views.university_inquiry, name='university_inquiry'),
     path('privacy/', legal_views.privacy, name='privacy'),
     path('terms/', legal_views.terms, name='terms'),
     path('refund-policy/', legal_views.refund_policy, name='refund_policy'),

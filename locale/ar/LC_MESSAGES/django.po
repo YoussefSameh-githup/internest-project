@@ -5236,3 +5236,27 @@ msgstr ""
 
 msgid "InstaPay"
 msgstr "انستاباي (InstaPay)"
+
+msgid "New university demo requests"
+msgstr "طلبات عروض جامعات جديدة"
+
+msgid "Position"
+msgstr "المنصب"
+
+msgid "Faculty"
+msgstr "الكلية"
+
+msgid "New"
+msgstr "جديد"
+
+msgid "Contacted"
+msgstr "تم التواصل"
+
+msgid "Pilot agreed"
+msgstr "تم الاتفاق على Pilot"
+
+msgid "Internest for universities"
+msgstr "Internest للجامعات"
+
+msgid "University demo requests"
+msgstr "طلبات العروض من الجامعات"

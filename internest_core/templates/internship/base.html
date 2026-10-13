@@ -76,7 +76,7 @@
                 {% else %}
                     <li><a href="{% url 'landing' %}#features" class="nav__link">{% trans "For students" %}</a></li>
                     <li><a href="{% url 'landing' %}#startups" class="nav__link">{% trans "For startups" %}</a></li>
-                    <li><a href="{% url 'landing' %}#universities" class="nav__link">{% trans "For universities" %}</a></li>
+                    <li><a href="{% url 'university_landing' %}" class="nav__link">{% trans "For universities" %}</a></li>
                     <li><a href="{% url 'landing' %}#how-it-works" class="nav__link">{% trans "How it works" %}</a></li>
                 {% endif %}
             </ul>
@@ -191,6 +191,7 @@
                     <h4 class="footer__heading">{% trans "For startups & universities" %}</h4>
                     <ul class="footer__list">
                         <li><a href="{% url 'contact_partner' %}">{% trans "Join as partner" %}</a></li>
+                        <li><a href="{% url 'university_landing' %}">{% trans "Internest for universities" %}</a></li>
                         <li><a href="{% url 'login' %}">{% trans "Partner login" %}</a></li>
                         <li><a href="{% url 'startup_upgrade' %}">{% trans "Internest Pro pricing" %}</a></li>
                     </ul>

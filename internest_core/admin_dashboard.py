@@ -9,7 +9,7 @@ def _counters():
     from internest_skills.models import StudentFreelanceGig, StudentSkill
     from internest_startups.models import ProUpgradeRequest
 
-    from .models import Application, Internship, PartnerInternshipSubmission, PartnerProfile, StudentProfile
+    from .models import Application, Internship, PartnerInternshipSubmission, PartnerProfile, StudentProfile, UniversityInquiry
 
     def open_gigs():
         return Internship.objects.filter(is_active=True, deadline__gte=timezone.now().date())
@@ -27,6 +27,7 @@ def _counters():
         "pending_companies": PartnerProfile.objects.filter(is_academic=False, is_fully_verified=False).count,
         "pending_submissions": PartnerInternshipSubmission.objects.filter(status="Pending").count,
         "pending_payments": ProUpgradeRequest.objects.filter(status=ProUpgradeRequest.STATUS_PENDING).count,
+        "university_inquiries": UniversityInquiry.objects.filter(status=UniversityInquiry.STATUS_NEW).count,
     }
 
 
@@ -57,6 +58,8 @@ def dashboard_callback(request, context):
              "link": reverse("admin:internest_startups_pendingcompanyprofile_changelist")},
             {"title": _("Opportunity submissions"), "value": c["pending_submissions"], "icon": "pending_actions",
              "link": changelist("internest_core_partnerinternshipsubmission") + "?status__exact=Pending"},
+            {"title": _("New university demo requests"), "value": c["university_inquiries"], "icon": "school",
+             "link": changelist("internest_core_universityinquiry") + "?status__exact=new"},
             {"title": _("Pro payments to confirm"), "value": c["pending_payments"], "icon": "payments",
              "link": changelist("internest_startups_proupgraderequest") + "?status__exact=pending"},
         ],
@@ -75,3 +78,4 @@ pending_gigs_badge = _badge("pending_gigs")
 pending_companies_badge = _badge("pending_companies")
 pending_submissions_badge = _badge("pending_submissions")
 pending_payments_badge = _badge("pending_payments")
+university_inquiries_badge = _badge("university_inquiries")

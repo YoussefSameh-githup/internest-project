@@ -327,6 +327,7 @@ UNFOLD = {
                 _nav(_("Gamification tasks"), "sports_esports", "internest_core_gamificationtask"),
             ]},
             {"title": _("🏢 Companies & opportunities"), "collapsible": True, "items": [
+                _nav(_("University demo requests"), "school", "internest_core_universityinquiry", badge="university_inquiries_badge"),
                 _nav(_("Partners"), "apartment", "internest_core_partnerprofile"),
                 _nav(_("Startups awaiting verification"), "domain_verification", "internest_startups_pendingcompanyprofile", badge="pending_companies_badge"),
                 _nav(_("Company profiles"), "storefront", "internest_startups_companyprofile"),

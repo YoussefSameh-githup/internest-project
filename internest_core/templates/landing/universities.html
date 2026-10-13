@@ -1,0 +1,943 @@
+{% load static %}<!doctype html>
+<html lang="{{ page_lang }}" dir="{% if page_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Internest للجامعات</title>
+<link rel="icon" type="image/jpeg" href="{% static 'img/internest_logo.jpg' %}">
+<meta name="description" content="Internest للجامعات: فرص تدريب حقيقية لطلابكم مع startups، تقرير مهارات جاهز يدعم ملف الجودة والاعتماد، وداشبورد لكل كلية.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --logo:url("{% static 'img/internest_logo.jpg' %}");
+  --bg:#f4f5f7; --surface:#ffffff; --surface-2:#f8f9fb; --ink:#111a2b; --ink-2:#47526a; --ink-3:#717b8f;
+  --line:#e2e6ec; --line-2:#eef1f5;
+  --navy:#14213a; --navy-2:#1c2c4c; --navy-ink:#c9d2e3;
+  --green:#0e7f60; --green-ink:#ffffff; --green-soft:#e3f2ec;
+  --gold:#b07d1a; --gold-soft:#f7efdc; --gold-ink:#7a5410;
+  --up:#0e7f60; --down:#b3402a;
+  --shadow:0 1px 2px rgba(17,26,43,.06),0 8px 24px -12px rgba(17,26,43,.12);
+  --shadow-lg:0 50px 100px -40px rgba(10,18,36,.45),0 20px 40px -24px rgba(10,18,36,.25);
+  --head:"Readex Pro","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --body:"IBM Plex Sans Arabic","Readex Pro",system-ui,sans-serif;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d121c; --surface:#151c28; --surface-2:#111823; --ink:#e8ecf2; --ink-2:#b4bccb; --ink-3:#8790a1;
+    --line:#263043; --line-2:#1c2433; --navy:#0a101b; --navy-2:#121b2b;
+    --green:#3fa184; --green-ink:#08130f; --green-soft:#16302a; --gold:#b8841f; --gold-soft:#2a2416; --gold-ink:#e2be72;
+    --up:#4fbf98; --down:#e0806b; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.5);
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16.5px/1.7 var(--body);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--head);margin:0;line-height:1.25;font-weight:600;letter-spacing:-.01em}
+p{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:6px}
+html[lang="ar"] .en, html[lang="en"] .ar{display:none!important}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+@media (max-width:640px){.wrap{padding:0 16px} body{font-size:16px}}
+.num{font-family:var(--head);font-variant-numeric:tabular-nums}
+
+/* ---------- header ---------- */
+.top{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--navy) 92%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid rgba(255,255,255,.06)}
+.top .wrap{display:flex;align-items:center;height:66px;gap:28px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff}
+.logo b{font:700 19px var(--head);letter-spacing:-.02em}
+.lg{display:inline-block;background:var(--logo) center/contain no-repeat}
+.logo-tile{width:46px;height:46px;border-radius:11px;background:#fff;display:grid;place-items:center;flex:none}
+.logo-tile .lg{width:42px;height:42px}
+.reach{margin-top:30px;display:grid;gap:10px}
+.reach a,.reach button{display:flex;align-items:center;gap:12px;color:#fff;text-decoration:none;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 16px;font:400 15px var(--body);text-align:start;width:100%;cursor:pointer}
+.reach a:hover,.reach button:hover{border-color:rgba(255,255,255,.35)}
+.reach .ri{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;flex:none}
+.reach .wa .ri{background:#25d366;color:#fff}.reach .ml .ri{background:rgba(255,255,255,.1);color:#fff}.reach .ph .ri{background:rgba(255,255,255,.1);color:#fff}
+.reach small{display:block;color:var(--navy-ink);font-size:12.5px}
+.reach b{font:500 15.5px var(--head);direction:ltr;unicode-bidi:isolate}
+.reach .cp{margin-inline-start:auto;font-size:12.5px;color:var(--navy-ink)}
+.form .two{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form .two .btn{grid-column:auto;padding:14px}
+.form .two .b-wa{background:#1f9d57;color:#fff}.form .two .b-wa:hover{background:#198049}
+.form .two .b-ml{background:#14213a;color:#fff}.form .two .b-ml:hover{background:#0c1528}
+@media (max-width:520px){.form .two{grid-template-columns:1fr}}
+.form .err{grid-column:1/-1;font-size:13.5px;color:#b3402a;display:none}
+.fab{position:fixed;bottom:20px;inset-inline-end:20px;z-index:60;width:56px;height:56px;border-radius:50%;background:#25d366;color:#fff;display:grid;place-items:center;box-shadow:0 10px 24px -8px rgba(0,0,0,.45);text-decoration:none}
+.fab svg{width:28px;height:28px}
+.fab:hover{background:#1fb758}
+.c-logo{width:120px;height:120px;border-radius:24px;background:#fff;display:grid;place-items:center;margin-bottom:28px}
+.c-logo .lg{width:100px;height:100px}
+.sheet .s-logo{display:inline-flex;align-items:center;gap:8px;font:600 13px var(--head);color:#111a2b}
+.sheet .s-logo .lg{width:26px;height:26px}
+.sheet .cover-logo{width:110px;height:110px;margin-top:70px}
+.sheet .cover-logo + h1{margin-top:28px}
+.pg .lg{width:28px;height:28px;vertical-align:middle}
+footer .f-brand{display:inline-flex;align-items:center;gap:10px}
+footer .logo-tile{width:30px;height:30px;border-radius:7px}footer .logo-tile .lg{width:26px;height:26px}
+
+.logo small{font:400 13px var(--body);color:var(--navy-ink);padding-inline-start:10px;border-inline-start:1px solid rgba(255,255,255,.18)}
+.menu{display:flex;gap:22px}
+.menu a{color:var(--navy-ink);text-decoration:none;font-size:14.5px}
+.menu a:hover{color:#fff}
+.top-act{margin-inline-start:auto;display:flex;gap:10px;align-items:center}
+.lang{background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 12px;font-size:13.5px;cursor:pointer}
+.lang:hover{border-color:rgba(255,255,255,.45)}
+@media (max-width:980px){.menu{display:none}}
+@media (max-width:560px){.logo small{display:none} .top .btn-sm{display:none}}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;padding:12px 22px;font:500 15px var(--head);text-decoration:none;cursor:pointer;border:1px solid transparent;transition:background .15s,border-color .15s,color .15s;white-space:nowrap}
+.btn-green{background:var(--green);color:var(--green-ink)}
+.btn-green:hover{background:color-mix(in srgb,var(--green) 86%,#000)}
+.btn-line{border-color:var(--line);background:var(--surface);color:var(--ink)}
+.btn-line:hover{border-color:var(--ink-3)}
+.btn-ghost-w{border-color:rgba(255,255,255,.22);color:#fff;background:rgba(255,255,255,.04)}
+.btn-ghost-w:hover{border-color:rgba(255,255,255,.5)}
+.btn-sm{padding:8px 14px;font-size:14px;border-radius:8px}
+
+/* ---------- hero ---------- */
+.hero{background:var(--navy);color:#fff;position:relative;overflow:hidden;padding:84px 0 230px}
+.hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(ellipse 80% 70% at 50% 30%,#000 30%,transparent 75%)}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:end}
+.badge{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:#e9d6a8;border:1px solid rgba(201,150,44,.35);background:rgba(201,150,44,.08);padding:5px 12px;border-radius:999px;margin-bottom:22px}
+.badge i{width:6px;height:6px;border-radius:50%;background:#d6a542}
+.hero h1{font-size:clamp(34px,4.7vw,58px);font-weight:600;color:#fff;letter-spacing:-.02em;line-height:1.18}
+.hero .lead{color:var(--navy-ink);font-size:clamp(17px,1.5vw,19.5px);margin-top:22px;max-width:36em}
+.hero .ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}
+.proof{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.proof li{display:grid;grid-template-columns:36px 1fr;gap:14px;align-items:start;padding:16px 18px;border:1px solid rgba(255,255,255,.09);border-radius:12px;background:rgba(255,255,255,.03)}
+.proof .ic{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;background:rgba(63,161,132,.14);color:#6cc9a8}
+.proof b{display:block;font:500 15.5px var(--head);color:#fff}
+.proof span{font-size:14px;color:var(--navy-ink);line-height:1.55}
+@media (max-width:960px){.hero{padding:56px 0 200px}.hero .wrap{grid-template-columns:1fr;gap:36px}}
+
+/* ---------- app demo ---------- */
+.app-sec{margin-top:-190px;position:relative;z-index:2;padding-bottom:40px}
+.app{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden}
+.ribbon{display:flex;align-items:center;gap:10px;background:var(--gold-soft);color:var(--gold-ink);font-size:13.5px;padding:9px 18px;border-bottom:1px solid color-mix(in srgb,var(--gold) 25%,transparent)}
+.ribbon svg{flex:none}
+.ribbon b{font-weight:600}
+.app-grid{display:grid;grid-template-columns:220px 1fr;min-height:640px}
+.side{background:var(--surface-2);border-inline-end:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:4px}
+.uni{display:flex;gap:10px;align-items:center;padding:6px 8px 16px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+.uni-mark{width:34px;height:34px;border-radius:8px;background:var(--navy-2);color:#fff;display:grid;place-items:center;font:600 13px var(--head);flex:none}
+.uni b{display:block;font:500 14px/1.3 var(--head)}
+.uni small{display:inline-block;font-size:11.5px;color:var(--gold-ink);background:var(--gold-soft);border-radius:4px;padding:0 6px;margin-top:3px}
+.nav-i{display:flex;align-items:center;gap:10px;width:100%;text-align:start;background:none;border:0;border-radius:8px;padding:9px 10px;font-size:14.5px;color:var(--ink-2);cursor:pointer}
+.nav-i:hover{background:var(--line-2);color:var(--ink)}
+.nav-i[aria-current="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-weight:500}
+.nav-i svg{flex:none;opacity:.8}
+.side-foot{margin-top:auto;font-size:12px;color:var(--ink-3);padding:10px 8px 0;line-height:1.5}
+.main{min-width:0;display:flex;flex-direction:column}
+.bar{display:flex;align-items:center;gap:12px;padding:16px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.bar h2{font-size:19px}
+.bar .sub{font-size:13px;color:var(--ink-3)}
+.bar-act{margin-inline-start:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sel{appearance:none;background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23717b8f' fill='none' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat;background-position:left 12px center;border:1px solid var(--line);border-radius:8px;padding:8px 12px 8px 32px;font:400 14px var(--body);color:var(--ink);cursor:pointer}
+html[dir="ltr"] .sel{background-position:right 12px center;padding:8px 32px 8px 12px}
+.view{padding:22px 24px 28px;display:none;gap:18px}
+.view.on{display:grid}
+@media (max-width:900px){
+  .app-grid{grid-template-columns:1fr}
+  .side{flex-direction:row;overflow-x:auto;padding:10px;border-inline-end:0;border-bottom:1px solid var(--line);gap:6px}
+  .uni,.side-foot{display:none}
+  .nav-i{white-space:nowrap;width:auto}
+  .bar,.view{padding-left:16px;padding-right:16px}
+}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media (max-width:1050px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;background:var(--surface)}
+.kpi .k-l{font-size:13.5px;color:var(--ink-2)}
+.kpi .k-v{font:600 30px/1.15 var(--head);margin-top:8px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.kpi .k-d{font-size:12.5px;margin-top:6px;color:var(--ink-3)}
+.kpi .k-d b{font-weight:600}
+.up{color:var(--up)} .down{color:var(--down)}
+.cards{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+.cards.eq{grid-template-columns:1fr 1fr}
+@media (max-width:1050px){.cards,.cards.eq{grid-template-columns:1fr}}
+.card{border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;background:var(--surface);min-width:0}
+.card h3{font:500 15.5px var(--head)}
+.card .c-sub{font-size:13px;color:var(--ink-3);margin-top:2px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:6px;vertical-align:0}
+.sw-g{background:var(--gold)} .sw-n{background:var(--green)}
+/* line chart */
+.lc{width:100%;height:auto;display:block;margin-top:10px;direction:ltr}
+.lc .grid line{stroke:var(--line-2)} .lc .ax{fill:var(--ink-3);font:14px var(--body)}
+.lc .ln{fill:none;stroke:var(--green);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.lc .ar{fill:var(--green);opacity:.08}
+.lc .cross{stroke:var(--ink-3);stroke-dasharray:3 3;opacity:0}
+.lc .dot{fill:var(--surface);stroke:var(--green);stroke-width:2;opacity:0}
+.lc.hov .cross,.lc.hov .dot{opacity:1}
+/* paired bars */
+.pb{display:grid;gap:13px;margin-top:14px}
+.pb-row{display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:center}
+@media (max-width:560px){.pb-row{grid-template-columns:1fr;gap:4px}}
+.pb-name{font-size:14px}
+.pb-bars{display:grid;gap:3px}
+.pb-line{display:flex;align-items:center;gap:8px;height:12px}
+.fill{height:10px;flex:none;width:0;border-start-end-radius:4px;border-end-end-radius:4px;transition:width .6s cubic-bezier(.2,.7,.2,1)}
+.fill.g{background:var(--gold)} .fill.n{background:var(--green)}
+.v{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums;line-height:1}
+.pb-row:hover .pb-name{text-decoration:underline;text-underline-offset:4px}
+/* funnel */
+.fn{display:grid;gap:9px;margin-top:14px}
+.fn-h{display:flex;justify-content:space-between;font-size:13.5px}
+.fn-h span:last-child{color:var(--ink-2);font-variant-numeric:tabular-nums}
+.fn-b{height:20px;background:var(--green);border-start-end-radius:4px;border-end-end-radius:4px;width:0;transition:width .6s cubic-bezier(.2,.7,.2,1)}
+.fn-d{font-size:12px;color:var(--ink-3);margin-top:2px}
+/* column chart */
+.cc{display:flex;align-items:flex-end;gap:14px;height:190px;margin-top:18px;padding-bottom:24px;border-bottom:1px solid var(--line);position:relative;direction:ltr}
+.cc-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
+.cc-bar{width:min(46px,70%);background:var(--green);border-radius:4px 4px 0 0;height:0;transition:height .6s cubic-bezier(.2,.7,.2,1)}
+.cc-v{font-size:12px;color:var(--ink-2);margin-bottom:4px;font-variant-numeric:tabular-nums}
+.cc-x{position:absolute;bottom:-22px;font-size:12px;color:var(--ink-3)}
+/* rating bars */
+.rb{display:grid;gap:12px;margin-top:14px}
+.rb-row{display:grid;grid-template-columns:150px 1fr 40px;gap:12px;align-items:center;font-size:14px}
+.rb-track{height:8px;background:var(--line-2);border-radius:4px;overflow:hidden}
+.rb-fill{height:100%;background:var(--green);border-radius:4px;width:0;transition:width .6s cubic-bezier(.2,.7,.2,1)}
+.rb-row .num{text-align:end;font-size:14px}
+/* tables */
+.tbl-w{overflow-x:auto;margin-top:12px}
+table.t{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+table.t th{font:500 12.5px var(--body);color:var(--ink-3);text-align:start;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.t td{padding:11px 10px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+table.t td.n{font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;background:var(--line-2);color:var(--ink-2)}
+.pill.g{background:var(--green-soft);color:var(--green)}
+.pill.y{background:var(--gold-soft);color:var(--gold-ink)}
+.insight{display:flex;gap:12px;align-items:flex-start;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;font-size:14px;color:var(--ink-2)}
+.insight b{color:var(--ink);font-weight:600}
+.insight svg{flex:none;margin-top:3px}
+.rep-list{display:grid;gap:10px}
+.rep{display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;flex-wrap:wrap}
+.rep-ic{width:40px;height:48px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;flex:none;color:var(--ink-3);font:600 10px var(--head)}
+.rep b{display:block;font:500 15px var(--head)}
+.rep small{color:var(--ink-3);font-size:13px}
+.rep .btn{margin-inline-start:auto}
+.tip{position:fixed;z-index:80;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12.5px;line-height:1.5;padding:7px 10px;border-radius:7px;opacity:0;transition:opacity .1s;max-width:240px}
+.tip.on{opacity:1}
+.app-note{font-size:13px;color:var(--ink-3);text-align:center;margin-top:16px}
+
+/* ---------- sections ---------- */
+.sec{padding:96px 0}
+.sec + .sec{border-top:1px solid var(--line)}
+.sh{max-width:700px;margin-bottom:46px}
+.sh .kick{font:500 14px var(--head);color:var(--green);margin-bottom:12px}
+.sh h2{font-size:clamp(28px,3.1vw,40px)}
+.sh p{color:var(--ink-2);margin-top:14px;font-size:17.5px}
+.sh.c{margin-inline:auto;text-align:center}
+
+/* before/after */
+.ba{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--surface)}
+.ba-h,.ba-r{display:grid;grid-template-columns:1fr 1fr 1fr}
+.ba-h div{padding:16px 22px;font:500 14px var(--head);color:var(--ink-3);background:var(--surface-2);border-bottom:1px solid var(--line)}
+.ba-h div:last-child{color:var(--green)}
+.ba-r div{padding:18px 22px;border-bottom:1px solid var(--line-2);font-size:15px}
+.ba-r:last-child div{border-bottom:0}
+.ba-r div:first-child{font:500 15px var(--head)}
+.ba-r div:nth-child(2){color:var(--ink-3)}
+.ba-r div:last-child{color:var(--ink);background:color-mix(in srgb,var(--green-soft) 45%,transparent)}
+@media (max-width:760px){.ba-h{display:none}.ba-r{grid-template-columns:1fr}.ba-r div{border-bottom:0;padding:6px 18px}.ba-r div:first-child{padding-top:18px}.ba-r div:last-child{padding-bottom:18px;border-bottom:1px solid var(--line)}
+ .ba-r div:nth-child(2)::before{content:attr(data-l);display:block;font-size:12px;color:var(--ink-3)} .ba-r div:last-child::before{content:attr(data-l);display:block;font-size:12px;color:var(--green)}}
+
+/* value list */
+.vals{display:grid;grid-template-columns:repeat(6,1fr);gap:18px}
+.val{grid-column:span 2;border:1px solid var(--line);border-radius:14px;padding:26px 24px;background:var(--surface);position:relative}
+.val.big{grid-column:span 3;background:var(--navy);color:#fff;border-color:var(--navy)}
+.val.big p{color:var(--navy-ink)}
+.val .rk{font:600 13px var(--head);color:var(--ink-3)}
+.val.big .rk{color:#e2be72}
+.val h3{font-size:20px;margin-top:14px}
+.val p{color:var(--ink-2);margin-top:10px;font-size:15.5px}
+.val .flag{position:absolute;top:22px;inset-inline-end:22px;font-size:12px;color:#14213a;background:#e2be72;border-radius:999px;padding:2px 10px;font-weight:500}
+@media (max-width:960px){.vals{grid-template-columns:1fr 1fr}.val,.val.big{grid-column:span 1}}
+@media (max-width:620px){.vals{grid-template-columns:1fr}}
+
+/* report preview */
+.rp{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+@media (max-width:960px){.rp{grid-template-columns:1fr;gap:40px}}
+.stack{position:relative;height:460px}
+.pg{position:absolute;width:330px;height:440px;background:#fff;color:#111a2b;border:1px solid #e3e6eb;border-radius:6px;box-shadow:0 30px 60px -30px rgba(17,26,43,.35);padding:30px 28px;font-family:var(--body);overflow:hidden}
+.pg.p1{inset-inline-start:0;top:0;z-index:2}
+.pg.p2{inset-inline-start:210px;top:22px;transform:rotate(3deg);z-index:1}
+html[dir="rtl"] .pg.p2{transform:rotate(-3deg)}
+@media (max-width:560px){.pg{width:260px;height:360px;padding:22px}.pg.p2{inset-inline-start:70px}.stack{height:390px}}
+.pg-top{display:flex;justify-content:space-between;font-size:10.5px;color:#717b8f}
+.pg h4{font:600 20px/1.35 var(--head);margin-top:70px}
+.pg .pg-m{font-size:12px;color:#47526a;margin-top:8px}
+.pg .pg-band{position:absolute;inset-inline:0;bottom:0;height:110px;background:#14213a;color:#c9d2e3;padding:22px 28px;font-size:11px}
+.pg .pg-band b{display:block;color:#fff;font:500 13px var(--head)}
+.seal{position:absolute;inset-inline-end:22px;bottom:128px;width:84px;height:84px;border-radius:50%;border:2px solid #b07d1a;color:#7a5410;display:grid;place-items:center;text-align:center;font:600 10.5px/1.3 var(--head);padding:10px;transform:rotate(-10deg);background:#fbf4e3}
+.mini-k{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.mini-k div{border:1px solid #e3e6eb;border-radius:6px;padding:8px}
+.mini-k b{display:block;font:600 16px var(--head)}
+.mini-k span{font-size:9.5px;color:#717b8f}
+.mini-bars{margin-top:14px;display:grid;gap:6px}
+.mini-bars div{display:grid;grid-template-columns:70px 1fr;gap:6px;align-items:center;font-size:9.5px;color:#47526a}
+.mini-bars i{display:block;height:6px;border-radius:0 3px 3px 0;background:#0e7f60}
+html[dir="rtl"] .mini-bars i{border-radius:3px 0 0 3px}
+.checks{list-style:none;padding:0;margin:24px 0 0;display:grid;gap:14px}
+.checks li{display:grid;grid-template-columns:24px 1fr;gap:12px}
+.checks svg{margin-top:4px}
+.note{font-size:13.5px;color:var(--ink-3);margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;counter-reset:s}
+.st{border-top:2px solid var(--line);padding-top:22px;position:relative}
+.st:first-child{border-top-color:var(--green)}
+.st::before{counter-increment:s;content:counter(s);font:600 13px var(--head);color:var(--green);display:block}
+.st .w{font-size:13px;color:var(--ink-3);margin-top:2px}
+.st h3{font-size:18px;margin-top:10px}
+.st p{font-size:15px;color:var(--ink-2);margin-top:8px}
+@media (max-width:900px){.steps{grid-template-columns:1fr 1fr;row-gap:30px}}
+@media (max-width:560px){.steps{grid-template-columns:1fr}}
+.terms{margin-top:36px;display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.terms div{padding:20px 22px;border-inline-start:1px solid var(--line)}
+.terms div:first-child{border-inline-start:0}
+.terms b{display:block;font:600 22px var(--head)}
+.terms span{font-size:14px;color:var(--ink-2)}
+@media (max-width:760px){.terms{grid-template-columns:1fr}.terms div{border-inline-start:0;border-top:1px solid var(--line)}.terms div:first-child{border-top:0}}
+
+/* students */
+.stu{display:grid;grid-template-columns:repeat(3,1fr);gap:0 40px}
+.stu div{padding:20px 0;border-top:1px solid var(--line)}
+.stu h3{font-size:16.5px}
+.stu p{font-size:15px;color:var(--ink-2);margin-top:6px}
+@media (max-width:900px){.stu{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.stu{grid-template-columns:1fr}}
+
+/* trust */
+.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.tr{padding:24px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.tr .ic{width:40px;height:40px;border-radius:10px;background:var(--green-soft);color:var(--green);display:grid;place-items:center}
+.tr h3{font-size:17px;margin-top:16px}
+.tr p{font-size:15px;color:var(--ink-2);margin-top:8px}
+@media (max-width:860px){.trust{grid-template-columns:1fr}}
+
+/* faq */
+.faq{max-width:860px;margin:0 auto;border-top:1px solid var(--line)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;padding:22px 0;font:500 17px var(--head);display:flex;justify-content:space-between;gap:16px;align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"";width:10px;height:10px;border-inline-end:1.5px solid var(--ink-3);border-bottom:1.5px solid var(--ink-3);transform:rotate(45deg);transition:transform .2s;flex:none;margin-top:-4px}
+.faq details[open] summary::after{transform:rotate(225deg);margin-top:4px}
+.faq details p{padding:0 0 22px;color:var(--ink-2);max-width:44em}
+
+/* contact */
+.contact{background:var(--navy);color:#fff;padding:96px 0}
+.contact .wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px}
+.contact h2{color:#fff;font-size:clamp(28px,3.2vw,42px)}
+.contact .lead{color:var(--navy-ink);margin-top:16px;font-size:17.5px}
+.contact ul{list-style:none;padding:0;margin:28px 0 0;display:grid;gap:12px;color:var(--navy-ink);font-size:15.5px}
+.contact li{display:flex;gap:10px}
+.form{background:#fff;color:#111a2b;border-radius:16px;padding:28px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form .full{grid-column:1/-1}
+.form label{display:grid;gap:6px;font:500 13.5px var(--head);color:#47526a}
+.form input,.form select,.form textarea{font:400 15px var(--body);color:#111a2b;border:1px solid #d5dae2;border-radius:9px;padding:11px 12px;background:#fff;width:100%}
+.form textarea{min-height:90px;resize:vertical}
+.form input:focus,.form select:focus,.form textarea:focus{outline:2px solid #0e7f60;outline-offset:0;border-color:#0e7f60}
+.form .btn{grid-column:1/-1;background:#0e7f60;color:#fff;padding:14px}
+.form .fine{grid-column:1/-1;font-size:12.5px;color:#717b8f}
+.form .ok{grid-column:1/-1;font-size:14px;color:#0e7f60;display:none}
+@media (max-width:960px){.contact .wrap{grid-template-columns:1fr;gap:40px}}
+@media (max-width:520px){.form{grid-template-columns:1fr;padding:20px}}
+footer{background:var(--navy);color:var(--navy-ink);border-top:1px solid rgba(255,255,255,.08);padding:26px 0;font-size:13.5px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer .f-links a{color:inherit}
+
+/* ---------- report modal ---------- */
+.modal{position:fixed;inset:0;z-index:100;background:rgba(9,14,25,.72);display:none;overflow:auto;padding:28px 16px}
+.modal.on{display:block}
+.m-bar{max-width:820px;margin:0 auto 14px;display:flex;gap:10px;align-items:center;color:#fff}
+.m-bar b{font:500 15px var(--head)}
+.m-bar .sp{margin-inline-start:auto;display:flex;gap:8px}
+.m-close{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:8px 14px;cursor:pointer}
+.sheet{-webkit-print-color-adjust:exact;print-color-adjust:exact;max-width:820px;margin:0 auto 18px;background:#fff;color:#111a2b;border-radius:4px;padding:56px 60px;min-height:1050px;position:relative;font-family:var(--body);font-size:14px;line-height:1.7}
+@media (max-width:640px){.sheet{padding:28px 22px;min-height:0}}
+.sheet .wm{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;overflow:hidden}
+.sheet .wm span{font:700 92px var(--head);color:rgba(176,125,26,.07);transform:rotate(-24deg);white-space:nowrap}
+.sh-top{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#717b8f;border-bottom:1px solid #e3e6eb;padding-bottom:14px}
+.sheet h1{font:600 30px/1.3 var(--head);margin-top:120px}
+.sheet h2{font:600 19px var(--head);margin:34px 0 12px}
+.sheet .meta{color:#47526a;margin-top:10px}
+.sheet .cover-band{margin-top:120px;border-top:3px solid #14213a;padding-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;font-size:12.5px;color:#47526a}
+.sheet .cover-band b{display:block;color:#111a2b;font:500 14px var(--head)}
+.sheet table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.sheet th{text-align:start;font-weight:500;color:#717b8f;border-bottom:1px solid #d5dae2;padding:7px 8px}
+.sheet td{border-bottom:1px solid #eef1f5;padding:8px}
+.sheet .kgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.sheet .kgrid div{border:1px solid #e3e6eb;border-radius:6px;padding:12px}
+.sheet .kgrid b{display:block;font:600 22px var(--head)}
+.sheet .kgrid span{font-size:11.5px;color:#717b8f}
+.sheet ol{padding-inline-start:20px}
+.sheet .foot{position:absolute;bottom:26px;inset-inline:60px;font-size:11px;color:#717b8f;display:flex;justify-content:space-between;border-top:1px solid #e3e6eb;padding-top:10px}
+@media (max-width:640px){.sheet .foot{position:static;margin-top:30px}.sheet .kgrid{grid-template-columns:1fr 1fr}}
+
+@media print{
+  body *{visibility:hidden}
+  .modal,.modal *{visibility:visible}
+  .modal{position:absolute;inset:0;background:#fff;padding:0;display:block}
+  .m-bar{display:none}
+  .sheet{box-shadow:none;margin:0;page-break-after:always;border-radius:0;min-height:0;height:auto}
+  .sheet .foot{position:static;margin-top:40px}
+  @page{size:A4;margin:14mm}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<!-- =========================== HEADER =========================== -->
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="{% url 'landing' %}" aria-label="Internest">
+      <span class="logo-tile"><span class="lg" role="img" aria-label="Internest logo"></span></span>
+      <b>Internest</b><small><span class="ar">للجامعات</span><span class="en">for Universities</span></small>
+    </a>
+    <nav class="menu" aria-label="Sections">
+      <a href="#demo"><span class="ar">الداشبورد</span><span class="en">Dashboard</span></a>
+      <a href="#value"><span class="ar">القيمة للجامعة</span><span class="en">Value</span></a>
+      <a href="#report"><span class="ar">التقرير</span><span class="en">Report</span></a>
+      <a href="#pilot"><span class="ar">الـ Pilot</span><span class="en">Pilot</span></a>
+      <a href="#faq"><span class="ar">الأسئلة</span><span class="en">FAQ</span></a>
+    </nav>
+    <div class="top-act">
+      <button class="lang" id="langBtn" type="button"><span class="ar">English</span><span class="en">العربية</span></button>
+      <a class="btn btn-green btn-sm" href="#contact"><span class="ar">احجز عرض تعريفي</span><span class="en">Book a demo</span></a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+<!-- =========================== HERO =========================== -->
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="badge"><i></i><span class="ar">للجامعات والكليات في مصر</span><span class="en">For universities and faculties in Egypt</span></div>
+      <h1><span class="ar">جاهزية طلابكم لسوق العمل، موثقة بالأرقام لكل كلية</span><span class="en">Job-market readiness, measured for every faculty</span></h1>
+      <p class="lead"><span class="ar">Internest بيربط طلابكم بفرص تدريب ومهام عملية حقيقية مع startups، وبيحوّل نشاطهم لتقارير مهارات موثقة تدعم ملف الجودة والاعتماد.</span><span class="en">Internest connects your students with real internships and practical tasks at startups, and turns their activity into verified skills reports that support your quality and accreditation file.</span></p>
+      <div class="ctas">
+        <a class="btn btn-green" href="#contact"><span class="ar">ابدأوا بتيرم Pilot مجاني</span><span class="en">Start a free pilot semester</span></a>
+        <a class="btn btn-ghost-w" href="#demo"><span class="ar">استكشفوا الداشبورد</span><span class="en">Explore the dashboard</span></a>
+      </div>
+    </div>
+    <ul class="proof">
+      <li><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></span><div><b><span class="ar">تقارير تدعم ملف الاعتماد</span><span class="en">Reports that support accreditation</span></b><span><span class="ar">لكل كلية ولكل دفعة، كل تيرم وكل سنة</span><span class="en">Per faculty and cohort, every semester and year</span></span></div></li>
+      <li><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span><div><b><span class="ar">فرص حقيقية مع startups</span><span class="en">Real opportunities with startups</span></b><span><span class="ar">تدريب وgigs وchallenges، ومنها التدريب الصيفي</span><span class="en">Internships, gigs and challenges, incl. summer training</span></span></div></li>
+      <li><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><div><b><span class="ar">حماية كاملة لبيانات الطلاب</span><span class="en">Student data fully protected</span></b><span><span class="ar">تقارير مجمعة، ومتوافقة مع قانون 151 لسنة 2020</span><span class="en">Aggregated reports, aligned with Law 151 of 2020</span></span></div></li>
+    </ul>
+  </div>
+</section>
+
+<!-- =========================== APP DEMO =========================== -->
+<section class="app-sec" id="demo">
+  <div class="wrap">
+    <div class="app" role="region" aria-label="Demo dashboard">
+      <div class="ribbon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01" stroke-linecap="round"/></svg>
+        <span><b class="ar">نسخة عرض توضيحية:</b><b class="en">Demo version:</b> <span class="ar">الجامعة والشركات والأرقام كلها افتراضية لتوضيح شكل الداشبورد بس، ومش بيانات حقيقية.</span><span class="en">the university, companies and all figures are fictional, shown only to illustrate the dashboard. They are not real data.</span></span>
+      </div>
+      <div class="app-grid">
+        <aside class="side" id="side">
+          <div class="uni"><div class="uni-mark"><span class="ar">ج ن</span><span class="en">MU</span></div><div><b><span class="ar">جامعة النموذج</span><span class="en">Model University</span></b><small><span class="ar">جامعة افتراضية</span><span class="en">Fictional</span></small></div></div>
+          <button class="nav-i" data-v="overview" aria-current="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span class="ar">نظرة عامة</span><span class="en">Overview</span></button>
+          <button class="nav-i" data-v="skills"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="ar">المهارات</span><span class="en">Skills</span></button>
+          <button class="nav-i" data-v="training"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg><span class="ar">التدريب العملي</span><span class="en">Training</span></button>
+          <button class="nav-i" data-v="employers"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg><span class="ar">تقييم جهات العمل</span><span class="en">Employer ratings</span></button>
+          <button class="nav-i" data-v="reports"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg><span class="ar">التقارير</span><span class="en">Reports</span></button>
+          <div class="side-foot"><span class="ar">آخر تحديث: بيانات افتراضية</span><span class="en">Last update: sample data</span></div>
+        </aside>
+        <div class="main">
+          <div class="bar">
+            <div><h2 id="viewTitle"></h2><div class="sub"><span class="ar">الفصل الدراسي الأول 2026/2027</span><span class="en">Fall semester 2026/2027</span></div></div>
+            <div class="bar-act">
+              <label class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden" for="facSel">Faculty</label>
+              <select class="sel" id="facSel"></select>
+              <button class="btn btn-line btn-sm" type="button" data-open-report><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span class="ar">تصدير التقرير</span><span class="en">Export report</span></button>
+            </div>
+          </div>
+
+          <!-- overview -->
+          <div class="view on" data-view="overview">
+            <div class="kpis" id="kpis"></div>
+            <div class="cards">
+              <div class="card"><h3><span class="ar">الطلاب النشطين أسبوعياً</span><span class="en">Weekly active students</span></h3><div class="c-sub"><span class="ar">آخر 12 أسبوع (رقم الأسبوع)</span><span class="en">Last 12 weeks (week number)</span></div><div id="lineChart"></div></div>
+              <div class="card"><h3><span class="ar">رحلة الطالب</span><span class="en">Student journey</span></h3><div class="c-sub"><span class="ar">من التسجيل لإتمام تدريب أو مهمة</span><span class="en">From sign-up to a completed internship or task</span></div><div class="fn" id="funnel"></div></div>
+            </div>
+            <div class="insight" id="insight1"></div>
+          </div>
+
+          <!-- skills -->
+          <div class="view" data-view="skills">
+            <div class="cards">
+              <div class="card"><h3><span class="ar">فجوة المهارات مقابل طلب السوق</span><span class="en">Skills gap vs. market demand</span></h3><div class="c-sub"><span class="ar">% من الفرص اللي بتطلب المهارة، مقابل % من الطلاب اللي أثبتوها بمهمة أو اختبار</span><span class="en">% of opportunities requiring the skill vs. % of students who proved it by task or test</span></div>
+                <div class="legend"><span><i class="sw-g"></i><span class="ar">مطلوبة في الفرص</span><span class="en">Required in opportunities</span></span><span><i class="sw-n"></i><span class="ar">طلاب أثبتوها</span><span class="en">Students who proved it</span></span></div>
+                <div class="pb" id="pairs"></div></div>
+              <div class="card"><h3><span class="ar">مؤشر الجاهزية حسب الفرقة</span><span class="en">Readiness index by year</span></h3><div class="c-sub"><span class="ar">من 100، بناءً على المهارات الموثقة</span><span class="en">Out of 100, based on verified skills</span></div><div class="cc" id="years"></div></div>
+            </div>
+            <div class="insight" id="insight2"></div>
+          </div>
+
+          <!-- training -->
+          <div class="view" data-view="training">
+            <div class="cards eq">
+              <div class="card"><h3><span class="ar">ساعات التدريب الموثقة شهرياً</span><span class="en">Verified training hours per month</span></h3><div class="c-sub"><span class="ar">مؤكدة من جهة العمل</span><span class="en">Confirmed by the employer</span></div><div class="cc" id="hours"></div></div>
+              <div class="card"><h3><span class="ar">نوع الفرص</span><span class="en">Opportunity types</span></h3><div class="c-sub"><span class="ar">عدد الطلاب اللي أتموا كل نوع</span><span class="en">Students who completed each type</span></div><div class="rb" id="types"></div></div>
+            </div>
+            <div class="card"><h3><span class="ar">أحدث التدريبات المكتملة</span><span class="en">Latest completed placements</span></h3><div class="c-sub"><span class="ar">أسماء الطلاب والشركات مخفية في العرض التوضيحي</span><span class="en">Student and company names are hidden in the demo</span></div><div class="tbl-w" id="placements"></div></div>
+          </div>
+
+          <!-- employers -->
+          <div class="view" data-view="employers">
+            <div class="cards eq">
+              <div class="card"><h3><span class="ar">تقييم جهات العمل حسب الكفاءة</span><span class="en">Employer rating by competency</span></h3><div class="c-sub"><span class="ar">متوسط من 5</span><span class="en">Average out of 5</span></div><div class="rb" id="ratings"></div></div>
+              <div class="card"><h3><span class="ar">قطاعات الشركات المشاركة</span><span class="en">Sectors of participating companies</span></h3><div class="c-sub"><span class="ar">عدد الشركات اللي درّبت طلاب الكلية</span><span class="en">Companies that trained this faculty's students</span></div><div class="rb" id="sectors"></div></div>
+            </div>
+            <div class="insight" id="insight3"></div>
+          </div>
+
+          <!-- reports -->
+          <div class="view" data-view="reports">
+            <div class="rep-list">
+              <div class="rep"><div class="rep-ic">PDF</div><div><b><span class="ar">تقرير المهارات والتدريب العملي (سنوي)</span><span class="en">Skills & Practical Training Report (annual)</span></b><small><span class="ar">العام الجامعي 2026/2027 · لملف الجودة والاعتماد</span><span class="en">Academic year 2026/2027 · for the quality & accreditation file</span></small></div><button class="btn btn-green btn-sm" type="button" data-open-report><span class="ar">معاينة</span><span class="en">Preview</span></button></div>
+              <div class="rep"><div class="rep-ic">PDF</div><div><b><span class="ar">تقرير الفصل الدراسي الأول</span><span class="en">Fall semester report</span></b><small><span class="ar">ملخص النشاط والمهارات لكل كلية</span><span class="en">Activity and skills summary per faculty</span></small></div><button class="btn btn-line btn-sm" type="button" data-open-report><span class="ar">معاينة</span><span class="en">Preview</span></button></div>
+              <div class="rep"><div class="rep-ic">XLS</div><div><b><span class="ar">بيانات مجمعة (Excel)</span><span class="en">Aggregated data (Excel)</span></b><small><span class="ar">جاهزة للإرفاق أو التحليل، بدون أسماء طلاب</span><span class="en">Ready to attach or analyse, without student names</span></small></div><button class="btn btn-line btn-sm" type="button" disabled style="opacity:.55;cursor:not-allowed"><span class="ar">متاح في الـ Pilot</span><span class="en">Available in pilot</span></button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="app-note"><span class="ar">جرّبوا: غيّروا الكلية من القائمة، وتنقلوا بين الأقسام، وحرّكوا الماوس على الرسوم.</span><span class="en">Try it: switch faculty, move between sections, and hover over the charts.</span></p>
+  </div>
+</section>
+
+<!-- =========================== BEFORE / AFTER =========================== -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sh"><div class="kick"><span class="ar">الفرق في الشغل اليومي</span><span class="en">The difference day to day</span></div><h2><span class="ar">من تجميع يدوي لأدلة جاهزة طول السنة</span><span class="en">From manual evidence-gathering to evidence ready all year</span></h2></div>
+    <div class="ba">
+      <div class="ba-h"><div></div><div><span class="ar">النهارده</span><span class="en">Today</span></div><div><span class="ar">مع Internest</span><span class="en">With Internest</span></div></div>
+      <div class="ba-r"><div><span class="ar">أدلة الاعتماد</span><span class="en">Accreditation evidence</span></div><div data-l="النهارده / Today"><span class="ar">تتجمع يدوياً من الأقسام قبل الزيارة</span><span class="en">Collected by hand from departments before the visit</span></div><div data-l="مع Internest"><span class="ar">تقرير جاهز لكل كلية كل تيرم</span><span class="en">A ready report per faculty every semester</span></div></div>
+      <div class="ba-r"><div><span class="ar">التدريب الصيفي</span><span class="en">Summer training</span></div><div data-l="النهارده / Today"><span class="ar">الطالب بيدوّر لوحده، والتوثيق ورقي</span><span class="en">Students search alone; paperwork records</span></div><div data-l="مع Internest"><span class="ar">فرص من شبكة startups، وساعات مؤكدة من جهة العمل</span><span class="en">Opportunities from a startup network, hours confirmed by the employer</span></div></div>
+      <div class="ba-r"><div><span class="ar">مستوى المهارات</span><span class="en">Skill levels</span></div><div data-l="النهارده / Today"><span class="ar">مفيش قياس مقابل طلب السوق</span><span class="en">No measure against market demand</span></div><div data-l="مع Internest"><span class="ar">فجوة المهارات واضحة لكل كلية ولكل فرقة</span><span class="en">The skills gap visible per faculty and year</span></div></div>
+      <div class="ba-r"><div><span class="ar">رأي جهات العمل</span><span class="en">Employer feedback</span></div><div data-l="النهارده / Today"><span class="ar">استبيانات قليلة ومتفرقة</span><span class="en">Few, scattered surveys</span></div><div data-l="مع Internest"><span class="ar">تقييم منظم بعد كل تدريب أو مهمة</span><span class="en">Structured rating after every internship or task</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== VALUE =========================== -->
+<section class="sec" id="value">
+  <div class="wrap">
+    <div class="sh"><div class="kick"><span class="ar">الجامعة بتاخد إيه</span><span class="en">What the university gets</span></div><h2><span class="ar">خمس حاجات، مرتبة حسب أهميتها للجامعة</span><span class="en">Five things, ordered by what matters most</span></h2></div>
+    <div class="vals">
+      <div class="val big"><span class="flag"><span class="ar">الأهم</span><span class="en">Most important</span></span><div class="rk">01</div><h3><span class="ar">تقرير مهارات يدعم ملف الاعتماد</span><span class="en">A skills report for your accreditation file</span></h3><p><span class="ar">لكل كلية ولكل دفعة: مستوى المهارات، ساعات التدريب الموثقة، المشاريع، وتقييم جهات العمل. بيوفر أسابيع من التجميع اليدوي كل سنة.</span><span class="en">Per faculty and cohort: skill levels, verified training hours, projects and employer ratings. It saves weeks of manual work every year.</span></p></div>
+      <div class="val big" style="background:var(--surface);color:var(--ink);border-color:var(--line)"><div class="rk" style="color:var(--ink-3)">02</div><h3><span class="ar">فرص تدريب حقيقية لطلابكم</span><span class="en">Real opportunities for your students</span></h3><p style="color:var(--ink-2)"><span class="ar">تدريب وgigs وchallenges من شبكة startups بتكبر كل شهر، ومنها أماكن للتدريب الصيفي الإلزامي.</span><span class="en">Internships, gigs and challenges from a growing startup network, including places for mandatory summer training.</span></p></div>
+      <div class="val"><div class="rk">03</div><h3><span class="ar">داشبورد لكل كلية</span><span class="en">A dashboard per faculty</span></h3><p><span class="ar">العميد يشوف النشاط والتدريب وفجوة المهارات في أي وقت.</span><span class="en">Deans see activity, training and the skills gap at any time.</span></p></div>
+      <div class="val"><div class="rk">04</div><h3><span class="ar">مدخلات لتطوير المناهج</span><span class="en">Input for curriculum development</span></h3><p><span class="ar">تقييمات الشركات بتوضح إيه اللي ناقص في الخريجين بالظبط.</span><span class="en">Company ratings show exactly what graduates are missing.</span></p></div>
+      <div class="val"><div class="rk">05</div><h3><span class="ar">ميزة في حملات القبول</span><span class="en">An edge in admissions</span></h3><p><span class="ar">"طلابنا بيتدربوا مع startups حقيقية"، ومدعومة بأرقام.</span><span class="en">"Our students train with real startups", backed by numbers.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== REPORT =========================== -->
+<section class="sec" id="report">
+  <div class="wrap rp">
+    <div class="stack" aria-hidden="true">
+      <div class="pg p2">
+        <div class="pg-top"><span><span class="ar">ملخص الدفعة</span><span class="en">Cohort summary</span></span><span>2</span></div>
+        <div class="mini-k"><div><b>412</b><span><span class="ar">طالب مسجل</span><span class="en">registered</span></span></div><div><b>9,860</b><span><span class="ar">ساعة تدريب</span><span class="en">training hours</span></span></div><div><b>138</b><span><span class="ar">أتموا تدريب</span><span class="en">completed</span></span></div><div><b>4.3</b><span><span class="ar">تقييم جهات العمل</span><span class="en">employer rating</span></span></div></div>
+        <div class="mini-bars"><div><span>Backend</span><i style="width:66%"></i></div><div><span>SQL</span><i style="width:60%"></i></div><div><span>Git</span><i style="width:72%"></i></div><div><span>Frontend</span><i style="width:92%"></i></div><div><span>English</span><i style="width:79%"></i></div></div>
+      </div>
+      <div class="pg p1">
+        <div class="pg-top"><span><span class="ar">جامعة النموذج (افتراضية)</span><span class="en">Model University (fictional)</span></span><span><span class="lg"></span> Internest</span></div>
+        <div class="seal"><span class="ar">يدعم ملف الجودة والاعتماد</span><span class="en">Supports quality & accreditation</span></div>
+        <h4><span class="ar">تقرير المهارات والتدريب العملي</span><span class="en">Skills & Practical Training Report</span></h4>
+        <div class="pg-m"><span class="ar">كلية الحاسبات والمعلومات · 2026/2027</span><span class="en">Faculty of Computers & Information · 2026/2027</span></div>
+        <div class="pg-band"><b><span class="ar">نموذج توضيحي</span><span class="en">Illustrative sample</span></b><span class="ar">كل الأرقام في هذا النموذج افتراضية</span><span class="en">All figures in this sample are fictional</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="sh" style="margin-bottom:0"><div class="kick"><span class="ar">التقرير</span><span class="en">The report</span></div><h2><span class="ar">تقرير بتسلموه آخر كل تيرم وكل سنة</span><span class="en">A report every semester and every year</span></h2><p><span class="ar">بيطلع من نشاط الطلاب الفعلي على المنصة، مقسّم لكل كلية، وجاهز للإرفاق.</span><span class="en">Generated from students' actual activity on the platform, broken down by faculty, ready to attach.</span></p></div>
+      <ul class="checks">
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span><span class="ar">أدلة على ارتباط الطلاب بسوق العمل والتدريب الميداني</span><span class="en">Evidence of job-market links and field training</span></span></li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span><span class="ar">رأي جهات العمل في مستوى الطلاب، حسب كل كفاءة</span><span class="en">Employer views of student level, by competency</span></span></li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span><span class="ar">مقارنة بين الدفعات والسنين</span><span class="en">Comparison across cohorts and years</span></span></li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span><span class="ar">توصيات عملية لتطوير البرامج</span><span class="en">Practical recommendations for programmes</span></span></li>
+      </ul>
+      <div class="ctas" style="margin-top:28px"><button class="btn btn-green" type="button" data-open-report><span class="ar">شوفوا التقرير النموذجي كامل</span><span class="en">View the full sample report</span></button></div>
+      <p class="note"><span class="ar">التقرير مصمم يدعم أدلة معايير الجودة والاعتماد. قبل الـ Pilot بنظبط مؤشراته مع وحدة ضمان الجودة عندكم.</span><span class="en">The report is designed to support quality and accreditation evidence. Before the pilot we align its indicators with your quality-assurance unit.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== PILOT =========================== -->
+<section class="sec" id="pilot">
+  <div class="wrap">
+    <div class="sh"><div class="kick"><span class="ar">إزاي بنبدأ</span><span class="en">How we start</span></div><h2><span class="ar">تيرم Pilot مجاني، بمؤشرات نجاح مكتوبة</span><span class="en">A free pilot semester, with written success measures</span></h2><p><span class="ar">كلية أو اتنين في البداية. القرار بعدها بيبقى على أرقام حقيقية من طلابكم.</span><span class="en">One or two faculties to start. The decision afterwards rests on real numbers from your students.</span></p></div>
+    <div class="steps">
+      <div class="st"><div class="w"><span class="ar">الأسبوع الأول</span><span class="en">Week 1</span></div><h3><span class="ar">اجتماع وتوقيع</span><span class="en">Meet and sign</span></h3><p><span class="ar">نحدد الكليات ومؤشرات النجاح، ونوقع بروتوكول تعاون.</span><span class="en">Choose faculties and success measures; sign a cooperation protocol.</span></p></div>
+      <div class="st"><div class="w"><span class="ar">من الأسبوع 2 إلى 4</span><span class="en">Weeks 2 to 4</span></div><h3><span class="ar">الإطلاق للطلاب</span><span class="en">Launch to students</span></h3><p><span class="ar">جلسة تعريفية في الكلية، والطلاب يسجلوا ويعملوا تحليل المهارات.</span><span class="en">An intro session at the faculty; students sign up and run their skills analysis.</span></p></div>
+      <div class="st"><div class="w"><span class="ar">طول التيرم</span><span class="en">Through the semester</span></div><h3><span class="ar">التشغيل والمتابعة</span><span class="en">Run and monitor</span></h3><p><span class="ar">فرص وchallenges كل أسبوع، وداشبورد بيتحدث أول بأول.</span><span class="en">Weekly opportunities and challenges, with a live dashboard.</span></p></div>
+      <div class="st"><div class="w"><span class="ar">آخر التيرم</span><span class="en">End of semester</span></div><h3><span class="ar">التقرير والقرار</span><span class="en">Report and decide</span></h3><p><span class="ar">تقرير كامل، ونراجع النتايج مقابل المؤشرات المتفق عليها.</span><span class="en">A full report, reviewed against the agreed measures.</span></p></div>
+    </div>
+    <div class="terms">
+      <div><b><span class="ar">0 جنيه</span><span class="en">EGP 0</span></b><span><span class="ar">تكلفة الـ Pilot على الجامعة</span><span class="en">Pilot cost to the university</span></span></div>
+      <div><b><span class="ar">0 جنيه</span><span class="en">EGP 0</span></b><span><span class="ar">على الطالب، في الـ Pilot وبعده</span><span class="en">For students, during and after the pilot</span></span></div>
+      <div><b><span class="ar">لكل كلية</span><span class="en">Per faculty</span></b><span><span class="ar">تسعير العقد السنوي بعد الـ Pilot</span><span class="en">Annual contract pricing after the pilot</span></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== STUDENTS =========================== -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sh"><div class="kick"><span class="ar">للطالب</span><span class="en">For students</span></div><h2><span class="ar">والطالب بياخد إيه، ببلاش</span><span class="en">What students get, free</span></h2></div>
+    <div class="stu">
+      <div><h3><span class="ar">فرص حقيقية</span><span class="en">Real opportunities</span></h3><p><span class="ar">تدريب وgigs وchallenges يثبت فيها مهارته بالشغل.</span><span class="en">Internships, gigs and challenges to prove skills through work.</span></p></div>
+      <div><h3><span class="ar">تحليل مهارات بالـ AI</span><span class="en">AI skills analysis</span></h3><p><span class="ar">من الـ CV وLinkedIn، مش مجرد كلمات مفتاحية.</span><span class="en">From CV and LinkedIn, beyond keywords.</span></p></div>
+      <div><h3><span class="ar">Skill Score موثق</span><span class="en">A verified Skill Score</span></h3><p><span class="ar">مهام واختبارات قصيرة تأكد المهارة للشركات.</span><span class="en">Short tasks and tests that confirm skills to companies.</span></p></div>
+      <div><h3><span class="ar">CV لكل فرصة</span><span class="en">A CV per opportunity</span></h3><p><span class="ar">CV متظبط على كل فرصة، وتقديم بضغطة زرار.</span><span class="en">Tailored CVs and one-click applications.</span></p></div>
+      <div><h3><span class="ar">متابعة كل طلب</span><span class="en">Application tracking</span></h3><p><span class="ar">يعرف كل طلب قدّمه وصل لفين.</span><span class="en">Always knows where each application stands.</span></p></div>
+      <div><h3><span class="ar">خطة سد الفجوة</span><span class="en">A plan to close the gap</span></h3><p><span class="ar">يعرف ناقصه إيه للفرصة اللي عايزها، وكورسات ترشحه ليها.</span><span class="en">Sees what's missing for the role they want, with course suggestions.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== TRUST =========================== -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sh"><div class="kick"><span class="ar">البيانات والخصوصية</span><span class="en">Data and privacy</span></div><h2><span class="ar">بيانات الطالب ملكه</span><span class="en">Student data belongs to the student</span></h2></div>
+    <div class="trust">
+      <div class="tr"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/></svg></div><h3><span class="ar">متوافق مع القانون المصري</span><span class="en">Aligned with Egyptian law</span></h3><p><span class="ar">نلتزم بقانون حماية البيانات الشخصية رقم 151 لسنة 2020.</span><span class="en">We follow Personal Data Protection Law No. 151 of 2020.</span></p></div>
+      <div class="tr"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3.5 3.5 0 0 1 0 7M21 20c0-2.6-1.7-4.9-4-5.7"/></svg></div><h3><span class="ar">تقارير مجمعة للجامعة</span><span class="en">Aggregated reports</span></h3><p><span class="ar">الجامعة بتشوف أرقام مجمعة من غير أسماء. البيانات الفردية بموافقة الطالب بس.</span><span class="en">The university sees aggregated, anonymised figures. Individual data only with student consent.</span></p></div>
+      <div class="tr"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><h3><span class="ar">مفيش بيع للبيانات</span><span class="en">No data selling</span></h3><p><span class="ar">بيانات الطلاب مش بتتباع، ومش بتستخدم لأي غرض غير اللي في البروتوكول.</span><span class="en">Student data is never sold or used beyond the protocol's purposes.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== FAQ =========================== -->
+<section class="sec" id="faq">
+  <div class="wrap">
+    <div class="sh c"><h2><span class="ar">أسئلة بتتسأل كتير</span><span class="en">Common questions</span></h2></div>
+    <div class="faq">
+      <details><summary><span class="ar">الـ Pilot بيكلف الجامعة إيه؟</span><span class="en">What does the pilot cost?</span></summary><p><span class="ar">ولا حاجة. التيرم التجريبي مجاني بالكامل. محتاجين منكم منسق واحد ومكان للجلسة التعريفية.</span><span class="en">Nothing. The pilot semester is fully free. We need one coordinator and a room for the intro session.</span></p></details>
+      <details><summary><span class="ar">الأرقام اللي في الداشبورد حقيقية؟</span><span class="en">Are the dashboard figures real?</span></summary><p><span class="ar">لأ. الداشبورد اللي في الصفحة دي نسخة توضيحية لجامعة افتراضية. أرقام جامعتكم الحقيقية بتظهر من أول أسبوع في الـ Pilot.</span><span class="en">No. The dashboard on this page is a demo for a fictional university. Your real figures appear from the first week of the pilot.</span></p></details>
+      <details><summary><span class="ar">ينفع كليات غير الحاسبات؟</span><span class="en">Does it work beyond computing?</span></summary><p><span class="ar">أيوه. الـ startups بتعيّن في التسويق والمبيعات والمحتوى والعمليات والموارد البشرية، فكليات زي التجارة والإعلام والألسن ليها فرص كتير.</span><span class="en">Yes. Startups hire for marketing, sales, content, operations and HR, so business, media and languages faculties have many opportunities.</span></p></details>
+      <details><summary><span class="ar">التقرير بيتوافق مع متطلبات الاعتماد؟</span><span class="en">Does the report fit accreditation needs?</span></summary><p><span class="ar">مصمم يدعم أدلة الارتباط بسوق العمل والتدريب العملي. وقبل الـ Pilot بنقعد مع وحدة ضمان الجودة عندكم ونظبط المؤشرات على اللي بتحتاجوه.</span><span class="en">It is designed to support evidence on job-market links and practical training. Before the pilot we align indicators with your quality-assurance unit.</span></p></details>
+      <details><summary><span class="ar">التجهيز بياخد قد إيه؟</span><span class="en">How long is setup?</span></summary><p><span class="ar">المنصة شغالة بالفعل. بعد التوقيع، الطلاب يقدروا يسجلوا خلال أسبوع.</span><span class="en">The platform is live. Students can sign up within a week of signing.</span></p></details>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== CONTACT =========================== -->
+<section class="contact" id="contact">
+  <div class="wrap">
+    <div>
+      <div class="c-logo"><span class="lg" role="img" aria-label="Internest logo"></span></div>
+      <h2><span class="ar">نبدأ بتيرم واحد، ونخلي الأرقام تتكلم</span><span class="en">Start with one semester and let the numbers speak</span></h2>
+      <p class="lead"><span class="ar">اجتماع 30 دقيقة نعرض فيه الداشبورد والتقرير، ونقترح كليات الـ Pilot.</span><span class="en">A 30-minute meeting to walk through the dashboard and suggest pilot faculties.</span></p>
+      <ul>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6cc9a8" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="ar">بدون أي التزام مالي</span><span class="en">No financial commitment</span></li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6cc9a8" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="ar">بنرد خلال يومين عمل</span><span class="en">We reply within two working days</span></li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6cc9a8" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="ar">في الجامعة أو أونلاين</span><span class="en">On campus or online</span></li>
+      </ul>
+      <div class="reach">
+        <a class="wa" id="waLink" href="#" target="_blank" rel="noopener"><span class="ri"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg></span><span><small><span class="ar">واتساب</span><span class="en">WhatsApp</span></small><b id="waShow"></b></span></a>
+        <a class="ph" id="telLink" href="#"><span class="ri"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg></span><span><small><span class="ar">اتصال مباشر</span><span class="en">Call</span></small><b id="telShow"></b></span></a>
+        <button class="ml" id="mailCopy" type="button"><span class="ri"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span><span><small><span class="ar">البريد الإلكتروني</span><span class="en">Email</span></small><b id="mailShow"></b></span><span class="cp" id="cpTxt"><span class="ar">نسخ</span><span class="en">Copy</span></span></button>
+      </div>
+    </div>
+    <form class="form" id="form" novalidate>
+      <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+      <label><span><span class="ar">الاسم</span><span class="en">Name</span></span><input name="name" required autocomplete="name"></label>
+      <label><span><span class="ar">المنصب</span><span class="en">Position</span></span><input name="role" required></label>
+      <label><span><span class="ar">الجامعة</span><span class="en">University</span></span><input name="uni" required></label>
+      <label><span><span class="ar">الكلية</span><span class="en">Faculty</span></span><input name="fac"></label>
+      <label><span><span class="ar">البريد الإلكتروني</span><span class="en">Email</span></span><input name="email" type="email" autocomplete="email" dir="ltr"></label>
+      <label><span><span class="ar">رقم الموبايل</span><span class="en">Mobile number</span></span><input name="phone" type="tel" autocomplete="tel" dir="ltr"></label>
+      <label class="full"><span><span class="ar">رسالة (اختياري)</span><span class="en">Message (optional)</span></span><textarea name="msg"></textarea></label>
+      <p class="err" id="formErr"><span class="ar">اكتب الاسم والمنصب والجامعة، وإيميل أو رقم موبايل علشان نقدر نرد عليك.</span><span class="en">Please add your name, position, university, and an email or mobile number so we can reply.</span></p>
+      <div class="two">
+        <button class="btn b-wa" type="submit" value="wa"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg><span class="ar">احجز عبر واتساب</span><span class="en">Book via WhatsApp</span></button>
+        <button class="btn b-ml" type="submit" value="mail"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span class="ar">احجز عبر الإيميل</span><span class="en">Book via email</span></button>
+      </div>
+      <p class="ok" id="formOk"><span class="ar">اتفتحت رسالة جاهزة بطلبك، اضغط إرسال وهنرد عليك خلال يومين عمل. لو مفتحتش، ابعتلنا مباشرة على الواتساب أو الإيميل اللي على اليمين.</span><span class="en">A ready message with your request has opened; press send and we'll reply within two working days. If nothing opened, contact us directly via WhatsApp or email.</span></p>
+      <p class="fine"><span class="ar">بنستخدم البيانات دي للتواصل معاك بخصوص الاجتماع بس.</span><span class="en">We only use these details to contact you about the meeting.</span></p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="f-brand"><span class="logo-tile"><span class="lg" role="img" aria-label="Internest logo"></span></span>© 2026 Internest</span>
+    <span><span class="ar">كل الأرقام والأسماء في الداشبورد والتقرير النموذجي افتراضية.</span><span class="en">All figures and names in the demo dashboard and sample report are fictional.</span></span>
+    <span class="f-links"><a href="{% url 'landing' %}">Internest</a> · <a href="{% url 'privacy' %}"><span class="ar">سياسة الخصوصية</span><span class="en">Privacy</span></a> · <a href="{% url 'terms' %}"><span class="ar">الشروط والأحكام</span><span class="en">Terms</span></a></span>
+  </div>
+</footer>
+
+<!-- =========================== REPORT MODAL =========================== -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Sample report">
+  <div class="m-bar"><b><span class="ar">تقرير نموذجي (بيانات افتراضية)</span><span class="en">Sample report (fictional data)</span></b><div class="sp"><button class="btn btn-green btn-sm" type="button" id="printBtn"><span class="ar">طباعة / حفظ PDF</span><span class="en">Print / Save PDF</span></button><button class="m-close" type="button" id="closeBtn"><span class="ar">إغلاق</span><span class="en">Close</span></button></div></div>
+  <div id="sheets"></div>
+</div>
+
+<a class="fab" id="fab" href="#" target="_blank" rel="noopener" aria-label="WhatsApp"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg></a>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+/* ==========================================================
+   CONFIG: edit before publishing
+   ========================================================== */
+const CONFIG = {  // from settings.SUPPORT_EMAIL / SUPPORT_PHONE
+  email: "{{ SUPPORT_EMAIL|escapejs }}",
+  whatsapp: "{{ whatsapp|escapejs }}",
+  phoneDisplay: "{{ phone_display|escapejs }}",
+  phoneTel: "{{ SUPPORT_PHONE_INTL|escapejs }}",
+  inquiryUrl: "{% url 'university_inquiry' %}",
+  csrf: "{{ csrf_token }}"
+};
+
+/* ---------- helpers ---------- */
+let lang = "{{ page_lang }}";
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const L=(o)=> typeof o==="string"? o : o[lang];
+const fmt=(n)=> new Intl.NumberFormat("en-US").format(n);
+const tip=$("#tip");
+function showTip(html,x,y){tip.innerHTML=html;tip.classList.add("on");const r=tip.getBoundingClientRect();let l=x+14,t=y+14;if(l+r.width>innerWidth-8)l=x-r.width-14;if(t+r.height>innerHeight-8)t=y-r.height-14;tip.style.left=l+"px";tip.style.top=t+"px";}
+function hideTip(){tip.classList.remove("on");}
+function grow(){requestAnimationFrame(()=>requestAnimationFrame(()=>{$$("[data-w]").forEach(e=>e.style.width=e.dataset.w);$$("[data-h]").forEach(e=>e.style.height=e.dataset.h);}));}
+
+/* ---------- fictional data ---------- */
+const F = [
+ {id:"cs", n:{ar:"كلية الحاسبات والمعلومات",en:"Computers & Information"},
+  k:[412,9860,138,4.3], kd:[18,24,31,0.2],
+  weekly:[96,128,151,170,182,201,214,226,238,247,259,268],
+  funnel:[412,356,241,162,138],
+  skills:[[{ar:"Backend (Python / Node)",en:"Backend (Python / Node)"},72,48],[{ar:"قواعد البيانات وSQL",en:"Databases & SQL"},61,37],[{ar:"Git والعمل في فريق",en:"Git & teamwork"},80,58],[{ar:"Frontend",en:"Frontend"},55,51],[{ar:"تواصل بالإنجليزي",en:"English communication"},66,52],[{ar:"Testing / QA",en:"Testing / QA"},40,22]],
+  years:[34,47,61,72],
+  hours:[1120,1840,2410,2650,1840],
+  types:[[{ar:"تدريب (Internship)",en:"Internship"},64],[{ar:"مهمة قصيرة (Gig)",en:"Gig"},41],[{ar:"تحدي عملي (Challenge)",en:"Challenge"},33]],
+  ratings:[[{ar:"المهارة التقنية",en:"Technical skill"},4.1],[{ar:"الالتزام بالمواعيد",en:"Reliability"},4.5],[{ar:"العمل في فريق",en:"Teamwork"},4.4],[{ar:"التواصل",en:"Communication"},3.9],[{ar:"حل المشكلات",en:"Problem solving"},4.2]],
+  sectors:[[{ar:"Fintech",en:"Fintech"},11],[{ar:"SaaS",en:"SaaS"},8],[{ar:"E-commerce",en:"E-commerce"},6],[{ar:"AI / Data",en:"AI / Data"},5],[{ar:"HealthTech",en:"HealthTech"},3]],
+  roles:[{ar:"Backend Intern",en:"Backend Intern"},{ar:"QA Intern",en:"QA Intern"},{ar:"Data Analyst Gig",en:"Data Analyst Gig"},{ar:"Frontend Challenge",en:"Frontend Challenge"},{ar:"Mobile Intern",en:"Mobile Intern"},{ar:"DevOps Gig",en:"DevOps Gig"}]
+ },
+ {id:"bus", n:{ar:"كلية التجارة",en:"Commerce & Business"},
+  k:[538,7240,121,4.1], kd:[22,19,27,0.1],
+  weekly:[110,142,173,196,214,233,251,262,270,281,290,297],
+  funnel:[538,451,288,149,121],
+  skills:[[{ar:"Excel وتحليل البيانات",en:"Excel & data analysis"},78,49],[{ar:"التحليل المالي",en:"Financial analysis"},52,33],[{ar:"التسويق الرقمي",en:"Digital marketing"},58,41],[{ar:"المبيعات والتواصل",en:"Sales & communication"},64,55],[{ar:"تواصل بالإنجليزي",en:"English communication"},70,50],[{ar:"أدوات CRM",en:"CRM tools"},35,18]],
+  years:[31,42,55,66],
+  hours:[860,1390,1820,1910,1260],
+  types:[[{ar:"تدريب (Internship)",en:"Internship"},52],[{ar:"مهمة قصيرة (Gig)",en:"Gig"},44],[{ar:"تحدي عملي (Challenge)",en:"Challenge"},25]],
+  ratings:[[{ar:"المهارة التقنية",en:"Technical skill"},3.8],[{ar:"الالتزام بالمواعيد",en:"Reliability"},4.4],[{ar:"العمل في فريق",en:"Teamwork"},4.3],[{ar:"التواصل",en:"Communication"},4.2],[{ar:"حل المشكلات",en:"Problem solving"},3.9]],
+  sectors:[[{ar:"Fintech",en:"Fintech"},9],[{ar:"E-commerce",en:"E-commerce"},8],[{ar:"Logistics",en:"Logistics"},5],[{ar:"SaaS",en:"SaaS"},4],[{ar:"PropTech",en:"PropTech"},3]],
+  roles:[{ar:"Sales Intern",en:"Sales Intern"},{ar:"Finance Analyst Gig",en:"Finance Analyst Gig"},{ar:"Operations Intern",en:"Operations Intern"},{ar:"Market Research Challenge",en:"Market Research Challenge"},{ar:"Growth Intern",en:"Growth Intern"},{ar:"Excel Reporting Gig",en:"Excel Reporting Gig"}]
+ },
+ {id:"com", n:{ar:"كلية الإعلام",en:"Mass Communication"},
+  k:[296,5120,87,4.4], kd:[15,21,26,0.3],
+  weekly:[64,82,99,113,124,136,141,150,158,163,170,176],
+  funnel:[296,247,160,101,87],
+  skills:[[{ar:"كتابة المحتوى",en:"Content writing"},74,60],[{ar:"مونتاج الفيديو",en:"Video editing"},56,38],[{ar:"تحليلات السوشيال ميديا",en:"Social media analytics"},49,27],[{ar:"التصميم (Canva / Figma)",en:"Design (Canva / Figma)"},52,40],[{ar:"تواصل بالإنجليزي",en:"English communication"},62,47],[{ar:"SEO",en:"SEO"},33,15]],
+  years:[36,49,58,70],
+  hours:[640,980,1290,1370,840],
+  types:[[{ar:"تدريب (Internship)",en:"Internship"},31],[{ar:"مهمة قصيرة (Gig)",en:"Gig"},38],[{ar:"تحدي عملي (Challenge)",en:"Challenge"},18]],
+  ratings:[[{ar:"المهارة التقنية",en:"Technical skill"},4.2],[{ar:"الالتزام بالمواعيد",en:"Reliability"},4.3],[{ar:"العمل في فريق",en:"Teamwork"},4.5],[{ar:"التواصل",en:"Communication"},4.6],[{ar:"حل المشكلات",en:"Problem solving"},4.0]],
+  sectors:[[{ar:"Media",en:"Media"},7],[{ar:"E-commerce",en:"E-commerce"},6],[{ar:"Consumer apps",en:"Consumer apps"},5],[{ar:"EdTech",en:"EdTech"},4],[{ar:"Fintech",en:"Fintech"},2]],
+  roles:[{ar:"Content Intern",en:"Content Intern"},{ar:"Video Editing Gig",en:"Video Editing Gig"},{ar:"Social Media Intern",en:"Social Media Intern"},{ar:"Campaign Challenge",en:"Campaign Challenge"},{ar:"Copywriting Gig",en:"Copywriting Gig"},{ar:"PR Intern",en:"PR Intern"}]
+ }
+];
+const ALL={id:"all", n:{ar:"كل الكليات",en:"All faculties"}};
+(function buildAll(){
+  const s=(k)=>F.reduce((a,f)=>a.map((v,i)=>v+f[k][i]),F[0][k].map(()=>0));
+  ALL.k=[F.reduce((a,f)=>a+f.k[0],0),F.reduce((a,f)=>a+f.k[1],0),F.reduce((a,f)=>a+f.k[2],0),+(F.reduce((a,f)=>a+f.k[3]*f.k[2],0)/F.reduce((a,f)=>a+f.k[2],0)).toFixed(1)];
+  ALL.kd=[19,22,28,0.2]; ALL.weekly=s("weekly"); ALL.funnel=s("funnel"); ALL.hours=s("hours");
+  ALL.years=F[0].years.map((_,i)=>Math.round(F.reduce((a,f)=>a+f.years[i],0)/F.length));
+  ALL.skills=[[{ar:"تواصل بالإنجليزي",en:"English communication"},66,50],[{ar:"Excel وتحليل البيانات",en:"Excel & data analysis"},64,41],[{ar:"العمل في فريق",en:"Teamwork"},75,57],[{ar:"تحليل البيانات",en:"Data analysis"},58,33],[{ar:"كتابة المحتوى",en:"Content writing"},47,40],[{ar:"أدوات رقمية متخصصة",en:"Specialised digital tools"},51,29]];
+  ALL.types=F[0].types.map((t,i)=>[t[0],F.reduce((a,f)=>a+f.types[i][1],0)]);
+  ALL.ratings=F[0].ratings.map((r,i)=>[r[0],+(F.reduce((a,f)=>a+f.ratings[i][1],0)/F.length).toFixed(1)]);
+  ALL.sectors=[[{ar:"Fintech",en:"Fintech"},22],[{ar:"E-commerce",en:"E-commerce"},20],[{ar:"SaaS",en:"SaaS"},12],[{ar:"Media",en:"Media"},7],[{ar:"Logistics",en:"Logistics"},5]];
+  ALL.roles=[F[0].roles[0],F[1].roles[0],F[2].roles[0],F[0].roles[2],F[1].roles[1],F[2].roles[1]];
+})();
+const FACS=[ALL,...F];
+const MONTHS={ar:["سبتمبر","أكتوبر","نوفمبر","ديسمبر","يناير"],en:["Sep","Oct","Nov","Dec","Jan"]};
+const YEARS={ar:["الفرقة 1","الفرقة 2","الفرقة 3","الفرقة 4"],en:["Year 1","Year 2","Year 3","Year 4"]};
+const FUN={ar:["سجلوا على المنصة","عملوا تحليل المهارات","قدموا على فرصة","اتقبلوا","أتموا التدريب أو المهمة"],en:["Registered","Completed skills analysis","Applied","Accepted","Completed internship or task"]};
+const KL={ar:["طالب مسجل","ساعة تدريب موثقة","طالب أتم تدريب أو مهمة","تقييم جهات العمل (من 5)"],en:["Students registered","Verified training hours","Completed internship or task","Employer rating (out of 5)"]};
+const VT={overview:{ar:"نظرة عامة",en:"Overview"},skills:{ar:"المهارات",en:"Skills"},training:{ar:"التدريب العملي",en:"Practical training"},employers:{ar:"تقييم جهات العمل",en:"Employer ratings"},reports:{ar:"التقارير",en:"Reports"}};
+let fac=1, view="overview";
+
+/* ---------- renderers ---------- */
+function renderKPIs(d){
+  $("#kpis").innerHTML=d.k.map((v,i)=>{
+    const dv=d.kd[i], val=i===3? v.toFixed(1): fmt(v);
+    const dtxt=`<bdi dir="ltr">${i===3? '+'+dv.toFixed(1) : '+'+dv+'%'}</bdi>`;
+    return `<div class="kpi"><div class="k-l">${KL[lang][i]}</div><div class="k-v">${val}</div><div class="k-d"><b class="up">${dtxt}</b> ${lang==="ar"?"عن التيرم اللي فات":"vs. last semester"}</div></div>`;
+  }).join("");
+}
+function renderLine(d){
+  const W=640,H=430,p={l:46,r:12,t:14,b:28}, data=d.weekly, n=data.length;
+  const steps=[10,20,25,50,100,200,250,500];const raw=Math.max(...data)*1.1/4;const st=steps.find(x=>x>=raw)||500;const max=st*4;
+  const x=i=>p.l+i*(W-p.l-p.r)/(n-1), y=v=>p.t+(H-p.t-p.b)*(1-v/max);
+  let g=""; for(let k=0;k<=4;k++){const v=max*k/4;g+=`<line x1="${p.l}" x2="${W-p.r}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${p.l-8}" y="${y(v)+4}" text-anchor="end">${Math.round(v)}</text>`;}
+  let xl=""; data.forEach((_,i)=>{ if(i%2===0||i===n-1) xl+=`<text class="ax" x="${x(i)}" y="${H-8}" text-anchor="middle">${i+1}</text>`;});
+  const path=data.map((v,i)=>`${i?"L":"M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+  const area=path+`L${x(n-1)},${y(0)}L${x(0)},${y(0)}Z`;
+  $("#lineChart").innerHTML=`<svg class="lc" viewBox="0 0 ${W} ${H}" role="img" aria-label="${lang==="ar"?"الطلاب النشطين أسبوعياً":"Weekly active students"}"><g class="grid">${g}</g>${xl}<path class="ar" d="${area}"/><path class="ln" d="${path}"/><line class="cross" y1="${p.t}" y2="${H-p.b}"/><circle class="dot" r="4.5"/><rect x="${p.l}" y="0" width="${W-p.l-p.r}" height="${H}" fill="transparent" class="hit"/></svg>`;
+  const svg=$("#lineChart svg"), hit=$(".hit",svg), cr=$(".cross",svg), dot=$(".dot",svg);
+  const move=(cx,cy)=>{const r=svg.getBoundingClientRect();const sx=(cx-r.left)*W/r.width;let i=Math.round((sx-p.l)/((W-p.l-p.r)/(n-1)));i=Math.max(0,Math.min(n-1,i));
+    cr.setAttribute("x1",x(i));cr.setAttribute("x2",x(i));dot.setAttribute("cx",x(i));dot.setAttribute("cy",y(data[i]));svg.classList.add("hov");
+    showTip(`<b>${lang==="ar"?"الأسبوع":"Week"} ${i+1}</b><br>${fmt(data[i])} ${lang==="ar"?"طالب نشط":"active students"}`,cx,cy);};
+  hit.addEventListener("mousemove",e=>move(e.clientX,e.clientY));
+  hit.addEventListener("mouseleave",()=>{svg.classList.remove("hov");hideTip();});
+}
+function renderFunnel(d){
+  const m=d.funnel[0];
+  $("#funnel").innerHTML=d.funnel.map((v,i)=>`<div>${i?`<div class="fn-d">${Math.round(v/d.funnel[i-1]*100)}% ${lang==="ar"?"كملوا للخطوة دي":"continued to this step"}</div>`:""}<div class="fn-h"><span>${FUN[lang][i]}</span><span>${fmt(v)}</span></div><div class="fn-b" data-w="${(v/m*100).toFixed(1)}%"></div></div>`).join("");
+}
+function insight(el,html){$(el).innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg><span>${html}</span>`;}
+function renderPairs(d){
+  $("#pairs").innerHTML=d.skills.map((s,i)=>`<div class="pb-row" data-i="${i}"><div class="pb-name">${L(s[0])}</div><div class="pb-bars">
+    <div class="pb-line"><div class="fill g" data-w="calc((100% - 44px) * ${s[1]/100})"></div><span class="v">${s[1]}%</span></div>
+    <div class="pb-line"><div class="fill n" data-w="calc((100% - 44px) * ${s[2]/100})"></div><span class="v">${s[2]}%</span></div></div></div>`).join("");
+  $$("#pairs .pb-row").forEach(r=>{const s=d.skills[+r.dataset.i];
+    const h=`<b>${L(s[0])}</b><br>${lang==="ar"?"مطلوبة في":"Required in"} ${s[1]}% ${lang==="ar"?"من الفرص":"of opportunities"}<br>${lang==="ar"?"أثبتها":"Proven by"} ${s[2]}% ${lang==="ar"?"من الطلاب":"of students"}<br>${lang==="ar"?"الفجوة":"Gap"}: ${s[1]-s[2]} ${lang==="ar"?"نقطة":"pts"}`;
+    r.onmousemove=e=>showTip(h,e.clientX,e.clientY); r.onmouseleave=hideTip;});
+}
+function renderCols(el,vals,labels,fmtv){
+  const m=Math.max(...vals)*1.12;
+  $(el).innerHTML=vals.map((v,i)=>`<div class="cc-col"><span class="cc-v">${fmtv?fmtv(v):v}</span><div class="cc-bar" data-h="${(v/m*100).toFixed(1)}%"></div><span class="cc-x">${labels[i]}</span></div>`).join("");
+}
+function renderRB(el,rows,max,dec){
+  $(el).innerHTML=rows.map(r=>`<div class="rb-row"><span>${L(r[0])}</span><div class="rb-track"><div class="rb-fill" data-w="${(r[1]/max*100).toFixed(1)}%"></div></div><span class="num">${dec?r[1].toFixed(1):r[1]}</span></div>`).join("");
+}
+function renderPlacements(d){
+  const types=[{ar:"تدريب",en:"Internship",c:"g"},{ar:"Gig",en:"Gig",c:""},{ar:"Challenge",en:"Challenge",c:"y"}];
+  const sect=d.sectors.map(s=>L(s[0]));
+  const rows=d.roles.map((r,i)=>{const t=/Gig/.test(r.en)?types[1]:/Challenge/.test(r.en)?types[2]:types[0];
+    const hrs=t===types[0]?[120,96,160,112][i%4]:t===types[1]?[24,18,30][i%3]:[12,16][i%2];
+    const rate=[4.6,4.2,4.8,4.0,4.4,4.5][i];
+    return `<tr><td>${lang==="ar"?"طالب":"Student"} #${1042+i*37}</td><td>Startup ${"ABCDEF"[i]} · ${sect[i%sect.length]}</td><td>${L(r)}</td><td><span class="pill ${t.c}">${L(t)}</span></td><td class="n">${hrs}</td><td class="n">${rate.toFixed(1)}</td></tr>`;}).join("");
+  $("#placements").innerHTML=`<table class="t"><thead><tr><th>${lang==="ar"?"الطالب":"Student"}</th><th>${lang==="ar"?"جهة العمل":"Employer"}</th><th>${lang==="ar"?"الدور":"Role"}</th><th>${lang==="ar"?"النوع":"Type"}</th><th>${lang==="ar"?"ساعات":"Hours"}</th><th>${lang==="ar"?"التقييم":"Rating"}</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function render(){
+  const d=FACS[fac];
+  $("#viewTitle").textContent=L(VT[view]);
+  renderKPIs(d); renderLine(d); renderFunnel(d);
+  const best=d.skills.reduce((a,b)=>(b[1]-b[2]>a[1]-a[2])?b:a);
+  const conv=Math.round(d.funnel[4]/d.funnel[0]*100);
+  insight("#insight1", lang==="ar"? `<b>${conv}%</b> من الطلاب المسجلين أتموا تدريب أو مهمة عملية. أكبر نقطة تسرّب بين "قدموا" و"اتقبلوا"، وده غالباً بيتحل بتجهيز الـ CV ومهارات المقابلة.` : `<b>${conv}%</b> of registered students completed an internship or task. The biggest drop is between "applied" and "accepted", usually solved with CV and interview preparation.`);
+  renderPairs(d);
+  renderCols("#years",d.years,YEARS[lang]);
+  insight("#insight2", lang==="ar"? `أكبر فجوة: <b>${L(best[0])}</b>، مطلوبة في ${best[1]}% من الفرص وأثبتها ${best[2]}% بس من الطلاب. دي إشارة مباشرة للجنة تطوير المناهج.` : `Largest gap: <b>${L(best[0])}</b>, required in ${best[1]}% of opportunities but proven by only ${best[2]}% of students. A direct signal for the curriculum committee.`);
+  renderCols("#hours",d.hours,MONTHS[lang],fmt);
+  renderRB("#types",d.types,Math.max(...d.types.map(t=>t[1]))*1.1,false);
+  renderPlacements(d);
+  renderRB("#ratings",d.ratings,5,true);
+  renderRB("#sectors",d.sectors,Math.max(...d.sectors.map(t=>t[1]))*1.1,false);
+  const low=d.ratings.reduce((a,b)=>b[1]<a[1]?b:a), hi=d.ratings.reduce((a,b)=>b[1]>a[1]?b:a);
+  insight("#insight3", lang==="ar"? `جهات العمل بتقيّم <b>${L(hi[0])}</b> أعلى حاجة (${hi[1].toFixed(1)})، و<b>${L(low[0])}</b> أقل حاجة (${low[1].toFixed(1)}). ورش قصيرة في ${L(low[0])} ممكن ترفع التقييم العام.` : `Employers rate <b>${L(hi[0])}</b> highest (${hi[1].toFixed(1)}) and <b>${L(low[0])}</b> lowest (${low[1].toFixed(1)}). Short workshops on ${L(low[0]).toLowerCase()} could lift the overall rating.`);
+  grow();
+}
+function renderSelect(){
+  $("#facSel").innerHTML=FACS.map((f,i)=>`<option value="${i}" ${i===fac?"selected":""}>${L(f.n)}</option>`).join("");
+}
+
+/* ---------- report sheets ---------- */
+function renderReport(){
+  const d=FACS[fac]===ALL?F[0]:FACS[fac], ar=lang==="ar";
+  const wm=`<div class="wm"><span>${ar?"نموذج افتراضي":"SAMPLE"}</span></div>`;
+  const foot=(p)=>`<div class="foot"><span>${ar?"تقرير نموذجي ببيانات افتراضية · Internest":"Sample report with fictional data · Internest"}</span><span>${p}</span></div>`;
+  const s1=`<div class="sheet">${wm}<div class="sh-top"><span>${ar?"جامعة النموذج (جامعة افتراضية)":"Model University (fictional)"}</span><span class="s-logo"><span class="lg"></span>Internest</span></div>
+    <div class="cover-logo lg"></div>
+    <h1>${ar?"تقرير المهارات والتدريب العملي":"Skills & Practical Training Report"}</h1>
+    <div class="meta">${L(d.n)} · ${ar?"العام الجامعي 2026/2027":"Academic year 2026/2027"}</div>
+    <div class="cover-band"><div><b>${ar?"أعده":"Prepared by"}</b>Internest</div><div><b>${ar?"الفترة":"Period"}</b>${ar?"الفصل الدراسي الأول":"Fall semester"}</div><div><b>${ar?"الغرض":"Purpose"}</b>${ar?"دعم ملف الجودة والاعتماد":"Supporting the quality & accreditation file"}</div></div>
+    <h2>${ar?"المحتويات":"Contents"}</h2><ol><li>${ar?"ملخص تنفيذي ومؤشرات الدفعة":"Executive summary and cohort indicators"}</li><li>${ar?"خريطة المهارات مقابل طلب السوق":"Skills map vs. market demand"}</li><li>${ar?"التدريب العملي وتقييم جهات العمل":"Practical training and employer ratings"}</li><li>${ar?"توصيات لتطوير البرامج":"Recommendations for programme development"}</li></ol>${foot(1)}</div>`;
+  const s2=`<div class="sheet">${wm}<div class="sh-top"><span class="s-logo"><span class="lg"></span>${L(d.n)}</span><span>2</span></div>
+    <h2 style="margin-top:10px">1. ${ar?"ملخص تنفيذي":"Executive summary"}</h2>
+    <p>${ar?`خلال الفصل الدراسي، سجل ${fmt(d.k[0])} طالب على المنصة، وأتم ${fmt(d.k[2])} طالب تدريباً أو مهمة عملية بإجمالي ${fmt(d.k[1])} ساعة تدريب موثقة من جهات العمل. بلغ متوسط تقييم جهات العمل ${d.k[3].toFixed(1)} من 5.`:`During the semester, ${fmt(d.k[0])} students registered and ${fmt(d.k[2])} completed an internship or practical task, totalling ${fmt(d.k[1])} employer-verified training hours. The average employer rating was ${d.k[3].toFixed(1)} out of 5.`}</p>
+    <div class="kgrid" style="margin-top:16px">${d.k.map((v,i)=>`<div><b>${i===3?v.toFixed(1):fmt(v)}</b><span>${KL[lang][i]}</span></div>`).join("")}</div>
+    <h2>2. ${ar?"خريطة المهارات مقابل طلب السوق":"Skills map vs. market demand"}</h2>
+    <table><thead><tr><th>${ar?"المهارة":"Skill"}</th><th>${ar?"مطلوبة في الفرص %":"Required %"}</th><th>${ar?"طلاب أثبتوها %":"Proven %"}</th><th>${ar?"الفجوة":"Gap"}</th></tr></thead><tbody>${d.skills.map(s=>`<tr><td>${L(s[0])}</td><td>${s[1]}</td><td>${s[2]}</td><td>${s[1]-s[2]}</td></tr>`).join("")}</tbody></table>
+    <h2>3. ${ar?"تقييم جهات العمل":"Employer ratings"}</h2>
+    <table><thead><tr><th>${ar?"الكفاءة":"Competency"}</th><th>${ar?"المتوسط من 5":"Average / 5"}</th></tr></thead><tbody>${d.ratings.map(r=>`<tr><td>${L(r[0])}</td><td>${r[1].toFixed(1)}</td></tr>`).join("")}</tbody></table>${foot(2)}</div>`;
+  const gaps=[...d.skills].sort((a,b)=>(b[1]-b[2])-(a[1]-a[2])).slice(0,3);
+  const s3=`<div class="sheet">${wm}<div class="sh-top"><span class="s-logo"><span class="lg"></span>${L(d.n)}</span><span>3</span></div>
+    <h2 style="margin-top:10px">4. ${ar?"توصيات لتطوير البرامج":"Recommendations"}</h2>
+    <ol>${gaps.map(g=>`<li>${ar?`تعزيز <b>${L(g[0])}</b> داخل المقررات أو بورش قصيرة، حيث الفجوة ${g[1]-g[2]} نقطة بين طلب السوق ومستوى الطلاب.`:`Strengthen <b>${L(g[0])}</b> in courses or short workshops; the gap between demand and student level is ${g[1]-g[2]} points.`}</li>`).join("")}
+    <li>${ar?"تجهيز الطلاب للمقابلات وكتابة الـ CV قبل موسم التدريب الصيفي لرفع نسبة القبول.":"Prepare students for interviews and CV writing before summer-training season to raise acceptance rates."}</li></ol>
+    <h2>${ar?"المنهجية":"Methodology"}</h2>
+    <p>${ar?"المهارات تُعتبر \"مثبتة\" عند اجتياز مهمة عملية أو اختبار على المنصة. ساعات التدريب تُحتسب بعد تأكيد جهة العمل. البيانات مجمعة ولا تتضمن أسماء طلاب.":"A skill counts as \"proven\" after passing a practical task or test on the platform. Training hours count after employer confirmation. Data is aggregated and contains no student names."}</p>
+    <p style="margin-top:24px;padding:14px;border:1px dashed #b07d1a;border-radius:6px;color:#7a5410">${ar?"تنبيه: هذا تقرير نموذجي لجامعة افتراضية، وكل الأرقام الواردة فيه افتراضية لأغراض التوضيح فقط.":"Note: this is a sample report for a fictional university. All figures are fictional and for illustration only."}</p>${foot(3)}</div>`;
+  $("#sheets").innerHTML=s1+s2+s3;
+}
+let lastFocus=null;
+function openReport(){lastFocus=document.activeElement;renderReport();$("#modal").classList.add("on");document.body.style.overflow="hidden";$("#closeBtn").focus();}
+function closeReport(){$("#modal").classList.remove("on");document.body.style.overflow="";lastFocus&&lastFocus.focus();}
+
+/* ---------- wiring ---------- */
+function applyLang(){
+  document.documentElement.lang=lang; document.documentElement.dir=lang==="ar"?"rtl":"ltr";
+  document.title=lang==="ar"?"Internest للجامعات":"Internest for Universities";
+  renderSelect(); render(); wireContacts();
+  if($("#modal").classList.contains("on")) renderReport();
+}
+$("#langBtn").onclick=()=>{lang=lang==="ar"?"en":"ar";document.cookie="internest_lang="+lang+";path=/;max-age=31536000;samesite=lax";applyLang();};
+$("#facSel").onchange=e=>{fac=+e.target.value;$$("[data-w]").forEach(x=>x.style.width="0");$$("[data-h]").forEach(x=>x.style.height="0");render();};
+$$(".nav-i").forEach(b=>b.onclick=()=>{view=b.dataset.v;$$(".nav-i").forEach(x=>x.setAttribute("aria-current",x===b));$$(".view").forEach(v=>v.classList.toggle("on",v.dataset.view===view));$("#viewTitle").textContent=L(VT[view]);$$(".view.on [data-w]").forEach(x=>x.style.width="0");$$(".view.on [data-h]").forEach(x=>x.style.height="0");grow();});
+document.addEventListener("click",e=>{if(e.target.closest("[data-open-report]"))openReport();});
+$("#closeBtn").onclick=closeReport;
+$("#modal").addEventListener("click",e=>{if(e.target.id==="modal")closeReport();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#modal").classList.contains("on"))closeReport();});
+$("#printBtn").onclick=()=>window.print();
+const waURL=(t)=>`https://wa.me/${CONFIG.whatsapp}${t?`?text=${encodeURIComponent(t)}`:""}`;
+function wireContacts(){
+  const hello=lang==="ar"?"أهلاً Internest، حابب أعرف أكتر عن Internest للجامعات وأحجز اجتماع تعريفي.":"Hello Internest, I'd like to learn more about Internest for Universities and book an intro meeting.";
+  $("#waLink").href=waURL(hello); $("#fab").href=waURL(hello);
+  $("#waShow").textContent=CONFIG.phoneDisplay; $("#telShow").textContent=CONFIG.phoneDisplay;
+  $("#telLink").href="tel:"+CONFIG.phoneTel; $("#mailShow").textContent=CONFIG.email;
+}
+$("#mailCopy").onclick=async()=>{
+  let ok=false; try{await navigator.clipboard.writeText(CONFIG.email);ok=true;}catch(e){}
+  if(!ok){location.href="mailto:"+CONFIG.email;return;}
+  const c=$("#cpTxt"); const old=c.innerHTML; c.innerHTML=lang==="ar"?"اتنسخ ✓":"Copied ✓"; setTimeout(()=>c.innerHTML=old,1800);
+};
+$("#form").addEventListener("submit",e=>{
+  e.preventDefault(); const f=e.target; const via=(e.submitter&&e.submitter.value)||"wa";
+  f.querySelectorAll("input,textarea").forEach(i=>i.style.borderColor="");
+  const req=["name","role","uni"].map(n=>f.elements[n]).filter(i=>!i.value.trim());
+  const em=f.elements.email, ph=f.elements.phone;
+  const emBad=em.value.trim() && !/^\S+@\S+\.\S+$/.test(em.value.trim());
+  const noReach=!em.value.trim() && !ph.value.trim();
+  if(req.length||emBad||noReach){
+    req.forEach(i=>i.style.borderColor="#b3402a"); if(emBad)em.style.borderColor="#b3402a"; if(noReach){em.style.borderColor="#b3402a";ph.style.borderColor="#b3402a";}
+    $("#formErr").style.display="block"; (req[0]||em).focus(); return;
+  }
+  $("#formErr").style.display="none";
+  const v=Object.fromEntries(new FormData(f)), ar=lang==="ar";
+  const lines=[ar?"طلب اجتماع تعريفي: Internest للجامعات":"Intro meeting request: Internest for Universities","",
+    `${ar?"الاسم":"Name"}: ${v.name}`,`${ar?"المنصب":"Position"}: ${v.role}`,`${ar?"الجامعة":"University"}: ${v.uni}`,`${ar?"الكلية":"Faculty"}: ${v.fac||"-"}`,
+    `${ar?"الإيميل":"Email"}: ${v.email||"-"}`,`${ar?"الموبايل":"Mobile"}: ${v.phone||"-"}`];
+  if(v.msg&&v.msg.trim()) lines.push("",v.msg.trim());
+  const body=lines.join("\n");
+  try{ const fd=new FormData(f); fd.append("channel",via);
+       fetch(CONFIG.inquiryUrl,{method:"POST",body:fd,keepalive:true,credentials:"same-origin",headers:{"X-CSRFToken":CONFIG.csrf}}).catch(()=>{}); }catch(err){}
+  if(via==="mail"){
+    const subj=ar?`طلب اجتماع تعريفي: ${v.uni}`:`Intro meeting request: ${v.uni}`;
+    location.href=`mailto:${CONFIG.email}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+  } else {
+    window.open(waURL(body),"_blank","noopener");
+  }
+  $("#formOk").style.display="block";
+});
+applyLang();
+</script>
+</body>
+</html>
