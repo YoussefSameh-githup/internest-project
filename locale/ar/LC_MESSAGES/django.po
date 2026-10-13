@@ -4683,3 +4683,246 @@ msgstr "العودة إلى مساحتك الطلابية"
 
 msgid "Back to your Student Hub"
 msgstr "الرجوع إلى مساحتك الطلابية"
+
+msgid "Disabled"
+msgstr "معطّل"
+
+msgid "Name"
+msgstr "الاسم"
+
+msgid "Action"
+msgstr "الإجراء"
+
+msgid "Verify selected students' emails"
+msgstr "توثيق بريد الطلاب المحددين"
+
+msgid "Contact & verification"
+msgstr "التواصل والتوثيق"
+
+msgid "Logo"
+msgstr "الشعار"
+
+msgid "Account status"
+msgstr "حالة الحساب"
+
+msgid "Type"
+msgstr "النوع"
+
+msgid "Selected partners are verified."
+msgstr "تم توثيق الشركاء المحددين."
+
+msgid "Verify selected partners"
+msgstr "توثيق الشركاء المحددين"
+
+msgid "Selected opportunities are active."
+msgstr "تم تفعيل الفرص المحددة."
+
+msgid "Activate selected opportunities"
+msgstr "تفعيل الفرص المحددة"
+
+msgid "Selected opportunities are closed."
+msgstr "تم إغلاق الفرص المحددة."
+
+msgid "Close selected opportunities"
+msgstr "إغلاق الفرص المحددة"
+
+msgid "Approve and publish selected submissions"
+msgstr "الموافقة على الطلبات المحددة ونشرها"
+
+msgid "Selected submissions were rejected."
+msgstr "تم رفض الطلبات المحددة."
+
+msgid "Reject selected submissions"
+msgstr "رفض الطلبات المحددة"
+
+msgid "Approve and publish selected courses"
+msgstr "الموافقة على الكورسات المحددة ونشرها"
+
+msgid "Reject selected courses"
+msgstr "رفض الكورسات المحددة"
+
+msgid "Approve and forward selected profiles to partners"
+msgstr "الموافقة وإرسال البروفايلات المحددة للشركاء"
+
+msgid "Staff"
+msgstr "فريق العمل"
+
+msgid "Verified %(p)s personal and %(u)s university emails."
+msgstr "تم توثيق %(p)s بريد شخصي و%(u)s بريد جامعي."
+
+msgid "No pending submissions selected."
+msgstr "لم يتم تحديد طلبات معلّقة."
+
+msgid "%(n)s courses approved."
+msgstr "تمت الموافقة على %(n)s كورس."
+
+msgid "%(n)s courses rejected."
+msgstr "تم رفض %(n)s كورس."
+
+msgid "%(n)s submissions approved and published to students."
+msgstr "تمت الموافقة على %(n)s طلب ونشره للطلاب."
+
+msgid "%(n)s profiles forwarded to partners."
+msgstr "تم إرسال %(n)s بروفايل للشركاء."
+
+msgid "Challenge or reviewed freelance work"
+msgstr "اختبار أو عمل حر تمت مراجعته"
+
+msgid "Companies"
+msgstr "الشركات"
+
+msgid "Freelance work needing proof"
+msgstr "أعمال حرة تحتاج إثباتاً"
+
+msgid "Freelance work to review"
+msgstr "أعمال حرة بانتظار المراجعة"
+
+msgid "Startups awaiting verification"
+msgstr "شركات ناشئة بانتظار التوثيق"
+
+msgid "Opportunity submissions"
+msgstr "طلبات نشر الفرص"
+
+msgid "Pro payments to confirm"
+msgstr "مدفوعات Pro بانتظار التأكيد"
+
+msgid "%(n)s with a verified email"
+msgstr "%(n)s ببريد موثّق"
+
+msgid "%(n)s active applicants"
+msgstr "%(n)s متقدم نشط"
+
+msgid "%(n)s awaiting verification"
+msgstr "%(n)s بانتظار التوثيق"
+
+msgid "Control center"
+msgstr "مركز التحكم"
+
+msgid "Platform at a glance"
+msgstr "المنصة في لمحة"
+
+msgid "Review queues"
+msgstr "قوائم المراجعة"
+
+msgid "Source"
+msgstr "المصدر"
+
+msgid "Plan"
+msgstr "الباقة"
+
+msgid "Owner match"
+msgstr "تطابق صاحب الحساب"
+
+msgid "Matched"
+msgstr "مطابق"
+
+msgid "Check proof"
+msgstr "راجع الإثبات"
+
+msgid "Proof"
+msgstr "الإثبات"
+
+msgid "None"
+msgstr "لا يوجد"
+
+msgid "Handle"
+msgstr "اسم المستخدم"
+
+msgid "Visibility"
+msgstr "الظهور"
+
+msgid "🎓 Students & skills"
+msgstr "🎓 إدارة الطلاب والمهارات"
+
+msgid "🏢 Companies & opportunities"
+msgstr "🏢 إدارة الشركات والفرص"
+
+msgid "💼 Freelance import"
+msgstr "💼 استيراد الأعمال الحرة"
+
+msgid "📊 Analytics & system"
+msgstr "📊 التحليلات والنظام"
+
+msgid "Student profiles"
+msgstr "ملفات الطلاب"
+
+msgid "Email verifications"
+msgstr "توثيق البريد الإلكتروني"
+
+msgid "Student skills (claimed / verified)"
+msgstr "مهارات الطلاب (مُدّعاة / موثقة)"
+
+msgid "Skill taxonomy"
+msgstr "قاموس المهارات"
+
+msgid "Skill challenges"
+msgstr "أسئلة اختبارات المهارات"
+
+msgid "Challenge attempts"
+msgstr "محاولات الاختبارات"
+
+msgid "Skill profiles (AI CV analysis)"
+msgstr "ملفات المهارات (تحليل الـ CV بالذكاء الاصطناعي)"
+
+msgid "CV builder"
+msgstr "منشئ السيرة الذاتية"
+
+msgid "Verified gig experience"
+msgstr "الخبرات الموثقة"
+
+msgid "Golden list"
+msgstr "القائمة الذهبية"
+
+msgid "Campus votes"
+msgstr "تصويتات الكليات"
+
+msgid "Gamification tasks"
+msgstr "مهام النقاط"
+
+msgid "Partners"
+msgstr "الشركاء"
+
+msgid "Company profiles"
+msgstr "ملفات الشركات"
+
+msgid "Talent Pool invitations"
+msgstr "دعوات بنك المواهب"
+
+msgid "Course submissions"
+msgstr "طلبات الكورسات"
+
+msgid "Pro payments"
+msgstr "مدفوعات Pro"
+
+msgid "Subscriptions"
+msgstr "الاشتراكات"
+
+msgid "Promo codes"
+msgstr "أكواد الخصم"
+
+msgid "All imported work"
+msgstr "كل الأعمال المستوردة"
+
+msgid "Needs proof"
+msgstr "تحتاج إثباتاً"
+
+msgid "Waiting for review"
+msgstr "بانتظار المراجعة"
+
+msgid "User accounts"
+msgstr "حسابات المستخدمين"
+
+msgid "Groups & permissions"
+msgstr "المجموعات والصلاحيات"
+
+msgid "Opted out of opportunity emails"
+msgstr "ألغوا رسائل الفرص الجديدة"
+
+msgid "Audit log"
+msgstr "سجل التعديلات"
+
+msgid "Skill relations"
+msgstr "علاقات المهارات"
+
+msgid "External courses"
+msgstr "الكورسات الخارجية"

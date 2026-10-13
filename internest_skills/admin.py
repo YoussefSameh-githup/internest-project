@@ -1,4 +1,8 @@
 from django.contrib import admin
+from django.utils.translation import gettext_lazy as _
+from unfold.decorators import display
+
+from internest_core.admin_base import BAD, INFO, OK, WAIT, ModelAdmin, TabularInline, flag_badge, status_badge
 
 from .models import (
     ChallengeAttempt, ChallengeItem, ChallengeResponse, EmployerSubscription,
@@ -7,13 +11,13 @@ from .models import (
 from .freelance_service import reject_gig, verify_gig
 
 
-class SubSkillInline(admin.TabularInline):
+class SubSkillInline(TabularInline):
     model = SubSkill
     extra = 1
 
 
 @admin.register(Skill)
-class SkillAdmin(admin.ModelAdmin):
+class SkillAdmin(ModelAdmin):
     list_display = ("name", "discipline", "challenge_length", "pass_threshold", "is_active")
     list_filter = ("discipline", "is_active")
     search_fields = ("name", "aliases", "implicit_signals")
@@ -22,14 +26,14 @@ class SkillAdmin(admin.ModelAdmin):
 
 
 @admin.register(SubSkill)
-class SubSkillAdmin(admin.ModelAdmin):
+class SubSkillAdmin(ModelAdmin):
     list_display = ("name", "skill")
     list_filter = ("skill__discipline", "skill")
     search_fields = ("name", "keywords")
 
 
 @admin.register(ChallengeItem)
-class ChallengeItemAdmin(admin.ModelAdmin):
+class ChallengeItemAdmin(ModelAdmin):
     list_display = ("__str__", "kind", "time_limit_seconds", "weight", "is_active")
     list_filter = ("skill", "kind", "is_active")
     search_fields = ("prompt",)
@@ -37,7 +41,7 @@ class ChallengeItemAdmin(admin.ModelAdmin):
 
 
 @admin.register(ExternalCourse)
-class ExternalCourseAdmin(admin.ModelAdmin):
+class ExternalCourseAdmin(ModelAdmin):
     list_display = ("title", "provider", "sub_skill", "is_active")
     list_filter = ("provider", "is_active")
     search_fields = ("title",)
@@ -45,14 +49,17 @@ class ExternalCourseAdmin(admin.ModelAdmin):
 
 
 @admin.register(StudentSkill)
-class StudentSkillAdmin(admin.ModelAdmin):
-    list_display = ("student", "skill", "source", "status", "verified_via", "score", "percentile", "cooldown_until")
-    list_filter = ("status", "verified_via", "source", "skill__discipline")
-    search_fields = ("student__user__username", "skill__name")
-    readonly_fields = ("created_at", "updated_at")
+class StudentSkillAdmin(ModelAdmin):
+    list_display = ("student", "skill", "source_col", "status_col", "verified_via", "score", "percentile", "years_experience", "updated_at")
+    list_filter = ("status", "verified_via", "source", "skill__discipline", "updated_at")
+    search_fields = ("student__user__username", "student__user__email", "skill__name")
+    list_select_related = ("student__user", "skill")
+    readonly_fields = ("created_at", "updated_at", "lag_sub_skills", "verified_at")
+    status_col = status_badge("status", {StudentSkill.STATUS_VERIFIED: OK, StudentSkill.STATUS_CLAIMED: INFO, StudentSkill.STATUS_LAG: WAIT})
+    source_col = status_badge("source", {StudentSkill.SOURCE_EXPLICIT: "primary", StudentSkill.SOURCE_IMPLICIT: INFO}, _("Source"))
 
 
-class ChallengeResponseInline(admin.TabularInline):
+class ChallengeResponseInline(TabularInline):
     model = ChallengeResponse
     extra = 0
     can_delete = False
@@ -60,24 +67,28 @@ class ChallengeResponseInline(admin.TabularInline):
 
 
 @admin.register(ChallengeAttempt)
-class ChallengeAttemptAdmin(admin.ModelAdmin):
+class ChallengeAttemptAdmin(ModelAdmin):
     list_display = ("student_skill", "state", "score_pct", "focus_warnings", "termination_reason", "started_at")
-    list_filter = ("state", "termination_reason")
+    list_filter = ("state", "termination_reason", "started_at")
+    date_hierarchy = "started_at"
     search_fields = ("student_skill__student__user__username",)
     readonly_fields = ("token", "item_ids", "integrity_events", "sub_skill_breakdown", "started_at", "finished_at")
     inlines = [ChallengeResponseInline]
 
 
 @admin.register(SkillProfile)
-class SkillProfileAdmin(admin.ModelAdmin):
-    list_display = ("student", "partner_university", "last_extracted_at")
-    search_fields = ("student__user__username",)
+class SkillProfileAdmin(ModelAdmin):
+    list_display = ("student", "partner_university", "last_extracted_at", "extraction_count_today")
+    list_filter = ("partner_university", "last_extracted_at")
+    search_fields = ("student__user__username", "linkedin_url")
+    readonly_fields = ("last_extracted_at", "extraction_count_today", "extraction_day", "cv_summary", "top_domains")
 
 
 @admin.register(EmployerSubscription)
-class EmployerSubscriptionAdmin(admin.ModelAdmin):
-    list_display = ("partner", "plan", "valid_until")
-    list_filter = ("plan",)
+class EmployerSubscriptionAdmin(ModelAdmin):
+    list_display = ("partner", "plan_col", "valid_until")
+    list_filter = ("plan", "valid_until")
+    plan_col = status_badge("plan", {"pro": OK, "free": None}, _("Plan"))
     search_fields = ("partner__company_name",)
 
 
@@ -85,7 +96,7 @@ from .models import SkillRelation  # noqa: E402
 
 
 @admin.register(SkillRelation)
-class SkillRelationAdmin(admin.ModelAdmin):
+class SkillRelationAdmin(ModelAdmin):
     list_display = ("skill", "related", "weight", "source")
     list_filter = ("source",)
     search_fields = ("skill__name", "related__name")
@@ -93,15 +104,30 @@ class SkillRelationAdmin(admin.ModelAdmin):
 
 
 @admin.register(StudentFreelanceGig)
-class StudentFreelanceGigAdmin(admin.ModelAdmin):
+class StudentFreelanceGigAdmin(ModelAdmin):
     """Review queue: open the link and proof, then approve (skills become Verified) or reject."""
 
-    list_display = ("project_title", "student", "platform", "platform_username", "owner_matched", "rating", "status", "created_at")
-    list_filter = ("status", "owner_matched", "platform", "ai_parsed")
-    search_fields = ("project_title", "link", "student__user__username")
+    list_display = ("project_title", "student", "platform", "handle", "owner", "rating", "status_col", "proof_col", "created_at")
+    list_filter = ("status", "owner_matched", "platform", "ai_parsed", "created_at")
+    search_fields = ("project_title", "link", "platform_username", "student__user__username", "student__user__email")
     filter_horizontal = ("skills",)
-    readonly_fields = ("student", "raw_text", "platform_username", "owner_matched", "ai_parsed", "reviewed_at", "created_at")
+    readonly_fields = ("student", "raw_text", "platform_username", "owner_matched", "ai_parsed", "deliverables", "reviewed_at", "created_at")
+    date_hierarchy = "created_at"
     actions = ["approve", "reject"]
+    status_col = status_badge("status", {StudentFreelanceGig.STATUS_VERIFIED: OK, StudentFreelanceGig.STATUS_PENDING: INFO,
+                                         StudentFreelanceGig.STATUS_NEEDS_PROOF: WAIT, StudentFreelanceGig.STATUS_REJECTED: BAD})
+
+    @display(description=_("Handle"))
+    def handle(self, obj):
+        return f"@{obj.platform_username}" if obj.platform_username else "—"
+
+    @flag_badge(_("Owner match"), _("Matched"), _("Check proof"))
+    def owner(self, obj):
+        return obj.owner_matched
+
+    @flag_badge(_("Proof"), _("Uploaded"), _("None"), false_color=None)
+    def proof_col(self, obj):
+        return bool(obj.proof)
 
     @admin.action(description="Approve: verify the selected gigs' skills")
     def approve(self, request, queryset):

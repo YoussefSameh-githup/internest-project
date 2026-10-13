@@ -58,6 +58,8 @@ CSRF_TRUSTED_ORIGINS = env_list(
 )
 
 INSTALLED_APPS = [
+    "unfold",  # modern admin theme; must come before django.contrib.admin
+    "unfold.contrib.filters",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -258,3 +260,92 @@ DEFAULT_PRICING_COUNTRY = env("DEFAULT_PRICING_COUNTRY", default="EG")
 # Optional MaxMind GeoLite2 folder (needs the geoip2 package). Without it: Cloudflare header, then the default.
 GEOIP_PATH = env("GEOIP_PATH", default="") or None
 PAYMENT_GATEWAYS = {"EGP": env("PAYMENT_GATEWAY_EGP", default="fawaterak"), "default": env("PAYMENT_GATEWAY_INTL", default="stripe")}
+
+# --- Admin panel (django-unfold): branding, theme and grouped sidebar ---
+from django.templatetags.static import static  # noqa: E402
+from django.urls import reverse, reverse_lazy  # noqa: E402
+
+
+def _admin_list(model, query=""):
+    """Sidebar link to a model's changelist, optionally pre-filtered."""
+    if not query:
+        return reverse_lazy(f"admin:{model}_changelist")
+    return lambda request: reverse(f"admin:{model}_changelist") + query
+
+
+def _nav(title, icon, model, query="", badge=None):
+    item = {"title": title, "icon": icon, "link": _admin_list(model, query)}
+    if badge:
+        item["badge"] = f"internest_core.admin_dashboard.{badge}"
+    return item
+
+
+UNFOLD = {
+    "SITE_TITLE": "Internest Admin",
+    "SITE_HEADER": "Internest",
+    "SITE_SUBHEADER": _("Control center"),
+    "SITE_URL": "/",
+    "SITE_ICON": lambda request: static("img/internest_logo.jpg"),
+    "SITE_FAVICONS": [{"rel": "icon", "type": "image/jpeg", "href": lambda request: static("img/internest_logo.jpg")}],
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": True,
+    "SHOW_LANGUAGES": True,  # AR / EN switch; the layout flips to RTL in Arabic
+    "DASHBOARD_CALLBACK": "internest_core.admin_dashboard.dashboard_callback",
+    "COLORS": {
+        "primary": {  # Internest blue
+            "50": "oklch(97% .014 254.604)", "100": "oklch(93.2% .032 255.585)", "200": "oklch(88.2% .059 254.128)",
+            "300": "oklch(80.9% .105 251.813)", "400": "oklch(70.7% .165 254.624)", "500": "oklch(62.3% .214 259.815)",
+            "600": "oklch(54.6% .245 262.881)", "700": "oklch(48.8% .243 264.376)", "800": "oklch(42.4% .199 265.638)",
+            "900": "oklch(37.9% .146 265.522)", "950": "oklch(28.2% .091 267.935)",
+        },
+    },
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": True,
+        "navigation": [
+            {"title": _("🎓 Students & skills"), "collapsible": True, "items": [
+                _nav(_("Student profiles"), "school", "internest_core_studentprofile"),
+                _nav(_("Email verifications"), "mark_email_read", "internest_core_emailverification"),
+                _nav(_("Student skills (claimed / verified)"), "verified", "internest_skills_studentskill"),
+                _nav(_("Skill taxonomy"), "category", "internest_skills_skill"),
+                _nav(_("Skill challenges"), "quiz", "internest_skills_challengeitem"),
+                _nav(_("Challenge attempts"), "timer", "internest_skills_challengeattempt"),
+                _nav(_("Skill profiles (AI CV analysis)"), "psychology", "internest_skills_skillprofile"),
+                _nav(_("CV builder"), "description", "internest_students_studentcv"),
+                _nav(_("Projects"), "folder_open", "internest_students_studentproject"),
+                _nav(_("Verified gig experience"), "workspace_premium", "internest_core_gigexperience"),
+                _nav(_("Golden list"), "military_tech", "internest_core_goldenliststudent"),
+                _nav(_("Campus votes"), "how_to_vote", "internest_campus_campusdemandvote"),
+                _nav(_("Gamification tasks"), "sports_esports", "internest_core_gamificationtask"),
+            ]},
+            {"title": _("🏢 Companies & opportunities"), "collapsible": True, "items": [
+                _nav(_("Partners"), "apartment", "internest_core_partnerprofile"),
+                _nav(_("Startups awaiting verification"), "domain_verification", "internest_startups_pendingcompanyprofile", badge="pending_companies_badge"),
+                _nav(_("Company profiles"), "storefront", "internest_startups_companyprofile"),
+                _nav(_("Published opportunities"), "work", "internest_core_internship"),
+                _nav(_("Opportunity submissions"), "pending_actions", "internest_core_partnerinternshipsubmission", badge="pending_submissions_badge"),
+                _nav(_("Applications"), "inbox", "internest_core_application"),
+                _nav(_("Talent Pool invitations"), "mail", "internest_startups_talentinvitation"),
+                _nav(_("Course submissions"), "menu_book", "internest_core_partnercoursesubmission"),
+                _nav(_("Pro payments"), "payments", "internest_startups_proupgraderequest", badge="pending_payments_badge"),
+                _nav(_("Subscriptions"), "card_membership", "internest_skills_employersubscription"),
+                _nav(_("Promo codes"), "sell", "internest_startups_promocode"),
+                _nav(_("Founders Network posts"), "forum", "internest_lounge_loungepost"),
+            ]},
+            {"title": _("💼 Freelance import"), "collapsible": True, "items": [
+                _nav(_("All imported work"), "cloud_download", "internest_skills_studentfreelancegig"),
+                _nav(_("Needs proof"), "upload_file", "internest_skills_studentfreelancegig", "?status__exact=needs_proof", badge="needs_proof_badge"),
+                _nav(_("Waiting for review"), "fact_check", "internest_skills_studentfreelancegig", "?status__exact=pending", badge="pending_gigs_badge"),
+                _nav(_("Approved & verified"), "task_alt", "internest_skills_studentfreelancegig", "?status__exact=verified"),
+            ]},
+            {"title": _("📊 Analytics & system"), "collapsible": True, "items": [
+                _nav(_("User accounts"), "person", "auth_user"),
+                _nav(_("Groups & permissions"), "admin_panel_settings", "auth_group"),
+                _nav(_("Opted out of opportunity emails"), "notifications_off", "internest_core_studentprofile", "?email_new_opportunities__exact=0"),
+                _nav(_("Audit log"), "history", "admin_logentry"),
+                _nav(_("Skill relations"), "hub", "internest_skills_skillrelation"),
+                _nav(_("External courses"), "school", "internest_skills_externalcourse"),
+            ]},
+        ],
+    },
+}

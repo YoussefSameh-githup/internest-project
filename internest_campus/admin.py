@@ -1,11 +1,13 @@
 from django.contrib import admin
 from django.db.models import Count
 
+from internest_core.admin_base import ModelAdmin
+
 from .models import CampusDemandVote
 
 
 @admin.register(CampusDemandVote)
-class CampusDemandVoteAdmin(admin.ModelAdmin):
+class CampusDemandVoteAdmin(ModelAdmin):
     list_display = ("university_name", "faculty_name", "department", "masked_student_id", "referral_count", "referred_by", "created_at")
     list_filter = ("university_name", "faculty_name")
     search_fields = ("university_name", "faculty_name", "department", "student_number", "student__user__username")

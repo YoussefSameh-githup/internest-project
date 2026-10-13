@@ -1,5 +1,8 @@
 from django.contrib import admin, messages
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+
+from internest_core.admin_base import BAD, INFO, OK, WAIT, ModelAdmin, flag_badge, status_badge
 
 from .models import CompanyProfile, PendingCompanyProfile
 
@@ -33,7 +36,7 @@ def clear_identity_flag(modeladmin, request, queryset):
     queryset.update(identity_changed_at=None, previous_company_name="")
 
 
-class _Base(admin.ModelAdmin):
+class _Base(ModelAdmin):
     list_display = ("company", "industry", "founded_year", "website", "owner_email", "verified", "identity_changed_at", "submitted_at")
     list_filter = ("partner__is_fully_verified", "industry", ("identity_changed_at", admin.EmptyFieldListFilter))
     search_fields = ("partner__company_name", "partner__user__email", "description")
@@ -52,7 +55,7 @@ class _Base(admin.ModelAdmin):
     def owner_email(self, obj):
         return obj.partner.user.email
 
-    @admin.display(boolean=True, ordering="partner__is_fully_verified", description="Verified")
+    @flag_badge(_("Verified"), _("Verified"), _("Pending"))
     def verified(self, obj):
         return obj.partner.is_fully_verified
 
@@ -77,9 +80,9 @@ from .tiers import activate_pro  # noqa: E402
 
 
 @admin.register(PromoCode)
-class PromoCodeAdmin(admin.ModelAdmin):
+class PromoCodeAdmin(ModelAdmin):
     list_display = ("code", "discount_percent", "is_active", "valid_until", "times_used", "max_uses")
-    list_filter = ("is_active",)
+    list_filter = ("is_active", "valid_until")
     search_fields = ("code",)
 
 
@@ -102,9 +105,12 @@ def cancel_requests(modeladmin, request, queryset):
 
 
 @admin.register(ProUpgradeRequest)
-class ProUpgradeRequestAdmin(admin.ModelAdmin):
-    list_display = ("partner", "status", "list_price", "promo_code", "discount_percent", "final_price", "pro_until", "created_at", "activated_at")
-    list_filter = ("status", "promo_code")
+class ProUpgradeRequestAdmin(ModelAdmin):
+    list_display = ("partner", "status_col", "list_price", "promo_code", "discount_percent", "final_price", "pro_until", "created_at", "activated_at")
+    list_filter = ("status", "promo_code", "created_at")
+    date_hierarchy = "created_at"
+    status_col = status_badge("status", {ProUpgradeRequest.STATUS_PENDING: WAIT, ProUpgradeRequest.STATUS_ACTIVE: OK,
+                                         ProUpgradeRequest.STATUS_CANCELLED: BAD})
     search_fields = ("partner__company_name", "partner__user__email")
     readonly_fields = ("created_at", "activated_at")
     actions = [activate_requests, cancel_requests]
@@ -119,8 +125,9 @@ from .models import TalentInvitation  # noqa: E402
 
 
 @admin.register(TalentInvitation)
-class TalentInvitationAdmin(admin.ModelAdmin):
-    list_display = ("partner", "student", "internship", "created_at")
-    list_filter = ("created_at",)
+class TalentInvitationAdmin(ModelAdmin):
+    list_display = ("partner", "student", "internship", "status_col", "created_at")
+    list_filter = ("status", "created_at")
+    status_col = status_badge("status", {TalentInvitation.STATUS_ACCEPTED: OK, TalentInvitation.STATUS_PENDING: INFO})
     search_fields = ("partner__company_name", "student__user__username", "internship__title")
     raw_id_fields = ("partner", "student", "internship")
