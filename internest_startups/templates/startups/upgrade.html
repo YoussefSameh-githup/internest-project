@@ -81,7 +81,7 @@
                     {% else %}
                         <label class="form-label" for="promo_code">{% trans "Promo code" %}</label>
                         <div class="promo-form__row">
-                            <input id="promo_code" name="promo_code" class="form-control" dir="ltr" autocomplete="off" placeholder="STARTUP50">
+                            <input id="promo_code" name="promo_code" value="" class="form-control" dir="auto" autocomplete="off" spellcheck="false" placeholder="{% trans 'Enter promo code' %}">
                             <button type="submit" name="action" value="apply" class="btn btn--outline">{% trans "Apply" %}</button>
                         </div>
                     {% endif %}

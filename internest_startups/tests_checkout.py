@@ -112,3 +112,32 @@ class CheckoutTests(ApplicationsBase):
     def test_arabic_consent_text(self):
         self.client.cookies["internest_lang"] = "ar"
         self.assertContains(self.client.get(CHECKOUT), "أوافق على")
+
+
+class PromoFieldTests(ApplicationsBase):
+    """The promo field starts empty; a discount only applies after the buyer types a valid code and clicks Apply."""
+
+    def setUp(self):
+        super().setUp()
+        PartnerProfile.objects.filter(pk=self.partner.pk).update(country_of_registration="EG")
+        self.client.force_login(self.founder)
+
+    def test_promo_input_is_empty_with_a_neutral_placeholder(self):
+        page = self.client.get(reverse("startup_upgrade"))
+        self.assertContains(page, 'name="promo_code" value=""')
+        self.assertContains(page, 'placeholder="Enter promo code"')
+        self.assertNotContains(page, "STARTUP50")  # a real code must never be shown as a hint
+        self.client.cookies["internest_lang"] = "ar"
+        self.assertContains(self.client.get(reverse("startup_upgrade")), 'placeholder="أدخل كود الخصم"')
+
+    def test_full_price_until_a_code_is_applied(self):
+        page = self.client.get(CHECKOUT, {"promo_code": "STARTUP50"})  # a code in the URL is ignored
+        self.assertEqual((page.context["quote"]["list_price"], page.context["quote"]["final_price"]), (800, 800))
+        self.assertEqual(page.context["quote"]["discount_percent"], 0)
+        self.assertNotContains(page, "Promo code")
+        self.assertContains(page, "800 EGP", count=2)  # subtotal and total due
+
+        self.client.post(reverse("startup_upgrade"), {"action": "apply", "promo_code": "STARTUP50"})
+        page = self.client.get(CHECKOUT)
+        self.assertEqual(page.context["quote"]["final_price"], 400)
+        self.assertContains(page, "Promo code STARTUP50")

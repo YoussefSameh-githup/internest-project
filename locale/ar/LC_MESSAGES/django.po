@@ -5158,3 +5158,6 @@ msgstr "لديك استفسار؟"
 
 msgid "Secure checkout: review your order, accept the terms, then pay."
 msgstr "دفع آمن: راجع طلبك، ووافق على الشروط، ثم ادفع."
+
+msgid "Enter promo code"
+msgstr "أدخل كود الخصم"
