@@ -107,8 +107,6 @@ def _handle_extraction(request, student, skill_profile, data):
         skill_profile.extraction_day = today
         skill_profile.extraction_count_today = 0
 
-    if "partner_university" in request.POST:  # only the hub form has this field; the profile dialog doesn't
-        skill_profile.partner_university = data.get("partner_university")
     if data.get("linkedin_url"):
         skill_profile.linkedin_url = data["linkedin_url"]
 

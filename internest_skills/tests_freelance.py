@@ -38,7 +38,7 @@ class FormTests(Base):
         for marker in ('value="mostaql"', 'value="khamsat"', 'value="upwork"', 'value="fiverr"', 'value="portfolio"',
                        'name="link"', 'name="raw_text"', 'name="proof"'):
             self.assertContains(page, marker)
-        self.assertContains(self.client.get(reverse("skills_hub")), reverse("freelance_importer"))
+        self.assertContains(self.client.get(reverse("profile")), reverse("freelance_importer"))  # entry point lives in the Student Hub
 
     def test_link_must_match_platform_and_text_is_required(self):
         self.assertContains(_post(self.client, link="https://evil.example/x"), "mostaql.com. Choose the right platform")

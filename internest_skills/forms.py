@@ -19,17 +19,11 @@ class SkillSourceForm(forms.Form):
     # No PDF? Students can paste their LinkedIn "About", "Experience" and "Skills" sections instead.
     pasted_text = forms.CharField(required=False, max_length=20000, label=_("Paste your LinkedIn or CV text"),
                                   widget=forms.Textarea(attrs={"rows": 8, "dir": "auto"}))
-    partner_university = forms.ModelChoiceField(
-        queryset=PartnerProfile.objects.filter(is_academic=True, is_fully_verified=True).order_by("company_name"),
-        required=False,
-        label=_("Share my skill analytics with my university"),
-        empty_label=_("— Do not share —"),
-    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for name, field in self.fields.items():
-            field.widget.attrs["class"] = "form-select" if name == "partner_university" else "form-control"
+            field.widget.attrs["class"] = "form-control"
         self.fields["cv_file"].widget.attrs["accept"] = ".pdf,.docx"
         self.fields["linkedin_pdf"].widget.attrs["accept"] = ".pdf"
 

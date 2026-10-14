@@ -1,53 +1,88 @@
 {% load i18n %}
-{# Skill analysis input: upload a CV / LinkedIn PDF, or paste LinkedIn text. Used inside a <form> on the skills hub and the Student Hub dialog. #}
+{# Skill analysis input — three tabs: CV upload, LinkedIn (URL + PDF export), pasted text. Used inside a <form> on the skills hub and the Student Hub dialog. #}
 <style>
-.sx { display: flex; flex-direction: column; gap: 14px; }
-.sx-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 14px; background: #f1f5f9; }
-.sx-modes button { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 8px; border: 0; border-radius: 11px; background: none;
-  color: #64748b; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
-.sx-modes button[aria-selected="true"] { background: #fff; color: #0f172a; box-shadow: 0 2px 8px rgba(15, 23, 42, .08); }
+.sx { display: flex; flex-direction: column; gap: 18px; }
+.sx-modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: #f1f5f9; }
+.sx-modes button { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 8px 6px; border: 0; border-radius: 11px; background: none;
+  color: #64748b; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s, color .15s; }
+.sx-modes button:hover { color: #0f172a; }
+.sx-modes button[aria-selected="true"] { background: #fff; color: #1d4ed8; box-shadow: 0 2px 8px rgba(15, 23, 42, .08); }
+.sx-modes button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.sx-panel { display: flex; flex-direction: column; gap: 10px; animation: sx-in .2s ease-out; }
 .sx-panel[hidden] { display: none; }
-.sx-drop { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 26px 16px; border: 2px dashed #cbd5e1; border-radius: 16px;
-  background: #f8fafc; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
-.sx-drop:hover, .sx-drop.is-drag { border-color: #2563eb; background: #eff6ff; }
-.sx-drop .bi { font-size: 2rem; color: #2563eb; }
+@keyframes sx-in { from { opacity: 0; transform: translateY(4px); } }
+.sx-drop { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 32px 16px; border: 2px dashed #cbd5e1; border-radius: 18px;
+  background: #f8fafc; text-align: center; cursor: pointer; transition: border-color .15s, background .15s, transform .15s; }
+.sx-drop:hover, .sx-drop:focus-within { border-color: #93c5fd; background: #f5f9ff; }
+.sx-drop.is-drag { border-color: #2563eb; background: #eff6ff; transform: scale(1.01); }
+.sx-drop.has-file { border-style: solid; border-color: #86efac; background: #f0fdf4; }
+.sx-drop__icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: #dbeafe; color: #2563eb; font-size: 1.5rem; }
+.sx-drop.has-file .sx-drop__icon { background: #dcfce7; color: #16a34a; }
 .sx-drop strong { color: #0f172a; }
 .sx-drop small, .sx-hint { color: #64748b; font-size: 13px; }
 .sx-drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-.sx-file { padding: 4px 10px; border-radius: 999px; background: #dcfce7; color: #166534; font-size: 13px; font-weight: 700; }
-.sx textarea { width: 100%; box-sizing: border-box; min-height: 170px; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 14px; font: inherit;
-  line-height: 1.6; resize: vertical; background: #fff; }
-.sx textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, .12); }
+.sx-file { max-width: 100%; padding: 4px 12px; border-radius: 999px; background: #dcfce7; color: #166534; font-size: 13px; font-weight: 700; overflow-wrap: anywhere; }
+.sx-field label { display: block; margin-bottom: 6px; color: #334155; font-size: 14px; font-weight: 700; }
+.sx input[type="url"], .sx textarea { display: block; width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 14px;
+  font: inherit; background: #fff; transition: border-color .15s, box-shadow .15s; }
+.sx textarea { min-height: 180px; line-height: 1.6; resize: vertical; }
+.sx input[type="url"]:focus, .sx textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, .12); }
+.sx-or { display: flex; align-items: center; gap: 10px; color: #94a3b8; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+.sx-or::before, .sx-or::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; }
 .sx-row { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.sx-hint { margin: 0; }
 .sx-error { color: #b91c1c; font-size: 13px; }
-.sx-submit { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; border: 0; border-radius: 14px; color: #fff;
-  font: inherit; font-weight: 800; cursor: pointer; background: linear-gradient(135deg, #2563eb, #7c3aed); box-shadow: 0 12px 26px rgba(79, 70, 229, .3); }
-.sx-submit:disabled { opacity: .7; cursor: progress; }
+.sx-submit { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; border: 0; border-radius: 14px; color: #fff;
+  font: inherit; font-size: 16px; font-weight: 800; cursor: pointer; background: #1d4ed8; box-shadow: 0 10px 24px rgba(29, 78, 216, .28); transition: background .15s, transform .15s; }
+.sx-submit:hover { background: #1e40af; transform: translateY(-1px); }
+.sx-submit:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+.sx-submit:disabled { opacity: .75; cursor: progress; transform: none; }
 .sx-spin { display: none; width: 16px; height: 16px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: sx-spin .8s linear infinite; }
 .sx-submit.is-busy .sx-spin { display: inline-block; }
+.sx-submit.is-busy .bi { display: none; }
 @keyframes sx-spin { to { transform: rotate(360deg); } }
+@media (max-width: 420px) { .sx-modes button { flex-direction: column; gap: 2px; font-size: 12.5px; } .sx-drop { padding: 24px 12px; } }
+@media (prefers-reduced-motion: reduce) { .sx-panel, .sx-drop, .sx-submit { animation: none; transition: none; } }
 </style>
 
-{% with text_mode=form.pasted_text.value|default_if_none:""|length %}
+{% if form.pasted_text.value or form.pasted_text.errors %}{% firstof "text" as mode %}{% elif form.linkedin_pdf.errors or form.linkedin_url.errors %}{% firstof "linkedin" as mode %}{% else %}{% firstof "cv" as mode %}{% endif %}
 <div class="sx" data-analyze>
     <div class="sx-modes" role="tablist" aria-label="{% trans 'How do you want to add your skills?' %}">
-        <button type="button" role="tab" data-mode="file" aria-selected="{% if text_mode or form.pasted_text.errors %}false{% else %}true{% endif %}"><i class="bi bi-file-earmark-arrow-up"></i> {% trans "Upload a file" %}</button>
-        <button type="button" role="tab" data-mode="text" aria-selected="{% if text_mode or form.pasted_text.errors %}true{% else %}false{% endif %}"><i class="bi bi-clipboard-check"></i> {% trans "Paste text" %}</button>
+        <button type="button" role="tab" data-mode="cv" aria-selected="{% if mode == 'cv' %}true{% else %}false{% endif %}"><i class="bi bi-file-earmark-arrow-up"></i> {% trans "Upload CV" %}</button>
+        <button type="button" role="tab" data-mode="linkedin" aria-selected="{% if mode == 'linkedin' %}true{% else %}false{% endif %}"><i class="bi bi-linkedin"></i> {% trans "LinkedIn profile" %}</button>
+        <button type="button" role="tab" data-mode="text" aria-selected="{% if mode == 'text' %}true{% else %}false{% endif %}"><i class="bi bi-clipboard-check"></i> {% trans "Paste text" %}</button>
     </div>
 
-    <div class="sx-panel" data-mode-panel="file" {% if text_mode or form.pasted_text.errors %}hidden{% endif %}>
+    <div class="sx-panel" role="tabpanel" data-mode-panel="cv" {% if mode != 'cv' %}hidden{% endif %}>
         <label class="sx-drop" data-drop>
-            <i class="bi bi-cloud-arrow-up"></i>
-            <strong>{% trans "Drop your CV or LinkedIn PDF here, or click to choose" %}</strong>
+            <span class="sx-drop__icon"><i class="bi bi-cloud-arrow-up"></i></span>
+            <strong>{% trans "Drag your CV here, or click to choose a file" %}</strong>
             <small>{% trans "PDF or DOCX · up to 5 MB" %}</small>
             <span class="sx-file" data-file-name hidden></span>
             <input type="file" name="{{ form.cv_file.html_name }}" accept=".pdf,.docx">
         </label>
         {% if form.cv_file.errors %}<div class="sx-error">{{ form.cv_file.errors|join:" " }}</div>{% endif %}
-        <p class="sx-hint mb-0 mt-2"><i class="bi bi-info-circle"></i> {% trans "LinkedIn PDF: open your profile → More → Save to PDF. Can't find it? Use “Paste text” instead." %}</p>
     </div>
 
-    <div class="sx-panel" data-mode-panel="text" {% if not text_mode and not form.pasted_text.errors %}hidden{% endif %}>
+    <div class="sx-panel" role="tabpanel" data-mode-panel="linkedin" {% if mode != 'linkedin' %}hidden{% endif %}>
+        <div class="sx-field">
+            <label for="sx-linkedin-url">{% trans "LinkedIn profile URL" %}</label>
+            <input type="url" id="sx-linkedin-url" name="{{ form.linkedin_url.html_name }}" value="{{ form.linkedin_url.value|default_if_none:'' }}" dir="ltr" placeholder="https://www.linkedin.com/in/…">
+            {% if form.linkedin_url.errors %}<div class="sx-error">{{ form.linkedin_url.errors|join:" " }}</div>{% endif %}
+        </div>
+        <div class="sx-or">{% trans "and for the analysis" %}</div>
+        <label class="sx-drop" data-drop>
+            <span class="sx-drop__icon"><i class="bi bi-filetype-pdf"></i></span>
+            <strong>{% trans "Drop your LinkedIn PDF export here" %}</strong>
+            <small>{% trans "On your profile: More → Save to PDF" %}</small>
+            <span class="sx-file" data-file-name hidden></span>
+            <input type="file" name="{{ form.linkedin_pdf.html_name }}" accept=".pdf">
+        </label>
+        {% if form.linkedin_pdf.errors %}<div class="sx-error">{{ form.linkedin_pdf.errors|join:" " }}</div>{% endif %}
+        <p class="sx-hint"><i class="bi bi-info-circle"></i> {% trans "We don't log in to LinkedIn: the link is saved to your profile, and the PDF is what we analyze." %}</p>
+    </div>
+
+    <div class="sx-panel" role="tabpanel" data-mode-panel="text" {% if mode != 'text' %}hidden{% endif %}>
         <textarea name="{{ form.pasted_text.html_name }}" dir="auto" maxlength="20000" aria-label="{{ form.pasted_text.label }}"
                   placeholder="{% trans 'Paste your LinkedIn About, Experience and Skills sections — or any part of your CV…' %}">{{ form.pasted_text.value|default_if_none:"" }}</textarea>
         <div class="sx-row">
@@ -58,35 +93,46 @@
     </div>
 
     {% if form.non_field_errors %}<div class="sx-error" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
-    <button type="submit" class="sx-submit" data-analyze-submit><span class="sx-spin" aria-hidden="true"></span><i class="bi bi-cpu"></i> {% trans "Analyze my skills" %}</button>
+    <button type="submit" class="sx-submit" data-analyze-submit><span class="sx-spin" aria-hidden="true"></span><i class="bi bi-stars"></i> {% trans "Analyze my skills" %}</button>
 </div>
-{% endwith %}
 <script>
 (function () {
   document.querySelectorAll("[data-analyze]:not([data-ready])").forEach(function (box) {
     box.dataset.ready = "1";
     var form = box.closest("form"), tabs = box.querySelectorAll("[data-mode]"), panels = box.querySelectorAll("[data-mode-panel]");
     function setMode(mode) {
-      tabs.forEach(function (t) { t.setAttribute("aria-selected", t.dataset.mode === mode ? "true" : "false"); });
+      tabs.forEach(function (t) { t.setAttribute("aria-selected", t.dataset.mode === mode ? "true" : "false"); t.tabIndex = t.dataset.mode === mode ? 0 : -1; });
       panels.forEach(function (p) {
         var on = p.dataset.modePanel === mode;
         p.hidden = !on;
         p.querySelectorAll("input, textarea").forEach(function (el) { el.disabled = !on; });  // send only the chosen input
       });
     }
-    tabs.forEach(function (t) { t.addEventListener("click", function () { setMode(t.dataset.mode); }); });
+    tabs.forEach(function (t, i) {
+      t.addEventListener("click", function () { setMode(t.dataset.mode); });
+      t.addEventListener("keydown", function (e) {  // arrow keys move between tabs (direction-aware)
+        var step = {ArrowRight: 1, ArrowLeft: -1}[e.key];
+        if (!step) return;
+        if (getComputedStyle(box).direction === "rtl") step = -step;
+        var next = tabs[(i + step + tabs.length) % tabs.length];
+        setMode(next.dataset.mode); next.focus(); e.preventDefault();
+      });
+    });
     setMode(box.querySelector('[data-mode][aria-selected="true"]').dataset.mode);
 
-    var drop = box.querySelector("[data-drop]"), input = drop.querySelector("input"), name = box.querySelector("[data-file-name]");
-    function showFile() {
-      var f = input.files[0];
-      name.hidden = !f;
-      if (f) name.textContent = "✓ " + f.name;
-    }
-    input.addEventListener("change", showFile);
-    ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("is-drag"); }); });
-    ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function () { drop.classList.remove("is-drag"); }); });
-    drop.addEventListener("drop", function (e) { e.preventDefault(); if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; showFile(); } });
+    box.querySelectorAll("[data-drop]").forEach(function (drop) {
+      var input = drop.querySelector("input"), name = drop.querySelector("[data-file-name]");
+      function showFile() {
+        var f = input.files[0];
+        name.hidden = !f;
+        drop.classList.toggle("has-file", !!f);
+        if (f) name.textContent = "✓ " + f.name;
+      }
+      input.addEventListener("change", showFile);
+      ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("is-drag"); }); });
+      ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function () { drop.classList.remove("is-drag"); }); });
+      drop.addEventListener("drop", function (e) { e.preventDefault(); if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; showFile(); } });
+    });
 
     var area = box.querySelector("textarea"), count = box.querySelector("[data-count]");
     function updateCount() { count.textContent = area.value.length + " / 20000"; }

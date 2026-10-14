@@ -103,13 +103,11 @@ class ExtractionTests(Base):
         self.client.force_login(self.student_user)
         resp = self.client.post(reverse("skills_hub"), {
             "cv_file": _docx_upload("Experience: financial modeling and Excel pivot tables at a bank."),
-            "partner_university": self.uni.pk,
         })
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(StudentSkill.objects.get(student=self.student, skill=self.skill).status, "claimed")
         verified.refresh_from_db()
         self.assertEqual(verified.status, "verified")
-        self.assertEqual(SkillProfile.objects.get(student=self.student).partner_university, self.uni)
 
     def test_linkedin_url_only_is_saved_without_extraction(self):
         self.client.force_login(self.student_user)

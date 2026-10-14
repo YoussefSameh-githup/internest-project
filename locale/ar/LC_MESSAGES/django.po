@@ -4977,7 +4977,7 @@ msgid "Upload a file"
 msgstr "رفع ملف"
 
 msgid "Paste text"
-msgstr "لصق نص"
+msgstr "لصق نص مباشر"
 
 msgid "Drop your CV or LinkedIn PDF here, or click to choose"
 msgstr "اسحب سيرتك الذاتية أو ملف LinkedIn PDF هنا، أو اضغط للاختيار"
@@ -5443,3 +5443,31 @@ msgstr "🏅 شهادات المهارات"
 
 msgid "All certificates"
 msgstr "كل الشهادات"
+
+msgid "Pick one way — our AI reads it and lists your skills in seconds."
+msgstr "اختار طريقة واحدة — الذكاء الاصطناعي هيقرأها ويطلّع مهاراتك في ثواني."
+
+msgid "Upload CV"
+msgstr "رفع السيرة الذاتية"
+
+msgid "LinkedIn profile"
+msgstr "ملف LinkedIn"
+
+msgid "Drag your CV here, or click to choose a file"
+msgstr "اسحب سيرتك الذاتية هنا، أو اضغط لاختيار ملف"
+
+msgid "and for the analysis"
+msgstr "وللتحليل"
+
+msgid "Drop your LinkedIn PDF export here"
+msgstr "اسحب ملف LinkedIn بصيغة PDF هنا"
+
+msgid "On your profile: More → Save to PDF"
+msgstr "من بروفايلك: المزيد ← حفظ كـ PDF"
+
+msgid ""
+"We don't log in to LinkedIn: the link is saved to your profile, and the PDF "
+"is what we analyze."
+msgstr ""
+"إحنا مش بندخل على حسابك في LinkedIn: الرابط بيتحفظ في بروفايلك، والـ PDF هو "
+"اللي بنحلّله."
