@@ -11,6 +11,7 @@ from django.utils.translation import get_language
 from django.views.decorators.http import require_POST
 
 from .models import UniversityInquiry
+from .ratelimit import client_ip
 
 INQUIRIES_PER_HOUR = 10  # per IP; the form also opens WhatsApp / email, so this only limits database spam
 LIMITS = {"name": 120, "role": 120, "uni": 160, "fac": 160, "email": 254, "phone": 30, "msg": 2000}
@@ -27,17 +28,12 @@ def university_landing(request):
     })
 
 
-def _client_ip(request):
-    forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
-    return (forwarded.split(",")[0].strip() if forwarded else "") or request.META.get("REMOTE_ADDR", "")
-
-
 @require_POST
 def university_inquiry(request):
     """Log a demo / pilot request (the page also opens WhatsApp or email with the same details)."""
     if request.POST.get("website"):  # honeypot: bots fill every field
         return JsonResponse({"ok": True})
-    key = f"uni-inquiry:{_client_ip(request)}"
+    key = f"uni-inquiry:{client_ip(request)}"
     if cache.get(key, 0) >= INQUIRIES_PER_HOUR:
         return JsonResponse({"ok": False, "error": "rate_limited"}, status=429)
 

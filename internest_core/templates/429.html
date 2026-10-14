@@ -1,0 +1,15 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Too many attempts" %} — Internest{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container-narrow" style="text-align: center; padding-block: 48px;">
+        <p style="font-size: 3rem; margin: 0;">⏳</p>
+        <h1 style="font-size: clamp(1.5rem, 4vw, 2rem);">{% trans "Too many attempts" %}</h1>
+        <p class="text-muted">{% blocktrans with m=minutes %}For your account's safety, please wait up to {{ m }} minutes and try again.{% endblocktrans %}</p>
+        <a href="{% url 'landing' %}" class="btn btn-primary mt-3">{% trans "Back to home" %}</a>
+    </div>
+</section>
+{% endblock %}

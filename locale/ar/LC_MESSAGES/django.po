@@ -5471,3 +5471,10 @@ msgid ""
 msgstr ""
 "إحنا مش بندخل على حسابك في LinkedIn: الرابط بيتحفظ في بروفايلك، والـ PDF هو "
 "اللي بنحلّله."
+
+msgid "Too many attempts"
+msgstr "محاولات كتير"
+
+msgid ""
+"For your account's safety, please wait up to %(m)s minutes and try again."
+msgstr "علشان أمان حسابك، استنى لحد %(m)s دقيقة وجرّب تاني."

@@ -4,6 +4,7 @@ Django settings for Internest_Project project.
 
 from pathlib import Path
 import os
+import sys
 import environ
 from django.utils.translation import gettext_lazy as _
 
@@ -87,6 +88,8 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    # Internest: per-IP / per-user limits on login, signup, password reset and uploads.
+    "internest_core.ratelimit.RateLimitMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # Internest: lock unverified students on the verify-email page.
     "internest_core.middleware.EmailVerificationGateMiddleware",
@@ -184,6 +187,10 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = f"Internest <{EMAIL_HOST_USER}>"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 EMAIL_TIMEOUT = 20
+
+# Rate limits on login / signup / password reset / uploads (internest_core.ratelimit). Off in the test runner so
+# hundreds of test logins from 127.0.0.1 don't trip it; the rate-limit tests switch it back on.
+RATELIMIT_ENABLED = env.bool("RATELIMIT_ENABLED", default="test" not in sys.argv[1:2])
 
 # --- (7) Production hardening (only when DEBUG=False) ---
 if not DEBUG:
