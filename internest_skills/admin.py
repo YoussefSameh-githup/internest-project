@@ -6,8 +6,9 @@ from internest_core.admin_base import BAD, INFO, OK, WAIT, ModelAdmin, TabularIn
 
 from .models import (
     ChallengeAttempt, ChallengeItem, ChallengeResponse, Course, EmployerSubscription,
-    ExternalCourse, Skill, SkillProfile, StudentFreelanceGig, StudentSkill, SubSkill,
+    ExternalCourse, Skill, SkillCertificate, SkillProfile, StudentFreelanceGig, StudentSkill, SubSkill,
 )
+from .certificates import reject_certificate, verify_certificate
 from .freelance_service import reject_gig, verify_gig
 
 
@@ -139,6 +140,39 @@ class StudentFreelanceGigAdmin(ModelAdmin):
         for gig in queryset.filter(status__in=[StudentFreelanceGig.STATUS_PENDING, StudentFreelanceGig.STATUS_NEEDS_PROOF]):
             reject_gig(gig)  # the student sees a translated default reason
         self.message_user(request, "Rejected.")
+
+
+@admin.register(SkillCertificate)
+class SkillCertificateAdmin(ModelAdmin):
+    """Review queue: open the link or file, then approve (the skill becomes Verified) or reject."""
+
+    list_display = ("title", "student", "skill", "issuer", "trusted", "evidence", "status_col", "created_at")
+    list_filter = ("status", "trusted_issuer", "created_at")
+    search_fields = ("title", "issuer", "url", "skill__name", "student__user__username", "student__user__email")
+    readonly_fields = ("student", "trusted_issuer", "reviewed_at", "created_at")
+    date_hierarchy = "created_at"
+    actions = ["approve", "reject"]
+    status_col = status_badge("status", {SkillCertificate.STATUS_VERIFIED: OK, SkillCertificate.STATUS_UNDER_REVIEW: WAIT,
+                                         SkillCertificate.STATUS_REJECTED: BAD})
+
+    @flag_badge(_("Known issuer"), _("Known site"), _("Check"), false_color=None)
+    def trusted(self, obj):
+        return obj.trusted_issuer
+
+    @display(description=_("Evidence"))
+    def evidence(self, obj):
+        return " + ".join(str(x) for x, ok in ((_("Link"), obj.url), (_("File"), obj.file)) if ok) or "—"
+
+    @admin.action(description=_("Approve: verify the selected certificates' skills"))
+    def approve(self, request, queryset):
+        upgraded = sum(verify_certificate(c) for c in queryset.exclude(status=SkillCertificate.STATUS_VERIFIED))
+        self.message_user(request, _("Approved. %(n)s student skills are now verified.") % {"n": upgraded})
+
+    @admin.action(description=_("Reject the selected certificates"))
+    def reject(self, request, queryset):
+        for cert in queryset.filter(status=SkillCertificate.STATUS_UNDER_REVIEW):
+            reject_certificate(cert)
+        self.message_user(request, _("Rejected."))
 
 
 @admin.register(Course)

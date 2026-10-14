@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from internest_core.models import PartnerProfile, validate_max_file_size
 
-from .models import StudentFreelanceGig
+from .models import Skill, StudentFreelanceGig
 
 _doc_validators = [FileExtensionValidator(["pdf", "docx"]), validate_max_file_size]
 MIN_PASTED_CHARS = 80
@@ -54,7 +54,8 @@ class SkillSourceForm(forms.Form):
         return data
 
 
-PLATFORM_HOSTS = {"mostaql": "mostaql.com", "khamsat": "khamsat.com", "upwork": "upwork.com", "fiverr": "fiverr.com"}
+PLATFORM_HOSTS = {"mostaql": "mostaql.com", "khamsat": "khamsat.com", "upwork": "upwork.com", "fiverr": "fiverr.com",
+                  "github": "github.com"}
 
 
 class FreelanceImportForm(forms.Form):
@@ -92,3 +93,18 @@ class UniversityShareForm(forms.Form):
 class GigProofForm(forms.Form):
     proof = forms.FileField(label=_("Proof (screenshot or PDF, optional)"),
                             validators=[FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size])
+
+
+class CertificateForm(forms.Form):
+    skill = forms.ModelChoiceField(queryset=Skill.objects.filter(is_active=True), label=_("Skill"))
+    title = forms.CharField(max_length=160, label=_("Certificate title"))
+    issuer = forms.CharField(max_length=120, required=False, label=_("Issuer"))
+    url = forms.URLField(max_length=500, required=False, label=_("Verification link"), assume_scheme="https")
+    file = forms.FileField(required=False, label=_("Certificate file"),
+                           validators=[FileExtensionValidator(["pdf", "png", "jpg", "jpeg", "webp"]), validate_max_file_size])
+
+    def clean(self):
+        data = super().clean()
+        if not (data.get("url") or data.get("file")) and not self.errors:
+            raise forms.ValidationError(_("Add the certificate's verification link or upload the certificate."))
+        return data

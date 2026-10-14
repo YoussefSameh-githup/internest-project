@@ -348,6 +348,10 @@ UNFOLD = {
                 _nav(_("Waiting for review"), "fact_check", "internest_skills_studentfreelancegig", "?status__exact=pending", badge="pending_gigs_badge"),
                 _nav(_("Approved & verified"), "task_alt", "internest_skills_studentfreelancegig", "?status__exact=verified"),
             ]},
+            {"title": _("🏅 Skill certificates"), "collapsible": True, "items": [
+                _nav(_("All certificates"), "workspace_premium", "internest_skills_skillcertificate"),
+                _nav(_("Under review"), "fact_check", "internest_skills_skillcertificate", "?status__exact=under_review", badge="pending_certificates_badge"),
+            ]},
             {"title": _("📊 Analytics & system"), "collapsible": True, "items": [
                 _nav(_("User accounts"), "person", "auth_user"),
                 _nav(_("Groups & permissions"), "admin_panel_settings", "auth_group"),

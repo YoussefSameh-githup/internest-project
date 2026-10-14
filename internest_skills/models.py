@@ -167,7 +167,9 @@ class StudentSkill(models.Model):
 
     VIA_CHALLENGE = "challenge"
     VIA_FREELANCE = "freelance"
-    VIA_CHOICES = [(VIA_CHALLENGE, _("Skill challenge")), (VIA_FREELANCE, _("Reviewed freelance work"))]
+    VIA_CERTIFICATE = "certificate"
+    VIA_CHOICES = [(VIA_CHALLENGE, _("Skill challenge")), (VIA_FREELANCE, _("Reviewed freelance work")),
+                   (VIA_CERTIFICATE, _("Reviewed certificate"))]
 
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="skills")
     skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name="student_skills")
@@ -179,7 +181,7 @@ class StudentSkill(models.Model):
     percentile = models.PositiveSmallIntegerField(null=True, blank=True)
     lag_sub_skills = models.JSONField(default=list, blank=True)
     verified_at = models.DateTimeField(null=True, blank=True)
-    verified_via = models.CharField(max_length=10, choices=VIA_CHOICES, blank=True)
+    verified_via = models.CharField(max_length=12, choices=VIA_CHOICES, blank=True)
     cooldown_until = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -327,7 +329,7 @@ class StudentFreelanceGig(models.Model):
     """
 
     PLATFORM_CHOICES = [("mostaql", "Mostaql | مستقل"), ("khamsat", "Khamsat | خمسات"), ("upwork", "Upwork"),
-                        ("fiverr", "Fiverr"), ("portfolio", _("Portfolio link"))]
+                        ("fiverr", "Fiverr"), ("github", "GitHub"), ("portfolio", _("Portfolio link"))]
     STATUS_PENDING, STATUS_NEEDS_PROOF = "pending", "needs_proof"
     STATUS_VERIFIED, STATUS_REJECTED = "verified", "rejected"
     STATUS_CHOICES = [(STATUS_PENDING, _("Under review")), (STATUS_NEEDS_PROOF, _("Needs proof review")),
@@ -381,3 +383,28 @@ class Course(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.provider_name})"
+
+
+class SkillCertificate(models.Model):
+    """Certificate a student adds to prove a skill. Under review until an admin checks it; then the skill is Verified."""
+
+    STATUS_UNDER_REVIEW, STATUS_VERIFIED, STATUS_REJECTED = "under_review", "verified", "rejected"
+    STATUS_CHOICES = [(STATUS_UNDER_REVIEW, _("Under review")), (STATUS_VERIFIED, _("Verified")), (STATUS_REJECTED, _("Not accepted"))]
+
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="skill_certificates")
+    skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name="certificates")
+    title = models.CharField(_("Certificate title"), max_length=160)
+    issuer = models.CharField(_("Issuer"), max_length=120, blank=True)
+    url = models.URLField(_("Verification link"), max_length=500, blank=True)
+    file = models.FileField(_("Certificate file"), upload_to="skill_certificates/", blank=True, validators=[
+        FileExtensionValidator(["pdf", "png", "jpg", "jpeg", "webp"]), validate_max_file_size])
+    trusted_issuer = models.BooleanField(default=False, help_text="The link is on a known certificate-verification site.")
+    status = models.CharField(max_length=14, choices=STATUS_CHOICES, default=STATUS_UNDER_REVIEW, db_index=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} · {self.skill} ({self.get_status_display()})"

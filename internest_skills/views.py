@@ -21,7 +21,7 @@ from internest_core.views import _get_partner_profile, get_user_context
 from . import challenge as engine
 from .extraction import ExtractionError, analyze_cv, read_document_text, sanitize_text, save_claimed_skills
 from . import freelance_service
-from .forms import FreelanceImportForm, GigProofForm, SkillSourceForm, UniversityShareForm
+from .forms import CertificateForm, FreelanceImportForm, GigProofForm, SkillSourceForm, UniversityShareForm
 from .llm import llm_enabled
 from .models import ChallengeAttempt, ChallengeItem, Discipline, Skill, SkillProfile, StudentFreelanceGig, StudentSkill
 from .permissions import is_verified_university, missing_profile_fields, skill_view_role, student_for
@@ -225,6 +225,48 @@ def skills_share_university(request):
         skill_profile.save(update_fields=["partner_university"])
         messages.success(request, _("Your sharing preference was saved."))
     return redirect(f"{reverse('profile')}?tab=settings")
+
+
+# ---------------------------------------------------------------- market fit & certificates
+@student_gate()
+def student_dashboard(request):
+    """Market Fit: readiness index, radar (student vs. market) and the top missing skills with next steps."""
+    from .market_fit import market_fit
+    from .models import SkillCertificate
+    from .recommendations import courses_for_skill
+
+    field = request.GET.get("field", "")
+    fit = market_fit(request.student, field if field in Discipline.values else None)
+    context = get_user_context(request)
+    context.update({
+        "fit": fit,
+        "radar": fit.radar,
+        "field": field if field in Discipline.values else "",
+        "fields": Discipline.choices,
+        "gaps": [{"skill": s, "demand": n, "courses": courses_for_skill(s)} for s, n in fit.gaps],
+        "certificate_form": CertificateForm(),
+        "certificates": SkillCertificate.objects.filter(student=request.student).select_related("skill")[:10],
+        "page": "market_fit",
+    })
+    return render(request, "skills/market_fit.html", context)
+
+
+@student_gate()
+@require_POST
+def certificate_submit(request):
+    from .certificates import submit_certificate
+
+    form = CertificateForm(request.POST, request.FILES)
+    if form.is_valid():
+        d = form.cleaned_data
+        submit_certificate(request.student, d["skill"], d["title"], d["issuer"], d["url"], d.get("file"))
+        messages.success(request, _("Certificate received. Your %(skill)s skill is under review — once we confirm it, it gets the “Verified skill ✅” badge.") % {"skill": d["skill"].name})
+    else:
+        messages.error(request, " ".join(e for errors in form.errors.values() for e in errors))
+    target = request.POST.get("next", "")
+    if not url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        target = reverse("student_dashboard")
+    return redirect(target)
 
 
 # ---------------------------------------------------------------- challenge flow

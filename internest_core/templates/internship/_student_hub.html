@@ -22,6 +22,7 @@
             <a href="{% url 'my_applications' %}" class="sh-tab {% if hub_tab == 'applications' %}is-active{% endif %}" {% if hub_tab == 'applications' %}aria-current="page"{% endif %}>📄 {% trans "My applications" %}</a>
             <a href="{% url 'task_list' %}" class="sh-tab {% if hub_tab == 'tasks' %}is-active{% endif %}" {% if hub_tab == 'tasks' %}aria-current="page"{% endif %}>🎯 {% trans "Tasks & quizzes" %}</a>
             <a href="{% url 'course_list' %}" class="sh-tab {% if hub_tab == 'courses' %}is-active{% endif %}" {% if hub_tab == 'courses' %}aria-current="page"{% endif %}>📚 {% trans "Courses & learning paths" %}</a>
+            <a href="{% url 'student_dashboard' %}" class="sh-tab">📊 {% trans "Market fit" %}</a>
         </nav>
     </div>
 </section>

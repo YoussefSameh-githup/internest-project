@@ -186,3 +186,15 @@ def recommendations_for_student(student, limit=6) -> dict:
 def track_recommendations(student_skill, limit=3) -> list[dict]:
     """Courses for one learning path: gap-specific first, else general courses for the skill."""
     return (recommendations_for(student_skill)["recommendations"] or _level_up(student_skill))[:limit]
+
+
+def courses_for_skill(skill, limit=3) -> list[dict]:
+    """Courses to close a missing skill: partner catalogue first, then open courses, then a search link."""
+    outcome = _("Learn %(skill)s and prove it on Internest") % {"skill": skill.name}
+    recs = catalog_courses(skill, outcome)
+    if not recs:
+        provider, pattern = _EXTERNAL_SEARCH[0]
+        recs = [{"title": _("%(area)s courses on %(provider)s") % {"area": skill.name, "provider": provider},
+                 "provider": provider, "provider_type": "external_search", "url": pattern.format(q=quote_plus(skill.name)),
+                 "price": None, "expected_outcome": outcome, "is_partner": False, "discount_note": "", "opens_externally": True}]
+    return recs[:limit]

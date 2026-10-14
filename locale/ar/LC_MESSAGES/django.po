@@ -5290,3 +5290,156 @@ msgstr "سد فجوتك في %(skill)s واجتز إعادة الاختبار"
 
 msgid "Skill-gap course catalogue"
 msgstr "كتالوج كورسات سد الفجوات"
+
+msgid "Challenge, freelance work or certificate"
+msgstr "اختبار أو عمل حر أو شهادة"
+
+msgid "Certificates to review"
+msgstr "شهادات بانتظار المراجعة"
+
+msgid "Market fit"
+msgstr "التوافق مع السوق"
+
+msgid "Readiness index & skill gaps"
+msgstr "مؤشر الجاهزية وفجوات المهارات"
+
+msgid "Known issuer"
+msgstr "جهة إصدار معروفة"
+
+msgid "Known site"
+msgstr "موقع معروف"
+
+msgid "Check"
+msgstr "يحتاج تحقق"
+
+msgid "Evidence"
+msgstr "الإثبات"
+
+msgid "Approve: verify the selected certificates' skills"
+msgstr "اعتماد: توثيق مهارات الشهادات المختارة"
+
+msgid "Rejected."
+msgstr "تم الرفض."
+
+msgid "Reject the selected certificates"
+msgstr "رفض الشهادات المختارة"
+
+msgid "Approved. %(n)s student skills are now verified."
+msgstr "تم الاعتماد. %(n)s مهارة طلاب أصبحت موثقة."
+
+msgid "File"
+msgstr "ملف"
+
+msgid "Certificate title"
+msgstr "اسم الشهادة"
+
+msgid "Issuer"
+msgstr "جهة الإصدار"
+
+msgid "Verification link"
+msgstr "رابط التحقق"
+
+msgid "Certificate file"
+msgstr "ملف الشهادة"
+
+msgid "Add the certificate's verification link or upload the certificate."
+msgstr "أضف رابط التحقق من الشهادة أو ارفع ملف الشهادة."
+
+msgid "Reviewed certificate"
+msgstr "شهادة تمت مراجعتها"
+
+msgid "Learn %(skill)s and prove it on Internest"
+msgstr "اتعلم %(skill)s وأثبتها على Internest"
+
+msgid ""
+"Certificate received. Your %(skill)s skill is under review — once we confirm"
+" it, it gets the “Verified skill ✅” badge."
+msgstr ""
+"استلمنا الشهادة. مهارة %(skill)s قيد المراجعة — أول ما نأكدها هتاخد شارة "
+"“مهارة موثقة ✅”."
+
+msgid ""
+"How your verified skills compare with what open opportunities on Internest "
+"ask for."
+msgstr "مقارنة مهاراتك الموثقة باللي الفرص المتاحة على Internest بتطلبه."
+
+msgid "Field"
+msgstr "المجال"
+
+msgid "All fields"
+msgstr "كل المجالات"
+
+msgid "Show"
+msgstr "عرض"
+
+msgid "Market readiness index"
+msgstr "مؤشر الجاهزية لسوق العمل"
+
+msgid "Market readiness %(p)s%%"
+msgstr "الجاهزية لسوق العمل %(p)s%%"
+
+msgid "ready"
+msgstr "جاهزية"
+
+msgid ""
+"Weighted by how many of the %(o)s open opportunities need each of the top "
+"%(n)s skills. Only verified skills count."
+msgstr ""
+"محسوب حسب عدد الفرص المتاحة (%(o)s) اللي بتطلب كل مهارة من أهم %(n)s مهارات."
+" المهارات الموثقة بس هي اللي بتتحسب."
+
+msgid "Your skills vs. the market"
+msgstr "مهاراتك مقابل السوق"
+
+msgid "Market demand"
+msgstr "طلب السوق"
+
+msgid "Your verified level"
+msgstr "مستواك الموثق"
+
+msgid "Close your biggest gaps"
+msgstr "اقفل أكبر فجوات عندك"
+
+msgid "Open opportunities requiring it: %(n)s"
+msgstr "فرص متاحة بتطلبها: %(n)s"
+
+msgid "Take a skill test"
+msgstr "ادخل اختبار المهارة"
+
+msgid "Add a certificate"
+msgstr "أضف شهادة"
+
+msgid "Add a project"
+msgstr "أضف مشروع"
+
+msgid ""
+"You've verified every top skill in this field. Pick another field or apply "
+"to opportunities now."
+msgstr ""
+"وثّقت كل المهارات الأهم في المجال ده. اختار مجال تاني أو قدّم على الفرص "
+"دلوقتي."
+
+msgid ""
+"There are no open opportunities in this field yet, so there's nothing to "
+"compare. Try “All fields”."
+msgstr ""
+"مفيش فرص متاحة في المجال ده لسه، فمفيش حاجة نقارن بيها. جرّب “كل المجالات”."
+
+msgid "Your certificates"
+msgstr "شهاداتك"
+
+msgid ""
+"Add a course certificate (Coursera, Udemy, Credly…) to verify a skill. Our "
+"team checks it and the skill gets the “Verified skill ✅” badge."
+msgstr ""
+"أضف شهادة كورس (Coursera، Udemy، Credly…) علشان توثّق مهارة. فريقنا بيراجعها"
+" والمهارة بتاخد شارة “مهارة موثقة ✅”."
+
+msgid "Send for review"
+msgstr "إرسال للمراجعة"
+
+msgid "🏅 Skill certificates"
+msgstr "🏅 شهادات المهارات"
+
+msgid "All certificates"
+msgstr "كل الشهادات"

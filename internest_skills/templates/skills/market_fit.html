@@ -1,0 +1,183 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Market fit" %} — Internest{% endblock %}
+
+{% block content %}
+<style>
+/* Market fit dashboard — embedded so it renders right even with an old cached stylesheet. */
+.mf { padding: 32px 0 64px; background: radial-gradient(800px 320px at 85% -10%, #dbeafe, transparent 70%), #f8fafc; }
+.mf-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+.mf-head h1 { margin: 0 0 4px; font-size: clamp(1.5rem, 3vw, 2rem); }
+.mf-head p { margin: 0; color: #64748b; }
+.mf-head select { min-width: 200px; max-width: 100%; height: 42px; padding: 0 12px; border-radius: 12px; border: 1px solid #cbd5e1; font: inherit; background: #fff; }
+.mf-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 18px; }
+.mf-card { min-width: 0; padding: 22px; border-radius: 20px; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 10px 28px rgba(15, 23, 42, .05); }
+.mf-card h2 { margin: 0 0 12px; font-size: 1.1rem; }
+.mf-ring { --p: 0; width: min(190px, 60vw); aspect-ratio: 1; margin: 6px auto 14px; border-radius: 50%; display: grid; place-items: center;
+  background: conic-gradient(#2563eb calc(var(--p) * 1%), #e2e8f0 0); }
+.mf-ring > div { width: 76%; aspect-ratio: 1; border-radius: 50%; background: #fff; display: grid; place-items: center; text-align: center; }
+.mf-ring strong { display: block; font-size: 2.4rem; line-height: 1; color: #0f172a; }
+.mf-ring small { color: #64748b; font-size: 12.5px; }
+.mf-note { margin: 0; color: #64748b; font-size: 13.5px; text-align: center; }
+.mf-chart { position: relative; width: 100%; max-width: 560px; margin: 0 auto; aspect-ratio: 1; }
+.mf-gaps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; margin-top: 18px; }
+.mf-gap h3 { margin: 0; font-size: 1.05rem; }
+.mf-gap .mf-demand { display: block; margin: 2px 0 12px; color: #b45309; font-size: 13px; font-weight: 700; }
+.mf-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.mf-actions form { margin: 0; }
+.mf-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 11px; border: 1px solid #e2e8f0; background: #fff; color: #334155;
+  font: inherit; font-size: 13.5px; font-weight: 700; text-decoration: none; cursor: pointer; }
+.mf-btn:hover { border-color: #2563eb; color: #2563eb; }
+.mf-btn--primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+.mf-btn--primary:hover { background: #1d4ed8; color: #fff; }
+.mf-courses { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.mf-courses a { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border-radius: 12px; background: #f8fafc; border: 1px solid #eef2f7; color: #0f172a; text-decoration: none; }
+.mf-courses a:hover { border-color: #93c5fd; }
+.mf-courses small { color: #64748b; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.mf-empty { padding: 22px; border-radius: 16px; border: 1px dashed #cbd5e1; color: #64748b; text-align: center; }
+.mf-certs { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.mf-certs li { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; background: #f8fafc; font-size: 14px; }
+.mf-pill { padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+.mf-pill--under_review { background: #fef3c7; color: #92400e; }
+.mf-pill--verified { background: #dcfce7; color: #166534; }
+.mf-pill--rejected { background: #fee2e2; color: #991b1b; }
+.mf-dialog { width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 24px; border: 0; border-radius: 20px; box-shadow: 0 30px 70px rgba(15, 23, 42, .35); }
+.mf-dialog::backdrop { background: rgba(15, 23, 42, .5); }
+.mf-dialog label { display: block; margin: 0 0 12px; font-weight: 700; font-size: 14px; color: #334155; }
+.mf-dialog input, .mf-dialog select { display: block; width: 100%; box-sizing: border-box; margin-top: 6px; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 12px; font: inherit; font-weight: 400; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 900px) { .mf-grid { grid-template-columns: 1fr; } }
+</style>
+
+<section class="mf">
+    <div class="container">
+        <header class="mf-head">
+            <div>
+                <h1>🎯 {% trans "Market fit" %}</h1>
+                <p>{% trans "How your verified skills compare with what open opportunities on Internest ask for." %}</p>
+            </div>
+            <form method="get">
+                <label class="sr-only" for="mf-field">{% trans "Field" %}</label>
+                <select id="mf-field" name="field" onchange="this.form.submit()">
+                    <option value="">{% trans "All fields" %}</option>
+                    {% for value, label in fields %}<option value="{{ value }}" {% if field == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+                <noscript><button type="submit" class="mf-btn">{% trans "Show" %}</button></noscript>
+            </form>
+        </header>
+
+        {% if fit.demand %}
+            <div class="mf-grid">
+                <section class="mf-card" aria-labelledby="mf-readiness">
+                    <h2 id="mf-readiness">{% trans "Market readiness index" %}</h2>
+                    <div class="mf-ring" style="--p: {{ fit.readiness }};" role="img" aria-label="{% blocktrans with p=fit.readiness %}Market readiness {{ p }}%{% endblocktrans %}">
+                        <div><span><strong>{{ fit.readiness }}%</strong><small>{% trans "ready" %}</small></span></div>
+                    </div>
+                    <p class="mf-note">{% blocktrans with n=fit.demand|length o=fit.open_opportunities %}Weighted by how many of the {{ o }} open opportunities need each of the top {{ n }} skills. Only verified skills count.{% endblocktrans %}</p>
+                </section>
+                <section class="mf-card" aria-labelledby="mf-radar">
+                    <h2 id="mf-radar">{% trans "Your skills vs. the market" %}</h2>
+                    <div class="mf-chart"><canvas id="radar" aria-hidden="true"></canvas></div>
+                    <table class="sr-only">
+                        <caption>{% trans "Your skills vs. the market" %}</caption>
+                        <thead><tr><th>{% trans "Skill" %}</th><th>{% trans "Market demand" %}</th><th>{% trans "Your verified level" %}</th></tr></thead>
+                        <tbody>{% for label in radar.labels %}<tr><td>{{ label }}</td><td></td><td></td></tr>{% endfor %}</tbody>
+                    </table>
+                </section>
+            </div>
+
+            <h2 class="mt-6" style="font-size: 1.25rem;">{% trans "Close your biggest gaps" %}</h2>
+            {% if gaps %}
+                <div class="mf-gaps">
+                    {% for g in gaps %}
+                        <article class="mf-card mf-gap">
+                            <h3>{{ g.skill.name }}</h3>
+                            <span class="mf-demand"><i class="bi bi-graph-up-arrow"></i> {% blocktrans with n=g.demand %}Open opportunities requiring it: {{ n }}{% endblocktrans %}</span>
+                            <div class="mf-actions">
+                                <form method="post" action="{% url 'skills_challenge_start_for_skill' g.skill.pk %}">{% csrf_token %}
+                                    <button type="submit" class="mf-btn mf-btn--primary"><i class="bi bi-stopwatch"></i> {% trans "Take a skill test" %}</button>
+                                </form>
+                                <button type="button" class="mf-btn" data-cert-skill="{{ g.skill.pk }}"><i class="bi bi-award"></i> {% trans "Add a certificate" %}</button>
+                                <a href="{% url 'freelance_importer' %}" class="mf-btn"><i class="bi bi-github"></i> {% trans "Add a project" %}</a>
+                            </div>
+                            <ul class="mf-courses">
+                                {% for rec in g.courses %}
+                                    <li><a href="{{ rec.url }}" target="_blank" rel="noopener"><strong>{{ rec.title }}</strong><small>{{ rec.provider }} {% include "skills/_course_marks.html" %}</small></a></li>
+                                {% endfor %}
+                            </ul>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="mf-empty">🎉 {% trans "You've verified every top skill in this field. Pick another field or apply to opportunities now." %}</p>
+            {% endif %}
+        {% else %}
+            <p class="mf-empty">{% trans "There are no open opportunities in this field yet, so there's nothing to compare. Try “All fields”." %}</p>
+        {% endif %}
+
+        <section class="mf-card mt-6" aria-labelledby="mf-certs-title">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <h2 id="mf-certs-title" style="margin: 0;">{% trans "Your certificates" %}</h2>
+                <button type="button" class="mf-btn mf-btn--primary" data-cert-skill=""><i class="bi bi-plus-lg"></i> {% trans "Add a certificate" %}</button>
+            </div>
+            {% if certificates %}
+                <ul class="mf-certs mt-4">
+                    {% for c in certificates %}
+                        <li><span><strong dir="auto">{{ c.title }}</strong> · {{ c.skill.name }}{% if c.issuer %} · {{ c.issuer }}{% endif %}</span>
+                            <span class="mf-pill mf-pill--{{ c.status }}">{{ c.get_status_display }}</span></li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mt-3 mb-0">{% trans "Add a course certificate (Coursera, Udemy, Credly…) to verify a skill. Our team checks it and the skill gets the “Verified skill ✅” badge." %}</p>
+            {% endif %}
+        </section>
+    </div>
+</section>
+
+<dialog class="mf-dialog" id="cert-dialog" aria-labelledby="cert-title">
+    <form method="post" action="{% url 'certificate_submit' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <h2 id="cert-title" style="margin: 0 0 14px; font-size: 1.15rem;">{% trans "Add a certificate" %}</h2>
+        <label>{% trans "Skill" %}<select name="skill" required data-cert-select>{% for value, label in certificate_form.fields.skill.choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+        <label>{% trans "Certificate title" %}<input name="title" maxlength="160" required dir="auto"></label>
+        <label>{% trans "Issuer" %}<input name="issuer" maxlength="120" dir="auto" placeholder="Coursera, Udemy, Google…"></label>
+        <label>{% trans "Verification link" %}<input name="url" type="url" maxlength="500" dir="ltr" placeholder="https://"></label>
+        <label>{% trans "Certificate file" %}<input name="file" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp"></label>
+        <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
+            <button type="button" class="mf-btn" data-close-dialog>{% trans "Close" %}</button>
+            <button type="submit" class="mf-btn mf-btn--primary">{% trans "Send for review" %}</button>
+        </div>
+    </form>
+</dialog>
+{{ radar|json_script:"radar-data" }}
+{% endblock %}
+
+{% block extra_scripts %}
+{% trans "Market demand" as t_market %}{% trans "Your verified level" as t_you %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  var dialog = document.getElementById("cert-dialog"), select = dialog.querySelector("[data-cert-select]");
+  document.querySelectorAll("[data-cert-skill]").forEach(function (b) {
+    b.addEventListener("click", function () { if (b.dataset.certSkill) select.value = b.dataset.certSkill; dialog.showModal(); });
+  });
+  dialog.querySelector("[data-close-dialog]").addEventListener("click", function () { dialog.close(); });
+
+  var data = JSON.parse(document.getElementById("radar-data").textContent), canvas = document.getElementById("radar");
+  var rows = document.querySelectorAll(".mf-chart + table tbody tr");
+  rows.forEach(function (tr, i) { tr.cells[1].textContent = data.market[i] + "%"; tr.cells[2].textContent = data.student[i] + "%"; });
+  if (!canvas || !window.Chart || !data.labels.length) return;
+  new Chart(canvas, {
+    type: "radar",
+    data: {labels: data.labels, datasets: [
+      {label: "{{ t_you|escapejs }}", data: data.student, borderColor: "#2563eb", backgroundColor: "rgba(37, 99, 235, .2)", pointBackgroundColor: "#2563eb"},
+      {label: "{{ t_market|escapejs }}", data: data.market, borderColor: "#f59e0b", backgroundColor: "rgba(245, 158, 11, .12)", pointBackgroundColor: "#f59e0b", borderDash: [5, 4]}
+    ]},
+    options: {responsive: true, maintainAspectRatio: true, scales: {r: {min: 0, max: 100, ticks: {stepSize: 25, backdropColor: "transparent"}, pointLabels: {font: {size: 12}}}},
+              plugins: {legend: {position: "bottom"}}}
+  });
+})();
+</script>
+{% endblock %}

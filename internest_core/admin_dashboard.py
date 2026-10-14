@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 def _counters():
     """Name → zero-argument query; the sidebar badges run only the one they need."""
-    from internest_skills.models import StudentFreelanceGig, StudentSkill
+    from internest_skills.models import SkillCertificate, StudentFreelanceGig, StudentSkill
     from internest_startups.models import ProUpgradeRequest
 
     from .models import Application, Internship, PartnerInternshipSubmission, PartnerProfile, StudentProfile, UniversityInquiry
@@ -24,6 +24,7 @@ def _counters():
         "active_applicants": lambda: Application.objects.filter(internship__in=open_gigs(), status__in=Application.ACTIVE_STATUSES).count(),
         "needs_proof": gigs.filter(status=StudentFreelanceGig.STATUS_NEEDS_PROOF).count,
         "pending_gigs": gigs.filter(status=StudentFreelanceGig.STATUS_PENDING).count,
+        "pending_certificates": SkillCertificate.objects.filter(status=SkillCertificate.STATUS_UNDER_REVIEW).count,
         "pending_companies": PartnerProfile.objects.filter(is_academic=False, is_fully_verified=False).count,
         "pending_submissions": PartnerInternshipSubmission.objects.filter(status="Pending").count,
         "pending_payments": ProUpgradeRequest.objects.filter(status=ProUpgradeRequest.STATUS_PENDING).count,
@@ -42,7 +43,7 @@ def dashboard_callback(request, context):
         "kpis": [
             {"title": _("Students"), "value": c["students"], "note": _("%(n)s with a verified email") % {"n": c["verified_students"]},
              "icon": "school", "link": changelist("internest_core_studentprofile")},
-            {"title": _("Verified skills"), "value": c["verified_skills"], "note": _("Challenge or reviewed freelance work"),
+            {"title": _("Verified skills"), "value": c["verified_skills"], "note": _("Challenge, freelance work or certificate"),
              "icon": "verified", "link": changelist("internest_skills_studentskill") + "?status__exact=verified"},
             {"title": _("Open opportunities"), "value": c["open_gigs"], "note": _("%(n)s active applicants") % {"n": c["active_applicants"]},
              "icon": "work", "link": changelist("internest_core_internship") + "?is_active__exact=1"},
@@ -54,6 +55,8 @@ def dashboard_callback(request, context):
              "link": changelist("internest_skills_studentfreelancegig") + "?status__exact=needs_proof"},
             {"title": _("Freelance work to review"), "value": c["pending_gigs"], "icon": "fact_check",
              "link": changelist("internest_skills_studentfreelancegig") + "?status__exact=pending"},
+            {"title": _("Certificates to review"), "value": c["pending_certificates"], "icon": "workspace_premium",
+             "link": changelist("internest_skills_skillcertificate") + "?status__exact=under_review"},
             {"title": _("Startups awaiting verification"), "value": c["pending_companies"], "icon": "domain_verification",
              "link": reverse("admin:internest_startups_pendingcompanyprofile_changelist")},
             {"title": _("Opportunity submissions"), "value": c["pending_submissions"], "icon": "pending_actions",
@@ -75,6 +78,7 @@ def _badge(key):
 
 needs_proof_badge = _badge("needs_proof")
 pending_gigs_badge = _badge("pending_gigs")
+pending_certificates_badge = _badge("pending_certificates")
 pending_companies_badge = _badge("pending_companies")
 pending_submissions_badge = _badge("pending_submissions")
 pending_payments_badge = _badge("pending_payments")
