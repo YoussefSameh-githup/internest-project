@@ -131,6 +131,7 @@ body {
     background-color: var(--color-bg);
     /* Direction comes from <html dir="rtl|ltr"> (set per language in base.html). */
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
@@ -1048,6 +1049,7 @@ input[type="checkbox"], input[type="radio"] {
     display: grid;
     grid-template-columns: 1.05fr 1fr;
     min-height: calc(100vh - var(--navbar-height));
+    min-height: calc(100dvh - var(--navbar-height));
     background-color: var(--white);
 }
 
@@ -1619,7 +1621,7 @@ html[dir="ltr"] {
 .btn--gold { background: linear-gradient(135deg, #fbbf24, #d97706); color: #1f1300; font-weight: 800; border: 0; }
 .btn--gold:hover { filter: brightness(1.05); color: #1f1300; }
 .upsell-dialog, .compose-dialog {
-    width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto;
+    width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto;
     border: 0; border-radius: 20px; padding: var(--space-6); box-shadow: 0 24px 60px rgba(15, 23, 42, .3);
 }
 .upsell-dialog { border-top: 6px solid #f59e0b; text-align: center; }

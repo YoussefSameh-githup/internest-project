@@ -1,0 +1,59 @@
+<style id="layout-core">
+/* Site-wide responsive guard rails (embedded: works even with a stale cached styles.css).
+   Phones < 360px, foldables (dynamic viewport + safe areas), tablets, and wide screens (container ≤ 1400px). */
+:root {
+  --gutter: clamp(14px, 4vw, 32px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --vh-full: 100vh;
+}
+@supports (height: 100dvh) { :root { --vh-full: 100dvh; } }
+@media (min-width: 1440px) { :root { --container: 1400px; } }
+
+/* No sideways scrolling: clip (not hidden) so position: sticky keeps working. */
+html, body { max-width: 100%; overflow-x: hidden; }
+@supports (overflow: clip) { html, body { overflow-x: clip; } }
+body { min-height: var(--vh-full); overflow-wrap: break-word; }
+
+/* Containers: fluid gutters that respect notches and folds, centred on large screens. */
+.container, .container-narrow {
+  width: 100%;
+  padding-left: max(var(--gutter), var(--safe-l));
+  padding-right: max(var(--gutter), var(--safe-r));
+}
+.container { max-width: var(--container); }
+.footer::after { content: ""; display: block; height: var(--safe-b); }
+
+/* Media and embeds never exceed their column. */
+img, video, iframe, embed, object, canvas { max-width: 100%; }
+img, video { height: auto; }
+main svg:not([width]) { max-width: 100%; }
+
+/* Long words, URLs and e-mails wrap instead of pushing the layout wider. */
+:where(h1, h2, h3, h4, h5, h6, p, li, dd, dt, td, th, label, blockquote, figcaption, .card, .flash__body) { overflow-wrap: anywhere; }
+:where(pre, code) { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Flex/grid children can shrink below their content width. */
+:where(main) :where(.row > *, [class*="grid"] > *, [class*="__grid"] > *) { min-width: 0; }
+
+/* Buttons and inputs scale down with their container. */
+:where(.btn, button, input, select, textarea) { max-width: 100%; }
+
+/* Dialogs and modals fit the visible viewport, including foldables and on-screen keyboards. */
+dialog { max-width: calc(100vw - 24px); max-height: calc(var(--vh-full) - 24px); overflow: auto; }
+.modal-dialog { max-width: min(var(--bs-modal-width, 500px), calc(100vw - 16px)); }
+.modal-content { max-height: calc(var(--vh-full) - 32px); overflow: auto; }
+
+/* Tables scroll inside themselves on small screens. */
+.table-responsive, .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+@media (max-width: 767.98px) {
+  main table:not(.sr-only) { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .btn-lg { padding-inline: 18px; }
+}
+@media (max-width: 359.98px) {
+  :root { --gutter: 12px; }
+  html { font-size: 15px; }
+  .nav__brand span { display: none; }
+}
+</style>

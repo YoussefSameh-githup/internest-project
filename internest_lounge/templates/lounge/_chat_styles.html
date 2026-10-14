@@ -66,7 +66,7 @@
 .ch-widget h4 { margin: 0 0 10px; font-size: 15px; }
 
 /* Inbox */
-.dm-shell { display: grid; grid-template-columns: 320px minmax(0, 1fr); height: calc(100vh - 170px); min-height: 520px; border-radius: 22px; overflow: hidden;
+.dm-shell { display: grid; grid-template-columns: 320px minmax(0, 1fr); height: calc(100vh - 170px); height: calc(100dvh - 170px); min-height: 520px; border-radius: 22px; overflow: hidden;
   background: #fff; border: 1px solid var(--ch-line); box-shadow: 0 18px 44px rgba(15, 23, 42, .1); }
 .dm-list { display: flex; flex-direction: column; border-inline-end: 1px solid var(--ch-line); background: #f8fafc; min-height: 0; }
 .dm-list__head { padding: 16px; border-bottom: 1px solid var(--ch-line); }
@@ -102,7 +102,7 @@
 @media (max-width: 960px) {
   .ch-layout { grid-template-columns: 1fr; }
   .ch-side { position: static; }
-  .dm-shell { grid-template-columns: 1fr; height: calc(100vh - 140px); }
+  .dm-shell { grid-template-columns: 1fr; height: calc(100vh - 140px); height: calc(100dvh - 140px); }
   .dm-shell.has-active .dm-list { display: none; }
   .dm-shell:not(.has-active) .dm-pane { display: none; }
   .dm-back { display: inline-flex; }

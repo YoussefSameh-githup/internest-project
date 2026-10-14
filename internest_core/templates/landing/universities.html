@@ -389,7 +389,15 @@ footer .f-links a{color:inherit}
   @page{size:A4;margin:14mm}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}}
+/* Responsive guard rails: grid/flex children may shrink, safe areas on notched/foldable screens. */
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:641px){.wrap{padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}}
+.wrap>*,.hero .wrap>*,.app-grid>*,.cards>*,.kpis>*,.form>*,.pb-row>*,.stack>*{min-width:0}
+.reach>*,.reach a>span,.reach button>span{min-width:0}.reach b{display:block;overflow-wrap:anywhere}
+.fab{bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+@media (max-width:360px){.wrap{padding-left:12px;padding-right:12px}}
 </style>
+{% include 'internship/_responsive.html' %}
 </head>
 <body>
 
