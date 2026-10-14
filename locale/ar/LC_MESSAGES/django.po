@@ -5260,3 +5260,33 @@ msgstr "Internest للجامعات"
 
 msgid "University demo requests"
 msgstr "طلبات العروض من الجامعات"
+
+msgid "Certified partner"
+msgstr "شريك معتمد"
+
+msgid "Partner"
+msgstr "شريك"
+
+msgid "Recommendation"
+msgstr "الترشيح"
+
+msgid "Mark as certified partner courses"
+msgstr "تحديد ككورسات شريك معتمد"
+
+msgid "Mark as open (non-partner) courses"
+msgstr "تحديد ككورسات عامة (غير شريكة)"
+
+msgid "Provider"
+msgstr "الجهة المقدمة"
+
+msgid "Priority"
+msgstr "الأولوية"
+
+msgid "Discount note"
+msgstr "ملاحظة الخصم"
+
+msgid "Close your %(skill)s gap and pass the retest"
+msgstr "سد فجوتك في %(skill)s واجتز إعادة الاختبار"
+
+msgid "Skill-gap course catalogue"
+msgstr "كتالوج كورسات سد الفجوات"

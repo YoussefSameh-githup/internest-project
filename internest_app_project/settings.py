@@ -317,6 +317,7 @@ UNFOLD = {
                 _nav(_("Student skills (claimed / verified)"), "verified", "internest_skills_studentskill"),
                 _nav(_("Skill taxonomy"), "category", "internest_skills_skill"),
                 _nav(_("Skill challenges"), "quiz", "internest_skills_challengeitem"),
+                _nav(_("Skill-gap course catalogue"), "menu_book", "internest_skills_course"),
                 _nav(_("Challenge attempts"), "timer", "internest_skills_challengeattempt"),
                 _nav(_("Skill profiles (AI CV analysis)"), "psychology", "internest_skills_skillprofile"),
                 _nav(_("CV builder"), "description", "internest_students_studentcv"),

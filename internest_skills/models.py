@@ -358,3 +358,26 @@ class StudentFreelanceGig(models.Model):
 
     def __str__(self):
         return f"{self.get_platform_display()} · {self.project_title or self.link}"
+
+
+class Course(models.Model):
+    """Course recommended for a skill gap: partner courses first, open (internet) courses as the fallback."""
+
+    title = models.CharField(_("Title"), max_length=200)
+    skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name="courses", verbose_name=_("Skill"))
+    provider_name = models.CharField(_("Provider"), max_length=120)
+    url = models.URLField(_("Link"), max_length=500)
+    is_partner = models.BooleanField(_("Certified partner"), default=False, db_index=True,
+                                     help_text="Partner courses are recommended first and show the “Certified partner” badge.")
+    priority = models.IntegerField(_("Priority"), default=0, help_text="Higher numbers are shown first.")
+    discount_note = models.CharField(_("Discount note"), max_length=160, blank=True,
+                                     help_text="Shown on partner course cards, e.g. “20% off with code INTERNEST20”.")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-is_partner", "-priority", "title"]
+        indexes = [models.Index(fields=["skill", "is_partner", "-priority"], name="course_skill_partner_idx")]
+
+    def __str__(self):
+        return f"{self.title} ({self.provider_name})"

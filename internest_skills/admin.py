@@ -5,7 +5,7 @@ from unfold.decorators import display
 from internest_core.admin_base import BAD, INFO, OK, WAIT, ModelAdmin, TabularInline, flag_badge, status_badge
 
 from .models import (
-    ChallengeAttempt, ChallengeItem, ChallengeResponse, EmployerSubscription,
+    ChallengeAttempt, ChallengeItem, ChallengeResponse, Course, EmployerSubscription,
     ExternalCourse, Skill, SkillProfile, StudentFreelanceGig, StudentSkill, SubSkill,
 )
 from .freelance_service import reject_gig, verify_gig
@@ -139,3 +139,32 @@ class StudentFreelanceGigAdmin(ModelAdmin):
         for gig in queryset.filter(status__in=[StudentFreelanceGig.STATUS_PENDING, StudentFreelanceGig.STATUS_NEEDS_PROOF]):
             reject_gig(gig)  # the student sees a translated default reason
         self.message_user(request, "Rejected.")
+
+
+@admin.register(Course)
+class CourseAdmin(ModelAdmin):
+    """Skill-gap course catalogue: partner courses are recommended first (higher priority first)."""
+
+    list_display = ("title", "skill", "provider_name", "partner", "priority", "discount_note", "is_active")
+    list_editable = ("priority", "is_active")
+    list_filter = ("is_partner", "is_active", "skill__discipline", "skill")
+    search_fields = ("title", "provider_name", "skill__name", "url")
+    autocomplete_fields = ("skill",)
+    list_select_related = ("skill",)
+    actions = ["mark_partner", "mark_open"]
+    fieldsets = (
+        (None, {"fields": ("title", "skill", "provider_name", "url")}),
+        (_("Recommendation"), {"fields": ("is_partner", "priority", "discount_note", "is_active")}),
+    )
+
+    @flag_badge(_("Certified partner"), _("Partner"), _("Open course"), false_color=INFO)
+    def partner(self, obj):
+        return obj.is_partner
+
+    @admin.action(description=_("Mark as certified partner courses"))
+    def mark_partner(self, request, queryset):
+        queryset.update(is_partner=True)
+
+    @admin.action(description=_("Mark as open (non-partner) courses"))
+    def mark_open(self, request, queryset):
+        queryset.update(is_partner=False, discount_note="")

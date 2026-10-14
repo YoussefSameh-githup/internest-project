@@ -88,14 +88,13 @@
             <div class="skills-grid">
                 {% for rec in upskill.recommendations %}
                     <div class="skill-tile">
-                        <span class="badge {% if rec.provider_type == 'internest_partner' %}badge--primary{% else %}badge--info{% endif %}">
-                            {% if rec.provider_type == 'internest_partner' %}{% trans "Internest partner" %}{% else %}{{ rec.provider }}{% endif %}
-                        </span>
+                        {% if rec.provider_type == 'internest_partner' %}{% include "skills/_course_marks.html" %}
+                        {% else %}<span class="badge badge--info">{{ rec.provider }}</span>{% endif %}
                         <div class="fw-bold mt-2">{{ rec.title }}</div>
                         <div class="skill-tile__meta">{{ rec.provider }}{% if rec.sub_skill %} · {{ rec.sub_skill }}{% endif %}</div>
                         <div class="skill-tile__evidence">{{ rec.expected_outcome }}</div>
                         <a href="{{ rec.url }}" class="btn btn--primary btn--sm mt-3"
-                           {% if rec.provider_type != 'internest_partner' %}target="_blank" rel="noopener"{% endif %}>
+                           {% if rec.provider_type != 'internest_partner' or rec.opens_externally %}target="_blank" rel="noopener"{% endif %}>
                             {% if rec.price %}{{ rec.price }} {% trans "EGP" %} · {% endif %}{% trans "Open course" %}
                         </a>
                     </div>

@@ -28,16 +28,16 @@
                         {% if t.recs %}
                             <ul class="sh-track__recs">
                                 {% for rec in t.recs %}
-                                    <li><a href="{{ rec.url }}" {% if rec.provider_type != "internest_partner" %}target="_blank" rel="noopener"{% endif %}>
+                                    <li><a href="{{ rec.url }}" {% if rec.provider_type != "internest_partner" or rec.opens_externally %}target="_blank" rel="noopener"{% endif %}>
                                         <span>{{ rec.title }}</span>
-                                        <small>{% if rec.provider_type == "internest_partner" %}<i class="bi bi-patch-check-fill"></i>{% endif %} {{ rec.provider }}</small>
+                                        <small>{{ rec.provider }} {% include "skills/_course_marks.html" %}</small>
                                     </a></li>
                                 {% endfor %}
                             </ul>
                         {% endif %}
                         <footer class="sh-card__foot">
                             {% if t.recs %}
-                                <a href="{{ t.recs.0.url }}" class="btn btn--primary btn--sm" {% if t.recs.0.provider_type != "internest_partner" %}target="_blank" rel="noopener"{% endif %}>{% trans "Start learning" %} <i class="bi bi-arrow-left-short"></i></a>
+                                <a href="{{ t.recs.0.url }}" class="btn btn--primary btn--sm" {% if t.recs.0.provider_type != "internest_partner" or t.recs.0.opens_externally %}target="_blank" rel="noopener"{% endif %}>{% trans "Start learning" %} <i class="bi bi-arrow-left-short"></i></a>
                             {% else %}
                                 <a href="{% url 'skills_hub' %}" class="btn btn--ghost btn--sm">{% trans "View skill report" %}</a>
                             {% endif %}
@@ -62,8 +62,8 @@
                 </p>
                 <div class="rec-grid">
                     {% for rec in recommended.internal|default:recommended.external %}
-                        <a class="rec-item" href="{{ rec.url }}" {% if rec.provider_type != "internest_partner" %}target="_blank" rel="noopener"{% endif %}>
-                            <span class="rec-item__provider">{% if rec.provider_type == "internest_partner" %}<i class="bi bi-patch-check-fill"></i>{% else %}<i class="bi bi-box-arrow-up-left"></i>{% endif %} {{ rec.provider }}</span>
+                        <a class="rec-item" href="{{ rec.url }}" {% if rec.provider_type != "internest_partner" or rec.opens_externally %}target="_blank" rel="noopener"{% endif %}>
+                            <span class="rec-item__provider">{% if rec.provider_type != "internest_partner" %}<i class="bi bi-box-arrow-up-left"></i>{% endif %} {{ rec.provider }} {% include "skills/_course_marks.html" %}</span>
                             <span class="rec-item__title">{{ rec.title }}</span>
                             <span class="rec-item__why">{% if rec.is_gap %}<i class="bi bi-graph-up-arrow"></i>{% else %}<i class="bi bi-rocket-takeoff"></i>{% endif %} {{ rec.expected_outcome }}</span>
                         </a>
