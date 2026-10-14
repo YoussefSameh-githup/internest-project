@@ -56,6 +56,11 @@ class StudentHubTests(Base):
             self.assertIn(marker, dialog)
         self.assertIn("Take a skill challenge", dialog)
 
+    def test_market_fit_lives_in_the_hub_tabs_not_the_hero(self):
+        hero = self._page().content.decode().split('class="px-stats"')[0]
+        self.assertNotIn(reverse("student_dashboard"), hero)
+        self.assertContains(self.client.get(reverse("course_list")), f'href="{reverse("student_dashboard")}" class="sh-tab"')
+
     def test_tabs(self):
         page = self._page(tab="skills")
         self.assertContains(page, 'id="tab-skills" href="?tab=skills#hub" data-tab="skills" aria-controls="panel-skills" aria-selected="true"')
