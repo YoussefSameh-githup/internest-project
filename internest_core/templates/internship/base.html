@@ -29,6 +29,19 @@
     {% include 'internship/_responsive.html' %}
     {% block extra_head %}{% endblock %}
     <style>
+    /* Navbar items never wrap onto two lines; on medium screens (tablets / small laptops) the bar gets compact. */
+    .nav__links { flex-wrap: nowrap; min-width: 0; }
+    .nav__link, .nav__cta .btn, .lang-switcher__toggle, .nav__brand { white-space: nowrap; }
+    .nav__brand, .nav__cta { flex-shrink: 0; }
+    @media (min-width: 901px) and (max-width: 1199.98px) {
+      .nav__inner { gap: 12px; }
+      .nav__links { gap: 2px; }
+      .nav__link { padding: 8px 10px; gap: 6px; }
+      .nav__brand { gap: 8px; font-size: 1.1rem; }
+      .nav__cta { gap: 8px; }
+      .nav__cta .lang-switcher__toggle .nav__cta-label, .nav__cta .btn--ghost .nav__cta-label {
+        position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    }
     /* Phones: navbar actions shrink to icons so the page never scrolls sideways (embedded: survives a stale stylesheet). */
     @media (max-width: 560px) {
       .nav__cta { gap: 6px; flex-shrink: 1; min-width: 0; }

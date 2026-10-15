@@ -18,3 +18,9 @@ class ResponsiveLayoutTests(TestCase):
         page = self.client.get(reverse("university_landing"))
         self._assert_guard_rails(page)
         self.assertContains(page, "safe-area-inset-bottom")
+
+    def test_navbar_never_wraps_and_compacts_on_medium_screens(self):
+        page = self.client.get(reverse("landing"))
+        self.assertContains(page, ".nav__links { flex-wrap: nowrap; min-width: 0; }")
+        self.assertContains(page, "white-space: nowrap; }")
+        self.assertContains(page, "@media (min-width: 901px) and (max-width: 1199.98px)")
