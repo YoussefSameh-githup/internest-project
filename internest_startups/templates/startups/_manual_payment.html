@@ -1,0 +1,87 @@
+{% load i18n %}
+{# Manual Pro payment: InstaPay (Egypt) or RedotPay (international), then upload the receipt. Used inside the checkout <form>. #}
+<style>
+.mp { margin: 4px 0 18px; padding: 18px; border-radius: 18px; background: #f8fafc; border: 1px solid #e2e8f0; }
+.mp h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; font-size: 1rem; color: #0f172a; }
+.mp-step { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #1d4ed8; color: #fff; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+.mp-sub { margin: 0 0 14px; color: #64748b; font-size: 13.5px; }
+.mp-method { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px; background: #fff; border: 1px solid #e2e8f0; margin-bottom: 12px; }
+.mp-logo { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: #fff; font-size: 1.3rem; flex-shrink: 0; }
+.mp-logo--instapay { background: linear-gradient(135deg, #5b21b6, #7c3aed); }
+.mp-logo--redotpay { background: linear-gradient(135deg, #dc2626, #f97316); }
+.mp-method strong { display: block; color: #0f172a; }
+.mp-method small { color: #64748b; font-size: 12.5px; }
+.mp-id { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; background: #fff; border: 1px dashed #c7d2fe; margin-bottom: 12px; }
+.mp-id span { color: #64748b; font-size: 13px; }
+.mp-id code { font-size: 15px; font-weight: 800; color: #1e1b4b; background: none; direction: ltr; overflow-wrap: anywhere; }
+.mp-copy { border: 1px solid #c7d2fe; background: #eef2ff; color: #3730a3; border-radius: 10px; padding: 4px 10px; font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.mp-cta { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px 16px; border-radius: 14px; background: #5b21b6; color: #fff;
+  font-weight: 800; text-decoration: none; margin-bottom: 8px; }
+.mp-cta:hover { background: #4c1d95; color: #fff; }
+.mp-note { margin: 0; color: #64748b; font-size: 13px; }
+.mp-note a { font-weight: 700; }
+.mp-upload { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 20px 14px; border: 2px dashed #cbd5e1; border-radius: 16px; background: #fff;
+  text-align: center; cursor: pointer; position: relative; transition: border-color .15s, background .15s; }
+.mp-upload:hover, .mp-upload.is-drag { border-color: #2563eb; background: #eff6ff; }
+.mp-upload.has-file { border-style: solid; border-color: #86efac; background: #f0fdf4; }
+.mp-upload input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.mp-upload .bi { font-size: 1.6rem; color: #2563eb; }
+.mp-upload small { color: #64748b; font-size: 12.5px; }
+.mp-file { padding: 3px 10px; border-radius: 999px; background: #dcfce7; color: #166534; font-size: 12.5px; font-weight: 700; overflow-wrap: anywhere; max-width: 100%; }
+.mp .co-field { margin: 12px 0 0; }
+</style>
+
+<section class="mp" aria-labelledby="mp-title" data-manual-payment>
+    <h3 id="mp-title"><span class="mp-step">1</span> {% trans "Transfer the total" %} <span dir="ltr">({{ quote.final_label }})</span></h3>
+    {% if manual_method == "instapay" %}
+        <p class="mp-sub">{% trans "Pay instantly from any Egyptian bank app with InstaPay." %}</p>
+        <div class="mp-method"><span class="mp-logo mp-logo--instapay"><i class="bi bi-lightning-charge-fill"></i></span>
+            <span><strong>InstaPay</strong><small>{% trans "Inside Egypt · instant bank transfer" %}</small></span></div>
+        <a href="{{ instapay_link }}" class="mp-cta" target="_blank" rel="noopener noreferrer" data-instapay-link>
+            <i class="bi bi-box-arrow-up-right"></i> {% trans "Pay with InstaPay" %}</a>
+        <div class="mp-id"><span>{% trans "Or send to the InstaPay address (IPA):" %}</span>
+            <span style="display: flex; gap: 8px; align-items: center;"><code data-copy-value>{{ instapay_ipa }}</code>
+            <button type="button" class="mp-copy" data-copy>{% trans "Copy" %}</button></span></div>
+    {% else %}
+        <p class="mp-sub">{% trans "Paying from outside Egypt? Use RedotPay." %}</p>
+        <div class="mp-method"><span class="mp-logo mp-logo--redotpay"><i class="bi bi-globe2"></i></span>
+            <span><strong>RedotPay</strong><small>{% trans "International transfer" %}</small></span></div>
+        <div class="mp-id"><span>{% trans "RedotPay ID:" %}</span>
+            <span style="display: flex; gap: 8px; align-items: center;"><code data-copy-value>{{ redotpay_id }}</code>
+            <button type="button" class="mp-copy" data-copy>{% trans "Copy" %}</button></span></div>
+        <p class="mp-note">{% blocktrans with id=redotpay_id email=sales_email %}Transfer directly to RedotPay ID: {{ id }} or contact <a href="mailto:{{ email }}">{{ email }}</a> for SWIFT/International invoice details.{% endblocktrans %}</p>
+    {% endif %}
+
+    <h3 style="margin-top: 18px;"><span class="mp-step">2</span> {% trans "Upload your payment receipt" %}</h3>
+    <p class="mp-sub">{% trans "A screenshot of the successful transfer. Our team verifies it and activates Pro within 24 hours." %}</p>
+    <label class="mp-upload{% if form.payment_proof.errors %} has-error{% endif %}" data-drop>
+        <i class="bi bi-receipt"></i>
+        <strong>{% trans "Choose or drop the receipt" %}</strong>
+        <small>{% trans "PNG, JPG, WEBP or PDF · up to 5 MB" %}</small>
+        <span class="mp-file" data-file-name hidden></span>
+        <input type="file" name="{{ form.payment_proof.html_name }}" accept=".png,.jpg,.jpeg,.webp,.pdf" required>
+    </label>
+    {% if form.payment_proof.errors %}<div class="co-error">{{ form.payment_proof.errors|join:" " }}</div>{% endif %}
+    <div class="co-field">
+        <label for="mp-ref">{{ form.payment_reference.label }}</label>
+        <input id="mp-ref" name="{{ form.payment_reference.html_name }}" maxlength="64" dir="ltr" value="{{ form.payment_reference.value|default_if_none:'' }}">
+    </div>
+</section>
+<script>
+(function () {
+  var box = document.querySelector("[data-manual-payment]");
+  if (!box) return;
+  box.querySelectorAll("[data-copy]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var text = b.parentNode.querySelector("[data-copy-value]").textContent.trim(), label = b.textContent;
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () { b.textContent = "✓"; setTimeout(function () { b.textContent = label; }, 1500); });
+    });
+  });
+  var drop = box.querySelector("[data-drop]"), input = drop.querySelector("input"), name = drop.querySelector("[data-file-name]");
+  function show() { var f = input.files[0]; name.hidden = !f; drop.classList.toggle("has-file", !!f); if (f) name.textContent = "✓ " + f.name; }
+  input.addEventListener("change", show);
+  ["dragenter", "dragover"].forEach(function (e) { drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.add("is-drag"); }); });
+  ["dragleave", "drop"].forEach(function (e) { drop.addEventListener(e, function () { drop.classList.remove("is-drag"); }); });
+  drop.addEventListener("drop", function (ev) { ev.preventDefault(); if (ev.dataTransfer.files.length) { input.files = ev.dataTransfer.files; show(); } });
+})();
+</script>

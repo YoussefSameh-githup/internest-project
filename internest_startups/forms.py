@@ -4,10 +4,11 @@ import secrets
 from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.models import User
+from django.core.validators import FileExtensionValidator
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from internest_core.models import PartnerProfile
+from internest_core.models import PartnerProfile, validate_max_file_size
 
 from .completion import PLACEHOLDER_PREFIX
 from .models import CompanyProfile
@@ -169,10 +170,19 @@ class CheckoutForm(forms.Form):
     customer_email = forms.EmailField(label=_("Email"))
     customer_phone = forms.CharField(label=_("Mobile number"), max_length=20)
     accept_terms = forms.BooleanField(error_messages={"required": _("Please accept the terms and the refund policy to continue.")})
+    # Manual transfer (InstaPay in Egypt, RedotPay abroad): the receipt is required, the reference is optional.
+    payment_proof = forms.FileField(label=_("Payment receipt (screenshot or PDF)"), required=False,
+                                    validators=[FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size])
+    payment_reference = forms.CharField(label=_("Transfer reference (optional)"), max_length=64, required=False)
 
-    def __init__(self, *args, egypt=True, **kwargs):
+    def __init__(self, *args, egypt=True, manual=True, **kwargs):
         super().__init__(*args, **kwargs)
         self.egypt = egypt
+        if manual:
+            self.fields["payment_proof"].required = True
+            self.fields["payment_proof"].error_messages["required"] = _("Upload a screenshot of your transfer receipt so we can verify it.")
+        else:  # paid online through the gateway
+            del self.fields["payment_proof"], self.fields["payment_reference"]
 
     def clean_customer_phone(self):
         digits = re.sub(r"[\s\-()]", "", self.cleaned_data["customer_phone"])

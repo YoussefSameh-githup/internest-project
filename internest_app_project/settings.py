@@ -273,6 +273,11 @@ FAWATERAK_API_KEY = os.getenv("FAWATERAK_API_KEY", "")  # secret: set in .env, n
 FAWATERAK_BASE_URL = os.getenv("FAWATERAK_BASE_URL", "https://app.fawaterk.com")  # staging: https://staging.fawaterk.com
 
 # --- Public contact details (footer, policies, checkout) ---
+# Manual Pro payments (checked by our team from the uploaded receipt). Public payee handles only — no phone numbers.
+INSTAPAY_LINK = env("INSTAPAY_LINK", default="https://ipn.eg/S/you_zersif7/instapay/5UiNUX")
+INSTAPAY_IPA = env("INSTAPAY_IPA", default="you_zersif7@instapay")
+REDOTPAY_ID = env("REDOTPAY_ID", default="1588800300")
+SALES_EMAIL = env("SALES_EMAIL", default="sales@internest.app")
 SUPPORT_PHONE = env("SUPPORT_PHONE", default="01113999387")
 SUPPORT_EMAIL = env("SUPPORT_EMAIL", default="engineerthe973@gmail.com")
 
@@ -345,6 +350,7 @@ UNFOLD = {
                 _nav(_("Talent Pool invitations"), "mail", "internest_startups_talentinvitation"),
                 _nav(_("Course submissions"), "menu_book", "internest_core_partnercoursesubmission"),
                 _nav(_("Pro payments"), "payments", "internest_startups_proupgraderequest", badge="pending_payments_badge"),
+                _nav(_("Receipts to verify"), "receipt_long", "internest_startups_proupgraderequest", "?status__exact=verifying", badge="receipts_to_verify_badge"),
                 _nav(_("Subscriptions"), "card_membership", "internest_skills_employersubscription"),
                 _nav(_("Promo codes"), "sell", "internest_startups_promocode"),
                 _nav(_("Founders Network posts"), "forum", "internest_lounge_loungepost"),

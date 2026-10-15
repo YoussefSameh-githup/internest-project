@@ -1,11 +1,11 @@
 import uuid
 
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from internest_core.models import Internship, PartnerProfile, StudentProfile
+from internest_core.models import Internship, PartnerProfile, StudentProfile, validate_max_file_size
 
 
 def current_year():
@@ -81,9 +81,16 @@ class ProUpgradeRequest(models.Model):
     """A startup's Pro checkout. Pro is activated by an admin once payment is received."""
 
     STATUS_PENDING = "pending"
+    STATUS_VERIFYING = "verifying"  # manual transfer done, receipt uploaded, waiting for an admin to check it
     STATUS_ACTIVE = "activated"
     STATUS_CANCELLED = "cancelled"
-    STATUS_CHOICES = [(STATUS_PENDING, _("Awaiting payment")), (STATUS_ACTIVE, _("Activated")), (STATUS_CANCELLED, _("Cancelled"))]
+    STATUS_CHOICES = [(STATUS_PENDING, _("Awaiting payment")), (STATUS_VERIFYING, _("Pending verification")),
+                      (STATUS_ACTIVE, _("Activated")), (STATUS_CANCELLED, _("Cancelled"))]
+    OPEN_STATUSES = (STATUS_PENDING, STATUS_VERIFYING)  # an order the company can't replace with a new one silently
+
+    # Manual transfer methods (the receipt is checked by our team before Pro is activated).
+    METHOD_INSTAPAY = "instapay"
+    METHOD_REDOTPAY = "redotpay"
 
     partner = models.ForeignKey(PartnerProfile, on_delete=models.CASCADE, related_name="pro_requests")
     months = models.PositiveSmallIntegerField(default=1)
@@ -101,6 +108,10 @@ class ProUpgradeRequest(models.Model):
     terms_accepted_at = models.DateTimeField(null=True, blank=True)
     gateway_reference = models.CharField(max_length=64, blank=True)  # Fawaterak invoice id
     payment_url = models.URLField(max_length=500, blank=True)
+    payment_proof = models.FileField(_("Payment receipt"), upload_to="payment_proofs/", blank=True, validators=[
+        FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size])
+    payment_reference = models.CharField(_("Transfer reference"), max_length=64, blank=True)
+    proof_submitted_at = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     activated_at = models.DateTimeField(null=True, blank=True)

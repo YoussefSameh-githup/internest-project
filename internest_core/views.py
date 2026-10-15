@@ -55,6 +55,8 @@ def serve_protected_media(request, filepath: str):
         raise Http404()  # use /verify/<uuid>/letter.pdf
     if path.startswith(("freelance_proofs/", "skill_certificates/")) and not _can_view_evidence(request.user, path):
         raise Http404()  # verification evidence: the student and reviewers only
+    if path.startswith("payment_proofs/") and not (request.user.is_staff or _owns_payment_proof(request.user, path)):
+        raise Http404()  # payment receipts: the paying company and staff only
     media_root = os.path.realpath(settings.MEDIA_ROOT)
     absolute = os.path.realpath(os.path.join(media_root, filepath))
     if not absolute.startswith(media_root + os.sep) and absolute != media_root:
@@ -88,6 +90,11 @@ def _can_view_evidence(user, path):
     from internest_skills.models import SkillCertificate, StudentFreelanceGig
     model, field = (StudentFreelanceGig, "proof") if path.startswith("freelance_proofs/") else (SkillCertificate, "file")
     return model.objects.filter(**{field: path, "student__user": user}).exists()
+
+
+def _owns_payment_proof(user, path):
+    from internest_startups.models import ProUpgradeRequest
+    return ProUpgradeRequest.objects.filter(payment_proof=path, partner__user=user).exists()
 
 
 def _whatsapp_number(phone):

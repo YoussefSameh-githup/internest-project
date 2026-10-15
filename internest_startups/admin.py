@@ -1,5 +1,6 @@
 from django.contrib import admin, messages
 from django.utils import timezone
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from internest_core.admin_base import BAD, INFO, OK, WAIT, ModelAdmin, flag_badge, status_badge
@@ -86,34 +87,48 @@ class PromoCodeAdmin(ModelAdmin):
     search_fields = ("code",)
 
 
-@admin.action(description="💳 Payment received → activate Pro")
+def activate_order(req):
+    """Turn a paid (or receipt-verified) order into an active Pro subscription. False if it isn't open any more."""
+    if req.status not in ProUpgradeRequest.OPEN_STATUSES:
+        return False
+    activate_pro(req.partner, req.months)
+    req.status, req.activated_at = ProUpgradeRequest.STATUS_ACTIVE, timezone.now()
+    req.save(update_fields=["status", "activated_at"])
+    if req.promo_code_id:
+        PromoCode.objects.filter(pk=req.promo_code_id).update(times_used=F("times_used") + 1)
+    return True
+
+
+@admin.action(description="✅ Receipt verified → activate Pro")
 def activate_requests(modeladmin, request, queryset):
-    count = 0
-    for req in queryset.filter(status=ProUpgradeRequest.STATUS_PENDING).select_related("partner", "promo_code"):
-        activate_pro(req.partner, req.months)
-        req.status, req.activated_at = ProUpgradeRequest.STATUS_ACTIVE, timezone.now()
-        req.save(update_fields=["status", "activated_at"])
-        if req.promo_code_id:
-            PromoCode.objects.filter(pk=req.promo_code_id).update(times_used=F("times_used") + 1)
-        count += 1
+    count = sum(activate_order(req) for req in queryset.select_related("partner", "promo_code"))
     modeladmin.message_user(request, f"{count} Pro subscription(s) activated.", messages.SUCCESS)
 
 
 @admin.action(description="Cancel selected requests")
 def cancel_requests(modeladmin, request, queryset):
-    queryset.filter(status=ProUpgradeRequest.STATUS_PENDING).update(status=ProUpgradeRequest.STATUS_CANCELLED)
+    queryset.filter(status__in=ProUpgradeRequest.OPEN_STATUSES).update(status=ProUpgradeRequest.STATUS_CANCELLED)
 
 
 @admin.register(ProUpgradeRequest)
 class ProUpgradeRequestAdmin(ModelAdmin):
-    list_display = ("partner", "status_col", "final_price", "currency", "gateway", "gateway_reference", "customer_phone", "pro_until", "created_at", "activated_at")
-    list_filter = ("status", "promo_code", "created_at")
+    """Manual payments: open the receipt, check the transfer arrived, then run "Receipt verified → activate Pro"."""
+
+    list_display = ("partner", "status_col", "final_price", "currency", "gateway", "receipt", "payment_reference", "proof_submitted_at",
+                    "pro_until", "created_at", "activated_at")
+    list_filter = ("status", "gateway", "promo_code", "created_at")
     date_hierarchy = "created_at"
-    status_col = status_badge("status", {ProUpgradeRequest.STATUS_PENDING: WAIT, ProUpgradeRequest.STATUS_ACTIVE: OK,
-                                         ProUpgradeRequest.STATUS_CANCELLED: BAD})
-    search_fields = ("partner__company_name", "partner__user__email", "customer_email", "customer_phone", "gateway_reference")
-    readonly_fields = ("created_at", "activated_at", "terms_accepted_at", "gateway_reference", "payment_url")
+    status_col = status_badge("status", {ProUpgradeRequest.STATUS_PENDING: INFO, ProUpgradeRequest.STATUS_VERIFYING: WAIT,
+                                         ProUpgradeRequest.STATUS_ACTIVE: OK, ProUpgradeRequest.STATUS_CANCELLED: BAD})
+    search_fields = ("partner__company_name", "partner__user__email", "customer_email", "customer_phone", "gateway_reference", "payment_reference")
+    readonly_fields = ("created_at", "activated_at", "terms_accepted_at", "gateway_reference", "payment_url", "proof_submitted_at", "receipt")
     actions = [activate_requests, cancel_requests]
+
+    @admin.display(description="Receipt")
+    def receipt(self, obj):
+        if not obj.payment_proof:
+            return "—"
+        return format_html('<a href="{}" target="_blank" rel="noopener" style="font-weight:700">🧾 Open receipt</a>', obj.payment_proof.url)
 
     @admin.display(description="Pro valid until")
     def pro_until(self, obj):

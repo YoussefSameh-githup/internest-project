@@ -5478,3 +5478,100 @@ msgstr "محاولات كتير"
 msgid ""
 "For your account's safety, please wait up to %(m)s minutes and try again."
 msgstr "علشان أمان حسابك، استنى لحد %(m)s دقيقة وجرّب تاني."
+
+msgid "Payment receipts to verify"
+msgstr "إيصالات دفع محتاجة مراجعة"
+
+msgid "Payment receipt (screenshot or PDF)"
+msgstr "إيصال الدفع (صورة شاشة أو PDF)"
+
+msgid "Transfer reference (optional)"
+msgstr "رقم مرجع التحويل (اختياري)"
+
+msgid "Upload a screenshot of your transfer receipt so we can verify it."
+msgstr "ارفع صورة إيصال التحويل علشان نقدر نراجعه."
+
+msgid "Payment receipt"
+msgstr "إيصال الدفع"
+
+msgid "Transfer reference"
+msgstr "رقم مرجع التحويل"
+
+msgid ""
+"Receipt received! We're verifying your transfer and will activate Pro within"
+" 24 hours."
+msgstr "استلمنا الإيصال! بنراجع التحويل وهنفعّل Pro خلال 24 ساعة."
+
+msgid "We received your receipt (%(price)s) and are verifying the transfer."
+msgstr "استلمنا إيصالك (%(price)s) وبنراجع التحويل."
+
+msgid ""
+"Pro will be activated within 24 hours. You don't need to do anything else."
+msgstr "هيتفعّل Pro خلال 24 ساعة، ومش محتاج تعمل أي حاجة تانية."
+
+msgid "Submit receipt for verification"
+msgstr "إرسال الإيصال للمراجعة"
+
+msgid ""
+"Your receipt is only visible to our verification team. Pro is activated as "
+"soon as the transfer is confirmed."
+msgstr ""
+"الإيصال بيظهر لفريق المراجعة بس، وPro بيتفعّل أول ما نتأكد من التحويل."
+
+msgid ""
+"We received your receipt (%(price)s) and are verifying the transfer. Pro "
+"will be activated within 24 hours."
+msgstr "استلمنا إيصالك (%(price)s) وبنراجع التحويل. هيتفعّل Pro خلال 24 ساعة."
+
+msgid "Transfer the total"
+msgstr "حوّل المبلغ الإجمالي"
+
+msgid "Pay instantly from any Egyptian bank app with InstaPay."
+msgstr "ادفع فوراً من أي تطبيق بنك مصري عن طريق InstaPay."
+
+msgid "Inside Egypt · instant bank transfer"
+msgstr "داخل مصر · تحويل بنكي فوري"
+
+msgid "Pay with InstaPay"
+msgstr "ادفع بـ InstaPay"
+
+msgid "Or send to the InstaPay address (IPA):"
+msgstr "أو حوّل على عنوان InstaPay (IPA):"
+
+msgid "Copy"
+msgstr "نسخ"
+
+msgid "Paying from outside Egypt? Use RedotPay."
+msgstr "بتدفع من بره مصر؟ استخدم RedotPay."
+
+msgid "International transfer"
+msgstr "تحويل دولي"
+
+msgid "RedotPay ID:"
+msgstr "رقم RedotPay ID:"
+
+msgid ""
+"Transfer directly to RedotPay ID: %(id)s or contact <a "
+"href=\"mailto:%(email)s\">%(email)s</a> for SWIFT/International invoice "
+"details."
+msgstr ""
+"حوّل مباشرة على RedotPay ID: %(id)s أو تواصل مع <a "
+"href=\"mailto:%(email)s\">%(email)s</a> لتفاصيل فاتورة SWIFT / التحويل "
+"الدولي."
+
+msgid "Upload your payment receipt"
+msgstr "ارفع إيصال الدفع"
+
+msgid ""
+"A screenshot of the successful transfer. Our team verifies it and activates "
+"Pro within 24 hours."
+msgstr "صورة شاشة للتحويل الناجح. فريقنا بيراجعها ويفعّل Pro خلال 24 ساعة."
+
+msgid "Choose or drop the receipt"
+msgstr "اختار الإيصال أو اسحبه هنا"
+
+msgid "PNG, JPG, WEBP or PDF · up to 5 MB"
+msgstr "PNG أو JPG أو WEBP أو PDF · لحد 5 ميجا"
+
+msgid "Receipts to verify"
+msgstr "إيصالات للمراجعة"

@@ -15,6 +15,7 @@ RULES = {
     "password_reset": (5, 60 * 60),
     "resend_verification": (5, 60 * 60),
     "certificate_submit": (10, 60 * 60),
+    "checkout": (10, 60 * 60),  # payment receipt uploads
 }
 
 

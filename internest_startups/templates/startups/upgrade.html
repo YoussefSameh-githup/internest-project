@@ -19,8 +19,9 @@
         {% elif pending_request %}
             <div class="alert alert-warning text-center mb-6">
                 <i class="bi bi-hourglass-split"></i>
-                {% blocktrans with price=pending_request.price_label %}Your Pro request ({{ price }}) is awaiting payment. Our team will contact you within 24 hours.{% endblocktrans %}
-                <a href="{% url 'checkout' %}" class="fw-bold" style="margin-inline-start: 6px;">{% trans "Pay now or change the order" %} →</a>
+                {% if pending_request.status == "verifying" %}{% blocktrans with price=pending_request.price_label %}We received your receipt ({{ price }}) and are verifying the transfer. Pro will be activated within 24 hours.{% endblocktrans %}
+                {% else %}{% blocktrans with price=pending_request.price_label %}Your Pro request ({{ price }}) is awaiting payment. Our team will contact you within 24 hours.{% endblocktrans %}
+                <a href="{% url 'checkout' %}" class="fw-bold" style="margin-inline-start: 6px;">{% trans "Pay now or change the order" %} →</a>{% endif %}
             </div>
         {% endif %}
 

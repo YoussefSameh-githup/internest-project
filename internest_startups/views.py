@@ -155,7 +155,7 @@ def upgrade(request):
         elif action == "remove":
             request.session.pop(PROMO_SESSION_KEY, None)
         elif action == "subscribe":
-            if ProUpgradeRequest.objects.filter(partner=partner, status=ProUpgradeRequest.STATUS_PENDING).exists():
+            if ProUpgradeRequest.objects.filter(partner=partner, status__in=ProUpgradeRequest.OPEN_STATUSES).exists():
                 messages.info(request, _("You already have a Pro request awaiting payment. Our team will contact you shortly."))
             else:
                 promo = _session_promo(request)
@@ -180,7 +180,7 @@ def upgrade(request):
         "invites_per_opportunity": INVITES_PER_OPPORTUNITY, "network_hourly": POSTS_PER_HOUR,
         "is_pro": is_pro(partner),
         "subscription": getattr(partner, "subscription", None),
-        "pending_request": ProUpgradeRequest.objects.filter(partner=partner, status=ProUpgradeRequest.STATUS_PENDING).first(),
+        "pending_request": ProUpgradeRequest.objects.filter(partner=partner, status__in=ProUpgradeRequest.OPEN_STATUSES).first(),
         "free_posts": FREE_POSTS_PER_MONTH,
     })
     return render(request, "startups/upgrade.html", context)
@@ -320,7 +320,12 @@ CHECKOUT_OUTCOMES = ("success", "fail", "pending")
 
 @login_required
 def checkout(request):
-    """Order summary, buyer details and terms consent, then hand off to Fawaterak (EGP) or to our team."""
+    """Order summary, buyer details and terms consent, then payment.
+
+    Manual transfer (default): InstaPay in Egypt, RedotPay abroad. The company pays, uploads the receipt, and the order
+    waits as "Pending verification" until an admin checks it and activates Pro. Fawaterak is used only if configured.
+    """
+    from django.conf import settings
     from . import fawaterak
     from .forms import CheckoutForm
     from .models import ProUpgradeRequest
@@ -337,15 +342,16 @@ def checkout(request):
     promo = _session_promo(request)
     q = quote(promo, period, currency)
     online = currency == "EGP" and fawaterak.enabled()
-    pending = ProUpgradeRequest.objects.filter(partner=partner, status=ProUpgradeRequest.STATUS_PENDING).first()
+    manual_method = ProUpgradeRequest.METHOD_INSTAPAY if currency == "EGP" else ProUpgradeRequest.METHOD_REDOTPAY
+    pending = ProUpgradeRequest.objects.filter(partner=partner, status__in=ProUpgradeRequest.OPEN_STATUSES).first()
     if request.method == "POST" and request.POST.get("action") == "cancel_pending":
-        if pending:  # an unpaid order must never lock the company out of checkout
+        if pending and pending.status == ProUpgradeRequest.STATUS_PENDING:  # unpaid orders only — never a sent receipt
             pending.status = ProUpgradeRequest.STATUS_CANCELLED
             pending.save(update_fields=["status"])
             messages.info(request, _("Your previous unpaid order was cancelled. You can place a new one now."))
         return redirect(reverse("checkout") + ("?period=year" if period == "year" else ""))
     user = request.user
-    form = CheckoutForm(request.POST or None, egypt=currency == "EGP", initial={
+    form = CheckoutForm(request.POST or None, request.FILES or None, egypt=currency == "EGP", manual=not online, initial={
         "customer_name": user.get_full_name() or partner.company_name,
         "customer_email": partner.official_email or user.email,
         "customer_phone": partner.official_phone or "",
@@ -356,12 +362,17 @@ def checkout(request):
             messages.info(request, _("You already have a Pro request awaiting payment. Our team will contact you shortly."))
             return redirect("checkout")
         d = form.cleaned_data
-        order = ProUpgradeRequest.objects.create(
+        order = ProUpgradeRequest(
             partner=partner, months=q["months"], list_price=q["list_price"], promo_code=promo,
             discount_percent=q["discount_percent"], final_price=q["final_price"], currency=currency, country=country,
             gateway=gateway_for(currency), customer_name=d["customer_name"], customer_email=d["customer_email"],
             customer_phone=d["customer_phone"], terms_accepted_at=timezone.now(),
         )
+        if not online:
+            order.gateway, order.status = manual_method, ProUpgradeRequest.STATUS_VERIFYING
+            order.payment_proof, order.payment_reference = d["payment_proof"], d.get("payment_reference", "")
+            order.proof_submitted_at = timezone.now()
+        order.save()
         request.session.pop(PROMO_SESSION_KEY, None)
         if online:
             back = {o: request.build_absolute_uri(reverse("checkout_return", args=[order.pk, o])) for o in CHECKOUT_OUTCOMES}
@@ -373,12 +384,14 @@ def checkout(request):
             except fawaterak.FawaterakError:
                 messages.warning(request, _("Online payment is unavailable right now. Your order is saved and our team will contact you within 24 hours to complete payment."))
                 return redirect("startup_upgrade")
-        messages.success(request, _("Request received! Our team will contact you within 24 hours to complete payment and activate Pro."))
+        messages.success(request, _("Receipt received! We're verifying your transfer and will activate Pro within 24 hours."))
         return redirect("startup_upgrade")
 
     context = get_user_context(request)
     context.update({"partner": partner, "quote": q, "period": period, "currency": currency, "promo": promo, "form": form,
-                    "online": online, "pending_request": pending, "is_pro": is_pro(partner)})
+                    "online": online, "pending_request": pending, "is_pro": is_pro(partner), "manual_method": manual_method,
+                    "instapay_link": settings.INSTAPAY_LINK, "instapay_ipa": settings.INSTAPAY_IPA,
+                    "redotpay_id": settings.REDOTPAY_ID, "sales_email": settings.SALES_EMAIL})
     return render(request, "startups/checkout.html", context)
 
 

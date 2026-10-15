@@ -27,7 +27,8 @@ def _counters():
         "pending_certificates": SkillCertificate.objects.filter(status=SkillCertificate.STATUS_UNDER_REVIEW).count,
         "pending_companies": PartnerProfile.objects.filter(is_academic=False, is_fully_verified=False).count,
         "pending_submissions": PartnerInternshipSubmission.objects.filter(status="Pending").count,
-        "pending_payments": ProUpgradeRequest.objects.filter(status=ProUpgradeRequest.STATUS_PENDING).count,
+        "pending_payments": ProUpgradeRequest.objects.filter(status__in=ProUpgradeRequest.OPEN_STATUSES).count,
+        "receipts_to_verify": ProUpgradeRequest.objects.filter(status=ProUpgradeRequest.STATUS_VERIFYING).count,
         "university_inquiries": UniversityInquiry.objects.filter(status=UniversityInquiry.STATUS_NEW).count,
     }
 
@@ -63,6 +64,8 @@ def dashboard_callback(request, context):
              "link": changelist("internest_core_partnerinternshipsubmission") + "?status__exact=Pending"},
             {"title": _("New university demo requests"), "value": c["university_inquiries"], "icon": "school",
              "link": changelist("internest_core_universityinquiry") + "?status__exact=new"},
+            {"title": _("Payment receipts to verify"), "value": c["receipts_to_verify"], "icon": "receipt_long",
+             "link": changelist("internest_startups_proupgraderequest") + "?status__exact=verifying"},
             {"title": _("Pro payments to confirm"), "value": c["pending_payments"], "icon": "payments",
              "link": changelist("internest_startups_proupgraderequest") + "?status__exact=pending"},
         ],
@@ -82,4 +85,5 @@ pending_certificates_badge = _badge("pending_certificates")
 pending_companies_badge = _badge("pending_companies")
 pending_submissions_badge = _badge("pending_submissions")
 pending_payments_badge = _badge("pending_payments")
+receipts_to_verify_badge = _badge("receipts_to_verify")
 university_inquiries_badge = _badge("university_inquiries")
