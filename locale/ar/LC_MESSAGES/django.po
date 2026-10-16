@@ -5575,3 +5575,6 @@ msgstr "PNG أو JPG أو WEBP أو PDF · لحد 5 ميجا"
 
 msgid "Receipts to verify"
 msgstr "إيصالات للمراجعة"
+
+msgid "Detailed scores and percentiles on Internest Pro"
+msgstr "الدرجات التفصيلية والترتيب المئوي متاحين في باقة Internest Pro"
