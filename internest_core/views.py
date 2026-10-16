@@ -305,8 +305,7 @@ def internship_list(request):
     pro_partner = Q(partner__subscription__plan="pro") & (
         Q(partner__subscription__valid_until__isnull=True) | Q(partner__subscription__valid_until__gte=today))
     internships = (
-        Internship.objects
-        .filter(is_active=True)
+        Internship.objects.open()  # active AND deadline not passed: expired posts disappear the next day
         .select_related("partner", "partner__subscription")
         .prefetch_related("required_skills")
         # Pro perk: priority placement at the top of the list.
@@ -556,7 +555,10 @@ def apply_to_internship(request, internship_id):
         messages.error(request, _("This feature is available to students only."))
         return redirect("landing")
 
-    internship = get_object_or_404(Internship, id=internship_id, is_active=True)
+    internship = get_object_or_404(Internship, id=internship_id)
+    if not internship.is_open:  # a direct link or a replayed POST to a closed / expired post
+        messages.error(request, _("The application deadline for this opportunity has passed."))
+        return redirect("internship_detail", pk=internship.pk)
     if not profile.is_personal_email_verified:
         messages.warning(request, _("Please verify your personal email before applying."))
         return redirect("verify_email")
@@ -640,7 +642,7 @@ def my_applications_view(request):
 
     applied = {a.internship_id for a in applications}
     invitations = [
-        inv for inv in TalentInvitation.objects.filter(student__user=request.user, internship__is_active=True)
+        inv for inv in TalentInvitation.objects.filter(student__user=request.user, internship__in=Internship.objects.open())
         .select_related("internship", "partner")[:10]
         if inv.internship_id not in applied
     ]
@@ -682,7 +684,7 @@ DASHBOARD_SECTIONS = ("overview", "applicants", "pending", "courses")
 def active_applications(partner):
     """Applicants still being decided on open opportunities: the dashboard's inbox badge."""
     return Application.objects.filter(
-        internship__partner=partner, internship__is_active=True, internship__deadline__gte=timezone.now().date(),
+        internship__partner=partner, internship__in=Internship.objects.open(),
         status__in=Application.ACTIVE_STATUSES,
     )
 
@@ -746,7 +748,7 @@ def partner_dashboard_view(request, section="overview"):
         "section": section,
         "pending_count": pending_count,
         "applicant_count": active_applications(partner_profile).count(),
-        "active_opportunities": published_internships.filter(is_active=True, deadline__gte=timezone.now().date()).count(),
+        "active_opportunities": published_internships.open().count(),
         "posting_block": posting_block,
         "is_pro": is_pro(partner_profile),
         "quota_reached": monthly_quota_reached(partner_profile),

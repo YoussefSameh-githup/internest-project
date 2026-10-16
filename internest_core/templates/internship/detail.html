@@ -141,9 +141,14 @@
                         {% trans "Apply with a unified profile — no need to upload a CV for every opportunity." %}
                     </p>
                 {% else %}
-                    <div class="alert alert-danger mb-0">
+                    <div class="alert alert-danger mb-0" data-deadline-closed>
                         <i class="bi bi-x-octagon-fill"></i>
-                        {% trans "This opportunity is no longer accepting applications." %}
+                        {% if internship.is_expired %}
+                            <strong>{% trans "Deadline closed" %}</strong> —
+                            {% blocktrans with d=internship.deadline|date:"Y/m/d" %}applications ended on {{ d }}.{% endblocktrans %}
+                        {% else %}
+                            {% trans "This opportunity is no longer accepting applications." %}
+                        {% endif %}
                     </div>
                 {% endif %}
 

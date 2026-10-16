@@ -5735,3 +5735,27 @@ msgstr "يمكنك إعادة اختبار هذه المهارة بعد %(h)s س
 
 msgid "You can retake this skill test in <strong>%(h)s</strong> hours"
 msgstr "يمكنك إعادة اختبار هذه المهارة بعد <strong>%(h)s</strong> ساعة"
+
+msgid "Country name"
+msgstr "اسم الدولة"
+
+msgid "This country is in Europe"
+msgstr "الدولة دي في أوروبا"
+
+msgid "The application deadline for this opportunity has passed."
+msgstr "آخر موعد للتقديم على الفرصة دي عدّى."
+
+msgid "Deadline closed"
+msgstr "التقديم انتهى"
+
+msgid "applications ended on %(d)s."
+msgstr "آخر موعد للتقديم كان %(d)s."
+
+msgid "Type your country of registration."
+msgstr "اكتب دولة السجل التجاري."
+
+msgid "Type your company's industry."
+msgstr "اكتب مجال عمل الشركة."
+
+msgid "Industry name"
+msgstr "اسم المجال"

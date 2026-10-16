@@ -21,6 +21,9 @@ PRICES = {
     "EUR": {PERIOD_MONTH: Decimal("50"), PERIOD_YEAR: Decimal("500")},
 }
 EUROZONE = {"AT", "BE", "HR", "CY", "EE", "FI", "FR", "DE", "GR", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PT", "SK", "SI", "ES"}
+# Billed in EUR: the whole EU, the EEA, Switzerland and the UK (not only the euro area).
+EUROPE = EUROZONE | {"BG", "CZ", "DK", "HU", "PL", "RO", "SE", "IS", "LI", "NO", "CH", "GB"}
+OTHER_COUNTRY = "XX"
 
 # Registration countries offered at onboarding (ISO 3166-1 alpha-2). Anything else → "Other" (USD).
 COUNTRY_CHOICES = [
@@ -34,11 +37,21 @@ COUNTRY_CHOICES = [
 ]
 
 
-def currency_for(country: str) -> str:
+def currency_for(country: str, in_europe: bool = False) -> str:
+    """EG → EGP; European country (or an "Other" country marked as European) → EUR; anything else → USD."""
     country = (country or "").upper()
     if country == "EG":
         return "EGP"
-    return "EUR" if country in EUROZONE else "USD"
+    if country in EUROPE or (country == OTHER_COUNTRY and in_europe):
+        return "EUR"
+    return "USD"
+
+
+def currency_for_partner(request, partner) -> str:
+    """The company's own pricing currency once it picked a registration country, else the visitor's."""
+    if partner is not None and partner.country_of_registration:
+        return partner.pricing_currency
+    return currency_for(pricing_country(request, partner))
 
 
 def gateway_for(currency: str) -> str:

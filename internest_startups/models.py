@@ -28,6 +28,7 @@ class CompanyProfile(models.Model):
 
     partner = models.OneToOneField(PartnerProfile, on_delete=models.CASCADE, related_name="company_profile")
     industry = models.CharField(max_length=20, choices=INDUSTRY_CHOICES)
+    custom_industry = models.CharField(max_length=80, blank=True, default="", verbose_name=_("Industry name"))
     founded_year = models.PositiveSmallIntegerField(validators=[MinValueValidator(1950), MaxValueValidator(2100)])
     description = models.TextField(max_length=1000)
     founder_email = models.EmailField(blank=True, verbose_name="Founder official email")

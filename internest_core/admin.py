@@ -27,6 +27,17 @@ APPLICATION_COLORS = {
 }
 
 
+class OpportunityStatusFilter(admin.SimpleListFilter):
+    title = _("Status")
+    parameter_name = "status"
+
+    def lookups(self, request, model_admin):
+        return [("open", _("Open for applications")), ("expired", _("Expired")), ("closed", _("Closed"))]
+
+    def queryset(self, request, queryset):
+        return getattr(queryset, self.value())() if self.value() in ("open", "expired", "closed") else queryset
+
+
 # ---------------------------------------------------------------- accounts & audit
 admin.site.unregister(User)
 admin.site.unregister(Group)
@@ -249,7 +260,7 @@ class InternshipRequiredSkillInline(TabularInline):
 class InternshipAdmin(ModelAdmin):
     inlines = [InternshipRequiredSkillInline]
     list_display = ("title", "partner", "state", "deadline", "applicants", "is_premium", "created_at")
-    list_filter = ("is_active", "is_premium", "deadline", "partner__company_name")
+    list_filter = (OpportunityStatusFilter, "is_active", "is_premium", "deadline", "partner__company_name")
     search_fields = ("title", "description", "partner__company_name")
     readonly_fields = ("created_at",)
     date_hierarchy = "deadline"
@@ -257,9 +268,8 @@ class InternshipAdmin(ModelAdmin):
 
     @display(description=_("Status"), label={"open": OK, "expired": WAIT, "closed": BAD})
     def state(self, obj):
-        if not obj.is_active:
-            return "closed", _("Closed")
-        return ("expired", _("Expired")) if obj.is_expired else ("open", _("Open for applications"))
+        labels = {"open": _("Open for applications"), "expired": _("Expired"), "closed": _("Closed")}
+        return obj.status, labels[obj.status]
 
     @display(description=_("Applicants"))
     def applicants(self, obj):

@@ -19,7 +19,7 @@ UPGRADE = reverse("startup_upgrade")
 class RegionDetectionTests(ApplicationsBase):
     def test_currency_by_country(self):
         self.assertEqual([currency_for(c) for c in ("EG", "eg", "DE", "FR", "SA", "US", "GB", "")],
-                         ["EGP", "EGP", "EUR", "EUR", "USD", "USD", "USD", "USD"])
+                         ["EGP", "EGP", "EUR", "EUR", "USD", "USD", "EUR", "USD"])  # GB: European → EUR
         self.assertEqual((format_price(8000, "EGP"), format_price(50, "USD"), format_price(500, "EUR")), ("8,000 EGP", "$50", "€500"))
 
     def test_registration_country_beats_visitor_country(self):

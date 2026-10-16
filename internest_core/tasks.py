@@ -1,6 +1,10 @@
-import logging
+"""Opportunity expiry is computed live, so nothing has to run for a post to close.
 
-from django.utils import timezone
+`Internship.objects.open()` (active + deadline not passed) feeds every student list, `Internship.status`
+reports open / expired / closed for dashboards and the admin. Expired posts keep `is_active=True` so
+"expired" (deadline passed) stays distinguishable from "closed" (the company filled the role).
+"""
+import logging
 
 from .models import Internship
 
@@ -8,16 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def clean_expired_opportunities():
-    """Deactivate internships whose deadline has passed.
-
-    Schedule this daily via a cron job on the production server.
-    """
-    today = timezone.now().date()
-
-    expired = Internship.objects.filter(deadline__lt=today, is_active=True)
-    count = expired.update(is_active=False)
-
-    if count:
-        logger.info("Deactivated %d expired internships", count)
-    else:
-        logger.info("No expired internships found today")
+    """Report how many opportunities expired. Safe to schedule; it changes nothing."""
+    count = Internship.objects.expired().count()
+    logger.info("%d active opportunities are past their deadline (hidden from students automatically)", count)
+    return count

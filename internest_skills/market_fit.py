@@ -6,7 +6,6 @@ Readiness index = demand covered by the student's verified skills / total demand
 from dataclasses import dataclass, field
 
 from django.db.models import Count, Q
-from django.utils import timezone
 
 from .models import Discipline, Skill, StudentSkill
 
@@ -34,7 +33,9 @@ class MarketFit:
 
 def market_demand(discipline=None, limit=RADAR_AXES):
     """Most-required skills across open opportunities, optionally within one field (Discipline)."""
-    today = timezone.now().date()
+    from internest_core.models import opportunity_today
+
+    today = opportunity_today()
     open_q = Q(opportunities__is_active=True, opportunities__deadline__gte=today)
     skills = Skill.objects.filter(is_active=True)
     if discipline in Discipline.values:
@@ -64,5 +65,5 @@ def market_fit(student, discipline=None) -> MarketFit:
         demand=demand,
         student_levels={pk: level for pk, level in owned.items() if level},
         gaps=[(s, n) for s, n in demand if not owned.get(s.pk)][:TOP_GAPS],
-        open_opportunities=Internship.objects.filter(is_active=True, deadline__gte=timezone.now().date()).count(),
+        open_opportunities=Internship.objects.open().count(),
     )

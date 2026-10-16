@@ -30,7 +30,7 @@
                     </div>
                 </div>
 
-                {% for field in identity %}{% if field.name == "company_name" or field.name == "official_email" or field.name == "country_of_registration" %}
+                {% for field in identity %}{% if field.name == "company_name" or field.name == "official_email" or field.name == "country_of_registration" or field.name == "custom_country" or field.name == "custom_country_in_europe" %}
                     <div class="form-group">
                         <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                         {{ field }}
@@ -49,7 +49,7 @@
 
                 <h4 class="mt-4">{% trans "Online presence" %}</h4>
                 <p class="text-muted" style="font-size: var(--text-sm);">{% trans "At least one social media link is required." %}</p>
-                {% for field in identity %}{% if field.name != "company_name" and field.name != "official_email" and field.name != "logo" and field.name != "country_of_registration" %}
+                {% for field in identity %}{% if field.name != "company_name" and field.name != "official_email" and field.name != "logo" and field.name != "country_of_registration" and field.name != "custom_country" and field.name != "custom_country_in_europe" %}
                     <div class="form-group">
                         <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                         {{ field }}
@@ -71,6 +71,20 @@
 
 {% block extra_scripts %}
 <script>
+(function () {
+  // "Other" country / industry: show the free-text box (and the Europe checkbox) only while "Other" is chosen.
+  document.querySelectorAll("[data-other-of]").forEach(function (input) {
+    var select = input.form && input.form.elements[input.dataset.otherOf], group = input.closest(".form-group");
+    if (!select || !group) return;
+    function sync() {
+      var other = select.value === "XX" || select.value === "other";
+      group.hidden = !other;
+      if (input.type === "text") input.required = other;
+    }
+    select.addEventListener("change", sync);
+    sync();
+  });
+})();
 (function () {
   var input = document.querySelector(".logo-upload__input");
   if (!input) return;

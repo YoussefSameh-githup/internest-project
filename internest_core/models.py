@@ -128,6 +128,16 @@ class PartnerProfile(models.Model):
     company_name = models.CharField(max_length=200, unique=True, verbose_name="اسم الشركة/الجهة")
     # ISO country of the commercial register (startup onboarding). Sets the Pro pricing currency; locked once verified.
     country_of_registration = models.CharField(max_length=2, blank=True, default="", verbose_name=_("Country of registration"))
+    # "Other" (XX) country: the name the company typed, and whether it is in Europe (EUR pricing) or not (USD).
+    custom_country = models.CharField(max_length=80, blank=True, default="", verbose_name=_("Country name"))
+    custom_country_in_europe = models.BooleanField(default=False, verbose_name=_("This country is in Europe"))
+
+    @property
+    def pricing_currency(self):
+        """EGP for Egypt, EUR for Europe (listed or a European "Other"), USD everywhere else."""
+        from internest_startups.pricing import currency_for
+
+        return currency_for(self.country_of_registration, in_europe=self.custom_country_in_europe)
     partner_code = models.CharField(max_length=50, unique=True, help_text="الكود السري للدخول المخصص.")
     logo = models.ImageField(
         upload_to='partner_logos/', null=True, blank=True,
@@ -180,7 +190,28 @@ class PartnerProfile(models.Model):
 ONLINE_LOCATION_KEYWORDS = ("online", "remote", "عن بعد", "عن بُعد", "أونلاين", "اونلاين")
 
 
+def opportunity_today():
+    """Deadlines are calendar dates (Cairo time): an opportunity is open through its deadline day."""
+    return timezone.localdate()
+
+
+class InternshipQuerySet(models.QuerySet):
+    """One definition of "open" for every student-facing list, so an expired post can never leak back in."""
+
+    def open(self):
+        return self.filter(is_active=True, deadline__gte=opportunity_today())
+
+    def expired(self):
+        return self.filter(is_active=True, deadline__lt=opportunity_today())
+
+    def closed(self):
+        return self.filter(is_active=False)
+
+
 class Internship(models.Model):
+    STATUS_OPEN, STATUS_EXPIRED, STATUS_CLOSED = "open", "expired", "closed"
+
+    objects = InternshipQuerySet.as_manager()
     partner = models.ForeignKey(PartnerProfile, on_delete=models.CASCADE, related_name="internships", verbose_name="الشريك (الشركة)")
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -204,8 +235,15 @@ class Internship(models.Model):
 
     @property
     def is_expired(self):
-        """التحقق من انتهاء صلاحية التدريب (للعرض الفوري)."""
-        return self.deadline < timezone.now().date()
+        """The deadline day is over (computed live: nothing to run for a post to expire)."""
+        return self.deadline < opportunity_today()
+
+    @property
+    def status(self):
+        """open / expired (deadline passed) / closed (by the company or an admin) for dashboards and admin."""
+        if not self.is_active:
+            return self.STATUS_CLOSED
+        return self.STATUS_EXPIRED if self.is_expired else self.STATUS_OPEN
         
     @property
     def applicants_count(self):

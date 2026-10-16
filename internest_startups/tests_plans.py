@@ -357,3 +357,120 @@ class AIChallengeTests(SkillsBase):
             self.client.post(reverse("skills_challenge_start", args=[self.ss.pk]))
         second = ChallengeAttempt.objects.exclude(pk=first.pk).get(student_skill=self.ss)
         self.assertFalse(set(first.item_ids) & set(second.item_ids))
+
+
+# ---------------------------------------------------------------- opportunity expiry
+class OpportunityExpiryTests(ApplicationsBase):
+    """Open = active and the deadline day not over (Cairo). Expired posts vanish from every student list."""
+
+    def setUp(self):
+        super().setUp()
+        self.student_user, self.student = _student("viewer")
+        today = timezone.localdate()
+        self.future = Internship.objects.create(partner=self.partner, title="Future gig", description="d", location="Cairo",
+                                                required_majors="any", deadline=today + timedelta(days=5))
+        self.last_day = Internship.objects.create(partner=self.partner, title="Last day gig", description="d", location="Cairo",
+                                                  required_majors="any", deadline=today)
+        # "Just expired": the deadline is a date, so the instant after its last day ends (yesterday's deadline).
+        self.expired = Internship.objects.create(partner=self.partner, title="Expired gig", description="d", location="Cairo",
+                                                 required_majors="any", deadline=today - timedelta(days=1))
+        self.closed = Internship.objects.create(partner=self.partner, title="Closed gig", description="d", location="Cairo",
+                                                required_majors="any", deadline=today + timedelta(days=5), is_active=False)
+
+    def test_queryset_and_status(self):
+        open_ids = set(Internship.objects.open().values_list("pk", flat=True))
+        self.assertIn(self.future.pk, open_ids)
+        self.assertIn(self.last_day.pk, open_ids)  # open until the end of its deadline day
+        self.assertNotIn(self.expired.pk, open_ids)
+        self.assertNotIn(self.closed.pk, open_ids)
+        self.assertEqual((self.future.status, self.expired.status, self.closed.status), ("open", "expired", "closed"))
+        self.assertEqual(list(Internship.objects.expired()), [self.expired])
+
+    def test_student_listing_hides_expired(self):
+        self.login_student(self.student_user)
+        titles = [i.title for i in self.client.get(reverse("list")).context["internships"]]
+        self.assertIn("Future gig", titles)
+        self.assertIn("Last day gig", titles)
+        self.assertNotIn("Expired gig", titles)
+        self.assertNotIn("Closed gig", titles)
+
+    def test_direct_link_shows_deadline_closed_without_the_form(self):
+        self.login_student(self.student_user)
+        page = self.client.get(reverse("internship_detail", args=[self.expired.pk]))
+        self.assertContains(page, "Deadline closed")
+        self.assertContains(page, "data-deadline-closed")
+        self.assertNotContains(page, reverse("apply", args=[self.expired.pk]))
+
+    def test_applying_to_an_expired_post_is_refused(self):
+        self.login_student(self.student_user)
+        resp = self.client.post(reverse("apply", args=[self.expired.pk]), {"contact_consent": "on"})
+        self.assertRedirects(resp, reverse("internship_detail", args=[self.expired.pk]), fetch_redirect_response=False)
+        self.assertFalse(Application.objects.filter(internship=self.expired).exists())
+
+    def test_admin_can_filter_expired(self):
+        self.client.force_login(User.objects.create_superuser("boss", "boss@example.com", "pw"))
+        page = self.client.get(reverse("admin:internest_core_internship_changelist"), {"status": "expired"})
+        self.assertContains(page, "Expired gig")
+        self.assertNotContains(page, "Future gig")
+
+
+# ---------------------------------------------------------------- "Other" country / industry and the pricing currency
+from internest_startups.pricing import currency_for  # noqa: E402
+from internest_startups.tests import OnboardingBase  # noqa: E402
+
+
+class CompanyCurrencyTests(OnboardingBase):
+    def _profile(self, **overrides):
+        self.register()
+        resp = self.submit_profile(**overrides)
+        return resp, self.partner()
+
+    def test_currency_mapping(self):
+        self.assertEqual(currency_for("EG"), "EGP")
+        self.assertEqual(currency_for("DE"), "EUR")
+        self.assertEqual(currency_for("PL"), "EUR")   # EU but not euro area
+        self.assertEqual(currency_for("US"), "USD")
+        self.assertEqual(currency_for("SA"), "USD")
+        self.assertEqual(currency_for("XX"), "USD")   # "Other" defaults to USD…
+        self.assertEqual(currency_for("XX", in_europe=True), "EUR")  # …unless marked European
+
+    def test_egypt_and_germany_profiles(self):
+        _resp, partner = self._profile(country_of_registration="EG")
+        self.assertEqual(partner.pricing_currency, "EGP")
+        PartnerProfile.objects.filter(pk=partner.pk).update(country_of_registration="DE")
+        self.assertEqual(PartnerProfile.objects.get(pk=partner.pk).pricing_currency, "EUR")
+
+    def test_other_country_saved_and_priced(self):
+        _resp, partner = self._profile(country_of_registration="XX", custom_country="  Kosovo <b>Rep</b>  ")
+        self.assertEqual((partner.country_of_registration, partner.custom_country), ("XX", "Kosovo bRep/b"))
+        self.assertEqual(partner.pricing_currency, "USD")
+        self.submit_profile(country_of_registration="XX", custom_country="Monaco", custom_country_in_europe="on")
+        partner.refresh_from_db()
+        self.assertEqual((partner.custom_country, partner.pricing_currency), ("Monaco", "EUR"))
+        self.client.force_login(partner.user)
+        self.assertContains(self.client.get(reverse("checkout")), "€50")
+
+    def test_other_requires_a_name_and_listed_country_clears_it(self):
+        resp, _partner = self._profile(country_of_registration="XX", custom_country="")
+        self.assertContains(resp, "Type your country of registration.")
+        self.submit_profile(country_of_registration="XX", custom_country="Monaco", custom_country_in_europe="on")
+        self.submit_profile(country_of_registration="US", custom_country="Monaco", custom_country_in_europe="on")
+        partner = self.partner()
+        self.assertEqual((partner.custom_country, partner.custom_country_in_europe, partner.pricing_currency), ("", False, "USD"))
+
+    def test_other_industry(self):
+        from internest_startups.models import CompanyProfile
+        resp, _partner = self._profile(industry="other", custom_industry="")
+        self.assertContains(resp, "Type your company&#x27;s industry.")
+        self.submit_profile(industry="other", custom_industry="Agri-tech")
+        self.assertEqual(CompanyProfile.objects.get(partner=self.partner()).custom_industry, "Agri-tech")
+        self.submit_profile(industry="software", custom_industry="Agri-tech")
+        self.assertEqual(CompanyProfile.objects.get(partner=self.partner()).custom_industry, "")
+
+    def test_form_has_the_toggled_inputs(self):
+        self.register()
+        page = self.client.get(reverse("startup_company_profile_edit"))
+        self.assertContains(page, 'data-other-of="country_of_registration"')
+        self.assertContains(page, 'data-other-of="industry"')
+        self.assertContains(page, '<option value="XX"')
+        self.assertContains(page, '<option value="other"')

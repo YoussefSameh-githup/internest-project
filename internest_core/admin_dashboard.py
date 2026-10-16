@@ -1,6 +1,5 @@
 """Admin home KPIs and sidebar badge counts (wired in settings.UNFOLD)."""
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -12,7 +11,7 @@ def _counters():
     from .models import Application, Internship, PartnerInternshipSubmission, PartnerProfile, StudentProfile, UniversityInquiry
 
     def open_gigs():
-        return Internship.objects.filter(is_active=True, deadline__gte=timezone.now().date())
+        return Internship.objects.open()
 
     gigs = StudentFreelanceGig.objects
     return {

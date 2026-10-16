@@ -127,7 +127,7 @@ def _session_promo(request):
 @login_required
 def upgrade(request):
     from .models import PromoCode, ProUpgradeRequest
-    from .pricing import PERIOD_MONTHS, currency_for, format_price, gateway_for, pricing_country
+    from .pricing import PERIOD_MONTHS, currency_for_partner, format_price, gateway_for, pricing_country
     from internest_lounge.moderation import POSTS_PER_HOUR
 
     from .talent import INVITES_PER_OPPORTUNITY
@@ -137,7 +137,7 @@ def upgrade(request):
     if partner is None:
         return redirect("home_redirect")
     country = pricing_country(request, partner)
-    currency = currency_for(country)
+    currency = currency_for_partner(request, partner)
     period = request.POST.get("period") or request.GET.get("period")
     period = period if period in PERIOD_MONTHS else "month"
     back = reverse("startup_upgrade") + ("?period=year" if period == "year" else "")
@@ -232,7 +232,7 @@ def talent_pool_search_view(request):
     params = request.GET.copy()
     params.pop("page", None)
     opportunities = list(
-        Internship.objects.filter(partner=partner, is_active=True, deadline__gte=timezone.now().date())
+        Internship.objects.open().filter(partner=partner)
         .annotate(invites_used=Count("talent_invitations")).order_by("-pk")
     )
     # What the company can really still send: per-opportunity quota left, capped by the daily anti-spam limit.
@@ -272,7 +272,7 @@ def talent_pool_invite(request, student_id):
         pk=student_id, talent_pool_visible=True, pk__in=qualifying_skills().values("student_id"),
     )
     internship = Internship.objects.filter(
-        pk=request.POST.get("internship") or 0, partner=partner, is_active=True, deadline__gte=timezone.now().date(),
+        pk=request.POST.get("internship") or 0, partner=partner, id__in=Internship.objects.open(),
     ).first()
     if internship is None:
         messages.error(request, _("Choose one of your open opportunities."))
@@ -329,14 +329,14 @@ def checkout(request):
     from . import fawaterak
     from .forms import CheckoutForm
     from .models import ProUpgradeRequest
-    from .pricing import PERIOD_MONTHS, currency_for, gateway_for, pricing_country
+    from .pricing import PERIOD_MONTHS, currency_for_partner, gateway_for, pricing_country
     from .tiers import is_pro, quote
 
     partner = _startup_or_redirect(request)
     if partner is None:
         return redirect("home_redirect")
     country = pricing_country(request, partner)
-    currency = currency_for(country)
+    currency = currency_for_partner(request, partner)
     period = request.POST.get("period") or request.GET.get("period")
     period = period if period in PERIOD_MONTHS else "month"
     promo = _session_promo(request)

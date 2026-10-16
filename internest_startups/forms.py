@@ -12,6 +12,7 @@ from internest_core.models import PartnerProfile, validate_max_file_size
 
 from .completion import PLACEHOLDER_PREFIX
 from .models import CompanyProfile
+from .pricing import OTHER_COUNTRY
 
 _input = {"class": "form-control"}
 
@@ -39,6 +40,12 @@ class StartupSignupForm(forms.Form):
             except forms.ValidationError as exc:
                 self.add_error("password1", exc)
         return data
+
+
+def clean_free_text(value, limit=80):
+    """User-typed names ("Other" country / industry): no markup or control characters, single spaces, ≤ limit."""
+    value = re.sub(r"[<>{}\[\]`\\]|[\x00-\x1f\x7f]", "", value or "")
+    return re.sub(r"\s+", " ", value).strip()[:limit]
 
 
 LOGO_EXTENSIONS = ("jpg", "jpeg", "png", "webp")
@@ -83,8 +90,8 @@ class CompanyIdentityForm(forms.ModelForm):
 
     class Meta:
         model = PartnerProfile
-        fields = ["logo", "company_name", "official_email", "country_of_registration", "official_website", "linkedin_url",
-                  "facebook_url", "twitter_url", "instagram_url"]
+        fields = ["logo", "company_name", "official_email", "country_of_registration", "custom_country", "custom_country_in_europe",
+                  "official_website", "linkedin_url", "facebook_url", "twitter_url", "instagram_url"]
         labels = {
             "country_of_registration": _("Country of commercial registration"),
             "logo": _("Company logo"),
@@ -99,6 +106,8 @@ class CompanyIdentityForm(forms.ModelForm):
         widgets = {f: forms.URLInput(attrs={**_input, "placeholder": "https://", "dir": "ltr"})
                    for f in ["official_website", "linkedin_url", "facebook_url", "twitter_url", "instagram_url"]}
         widgets["company_name"] = forms.TextInput(attrs=_input)
+        widgets["custom_country"] = forms.TextInput(attrs={**_input, "data-other-of": "country_of_registration", "maxlength": 80})
+        widgets["custom_country_in_europe"] = forms.CheckboxInput(attrs={"data-other-of": "country_of_registration"})
         widgets["logo"] = forms.ClearableFileInput(attrs={"accept": "image/png,image/jpeg,image/webp", "class": "logo-upload__input"})
         widgets["official_email"] = forms.EmailInput(attrs={**_input, "placeholder": "contact@company.com", "dir": "ltr"})
 
@@ -115,21 +124,31 @@ class CompanyIdentityForm(forms.ModelForm):
         country.help_text = _("Sets your Pro pricing currency. It can only be changed by our team after verification.")
         if self.instance.is_fully_verified and self.instance.country_of_registration:
             country.disabled = True  # pricing region is locked once an admin verified the company
+            self.fields["custom_country"].disabled = self.fields["custom_country_in_europe"].disabled = True
+
+    def clean(self):
+        data = super().clean()
+        if data.get("country_of_registration") == OTHER_COUNTRY:
+            if not data.get("custom_country"):
+                self.add_error("custom_country", _("Type your country of registration."))
+        else:  # a listed country: no free-text name and no manual region
+            data["custom_country"], data["custom_country_in_europe"] = "", False
+        if not any(data.get(f) for f in ("linkedin_url", "facebook_url", "twitter_url", "instagram_url")):
+            raise forms.ValidationError(_("Add at least one social media link (LinkedIn, Facebook, Twitter or Instagram)."))
+        return data
+
+    def clean_custom_country(self):
+        return clean_free_text(self.cleaned_data.get("custom_country"))
 
     def clean_logo(self):
         return clean_logo_upload(self.cleaned_data.get("logo"), self.instance)
 
-    def clean(self):
-        data = super().clean()
-        if not any(data.get(f) for f in ("linkedin_url", "facebook_url", "twitter_url", "instagram_url")):
-            raise forms.ValidationError(_("Add at least one social media link (LinkedIn, Facebook, Twitter or Instagram)."))
-        return data
 
 
 class CompanyProfileForm(forms.ModelForm):
     class Meta:
         model = CompanyProfile
-        fields = ["industry", "founded_year", "description", "founder_email"]
+        fields = ["industry", "custom_industry", "founded_year", "description", "founder_email"]
         labels = {
             "founder_email": _("Founder official email"),
             "industry": _("Industry / field"),
@@ -138,6 +157,7 @@ class CompanyProfileForm(forms.ModelForm):
         }
         widgets = {
             "industry": forms.Select(attrs={"class": "form-select"}),
+            "custom_industry": forms.TextInput(attrs={**_input, "data-other-of": "industry", "maxlength": 80}),
             "founded_year": forms.NumberInput(attrs={**_input, "min": 1950}),
             "description": forms.Textarea(attrs={**_input, "rows": 4, "maxlength": 1000}),
             "founder_email": forms.EmailInput(attrs={**_input, "placeholder": "founder@company.com", "dir": "ltr"}),
@@ -147,6 +167,18 @@ class CompanyProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["founder_email"].required = True
         self.company_email = (company_email or "").lower()
+
+    def clean_custom_industry(self):
+        return clean_free_text(self.cleaned_data.get("custom_industry"))
+
+    def clean(self):
+        data = super().clean()
+        if data.get("industry") == "other":
+            if not data.get("custom_industry"):
+                self.add_error("custom_industry", _("Type your company's industry."))
+        else:
+            data["custom_industry"] = ""
+        return data
 
     def clean_founder_email(self):
         email = self.cleaned_data["founder_email"].strip().lower()
