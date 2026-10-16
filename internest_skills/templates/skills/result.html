@@ -21,7 +21,7 @@
                         {% trans "The session was not completed in time." %}
                     {% endif %}
                 </p>
-                <p class="mb-0">{% trans "You can retake this challenge on" %} <strong>{{ student_skill.cooldown_until|date:"Y/m/d" }}</strong>.</p>
+                <p class="mb-0">{% blocktrans with h=student_skill.cooldown_hours_remaining %}You can retake this skill test in <strong>{{ h }}</strong> hours{% endblocktrans %}.</p>
             </div>
 
         {% elif student_skill.status == 'verified' %}

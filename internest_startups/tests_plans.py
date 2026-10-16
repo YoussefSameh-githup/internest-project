@@ -255,3 +255,105 @@ class LegacyMechanicsRemovedTests(ApplicationsBase):
         self.assertContains(page, "75%")
         self.assertContains(page, "3 of 4 correct")
         self.assertNotContains(page, "points")
+
+
+# ---------------------------------------------------------------- skill challenges: AI first, 48 h retake, fresh questions
+import json  # noqa: E402
+from unittest import mock  # noqa: E402
+
+from django.test import override_settings  # noqa: E402
+from django.utils import translation  # noqa: E402
+
+from internest_skills import challenge as engine  # noqa: E402
+from internest_skills.models import ChallengeAttempt, ChallengeItem, SubSkill  # noqa: E402
+from internest_skills.quizgen import quiz_item_ids_for  # noqa: E402
+from internest_skills.tests import Base as SkillsBase, _llm_reply  # noqa: E402
+
+CHAT = "openai.resources.chat.completions.Completions.create"
+
+
+def fake_quiz(prefix, n=10):
+    return _llm_reply(json.dumps({"q": [
+        {"s": "Ratio analysis", "d": "emh"[i % 3], "t": f"{prefix} topic {i}", "p": f"{prefix}: scenario question number {i} about ratios?",
+         "k": "", "c": ["Option A", "Option B", "Option C", "Option D"], "a": 1} for i in range(n)]}))
+
+
+@override_settings(AGENTROUTER_API_KEY="test-key", AGENTROUTER_BASE_URL="https://llm.test/v1")
+class AIChallengeTests(SkillsBase):
+    def setUp(self):
+        super().setUp()
+        self.ss = self._claim()
+        self.client.force_login(self.student_user)
+
+    def _start(self, reply):
+        with mock.patch(CHAT, return_value=reply) as create:
+            resp = self.client.post(reverse("skills_challenge_start", args=[self.ss.pk]))
+        return resp, create
+
+    def _fail(self, attempt):
+        engine.terminate(attempt, "test")  # a failed / terminated attempt starts the cooldown
+        self.ss.refresh_from_db()
+
+    def test_ai_generates_first_for_any_skill(self):
+        resp, create = self._start(fake_quiz("round1"))
+        attempt = ChallengeAttempt.objects.get(student_skill=self.ss)
+        self.assertRedirects(resp, reverse("skills_challenge", args=[attempt.token]), fetch_redirect_response=False)
+        self.assertEqual(create.call_count, 1)  # the AI was asked first, before the saved bank
+        prompts = set(ChallengeItem.objects.filter(id__in=attempt.item_ids).values_list("prompt", flat=True))
+        self.assertTrue(all(p.startswith("round1:") for p in prompts))
+        messages = create.call_args.kwargs["messages"]
+        self.assertIn("NON-TECHNICAL", messages[0]["content"])        # scenario style adapts to the skill
+        self.assertIn("Skill: Financial Analysis", messages[1]["content"])
+        self.assertIn("Also known as:", messages[1]["content"])
+
+    def test_saved_bank_only_when_ai_fails(self):
+        saved = set(self.skill.items.values_list("id", flat=True))
+        with mock.patch(CHAT, side_effect=TimeoutError("rate limited")):
+            ids = quiz_item_ids_for(self.skill, self.ss)
+        self.assertTrue(ids and set(ids) <= saved)
+
+    def test_retake_blocked_for_48_hours_with_countdown(self):
+        self._start(fake_quiz("round1"))
+        self._fail(ChallengeAttempt.objects.get(student_skill=self.ss))
+        self.assertAlmostEqual(self.ss.cooldown_seconds_remaining, 48 * 3600, delta=60)
+        resp, create = self._start(fake_quiz("round2"))
+        self.assertRedirects(resp, reverse("skills_hub"), fetch_redirect_response=False)
+        self.assertEqual(create.call_count, 0)  # no AI call while cooling down
+        self.assertEqual(ChallengeAttempt.objects.filter(student_skill=self.ss).count(), 1)
+        page = self.client.get(reverse("skills_hub"))
+        self.assertContains(page, "You can retake this skill test in 48 hours")
+        self.client.cookies["internest_lang"] = "ar"
+        translation.activate("ar")
+        self.assertContains(self.client.get(reverse("skills_hub")), "يمكنك إعادة اختبار هذه المهارة بعد 48 ساعة")
+
+    def test_retake_after_48_hours_gets_fresh_ai_questions(self):
+        self._start(fake_quiz("round1"))
+        first = ChallengeAttempt.objects.get(student_skill=self.ss)
+        self._fail(first)
+        StudentSkill.objects.filter(pk=self.ss.pk).update(cooldown_until=timezone.now() - timedelta(minutes=1))
+        # The model repeats two old questions; they must be dropped, and it must be told what to avoid.
+        repeat = json.loads(fake_quiz("round1", 2).choices[0].message.content)["q"]
+        fresh = json.loads(fake_quiz("round2", 10).choices[0].message.content)["q"]
+        resp, create = self._start(_llm_reply(json.dumps({"q": repeat + fresh})))
+        second = ChallengeAttempt.objects.exclude(pk=first.pk).get(student_skill=self.ss)
+        self.assertRedirects(resp, reverse("skills_challenge", args=[second.token]), fetch_redirect_response=False)
+        self.assertFalse(set(first.item_ids) & set(second.item_ids))
+        prompts = ChallengeItem.objects.filter(id__in=second.item_ids).values_list("prompt", flat=True)
+        self.assertTrue(all(p.startswith("round2:") for p in prompts))
+        sent = create.call_args.kwargs["messages"][1]["content"]
+        self.assertIn("already answered", sent)
+        self.assertIn("round1: scenario question number 0", sent)
+
+    def test_retake_fallback_prefers_unseen_saved_questions(self):
+        sub = SubSkill.objects.filter(skill=self.skill).first()
+        for i in range(10):
+            ChallengeItem.objects.create(skill=self.skill, sub_skill=sub, kind=ChallengeItem.KIND_MCQ, prompt=f"Extra bank question {i}?",
+                                         choices=["a", "b", "c", "d"], correct_index=0)
+        with mock.patch(CHAT, side_effect=TimeoutError("down")):
+            self.client.post(reverse("skills_challenge_start", args=[self.ss.pk]))
+            first = ChallengeAttempt.objects.get(student_skill=self.ss)
+            self._fail(first)
+            StudentSkill.objects.filter(pk=self.ss.pk).update(cooldown_until=timezone.now() - timedelta(minutes=1))
+            self.client.post(reverse("skills_challenge_start", args=[self.ss.pk]))
+        second = ChallengeAttempt.objects.exclude(pk=first.pk).get(student_skill=self.ss)
+        self.assertFalse(set(first.item_ids) & set(second.item_ids))

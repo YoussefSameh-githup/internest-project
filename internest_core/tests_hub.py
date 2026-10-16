@@ -51,7 +51,7 @@ class StudentHubTests(ApplicationsBase):
         self.assertContains(page, "Start quiz")
         self.assertContains(page, reverse("skills_challenge_start", args=[lag.pk]))
         self.assertContains(page, "Retake quiz")
-        self.assertContains(page, "Retest available")
+        self.assertContains(page, "You can retake this skill test in")
         self.assertContains(page, "Percentile P81")
         self.assertEqual(page.context["hub_stats"]["verified"], 1)
 

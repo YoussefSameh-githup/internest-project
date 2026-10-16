@@ -335,3 +335,48 @@ class ContentSecurityPolicyTests(Base):
     def test_admin_allows_eval_for_its_ui_only(self):
         self.client.force_login(User.objects.create_superuser("boss", "boss@example.com", "pw"))
         self.assertIn("'unsafe-eval'", self.client.get(reverse("admin:index"))["Content-Security-Policy"])
+
+
+# ---------------------------------------------------------------- skill challenges: server-side sessions
+from internest_skills import challenge as challenge_engine  # noqa: E402
+from internest_skills.models import ChallengeAttempt  # noqa: E402
+
+
+class ChallengeIntegrityTests(Base):
+    def setUp(self):
+        super().setUp()
+        self.ss = StudentSkill.objects.create(student=self.student, skill=self.skill, source="explicit")
+        self.start_url = reverse("skills_challenge_start", args=[self.ss.pk])
+
+    def test_start_needs_post_and_csrf(self):
+        self.client.force_login(self.student_user)
+        self.assertEqual(self.client.get(self.start_url).status_code, 405)
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.student_user)
+        self.assertEqual(csrf_client.post(self.start_url).status_code, 403)
+        self.assertFalse(ChallengeAttempt.objects.exists())
+
+    def test_answers_need_post_csrf_and_the_owner(self):
+        attempt = challenge_engine.start_attempt(self.ss)
+        answer = reverse("skills_api_answer", args=[attempt.token])
+        self.client.force_login(self.student_user)
+        self.assertEqual(self.client.get(answer).status_code, 405)
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.student_user)
+        body = {"item_id": attempt.item_ids[0], "choice_index": 0}
+        self.assertEqual(csrf_client.post(answer, body, content_type="application/json").status_code, 403)
+        self.client.force_login(self.other_user)
+        self.assertEqual(self.client.post(answer, body, content_type="application/json").status_code, 404)
+        self.assertFalse(attempt.responses.exists())
+
+    def test_cooldown_is_enforced_server_side(self):
+        attempt = challenge_engine.start_attempt(self.ss)
+        challenge_engine.terminate(attempt, "test")
+        self.ss.refresh_from_db()
+        with self.assertRaisesMessage(challenge_engine.ChallengeError, "48 hours"):
+            challenge_engine.start_attempt(self.ss)
+
+    def test_refresh_resumes_the_same_questions(self):
+        attempt = challenge_engine.start_attempt(self.ss)
+        again = challenge_engine.start_attempt(self.ss)  # page refresh / second tab: same stored session
+        self.assertEqual((again.pk, again.item_ids), (attempt.pk, attempt.item_ids))

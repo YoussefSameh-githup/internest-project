@@ -1,6 +1,8 @@
 """LLM quiz generation: tops up a skill's question bank so every extracted skill can be verified."""
+import hashlib
 import logging
 import random
+import re
 
 from django.db import transaction
 
@@ -79,14 +81,45 @@ class QuizGenerationError(Exception):
     pass
 
 
-def generate_items(skill, count=GENERATE_BATCH) -> list[ChallengeItem]:
-    """Ask the LLM for `count` fresh questions and save them (they also become the offline fallback bank)."""
-    existing_subs = list(skill.sub_skills.values_list("name", flat=True))
+AVOID_LIMIT = 30  # previous questions described to the model on a retake
+
+
+def fingerprint(prompt: str, code: str = "") -> str:
+    """Stable hash of a question (case/spacing-insensitive) to spot repeats across attempts."""
+    text = re.sub(r"\s+", " ", f"{prompt} {code}".lower()).strip()
+    return hashlib.sha256(text.encode()).hexdigest()[:16]
+
+
+def skill_context(skill) -> str:
+    """Everything the prompt knows about ANY skill: name, field, aliases, typical signals and sub-skills."""
+    parts = [f"Skill: {skill.name} ({skill.get_discipline_display()})."]
+    aliases = [a.strip() for a in (skill.aliases or "").split(",") if a.strip()]
+    if aliases:
+        parts.append(f"Also known as: {', '.join(aliases[:8])}.")
+    signals = [s.strip() for s in (skill.implicit_signals or "").split(",") if s.strip()]
+    if signals:
+        parts.append(f"Used in work such as: {', '.join(signals[:8])}.")
+    subs = list(skill.sub_skills.values_list("name", flat=True)[:12])
+    if subs:
+        parts.append(f"Prefer these sub-skills: {', '.join(subs)}.")
+    return " ".join(parts)
+
+
+def generate_items(skill, count=GENERATE_BATCH, avoid=()) -> list[ChallengeItem]:
+    """Ask the LLM for `count` fresh questions and save them (they also become the offline fallback bank).
+
+    `avoid` = ChallengeItems the student already saw: their topics and openings go into the prompt, and any
+    returned question matching one of them (by fingerprint) is dropped, so a retake never repeats a question.
+    """
+    avoid = list(avoid)
+    avoid_prints = {fingerprint(i.prompt, i.code_snippet) for i in avoid}
     user = (
-        f"Skill: {skill.name} ({skill.get_discipline_display()}). "
-        f"Write exactly {count} NEW, distinct questions; each tests a different point (no repeats or rewordings)."
-        + (f" Prefer these sub-skills: {', '.join(existing_subs)}." if existing_subs else "")
+        skill_context(skill)
+        + f" Write exactly {count} NEW, distinct real-world questions; each tests a different point (no repeats or rewordings)."
     )
+    if avoid:
+        seen = "; ".join(f"[{i.topic or i.sub_skill.name}] {i.prompt[:90]}" for i in avoid[-AVOID_LIMIT:])
+        user += f" The student already answered these, so do NOT reuse or reword them; pick other angles: {seen}"
     data = chat_json(build_system_prompt(skill), user, max_tokens=MAX_TOKENS, timeout=60)
     raw_items = data.get("q")
     if not isinstance(raw_items, list):
@@ -94,9 +127,11 @@ def generate_items(skill, count=GENERATE_BATCH) -> list[ChallengeItem]:
 
     existing = {i.prompt: i for i in skill.items.filter(is_active=True)}
     items = []
-    for raw in raw_items[:count]:
+    for raw in raw_items:  # read past dropped repeats/invalid items until we have `count` usable ones
+        if len(items) >= count:
+            break
         cleaned = _clean_item(raw)
-        if cleaned is None:
+        if cleaned is None or fingerprint(cleaned["prompt"], cleaned["code"]) in avoid_prints:
             continue
         if cleaned["prompt"] in existing:
             items.append(existing[cleaned["prompt"]])
@@ -115,39 +150,46 @@ def generate_items(skill, count=GENERATE_BATCH) -> list[ChallengeItem]:
     return items
 
 
-def live_quiz_item_ids(skill) -> list[int]:
+def live_quiz_item_ids(skill, exclude_ids=()) -> list[int]:
     """Primary path: a fresh LLM-generated quiz for this attempt, easy → hard. Raises QuizGenerationError on failure."""
     if not llm_enabled():
         raise QuizGenerationError("LLM not configured")
+    exclude_ids = set(exclude_ids)
+    avoid = list(ChallengeItem.objects.filter(id__in=exclude_ids).select_related("sub_skill").order_by("id"))
     try:
         with transaction.atomic():  # savepoint: half-saved questions are rolled back on failure
-            items = generate_items(skill, count=skill.challenge_length)
+            generated = generate_items(skill, count=skill.challenge_length, avoid=avoid)
+            items = [i for i in generated if i.id not in exclude_ids]
     except LLM_ERRORS as exc:
         raise QuizGenerationError(str(exc)) from exc
     if len(items) < MIN_ITEMS_TO_START:
         raise QuizGenerationError(f"only {len(items)} usable questions generated")
     missing = skill.challenge_length - len(items)
     if missing > 0:  # the model returned fewer usable items: top up from the saved bank
-        items += list(skill.items.filter(is_active=True).exclude(id__in=[i.id for i in items]).order_by("?")[:missing])
+        items += list(skill.items.filter(is_active=True).exclude(id__in=[i.id for i in items] + list(exclude_ids)).order_by("?")[:missing])
     items.sort(key=lambda i: ChallengeItem.DIFFICULTY_ORDER.get(i.difficulty, 1))
     return [i.id for i in items]
 
 
-def saved_quiz_item_ids(skill) -> list[int]:
+def saved_quiz_item_ids(skill, exclude_ids=()) -> list[int]:
     """Questions from the saved bank (balanced across sub-skills, easy → hard); [] if there aren't enough."""
     from .challenge import _pick_items
 
     try:
-        return _pick_items(skill)
+        return _pick_items(skill, exclude=exclude_ids)
     except Exception as exc:  # ChallengeError (bank too small) or anything unexpected
         logger.warning("No saved quiz for skill %s: %s", skill.pk, exc)
         return []
 
 
-def quiz_item_ids_for(skill) -> list[int]:
-    """Live AI quiz first; on ANY failure (proxy 403, timeout, bad output) the saved bank. [] = no quiz possible."""
+def quiz_item_ids_for(skill, student_skill=None) -> list[int]:
+    """AI quiz FIRST (Gemini / AgentRouter, with key failover); on ANY failure (rate limit, timeout, bad output)
+    the saved bank. On a retake, questions the student already saw are excluded. [] = no quiz possible."""
+    from .challenge import seen_item_ids
+
+    seen = seen_item_ids(student_skill) if student_skill is not None else set()
     try:
-        return live_quiz_item_ids(skill)
+        return live_quiz_item_ids(skill, exclude_ids=seen)
     except (QuizGenerationError, Exception) as exc:
         logger.warning("AI quiz generation failed for skill %s: %s. Falling back to saved items.", skill.pk, exc)
-        return saved_quiz_item_ids(skill)
+        return saved_quiz_item_ids(skill, exclude_ids=seen)

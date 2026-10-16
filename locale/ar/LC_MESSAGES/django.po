@@ -5726,3 +5726,12 @@ msgstr "بروفايل موحّد، ومئات الفرص، وكورسات مع�
 
 msgid "Completed accredited course"
 msgstr "إتمام كورس معتمد"
+
+msgid "You can retake this skill test in %(h)s hours"
+msgstr "يمكنك إعادة اختبار هذه المهارة بعد %(h)s ساعة"
+
+msgid "You can retake this skill test in %(h)s hours."
+msgstr "يمكنك إعادة اختبار هذه المهارة بعد %(h)s ساعة."
+
+msgid "You can retake this skill test in <strong>%(h)s</strong> hours"
+msgstr "يمكنك إعادة اختبار هذه المهارة بعد <strong>%(h)s</strong> ساعة"

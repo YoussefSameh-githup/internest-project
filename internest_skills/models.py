@@ -10,7 +10,7 @@ from internest_core.models import (
     Internship, PartnerInternshipSubmission, PartnerProfile, StudentProfile, validate_max_file_size,
 )
 
-RETEST_COOLDOWN_DAYS = 14
+RETEST_COOLDOWN = timedelta(hours=48)  # after a failed or terminated challenge
 
 
 def _split_csv(value):
@@ -219,8 +219,13 @@ class StudentSkill(models.Model):
             return gettext("Skill Lag Detected in %(areas)s") % {"areas": ", ".join(s["name"] for s in self.lag_sub_skills)}
         return self.get_status_display()
 
+    @property
+    def cooldown_hours_remaining(self):
+        """Whole hours left, rounded up (shown as "retake in X hours")."""
+        return -(-self.cooldown_seconds_remaining // 3600)
+
     def start_cooldown(self):
-        self.cooldown_until = timezone.now() + timedelta(days=RETEST_COOLDOWN_DAYS)
+        self.cooldown_until = timezone.now() + RETEST_COOLDOWN
 
 
 class ChallengeAttempt(models.Model):

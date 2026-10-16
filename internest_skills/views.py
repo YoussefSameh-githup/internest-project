@@ -278,7 +278,7 @@ def challenge_start(request, student_skill_id):
     can_start = ss.status != StudentSkill.STATUS_VERIFIED and not ss.in_cooldown
     if can_start and not ss.attempts.filter(state=ChallengeAttempt.STATE_ACTIVE).exists():
         try:
-            item_ids = quiz_item_ids_for(ss.skill)  # AI quiz, else the saved bank
+            item_ids = quiz_item_ids_for(ss.skill, ss)  # AI quiz first, else the saved bank; no repeats on retakes
         except Exception:
             logger.exception("Preparing a quiz failed for skill %s", ss.skill_id)
             item_ids = []

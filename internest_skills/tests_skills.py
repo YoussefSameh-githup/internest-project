@@ -115,7 +115,7 @@ class TenQuestionQuizTests(Base):
             resp = self.client.post(reverse("skills_challenge_start", args=[ss.pk]), follow=True)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(ss.attempts.get().item_ids), 10)
-        self.assertIn("exactly 10 NEW, distinct questions", create.call_args.kwargs["messages"][1]["content"])
+        self.assertIn("exactly 10 NEW, distinct real-world questions", create.call_args.kwargs["messages"][1]["content"])
 
     def test_short_ai_quiz_is_topped_up_from_saved_bank(self):
         saved = set(self.skill.items.values_list("id", flat=True))

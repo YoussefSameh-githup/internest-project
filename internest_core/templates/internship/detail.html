@@ -115,7 +115,7 @@
                                         <span class="fw-bold">{{ skill.name }}</span>
                                         {% if record and record.in_cooldown %}
                                             <span class="text-muted" style="font-size: var(--text-xs);">
-                                                <i class="bi bi-hourglass-split"></i> {% trans "Retest available" %}: {{ record.cooldown_until|date:"Y/m/d" }}
+                                                <i class="bi bi-hourglass-split"></i> {% blocktrans with h=record.cooldown_hours_remaining %}You can retake this skill test in {{ h }} hours{% endblocktrans %}
                                             </span>
                                         {% else %}
                                             <form method="post" action="{% url 'skills_challenge_start_for_skill' skill.id %}">

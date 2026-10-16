@@ -174,7 +174,7 @@ class ChallengeFlowTests(Base):
         self.assertEqual(ss.status, "lag")
         self.assertTrue(ss.status_label.startswith("Skill Lag Detected in "))
         self.assertNotIn("fail", ss.status_label.lower())
-        self.assertAlmostEqual(ss.cooldown_seconds_remaining, 14 * 86400, delta=60)
+        self.assertAlmostEqual(ss.cooldown_seconds_remaining, 48 * 3600, delta=60)
         data = recommendations_for(ss)
         self.assertTrue(data["recommendations"])
         providers = {r["provider_type"] for r in data["recommendations"]}

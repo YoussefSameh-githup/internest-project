@@ -21,10 +21,24 @@ class ChallengeError(Exception):
     pass
 
 
-def _pick_items(skill):
+def seen_item_ids(student_skill) -> set[int]:
+    """Every question this student was served in earlier attempts at this skill."""
+    seen = set()
+    for ids in student_skill.attempts.exclude(state=ChallengeAttempt.STATE_ACTIVE).values_list("item_ids", flat=True):
+        seen.update(ids or [])
+    return seen
+
+
+def _pick_items(skill, exclude=()):
+    """Saved-bank quiz, balanced across sub-skills. Unseen questions only when the bank has enough of them;
+    a bank too small for a fresh set falls back to reusing questions rather than blocking the student."""
+    exclude = set(exclude)
+    bank = list(ChallengeItem.objects.filter(skill=skill, is_active=True).only("id", "sub_skill_id", "difficulty"))
+    fresh = [i for i in bank if i.id not in exclude]
+    items = fresh if len(fresh) >= min(skill.challenge_length, 3) else bank
     by_sub = defaultdict(list)
     difficulty_of = {}
-    for item in ChallengeItem.objects.filter(skill=skill, is_active=True).only("id", "sub_skill_id", "difficulty"):
+    for item in items:
         by_sub[item.sub_skill_id].append(item.id)
         difficulty_of[item.id] = ChallengeItem.DIFFICULTY_ORDER.get(item.difficulty, 1)
     if sum(len(v) for v in by_sub.values()) < 3:
@@ -53,14 +67,15 @@ def start_attempt(student_skill: StudentSkill, item_ids=None) -> ChallengeAttemp
     if student_skill.status == StudentSkill.STATUS_VERIFIED:
         raise ChallengeError(_("This skill is already verified."))
     if student_skill.in_cooldown:
-        raise ChallengeError(_("Retest is available after the cooldown ends."))
+        raise ChallengeError(_("You can retake this skill test in %(h)s hours.") % {"h": student_skill.cooldown_hours_remaining})
     active = student_skill.attempts.filter(state=ChallengeAttempt.STATE_ACTIVE).first()
     if active:
         if timezone.now() - active.started_at <= _max_duration(active):
             return active
         terminate(active, "abandoned")
         raise ChallengeError(_("Your previous session was abandoned. Retest is available after the cooldown ends."))
-    return ChallengeAttempt.objects.create(student_skill=student_skill, item_ids=item_ids or _pick_items(student_skill.skill))
+    item_ids = item_ids or _pick_items(student_skill.skill, exclude=seen_item_ids(student_skill))
+    return ChallengeAttempt.objects.create(student_skill=student_skill, item_ids=item_ids)
 
 
 def _current_item(attempt):

@@ -33,7 +33,7 @@
                             {% if ss.status == "verified" %}
                                 <span class="sh-pill sh-pill--ok"><i class="bi bi-check2-circle"></i> {% trans "Verified" %}</span>
                             {% elif ss.in_cooldown %}
-                                <span class="sh-pill"><i class="bi bi-hourglass-split"></i> {% trans "Retest available" %}: {{ ss.cooldown_until|date:"Y/m/d" }}</span>
+                                <span class="sh-pill"><i class="bi bi-hourglass-split"></i> {% blocktrans with h=ss.cooldown_hours_remaining %}You can retake this skill test in {{ h }} hours{% endblocktrans %}</span>
                             {% else %}
                                 <form method="post" action="{% url 'skills_challenge_start' ss.pk %}">
                                     {% csrf_token %}
