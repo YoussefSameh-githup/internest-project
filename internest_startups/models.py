@@ -74,7 +74,11 @@ class PromoCode(models.Model):
             return False
         if self.valid_until and self.valid_until < timezone.now().date():
             return False
-        return self.max_uses is None or self.times_used < self.max_uses
+        if self.max_uses is None:
+            return True
+        # Unpaid / under-review orders already hold a use, so a limited code can't be spent twice in parallel.
+        reserved = self.requests.filter(status__in=("pending", "verifying")).count()
+        return self.times_used + reserved < self.max_uses
 
 
 class ProUpgradeRequest(models.Model):

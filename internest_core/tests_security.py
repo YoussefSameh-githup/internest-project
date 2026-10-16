@@ -126,3 +126,132 @@ class OwnershipTests(Base):
         self.assertNotEqual(resp.status_code, 200)
         order.refresh_from_db()
         self.assertEqual(order.status, ProUpgradeRequest.STATUS_PENDING)
+
+
+# ---------------------------------------------------------------- audit 2: hardening regressions
+from django.core.exceptions import ValidationError  # noqa: E402
+from django.test import Client, RequestFactory  # noqa: E402
+
+from internest_core.models import Application, Internship, PartnerProfile  # noqa: E402
+from internest_startups.models import PromoCode  # noqa: E402
+
+
+@override_settings(MEDIA_ROOT=MEDIA)
+class MediaHeaderTests(Base):
+    def test_uploads_are_sandboxed_nosniff_and_private_ones_uncached(self):
+        cert = submit_certificate(self.student, self.skill, "Cert", file=SimpleUploadedFile("c.pdf", b"%PDF-1.4 x", "application/pdf"))
+        self.client.force_login(self.student_user)
+        resp = self.client.get(reverse("serve_media", args=[cert.file.name]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("sandbox", resp["Content-Security-Policy"])
+        self.assertIn("default-src 'none'", resp["Content-Security-Policy"])
+        self.assertEqual(resp["X-Content-Type-Options"], "nosniff")
+        self.assertEqual(resp["Cache-Control"], "private, no-store")
+
+    def test_svg_logos_are_rejected(self):
+        with self.assertRaises(ValidationError):
+            PartnerProfile._meta.get_field("logo").run_validators(SimpleUploadedFile("x.svg", b"<svg onload=alert(1)>", "image/svg+xml"))
+
+
+class SessionAndCsrfTests(Base):
+    def test_logout_is_post_only_and_the_navbar_posts_it(self):
+        self.client.force_login(self.student_user)
+        page = self.client.get(reverse("course_list"))
+        self.assertContains(page, f'<form id="logout-form" action="{reverse("logout")}" method="post"')
+        self.assertEqual(self.client.get(reverse("logout")).status_code, 405)  # a link/image can't log people out
+        self.assertIn("_auth_user_id", self.client.session)
+        self.client.post(reverse("logout"))
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_state_changes_need_a_csrf_token(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.pro_user)
+        self.assertEqual(client.post(reverse("checkout"), {"action": "cancel_pending"}).status_code, 403)
+        self.assertEqual(client.post(reverse("logout")).status_code, 403)
+        client.force_login(self.student_user)
+        self.assertEqual(client.post(reverse("certificate_submit"), {"skill": self.skill.pk, "title": "x", "url": "https://e.x/c"}).status_code, 403)
+        self.assertFalse(SkillCertificate.objects.exists())
+
+    def test_session_cookie_is_http_only(self):
+        from django.conf import settings
+        self.assertTrue(settings.SESSION_COOKIE_HTTPONLY)
+        self.assertIn(settings.SESSION_COOKIE_SAMESITE, ("Lax", "Strict"))
+
+
+class XssAndIdorTests(Base):
+    def setUp(self):
+        super().setUp()
+        self.student.bio = '<script>alert("x")</script><img src=x onerror=alert(1)>'
+        self.student.save(update_fields=["bio"])
+        self.gig = Internship.objects.create(partner=self.pro, title="Gig", description="d", location="Cairo", required_majors="any",
+                                             deadline=self.student.user.date_joined.date() + __import__("datetime").timedelta(days=400))
+        self.app = Application.objects.create(internship=self.gig, applicant=self.student_user)
+
+    def test_student_bio_is_escaped_for_companies(self):
+        self.client.force_login(self.pro_user)
+        page = self.client.get(reverse("partner_applicant", args=[self.app.pk]))
+        self.assertEqual(page.status_code, 200)
+        self.assertNotContains(page, '<script>alert("x")</script>')
+        self.assertNotContains(page, "<img src=x onerror")
+        self.assertContains(page, "&lt;script&gt;")
+
+    def test_company_cannot_open_another_companys_applicant_or_cv(self):
+        self.client.force_login(self.free_user)
+        for name in ("partner_applicant", "partner_applicant_cv"):
+            self.assertEqual(self.client.get(reverse(name, args=[self.app.pk])).status_code, 404)
+        self.client.post(reverse("partner_applicant_decide", args=[self.app.pk]), {"decision": "shortlist"})
+        self.app.refresh_from_db()
+        self.assertEqual(self.app.status, Application.STATUS_SUBMITTED)
+
+    def test_student_cannot_open_company_pages_or_skill_reports_of_others(self):
+        self.client.force_login(self.other_user)
+        self.assertNotEqual(self.client.get(reverse("partner_applicant", args=[self.app.pk])).status_code, 200)
+        self.assertEqual(self.client.get(reverse("skills_student_report", args=[self.student.pk])).status_code, 403)
+
+
+class PaymentIntegrityTests(Base):
+    def _order(self, partner, promo=None, status=ProUpgradeRequest.STATUS_PENDING):
+        return ProUpgradeRequest.objects.create(partner=partner, list_price=800, final_price=400 if promo else 800, promo_code=promo, status=status)
+
+    def test_single_use_promo_is_reserved_by_an_open_order(self):
+        promo = PromoCode.objects.create(code="ONCE", discount_percent=50, max_uses=1)
+        self.assertTrue(promo.is_valid())
+        order = self._order(self.pro, promo, ProUpgradeRequest.STATUS_VERIFYING)
+        self.assertFalse(promo.is_valid())  # nobody else can apply it while that order is open
+        order.status = ProUpgradeRequest.STATUS_CANCELLED
+        order.save(update_fields=["status"])
+        self.assertTrue(promo.is_valid())
+
+    def test_admin_activation_ignores_get_requests(self):
+        order = self._order(self.free, status=ProUpgradeRequest.STATUS_VERIFYING)
+        self.client.force_login(User.objects.create_superuser("boss", "boss@example.com", "pw"))
+        url = reverse("admin:internest_startups_proupgraderequest_changelist")
+        self.client.get(url, {"action": "activate_requests", "_selected_action": order.pk})
+        order.refresh_from_db()
+        self.assertEqual(order.status, ProUpgradeRequest.STATUS_VERIFYING)
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(User.objects.get(username="boss"))
+        self.assertEqual(csrf_client.post(url, {"action": "activate_requests", "_selected_action": [order.pk]}).status_code, 403)
+        order.refresh_from_db()
+        self.assertEqual(order.status, ProUpgradeRequest.STATUS_VERIFYING)
+
+    def test_pricing_ignores_spoofed_forwarded_for(self):
+        from internest_startups.pricing import _client_ip
+        request = RequestFactory().get("/", HTTP_X_FORWARDED_FOR="41.0.0.1", REMOTE_ADDR="10.0.0.9")
+        self.assertEqual(_client_ip(request), "10.0.0.9")
+
+
+@override_settings(RATELIMIT_ENABLED=True)
+class AdminBruteForceTests(Base):
+    def setUp(self):
+        super().setUp()
+        cache.clear()
+
+    def tearDown(self):
+        cache.clear()
+
+    def test_admin_login_shares_the_login_limit(self):
+        url = reverse("admin:login")
+        for _ in range(10):
+            self.client.post(url, {"username": "boss", "password": "wrong"})
+        self.assertEqual(self.client.post(url, {"username": "boss", "password": "wrong"}).status_code, 429)

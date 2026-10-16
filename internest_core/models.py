@@ -133,7 +133,7 @@ class PartnerProfile(models.Model):
     logo = models.ImageField(
         upload_to='partner_logos/', null=True, blank=True,
         validators=[
-            FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp', 'svg']),
+            FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),  # no SVG: it can carry script
             validate_max_file_size,
         ],
         verbose_name="شعار الشركة/الجهة",

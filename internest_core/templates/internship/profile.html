@@ -513,7 +513,7 @@ a.px-stat:hover { background: rgba(255, 255, 255, .12); color: #fff; }
                         </div>
                         <div class="px-setting">
                             <div><strong>{% trans "Sign out" %}</strong><p>{% trans "Sign out of Internest on this device." %}</p></div>
-                            <a href="{% url 'logout' %}" class="px-ghost"><i class="bi bi-box-arrow-right"></i> {% trans "Logout" %}</a>
+                            <button type="submit" form="logout-form" class="px-ghost"><i class="bi bi-box-arrow-right"></i> {% trans "Logout" %}</button>
                         </div>
                     </div>
                 </section>

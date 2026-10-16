@@ -116,9 +116,12 @@
                             <i class="bi bi-shield-check"></i> <span class="nav__cta-label">{% trans "Analyze & Verify Skills" %}</span>
                         </a>
                     {% endif %}
-                    <a href="{% url 'logout' %}" class="btn btn--ghost btn--sm" title="{% trans 'Logout' %}">
-                        <i class="bi bi-box-arrow-right"></i> <span class="nav__cta-label">{% trans "Logout" %}</span>
-                    </a>
+                    {# Logout is a POST (Django's LogoutView refuses GET; also blocks logout CSRF). #}
+                    <form id="logout-form" action="{% url 'logout' %}" method="post" style="margin: 0;">{% csrf_token %}
+                        <button type="submit" class="btn btn--ghost btn--sm" title="{% trans 'Logout' %}">
+                            <i class="bi bi-box-arrow-right"></i> <span class="nav__cta-label">{% trans "Logout" %}</span>
+                        </button>
+                    </form>
                 {% else %}
                     <a href="{% url 'login' %}" class="btn btn--ghost btn--sm">{% trans "Partner login" %}</a>
                     <a href="{% url 'login_or_signup' %}" class="btn btn--primary btn--sm">

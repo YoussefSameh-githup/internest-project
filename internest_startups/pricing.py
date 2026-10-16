@@ -48,8 +48,10 @@ def gateway_for(currency: str) -> str:
 
 
 def _client_ip(request):
-    forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
-    return (forwarded.split(",")[0].strip() if forwarded else "") or request.META.get("HTTP_X_REAL_IP") or request.META.get("REMOTE_ADDR", "")
+    """Proxy-set address only: X-Forwarded-For is client-controlled and would let a visitor pick their price."""
+    from internest_core.ratelimit import client_ip
+
+    return client_ip(request)
 
 
 def visitor_country(request) -> str:

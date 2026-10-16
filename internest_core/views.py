@@ -63,7 +63,16 @@ def serve_protected_media(request, filepath: str):
         raise Http404()
     if not os.path.isfile(absolute):
         raise Http404()
-    return FileResponse(open(absolute, "rb"))
+    response = FileResponse(open(absolute, "rb"))
+    # Uploaded files are untrusted: never let one run script or be sniffed as HTML (e.g. an SVG or a renamed .html),
+    # and keep private documents out of shared caches.
+    response["Content-Security-Policy"] = "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox"
+    response["X-Content-Type-Options"] = "nosniff"
+    response["Cache-Control"] = "private, no-store" if path.startswith(PRIVATE_MEDIA_PREFIXES) else "private, max-age=3600"
+    return response
+
+
+PRIVATE_MEDIA_PREFIXES = ("cvs/", "letters/", "freelance_proofs/", "skill_certificates/", "payment_proofs/")
 
 
 def _can_view_cv(user, filepath):
