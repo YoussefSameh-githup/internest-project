@@ -258,7 +258,7 @@ class CourseRecommendationTests(ApplicationsBase):
         skill = Skill.objects.get(slug="financial-analysis")
         sub = skill.sub_skills.get(name="Ratio analysis")
         PartnerCourseSubmission.objects.create(partner=self.partner, title="Financial ratios bootcamp", description="ratio analysis",
-                                               price=100, instructor_name="Dr X", points_awarded=5, status="Approved")
+                                               price=100, instructor_name="Dr X", status="Approved")
         StudentSkill.objects.create(student=student, skill=skill, source="explicit", status=StudentSkill.STATUS_LAG,
                                     lag_sub_skills=[{"id": sub.id, "name": sub.name, "accuracy": 40}])
         self.login_student(user)

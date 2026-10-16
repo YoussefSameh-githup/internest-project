@@ -20,14 +20,14 @@
                 <p class="text-muted" style="font-size: var(--text-lg);">{% blocktrans with t=task.title %}You completed the task "{{ t }}"{% endblocktrans %}</p>
 
                 <div style="display: inline-flex; flex-direction: column; align-items: center; padding: var(--space-6) var(--space-12); background: var(--gradient-soft); border: 1px solid var(--brand-100); border-radius: var(--radius-2xl); margin-block: var(--space-6);">
-                    <span class="text-muted" style="font-size: var(--text-sm);">{% trans "You earned" %}</span>
+                    <span class="text-muted" style="font-size: var(--text-sm);">{% trans "Your mastery" %}</span>
                     <span style="font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, var(--text-6xl)); font-weight: 800; color: var(--color-success); line-height: 1;">
-                        {{ score }}
+                        {{ record.mastery }}%
                     </span>
-                    <span class="text-muted" style="font-size: var(--text-sm);">{% blocktrans with t=total_points %}out of {{ t }} points{% endblocktrans %}</span>
+                    <span class="text-muted" style="font-size: var(--text-sm);">{% blocktrans with c=record.correct t=record.total %}{{ c }} of {{ t }} correct{% endblocktrans %}</span>
                 </div>
 
-                <p class="text-muted mb-6">{% trans "Points have been added to your balance and your Golden List rank is updated." %}</p>
+                <p class="text-muted mb-6">{% trans "Practice builds mastery. To verify a skill for employers, take its timed skill challenge." %}</p>
 
                 <div class="btn-group" style="justify-content: center;">
                     <a href="{% url 'task_list' %}" class="btn btn--accent btn--lg">

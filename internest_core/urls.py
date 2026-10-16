@@ -53,7 +53,9 @@ urlpatterns = [
     path('app/tasks/', views.task_list_view, name='task_list'),
     path('app/courses/', views.course_list_view, name='course_list'),
     path('app/task/<int:task_id>/', views.take_task_view, name='take_task'),
-    path('app/task/result/<int:task_id>/<int:score>/<int:total_points>/', views.task_result_view, name='task_result'),
+    path('app/task/result/<int:task_id>/', views.task_result_view, name='task_result'),
+    path('partner/courses/enrollments/<int:enrollment_id>/complete/', views.partner_course_complete, name='partner_course_complete'),
+    path('courses/certificate/<uuid:certificate_id>/', views.course_certificate, name='course_certificate'),
 
     # 7. لينكات الدفع الجديدة
     path('app/course/<int:course_id>/checkout/', views.course_checkout_view, name='course_checkout'),

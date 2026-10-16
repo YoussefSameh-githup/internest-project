@@ -15,7 +15,7 @@ from internest_skills.models import Skill
 
 from .admin_base import BAD, INFO, OK, WAIT, ModelAdmin, StackedInline, TabularInline, flag_badge, status_badge
 from .models import (
-    Application, DiscountCode, EmailVerification, GamificationTask, GigExperience, GoldenListStudent, Internship,
+    Application, DiscountCode, EmailVerification, GamificationTask, GigExperience, Internship,
     PartnerApplicantData, PartnerCourseSubmission, PartnerInternshipSubmission, PartnerProfile, StudentEnrollment,
     StudentProfile, StudentTaskRecord, TaskAnswer, TaskQuestion, UniversityInquiry,
 )
@@ -108,7 +108,7 @@ class StudentProfileAdmin(ModelAdmin):
     search_fields = ("user__username", "user__first_name", "user__last_name", "user__email", "personal_email",
                      "university_email", "university", "major")
     list_select_related = ("user",)
-    readonly_fields = ("profile_completion_score", "gamification_score", "personal_email_verified_at", "university_email_verified_at")
+    readonly_fields = ("profile_completion_score", "personal_email_verified_at", "university_email_verified_at")
     actions = ["verify_emails"]
 
     @flag_badge(_("Personal email"), _("Verified"), _("Pending"))
@@ -142,23 +142,6 @@ class EmailVerificationAdmin(ModelAdmin):
         return False
 
 
-@admin.register(GoldenListStudent)
-class GoldenListStudentAdmin(ModelAdmin):
-    ordering = ("-gamification_score",)
-    list_display = ("user", "gamification_score", "university", "major", "study_level", "profile_completion_score")
-    list_filter = ("university", "major", "study_level")
-    search_fields = ("user__username", "user__first_name", "user__last_name", "university", "major")
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-
 class TaskAnswerInline(TabularInline):
     model = TaskAnswer
     extra = 1
@@ -182,14 +165,14 @@ class TaskQuestionInline(StackedInline):
 @admin.register(GamificationTask)
 class GamificationTaskAdmin(ModelAdmin):
     inlines = [TaskQuestionInline]
-    list_display = ("title", "points_awarded", "is_active")
+    list_display = ("title", "is_active")
     list_filter = ("is_active",)
     search_fields = ("title",)
 
 
 @admin.register(StudentTaskRecord)
 class StudentTaskRecordAdmin(ModelAdmin):
-    list_display = ("student", "task", "completed_on")
+    list_display = ("student", "task", "correct", "total", "completed_on")
     list_filter = ("task", "completed_on")
     search_fields = ("student__user__username", "task__title")
 
@@ -333,7 +316,8 @@ class PartnerInternshipSubmissionAdmin(ModelAdmin):
 
 @admin.register(PartnerCourseSubmission)
 class PartnerCourseSubmissionAdmin(ModelAdmin):
-    list_display = ("title", "partner", "price", "points_awarded", "status_col", "submission_date")
+    list_display = ("title", "partner", "skill", "price", "status_col", "submission_date")
+    autocomplete_fields = ("skill",)
     list_filter = ("status", "submission_date", "partner__company_name")
     search_fields = ("title", "instructor_name", "partner__company_name")
     actions = ["approve_courses", "reject_courses"]
@@ -397,9 +381,21 @@ class DiscountCodeAdmin(ModelAdmin):
 
 @admin.register(StudentEnrollment)
 class StudentEnrollmentAdmin(ModelAdmin):
-    list_display = ("student", "course", "enrolled_on", "final_price")
-    list_filter = ("enrolled_on", "course__title")
+    """Enrollments; "Mark completed" issues the certificate and auto-verifies the course's skill (accredited partners)."""
+
+    list_display = ("student", "course", "status_col", "enrolled_on", "completed_at", "final_price")
+    list_filter = ("status", "enrolled_on", "course__title")
     search_fields = ("student__user__username", "course__title")
+    status_col = status_badge("status", {StudentEnrollment.STATUS_COMPLETED: OK, StudentEnrollment.STATUS_ENROLLED: INFO})
+    actions = ["mark_completed"]
+
+    @admin.action(description=_("Mark completed: issue certificate and verify the skill"))
+    def mark_completed(self, request, queryset):
+        from .courses import complete_enrollment
+        done = queryset.exclude(status=StudentEnrollment.STATUS_COMPLETED)
+        n = done.count()
+        verified = sum(complete_enrollment(e) for e in done)
+        self.message_user(request, _("%(n)s completed, %(v)s skills verified.") % {"n": n, "v": verified}, messages.SUCCESS)
 
     def has_add_permission(self, request):
         return False

@@ -42,7 +42,7 @@
                     </div>
 
                     <div class="flex items-center gap-3 mt-4">
-                        <span class="badge badge--accent"><i class="bi bi-stars"></i> {% blocktrans with p=course.points_awarded %}+{{ p }} points{% endblocktrans %}</span>
+                        {% if course.skill %}<span class="badge badge--accent"><i class="bi bi-patch-check"></i> {% blocktrans with s=course.skill.name %}Verifies {{ s }}{% endblocktrans %}</span>{% endif %}
                         <span class="badge badge--primary"><i class="bi bi-shield-check"></i> {% trans "Verified course" %}</span>
                     </div>
                 </div>

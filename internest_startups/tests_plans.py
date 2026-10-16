@@ -133,3 +133,125 @@ class PlanMatrixTests(ApplicationsBase):
         self.partner = PartnerProfile.objects.get(pk=self.partner.pk)
         self.assertFalse(is_pro(self.partner))
         self.assertRedirects(self.client.get(reverse("talent_pool")), reverse("startup_upgrade"), fetch_redirect_response=False)
+
+
+# ---------------------------------------------------------------- courses → certificates → verified skills
+from django.contrib.auth.models import User  # noqa: E402
+
+from internest_core.models import (  # noqa: E402
+    GamificationTask, PartnerCourseSubmission, StudentEnrollment, StudentProfile, StudentTaskRecord, TaskAnswer, TaskQuestion,
+)
+
+
+class CourseVerificationTests(ApplicationsBase):
+    """Enroll (POST) → the course's partner confirms completion → certificate + skill Verified (accredited partners)."""
+
+    def setUp(self):
+        super().setUp()
+        self.python = Skill.objects.get(slug="python")
+        self.course = PartnerCourseSubmission.objects.create(partner=self.partner, title="Python Bootcamp", description="d", price=500,
+                                                             instructor_name="Dr X", status="Approved", skill=self.python)
+        self.student_user, self.student = _student("mona")
+
+    def _enroll(self):
+        self.login_student(self.student_user)
+        self.client.post(reverse("course_checkout", args=[self.course.pk]), {"confirm_purchase": "1"})
+        return StudentEnrollment.objects.get(student=self.student, course=self.course)
+
+    def _complete_as_partner(self, enrollment):
+        self.client.force_login(self.founder)
+        return self.client.post(reverse("partner_course_complete", args=[enrollment.pk]))
+
+    def test_enrolling_does_not_verify_anything(self):
+        enrollment = self._enroll()
+        self.assertEqual(enrollment.status, StudentEnrollment.STATUS_ENROLLED)
+        self.assertFalse(StudentSkill.objects.filter(student=self.student, status=StudentSkill.STATUS_VERIFIED).exists())
+        page = self.client.get(reverse("course_list"))
+        self.assertContains(page, "In progress")
+        self.assertContains(page, "Verifies Python")
+
+    def test_partner_confirmation_issues_certificate_and_verifies_skill(self):
+        enrollment = self._enroll()
+        self._complete_as_partner(enrollment)
+        enrollment.refresh_from_db()
+        self.assertTrue(enrollment.is_completed)
+        self.assertIsNotNone(enrollment.completed_at)
+        ss = StudentSkill.objects.get(student=self.student, skill=self.python)
+        self.assertEqual((ss.status, ss.verified_via), (StudentSkill.STATUS_VERIFIED, StudentSkill.VIA_COURSE))
+        cert = self.client.get(reverse("course_certificate", args=[enrollment.certificate_id]))
+        for text in ("Certificate of completion", "Python Bootcamp", "Issued by NileCode", "Accredited Internest partner", "Verified skill: Python"):
+            self.assertContains(cert, text)
+        self.login_student(self.student_user)
+        self.assertContains(self.client.get(reverse("course_list")), reverse("course_certificate", args=[enrollment.certificate_id]))
+
+    def test_unaccredited_partner_certificate_without_auto_verification(self):
+        PartnerProfile.objects.filter(pk=self.partner.pk).update(is_fully_verified=False)
+        enrollment = self._enroll()
+        self._complete_as_partner(enrollment)
+        enrollment.refresh_from_db()
+        self.assertTrue(enrollment.is_completed)
+        self.assertFalse(StudentSkill.objects.filter(student=self.student, skill=self.python, status=StudentSkill.STATUS_VERIFIED).exists())
+        self.assertNotContains(self.client.get(reverse("course_certificate", args=[enrollment.certificate_id])), "Accredited Internest partner")
+
+    def test_completion_is_idempotent_and_keeps_challenge_verification(self):
+        StudentSkill.objects.create(student=self.student, skill=self.python, source="explicit", status=StudentSkill.STATUS_VERIFIED,
+                                    verified_via=StudentSkill.VIA_CHALLENGE, score=95)
+        enrollment = self._enroll()
+        self._complete_as_partner(enrollment)
+        self._complete_as_partner(enrollment)
+        ss = StudentSkill.objects.get(student=self.student, skill=self.python)
+        self.assertEqual((ss.verified_via, ss.score), (StudentSkill.VIA_CHALLENGE, 95))
+
+    def test_admin_can_mark_completed(self):
+        enrollment = self._enroll()
+        self.client.force_login(User.objects.create_superuser("boss", "boss@example.com", "pw"))
+        self.client.post(reverse("admin:internest_core_studentenrollment_changelist"),
+                         {"action": "mark_completed", "_selected_action": [enrollment.pk]})
+        enrollment.refresh_from_db()
+        self.assertTrue(enrollment.is_completed)
+        self.assertEqual(StudentSkill.objects.get(student=self.student, skill=self.python).verified_via, StudentSkill.VIA_COURSE)
+
+    def test_partner_dashboard_lists_course_students(self):
+        enrollment = self._enroll()
+        self.client.force_login(self.founder)
+        page = self.client.get(reverse("partner_dashboard_section", args=["courses"]))
+        self.assertContains(page, "Confirm completion")
+        self.assertContains(page, reverse("partner_course_complete", args=[enrollment.pk]))
+
+
+class LegacyMechanicsRemovedTests(ApplicationsBase):
+    """No Golden List, no points: ranking is verified skills and percentiles; practice tasks store mastery."""
+
+    def test_models_no_longer_have_points_or_golden_list(self):
+        from django.apps import apps
+        self.assertNotIn("gamification_score", {f.name for f in StudentProfile._meta.get_fields()})
+        self.assertNotIn("points_awarded", {f.name for f in PartnerCourseSubmission._meta.get_fields()})
+        self.assertNotIn("points_awarded", {f.name for f in GamificationTask._meta.get_fields()})
+        self.assertNotIn("goldenliststudent", [m._meta.model_name for m in apps.get_models()])
+
+    def test_hub_shows_certificates_not_points(self):
+        user, _profile = _student("amr")
+        self.login_student(user)
+        page = self.client.get(reverse("course_list"))
+        self.assertIn("certificates", page.context["hub_stats"])
+        self.assertNotIn("points", page.context["hub_stats"])
+        self.assertNotContains(page, "Golden List")
+
+    def test_practice_task_stores_mastery_and_result_reads_it(self):
+        user, profile = _student("amr")
+        task = GamificationTask.objects.create(title="SQL basics", description="d")
+        answers = []
+        for i in range(4):
+            q = TaskQuestion.objects.create(task=task, text=f"Q{i}")
+            right = TaskAnswer.objects.create(question=q, text="right", is_correct=True)
+            wrong = TaskAnswer.objects.create(question=q, text="wrong", is_correct=False)
+            answers.append((q, right if i < 3 else wrong))
+        self.login_student(user)
+        resp = self.client.post(reverse("take_task", args=[task.pk]), {f"question_{q.pk}": a.pk for q, a in answers})
+        self.assertRedirects(resp, reverse("task_result", args=[task.pk]), fetch_redirect_response=False)
+        record = StudentTaskRecord.objects.get(student=profile, task=task)
+        self.assertEqual((record.correct, record.total, record.mastery), (3, 4, 75))
+        page = self.client.get(reverse("task_result", args=[task.pk]))
+        self.assertContains(page, "75%")
+        self.assertContains(page, "3 of 4 correct")
+        self.assertNotContains(page, "points")

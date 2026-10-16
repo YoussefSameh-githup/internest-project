@@ -255,3 +255,83 @@ class AdminBruteForceTests(Base):
         for _ in range(10):
             self.client.post(url, {"username": "boss", "password": "wrong"})
         self.assertEqual(self.client.post(url, {"username": "boss", "password": "wrong"}).status_code, 429)
+
+
+# ---------------------------------------------------------------- courses: completion & certificates
+import uuid  # noqa: E402
+
+from internest_core.models import PartnerCourseSubmission, StudentEnrollment  # noqa: E402
+
+
+class CourseAccessTests(Base):
+    def setUp(self):
+        super().setUp()
+        self.course = PartnerCourseSubmission.objects.create(partner=self.pro, title="Finance 101", description="d", price=100,
+                                                             instructor_name="X", status="Approved", skill=self.skill)
+        self.enrollment = StudentEnrollment.objects.create(student=self.student, course=self.course, final_price=100)
+        self.url = reverse("partner_course_complete", args=[self.enrollment.pk])
+
+    def _status(self):
+        self.enrollment.refresh_from_db()
+        return self.enrollment.status
+
+    def test_students_cannot_complete_their_own_course(self):
+        self.client.force_login(self.student_user)
+        self.assertEqual(self.client.post(self.url).status_code, 404)
+        self.assertEqual(self._status(), StudentEnrollment.STATUS_ENROLLED)
+
+    def test_other_companies_cannot_complete_it(self):
+        self.client.force_login(self.free_user)
+        self.assertEqual(self.client.post(self.url).status_code, 404)
+        self.assertEqual(self._status(), StudentEnrollment.STATUS_ENROLLED)
+
+    def test_completion_needs_post_and_csrf(self):
+        self.client.force_login(self.pro_user)
+        self.assertEqual(self.client.get(self.url).status_code, 405)
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.pro_user)
+        self.assertEqual(csrf_client.post(self.url).status_code, 403)
+        self.assertEqual(self._status(), StudentEnrollment.STATUS_ENROLLED)
+        self.client.post(self.url)
+        self.assertEqual(self._status(), StudentEnrollment.STATUS_COMPLETED)
+
+    def test_certificates_only_exist_for_completed_enrollments(self):
+        self.assertEqual(self.client.get(reverse("course_certificate", args=[self.enrollment.certificate_id])).status_code, 404)
+        self.assertEqual(self.client.get(reverse("course_certificate", args=[uuid.uuid4()])).status_code, 404)
+
+    def test_enrollment_needs_a_post(self):
+        other = PartnerCourseSubmission.objects.create(partner=self.pro, title="Excel", description="d", price=50,
+                                                       instructor_name="X", status="Approved")
+        self.client.force_login(self.student_user)
+        self.client.get(reverse("course_checkout", args=[other.pk]), {"confirm_purchase": "1"})
+        self.assertFalse(StudentEnrollment.objects.filter(course=other).exists())
+
+    def test_task_results_are_private(self):
+        from internest_core.models import GamificationTask, StudentTaskRecord
+        task = GamificationTask.objects.create(title="T", description="d")
+        StudentTaskRecord.objects.create(student=self.student, task=task, correct=1, total=2)
+        self.client.force_login(self.other_user)
+        self.assertEqual(self.client.get(reverse("task_result", args=[task.pk])).status_code, 404)
+
+
+class ContentSecurityPolicyTests(Base):
+    PAGES = ("landing", "login", "privacy", "university_landing", "signup")
+
+    def test_every_page_carries_the_policy(self):
+        for name in self.PAGES:
+            with self.subTest(page=name):
+                csp = self.client.get(reverse(name))["Content-Security-Policy"]
+                for rule in ("default-src 'self'", "object-src 'none'", "base-uri 'self'", "frame-ancestors 'none'",
+                             "script-src 'self' 'unsafe-inline' https:", "img-src 'self' data: blob: https:"):
+                    self.assertIn(rule, csp)
+                self.assertNotIn("unsafe-eval", csp)
+
+    def test_signed_in_pages_redirects_and_404s_too(self):
+        self.client.force_login(self.student_user)
+        for resp in (self.client.get(reverse("course_list")), self.client.get(reverse("partner_dashboard")),
+                     self.client.get("/definitely-not-a-page/")):
+            self.assertIn("Content-Security-Policy", resp)
+
+    def test_admin_allows_eval_for_its_ui_only(self):
+        self.client.force_login(User.objects.create_superuser("boss", "boss@example.com", "pw"))
+        self.assertIn("'unsafe-eval'", self.client.get(reverse("admin:index"))["Content-Security-Policy"])

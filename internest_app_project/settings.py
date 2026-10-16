@@ -81,6 +81,8 @@ SITE_ID = 1
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Internest: site-wide Content-Security-Policy (keeps inline scripts working; see internest_core/csp.py).
+    "internest_core.csp.ContentSecurityPolicyMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -335,7 +337,6 @@ UNFOLD = {
                 _nav(_("CV builder"), "description", "internest_students_studentcv"),
                 _nav(_("Projects"), "folder_open", "internest_students_studentproject"),
                 _nav(_("Verified gig experience"), "workspace_premium", "internest_core_gigexperience"),
-                _nav(_("Golden list"), "military_tech", "internest_core_goldenliststudent"),
                 _nav(_("Campus votes"), "how_to_vote", "internest_campus_campusdemandvote"),
                 _nav(_("Gamification tasks"), "sports_esports", "internest_core_gamificationtask"),
             ]},

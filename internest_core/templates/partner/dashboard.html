@@ -83,6 +83,17 @@
                 <span class="dash-card__count">{{ applicant_count }}</span>
             </a>
 
+            {% if course_submissions %}
+            <a href="{% url 'partner_dashboard_section' 'courses' %}" class="dash-card">
+                <span class="dash-card__icon dash-card__icon--violet"><i class="bi bi-mortarboard-fill"></i></span>
+                <span class="dash-card__text">
+                    <span class="dash-card__title">{% trans "Course students" %}</span>
+                    <span class="dash-card__sub">{% trans "Confirm completion to issue certificates" %}</span>
+                </span>
+                <span class="dash-card__count">{{ course_enrollments|length }}</span>
+            </a>
+            {% endif %}
+
             <a href="{% url 'partner_dashboard_section' 'pending' %}" class="dash-card">
                 <span class="dash-card__icon dash-card__icon--amber"><i class="bi bi-hourglass-split"></i></span>
                 <span class="dash-card__text">
@@ -205,6 +216,34 @@
             {% include "partner/_applicants_inbox.html" %}
         {% endif %}
 
+        {% if section == "courses" %}
+        <div class="card">
+            <h4 class="mb-2"><i class="bi bi-mortarboard text-accent"></i> {% trans "Course students" %}</h4>
+            <p class="text-muted" style="font-size: var(--text-sm);">{% trans "When a student finishes your course, confirm it here. They get a verifiable certificate, and the course skill is verified on their profile (verified partners only)." %}</p>
+            {% if course_enrollments %}
+                <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                    {% for e in course_enrollments %}
+                        <div style="padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap;">
+                            <div>
+                                <div class="fw-bold">{{ e.student.user.get_full_name|default:e.student.user.username }}</div>
+                                <div class="text-muted" style="font-size: var(--text-xs);">{{ e.course.title }}{% if e.course.skill %} • {{ e.course.skill.name }}{% endif %} • {{ e.enrolled_on|date:"Y/m/d" }}</div>
+                            </div>
+                            {% if e.is_completed %}
+                                <a href="{% url 'course_certificate' e.certificate_id %}" class="status-pill status-pill--approved" target="_blank" rel="noopener">{% trans "Completed · certificate" %}</a>
+                            {% else %}
+                                <form method="post" action="{% url 'partner_course_complete' e.pk %}" style="margin: 0;">{% csrf_token %}
+                                    <button type="submit" class="btn btn--primary btn--sm"><i class="bi bi-patch-check"></i> {% trans "Confirm completion" %}</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">{% trans "No students enrolled yet." %}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
         {% if section == "pending" %}
         <div class="pending-grid">
             <div class="card">
@@ -240,7 +279,7 @@
                             <div style="padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; gap: var(--space-3);">
                                 <div>
                                     <div class="fw-bold">{{ sub.title }}</div>
-                                    <div class="text-muted" style="font-size: var(--text-xs);">{% blocktrans with p=sub.points_awarded d=sub.submission_date|date:"Y/m/d" %}+{{ p }} points • {{ d }}{% endblocktrans %}</div>
+                                    <div class="text-muted" style="font-size: var(--text-xs);">{% if sub.skill %}{{ sub.skill.name }} • {% endif %}{{ sub.submission_date|date:"Y/m/d" }}</div>
                                 </div>
                                 {% if sub.status == 'Approved' %}
                                     <span class="status-pill status-pill--approved">{% trans "Approved" %}</span>

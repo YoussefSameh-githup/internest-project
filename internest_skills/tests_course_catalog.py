@@ -46,7 +46,7 @@ class CourseCatalogTests(Base):
         self._course("Open finance basics", False)
         sub = self.skill.sub_skills.first()
         PartnerCourseSubmission.objects.create(partner=self.pro, title="Bootcamp", description=sub.name, price=100,
-                                               instructor_name="Dr X", points_awarded=5, status="Approved")
+                                               instructor_name="Dr X", status="Approved")
         self.assertEqual(self._titles(), ["Bootcamp"])
 
     def test_empty_catalogue_keeps_the_external_fallback(self):

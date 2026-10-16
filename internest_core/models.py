@@ -102,7 +102,6 @@ class StudentProfile(models.Model):
     linkedin_url = models.URLField(max_length=200, blank=True, null=True, verbose_name="رابط LinkedIn")
 
     profile_completion_score = models.IntegerField(default=0, verbose_name="نسبة الإكمال (%)")
-    gamification_score = models.IntegerField(default=0, verbose_name="نقاط الأداء")
 
     def calculate_completion(self):
         score = 0
@@ -315,7 +314,10 @@ class PartnerCourseSubmission(models.Model):
     price = models.DecimalField(max_digits=6, decimal_places=2, help_text="سعر الكورس (لأغراض الإيرادات).")
     instructor_name = models.CharField(max_length=100, help_text="اسم مقدم الكورس.")
     video_link = models.URLField(blank=True, null=True, help_text="رابط ترويجي/صورة/فيديو للكورس.")
-    points_awarded = models.IntegerField(help_text="نقاط Gamification عند إكمال الطالب للكورس.")
+    # The skill this course teaches: completing it (confirmed by the partner or an admin) verifies the skill
+    # automatically when the partner is accredited (fully verified).
+    skill = models.ForeignKey("internest_skills.Skill", null=True, blank=True, on_delete=models.SET_NULL,
+                              related_name="partner_courses", verbose_name=_("Skill taught"))
     status = models.CharField(max_length=10, choices=STATUS_CHOICES_SUBMISSION, default='Pending')
     submission_date = models.DateTimeField(default=timezone.now)
 
@@ -339,14 +341,6 @@ class PartnerApplicantData(models.Model):
     def __str__(self):
         return f"ملف {self.student.user.username} أُرسل إلى {self.partner.company_name}"
 
-# === 7. موديل الجولدن ليست ===
-class GoldenListStudent(StudentProfile):
-# ... (بقية GoldenListStudent Model) ...
-    class Meta:
-        proxy = True 
-        verbose_name = "طالب في الجولدن ليست"
-        verbose_name_plural = "🏆 الجولدن ليست (أعلى الطلاب)"
-
 # ---------------------------------
 # --- (✨ 8. مـوديـلات الـتـاسـكـات (جـديـدة) ✨) ---
 # ---------------------------------
@@ -355,7 +349,6 @@ class GamificationTask(models.Model):
 # ... (بقية GamificationTask Model) ...
     title = models.CharField(max_length=200, verbose_name="عنوان التاسك")
     description = models.TextField(verbose_name="وصف التاسك")
-    points_awarded = models.IntegerField(default=10, verbose_name="النقاط الممنوحة")
     is_active = models.BooleanField(default=True, verbose_name="متاح للطلاب؟")
     
     class Meta:
@@ -395,6 +388,13 @@ class StudentTaskRecord(models.Model):
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="task_records")
     task = models.ForeignKey(GamificationTask, on_delete=models.CASCADE, related_name="submissions")
     completed_on = models.DateTimeField(auto_now_add=True)
+    correct = models.PositiveSmallIntegerField(default=0)
+    total = models.PositiveSmallIntegerField(default=0)
+
+    @property
+    def mastery(self) -> int:
+        """Share of correct answers, 0–100."""
+        return round(self.correct * 100 / self.total) if self.total else 0
     
     class Meta:
         verbose_name = "سجل إكمال مهمة"
@@ -507,7 +507,17 @@ class StudentEnrollment(models.Model):
     course = models.ForeignKey(PartnerCourseSubmission, on_delete=models.CASCADE, related_name="enrollments", verbose_name="الكورس")
     enrolled_on = models.DateTimeField(auto_now_add=True, verbose_name="تاريخ التسجيل")
     final_price = models.DecimalField(max_digits=6, decimal_places=2, verbose_name="السعر المدفوع")
-    
+    # Completion is confirmed by the course's partner (or an admin), never by the student.
+    STATUS_ENROLLED, STATUS_COMPLETED = "enrolled", "completed"
+    STATUS_CHOICES = [(STATUS_ENROLLED, _("Enrolled")), (STATUS_COMPLETED, _("Completed"))]
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_ENROLLED, db_index=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    certificate_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)  # public verification link
+
+    @property
+    def is_completed(self):
+        return self.status == self.STATUS_COMPLETED
+
     class Meta:
         verbose_name = "تسجيل (كورس)"
         verbose_name_plural = "🧑‍🎓 تسجيلات الطلاب في الكورسات"

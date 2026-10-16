@@ -54,9 +54,9 @@
             </div>
         {% endif %}
 
-        {# ---------- Point tasks ---------- #}
+        {# ---------- Practice tasks ---------- #}
         <div class="sh-section-head mt-8">
-            <h2 class="sh-section-title"><i class="bi bi-trophy"></i> {% trans "Earn points, climb the ranks" %}</h2>
+            <h2 class="sh-section-title"><i class="bi bi-bullseye"></i> {% trans "Practice tasks" %}</h2>
         </div>
         {% if tasks %}
             <div class="sh-grid">
@@ -66,7 +66,7 @@
                             <span class="sh-quiz__icon sh-quiz__icon--gold"><i class="bi bi-puzzle-fill"></i></span>
                             <div class="sh-card__who">
                                 <h3 class="sh-card__title">{{ task.title }}</h3>
-                                <span class="sh-card__sub"><i class="bi bi-stars"></i> {% blocktrans with p=task.points_awarded %}+{{ p }} points{% endblocktrans %}</span>
+                                <span class="sh-card__sub"><i class="bi bi-list-check"></i> {% blocktrans with n=task.questions.count %}Questions: {{ n }}{% endblocktrans %}</span>
                             </div>
                         </header>
                         <p class="sh-card__desc">{{ task.description|truncatewords:20 }}</p>
@@ -89,7 +89,7 @@
             <h3 class="sh-subtitle">{% trans "Completed" %}</h3>
             <ul class="sh-done">
                 {% for rec in completed_tasks %}
-                    <li><i class="bi bi-check-circle-fill"></i> {{ rec.task.title }} <span class="sh-pill sh-pill--ok">+{{ rec.task.points_awarded }}</span> <time>{{ rec.completed_on|date:"Y/m/d" }}</time></li>
+                    <li><i class="bi bi-check-circle-fill"></i> {{ rec.task.title }} <span class="sh-pill sh-pill--ok">{{ rec.mastery }}%</span> <time>{{ rec.completed_on|date:"Y/m/d" }}</time></li>
                 {% endfor %}
             </ul>
         {% endif %}

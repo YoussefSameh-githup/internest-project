@@ -168,8 +168,9 @@ class StudentSkill(models.Model):
     VIA_CHALLENGE = "challenge"
     VIA_FREELANCE = "freelance"
     VIA_CERTIFICATE = "certificate"
+    VIA_COURSE = "course"
     VIA_CHOICES = [(VIA_CHALLENGE, _("Skill challenge")), (VIA_FREELANCE, _("Reviewed freelance work")),
-                   (VIA_CERTIFICATE, _("Reviewed certificate"))]
+                   (VIA_CERTIFICATE, _("Reviewed certificate")), (VIA_COURSE, _("Completed accredited course"))]
 
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="skills")
     skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name="student_skills")

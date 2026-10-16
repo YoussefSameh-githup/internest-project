@@ -209,7 +209,7 @@ class PartnerInternshipForm(forms.ModelForm):
 class PartnerCourseForm(forms.ModelForm):
     class Meta:
         model = PartnerCourseSubmission
-        fields = ['title', 'description', 'price', 'instructor_name', 'video_link', 'points_awarded']
+        fields = ['title', 'description', 'price', 'instructor_name', 'video_link', 'skill']
 
 # ---------------------------------
 # --- (✨ 5. فـورم الـتـاسـكـات الـجـديـدة (TaskQuizForm) ✨) ---

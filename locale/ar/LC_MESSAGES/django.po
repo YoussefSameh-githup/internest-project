@@ -5578,3 +5578,151 @@ msgstr "إيصالات للمراجعة"
 
 msgid "Detailed scores and percentiles on Internest Pro"
 msgstr "الدرجات التفصيلية والترتيب المئوي متاحين في باقة Internest Pro"
+
+msgid "Mark completed: issue certificate and verify the skill"
+msgstr "تأكيد الإكمال: إصدار الشهادة وتوثيق المهارة"
+
+msgid "%(n)s completed, %(v)s skills verified."
+msgstr "اكتمل %(n)s، وتم توثيق %(v)s مهارة."
+
+msgid "Skill taught"
+msgstr "المهارة اللي بيعلّمها الكورس"
+
+msgid "Enrolled"
+msgstr "مسجّل"
+
+msgid ""
+"%(name)s completed the course. Certificate issued and %(skill)s verified."
+msgstr "%(name)s خلّص الكورس. اتصدرت الشهادة واتوثقت مهارة %(skill)s."
+
+msgid "%(name)s completed the course. Certificate issued."
+msgstr "%(name)s خلّص الكورس. اتصدرت الشهادة."
+
+msgid "You're enrolled! Finish the course to get your certificate."
+msgstr "اتسجلت في الكورس! خلّصه علشان تاخد شهادتك."
+
+msgid "Practice tasks"
+msgstr "مهام تدريبية"
+
+msgid "Verifies %(s)s"
+msgstr "بيوثّق %(s)s"
+
+msgid "Course certificate"
+msgstr "شهادة الكورس"
+
+msgid "Certificate of completion"
+msgstr "شهادة إتمام"
+
+msgid "This certifies that"
+msgstr "نشهد بأن"
+
+msgid "completed the course"
+msgstr "أتم كورس"
+
+msgid "Issued by %(p)s"
+msgstr "صادرة من %(p)s"
+
+msgid "Accredited Internest partner"
+msgstr "شريك معتمد من Internest"
+
+msgid "Verified skill: %(s)s"
+msgstr "مهارة موثّقة: %(s)s"
+
+msgid "Certificate ID"
+msgstr "رقم الشهادة"
+
+msgid "My courses"
+msgstr "كورساتي"
+
+msgid "Certificate"
+msgstr "الشهادة"
+
+msgid "In progress"
+msgstr "جاري"
+
+msgid "Ranked by verified skill"
+msgstr "ترتيب بالمهارة الموثّقة"
+
+msgid ""
+"See candidates’ verified skills with challenge scores and percentiles "
+"against other students."
+msgstr ""
+"شوف المهارات الموثّقة للمرشحين بدرجات الاختبارات وترتيبهم المئوي مقارنة "
+"بباقي الطلبة."
+
+msgid "Course certificates"
+msgstr "شهادات الكورسات"
+
+msgid "When you finish"
+msgstr "لما تخلّص"
+
+msgid "Issued when the course provider confirms you completed it."
+msgstr "بتتصدر لما مقدّم الكورس يأكد إنك خلّصته."
+
+msgid "Practice task"
+msgstr "مهمة تدريبية"
+
+msgid "Questions: %(n)s"
+msgstr "الأسئلة: %(n)s"
+
+msgid "Your mastery"
+msgstr "مستوى إتقانك"
+
+msgid "%(c)s of %(t)s correct"
+msgstr "%(c)s صح من %(t)s"
+
+msgid ""
+"Practice builds mastery. To verify a skill for employers, take its timed "
+"skill challenge."
+msgstr ""
+"التدريب بيرفع إتقانك. علشان توثّق مهارة قدام الشركات، ادخل اختبار المهارة "
+"المؤقت."
+
+msgid "Certificates"
+msgstr "الشهادات"
+
+msgid "Course students"
+msgstr "طلاب الكورسات"
+
+msgid "Confirm completion to issue certificates"
+msgstr "أكّد الإكمال علشان تصدر الشهادات"
+
+msgid ""
+"When a student finishes your course, confirm it here. They get a verifiable "
+"certificate, and the course skill is verified on their profile (verified "
+"partners only)."
+msgstr ""
+"لما طالب يخلّص الكورس بتاعك، أكّد ده هنا. هياخد شهادة ممكن التحقق منها، "
+"ومهارة الكورس هتتوثق في بروفايله (للشركاء الموثّقين بس)."
+
+msgid "Completed · certificate"
+msgstr "اكتمل · الشهادة"
+
+msgid "Confirm completion"
+msgstr "تأكيد الإكمال"
+
+msgid "No students enrolled yet."
+msgstr "مفيش طلاب مسجلين لسه."
+
+msgid ""
+"A course that issues a certificate and verifies the skill it teaches on "
+"students’ profiles."
+msgstr "كورس بيصدر شهادة وبيوثّق المهارة اللي بيعلّمها في بروفايلات الطلاب."
+
+msgid ""
+"Approved courses are shown to students. When you confirm a student finished,"
+" they get a certificate and the course skill is verified."
+msgstr ""
+"الكورسات المعتمدة بتظهر للطلاب. لما تأكد إن طالب خلّص، بياخد شهادة وبتتوثق "
+"مهارة الكورس."
+
+msgid "The skill students prove by completing this course."
+msgstr "المهارة اللي الطالب بيثبتها لما يخلّص الكورس ده."
+
+msgid ""
+"Unified profile, hundreds of opportunities, and verified courses that prove "
+"your skills."
+msgstr "بروفايل موحّد، ومئات الفرص، وكورسات معتمدة بتثبت مهاراتك."
+
+msgid "Completed accredited course"
+msgstr "إتمام كورس معتمد"

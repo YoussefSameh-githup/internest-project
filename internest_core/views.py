@@ -426,7 +426,7 @@ def _student_hub(request, profile, tab):
         "hub_stats": {
             "applications": Application.objects.filter(applicant=request.user).count(),
             "verified": _verified_skills_count(profile),
-            "points": profile.gamification_score,
+            "certificates": StudentEnrollment.objects.filter(student=profile, status=StudentEnrollment.STATUS_COMPLETED).count(),
         },
     }
 
@@ -481,6 +481,7 @@ def profile_view(request):
     context.update({
         "profile": profile, "form": form, "talent_pool_eligible": _talent_pool_eligible(profile),
         "verified_skills_count": _verified_skills_count(profile), "campus_share": _campus_share(request, profile),
+        "certificates_count": StudentEnrollment.objects.filter(student=profile, status=StudentEnrollment.STATUS_COMPLETED).count(),
         "proof": proof_of_work(profile) if profile.pk else None,
         "top_min": TOP_VERIFIED_MIN_GIGS,
         "experiences": profile.gig_experiences.verified().select_related("company") if profile.pk else [],
@@ -675,7 +676,7 @@ def partner_profile_view(request):
     return render(request, "partner/profile.html", context)
 
 
-DASHBOARD_SECTIONS = ("overview", "applicants", "pending")
+DASHBOARD_SECTIONS = ("overview", "applicants", "pending", "courses")
 
 
 def active_applications(partner):
@@ -759,6 +760,8 @@ def partner_dashboard_view(request, section="overview"):
         "course_submissions": course_submissions,
         "received_applicants": received_applicants,
         "published_internships": published_internships,
+        "course_enrollments": (StudentEnrollment.objects.filter(course__partner=partner_profile)
+                               .select_related("course", "course__skill", "student__user").order_by("status", "-enrolled_on")),
     })
     if section == "applicants":
         open_gigs, archived_gigs = _gig_groups(published_internships)
@@ -932,31 +935,11 @@ def take_task_view(request, task_id):
                 except (TypeError, ValueError):
                     continue
 
-            num_questions = task.questions.count()
-            total_points = task.points_awarded
-            points_earned = (
-                int((score / num_questions) * total_points) if num_questions else 0
-            )
-
-            with transaction.atomic():
-                StudentProfile.objects.filter(pk=student_profile.pk).update(
-                    gamification_score=F("gamification_score") + points_earned,
-                )
-                StudentTaskRecord.objects.create(
-                    student=student_profile,
-                    task=task,
-                )
-
-            messages.success(
-                request,
-                _("Well done! You completed the task and earned %(points)s points.") % {"points": points_earned},
-            )
-            return redirect(
-                "task_result",
-                task_id=task.id,
-                score=points_earned,
-                total_points=total_points,
-            )
+            try:
+                StudentTaskRecord.objects.create(student=student_profile, task=task, correct=score, total=task.questions.count())
+            except IntegrityError:  # a double submit: the first answer counts
+                pass
+            return redirect("task_result", task_id=task.id)
     else:
         form = TaskQuizForm(task=task)
 
@@ -967,12 +950,12 @@ def take_task_view(request, task_id):
 
 
 @login_required
-def task_result_view(request, task_id, score, total_points):
-    task = get_object_or_404(GamificationTask, id=task_id)
+def task_result_view(request, task_id):
+    """The student's own stored result (never numbers from the URL)."""
+    student_profile = _get_student_profile(request.user)
+    record = get_object_or_404(StudentTaskRecord.objects.select_related("task"), task_id=task_id, student=student_profile)
     context = get_user_context(request)
-    context["task"] = task
-    context["score"] = score
-    context["total_points"] = total_points
+    context.update({"task": record.task, "record": record})
     return render(request, "internship/task_result.html", context)
 
 
@@ -1008,6 +991,8 @@ def course_list_view(request):
     context = get_user_context(request)
     context["courses"] = courses
     context["enrolled_course_ids"] = enrolled_course_ids
+    context["my_enrollments"] = (StudentEnrollment.objects.filter(student=student_profile)
+                                 .select_related("course__partner", "course__skill").order_by("-enrolled_on"))
     context["recommended"] = recommended
     context["tracks"] = tracks
     context.update(_student_hub(request, student_profile, "courses"))
@@ -1095,16 +1080,13 @@ def course_checkout_view(request, course_id):
                     defaults={"final_price": final_price},
                 )
                 if created:
-                    StudentProfile.objects.filter(pk=student_profile.pk).update(
-                        gamification_score=F("gamification_score") + course.points_awarded,
-                    )
                     if discount_for_purchase is not None:
                         DiscountCode.objects.filter(pk=discount_for_purchase.pk).update(
                             times_used=F("times_used") + 1,
                         )
 
             request.session.pop(session_key, None)
-            messages.success(request, _("Course purchased! The points were added to your account."))
+            messages.success(request, _("You're enrolled! Finish the course to get your certificate."))
             return redirect("purchase_success", enrollment_id=enrollment.id)
 
     final_price, discount_amount, discount_code_str = _compute_final_price(course, discount_code_obj)
@@ -1133,6 +1115,39 @@ def purchase_success_view(request, enrollment_id):
     context = get_user_context(request)
     context["enrollment"] = enrollment
     return render(request, "internship/purchase_success.html", context)
+
+
+@login_required
+@require_POST
+def partner_course_complete(request, enrollment_id):
+    """The course's partner (or staff) confirms a student finished: certificate + automatic skill verification."""
+    from .courses import can_confirm_completion, complete_enrollment
+
+    enrollment = get_object_or_404(StudentEnrollment.objects.select_related("course__partner", "course__skill", "student__user"),
+                                   pk=enrollment_id)
+    if not can_confirm_completion(request.user, enrollment):
+        raise Http404
+    verified = complete_enrollment(enrollment)
+    name = enrollment.student.user.get_full_name() or enrollment.student.user.username
+    if verified:
+        messages.success(request, _("%(name)s completed the course. Certificate issued and %(skill)s verified.")
+                         % {"name": name, "skill": enrollment.course.skill.name})
+    else:
+        messages.success(request, _("%(name)s completed the course. Certificate issued.") % {"name": name})
+    return redirect(reverse("partner_dashboard_section", args=["courses"]) if not request.user.is_staff else "partner_dashboard")
+
+
+def course_certificate(request, certificate_id):
+    """Public, unguessable verification page for a completed course."""
+    from .courses import is_accredited
+
+    enrollment = get_object_or_404(
+        StudentEnrollment.objects.select_related("course__partner", "course__skill", "student__user"),
+        certificate_id=certificate_id, status=StudentEnrollment.STATUS_COMPLETED,
+    )
+    context = get_user_context(request)
+    context.update({"enrollment": enrollment, "accredited": is_accredited(enrollment.course)})
+    return render(request, "internship/course_certificate.html", context)
 
 
 def _partner_application_or_404(request, app_id):

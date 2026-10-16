@@ -167,7 +167,7 @@ class ChallengeFlowTests(Base):
     def test_fail_sets_skill_lag_with_cooldown_and_recommendations(self):
         PartnerCourseSubmission.objects.create(
             partner=self.uni, title="Ratio analysis bootcamp", description="Financial ratios in practice",
-            price=100, instructor_name="Dr X", points_awarded=5, status="Approved")
+            price=100, instructor_name="Dr X", status="Approved")
         ss = self._claim()
         self._answer_all(engine.start_attempt(ss), correct=False)
         ss.refresh_from_db()

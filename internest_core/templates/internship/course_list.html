@@ -73,6 +73,25 @@
         {% endif %}
 
         {# ---------- Partner course catalogue ---------- #}
+        {% if my_enrollments %}
+        <div class="sh-section-head mt-8">
+            <h2 class="sh-section-title"><i class="bi bi-journal-check"></i> {% trans "My courses" %}</h2>
+        </div>
+        <ul class="sh-done" data-my-courses>
+            {% for e in my_enrollments %}
+                <li>
+                    <i class="bi {% if e.is_completed %}bi-patch-check-fill{% else %}bi-hourglass-split{% endif %}"></i>
+                    {{ e.course.title }}{% if e.course.skill %} · {{ e.course.skill.name }}{% endif %}
+                    {% if e.is_completed %}
+                        <a class="sh-pill sh-pill--ok" href="{% url 'course_certificate' e.certificate_id %}">{% trans "Certificate" %}</a>
+                    {% else %}
+                        <span class="sh-pill">{% trans "In progress" %}</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
         <div class="sh-section-head mt-8">
             <h2 class="sh-section-title"><i class="bi bi-mortarboard"></i> {% trans "Partner courses" %}</h2>
         </div>
@@ -90,7 +109,7 @@
                         <p class="sh-card__desc">{{ course.description|truncatechars:120 }}</p>
                         <div class="ol-card__chips">
                             <span class="ol-chip"><i class="bi bi-person-video3"></i> {{ course.instructor_name }}</span>
-                            <span class="ol-chip"><i class="bi bi-stars"></i> {% blocktrans with p=course.points_awarded %}+{{ p }} points{% endblocktrans %}</span>
+                            {% if course.skill %}<span class="ol-chip"><i class="bi bi-patch-check"></i> {% blocktrans with s=course.skill.name %}Verifies {{ s }}{% endblocktrans %}</span>{% endif %}
                         </div>
                         <footer class="sh-card__foot">
                             <span class="sh-price">{{ course.price }} <small>{% trans "EGP" %}</small></span>

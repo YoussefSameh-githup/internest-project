@@ -244,7 +244,7 @@ a.px-stat:hover { background: rgba(255, 255, 255, .12); color: #fff; }
                 <a class="px-stat" href="?tab=skills" data-tab-link="skills"><strong><i class="bi bi-patch-check-fill" style="color: #4ade80;"></i> {{ verified_skills_count }}</strong><span>{% trans "Verified skills" %}</span></a>
                 <a class="px-stat" href="?tab=portfolio" data-tab-link="portfolio"><strong>{{ proof.count|default:0 }}</strong><span>{% trans "Verified gigs" %}</span></a>
                 <a class="px-stat" href="?tab=portfolio" data-tab-link="portfolio"><strong>{{ gigs|length }}</strong><span>{% trans "Imported freelance work" %}</span></a>
-                <a class="px-stat" href="{% url 'task_list' %}"><strong><i class="bi bi-trophy-fill" style="color: #fbbf24;"></i> {{ profile.gamification_score }}</strong><span>{% trans "Performance points" %}</span></a>
+                <a class="px-stat" href="{% url 'course_list' %}"><strong><i class="bi bi-mortarboard-fill" style="color: #fbbf24;"></i> {{ certificates_count }}</strong><span>{% trans "Course certificates" %}</span></a>
             </div>
         </header>
 
