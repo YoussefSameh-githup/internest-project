@@ -148,3 +148,83 @@ class TenQuestionQuizTests(Base):
             resp = self.client.post(reverse("skills_challenge_start", args=[ss.pk]))
         self.assertEqual(resp.status_code, 200)
         self.assertFalse(ss.attempts.exists())
+
+
+# ---------------------------------------------------------------- multi-provider chain: Gemini → AgentRouter → API_KEY_2 → Azure → bank
+def _quiz_reply(prefix, n=10):
+    return _llm_reply(json.dumps({"q": [
+        {"s": "Ratio analysis", "d": "emh"[i % 3], "t": f"{prefix} topic {i}", "p": f"{prefix}: scenario question {i} about ratios?",
+         "k": "", "c": ["Option A", "Option B", "Option C", "Option D"], "a": 0} for i in range(n)]}))
+
+
+def _http_error(code, message):
+    resp = httpx.Response(code, request=httpx.Request("POST", "https://llm.test/v1/chat/completions"), json={"error": {"message": message}})
+    cls = {401: openai.AuthenticationError, 429: openai.RateLimitError}.get(code, openai.APIStatusError)
+    return cls(message, response=resp, body={"error": {"message": message}})
+
+
+ALL_KEYS = dict(
+    GEMINI_API_KEY="g-key", GOOGLE_BASE_URL="https://generativelanguage.googleapis.com/v1beta/openai/", GEMINI_MODEL="",
+    AGENTROUTER_API_KEY="ar-key", AGENTROUTER_BASE_URL="https://agentrouter.org/v1", SKILLS_LLM_MODEL="",
+    LLM_BACKUP_API_KEY="k2", LLM_BACKUP_BASE_URL="https://api.groq.com/openai/v1", LLM_BACKUP_MODEL="",
+    AZURE_OPENAI_API_KEY="az-key", AZURE_OPENAI_ENDPOINT="https://res.openai.azure.com/openai/v1/", AZURE_OPENAI_DEPLOYMENT="gpt-4o-mini",
+)
+
+
+@override_settings(**ALL_KEYS)
+class ProviderChainTests(Base):
+    def setUp(self):
+        super().setUp()
+        no_backoff.start()
+        self.addCleanup(no_backoff.stop)
+
+    def _run(self, *outcomes):
+        """Each outcome answers one provider in chain order: an exception, or a reply."""
+        calls = []
+
+        def fake(**kwargs):
+            calls.append(kwargs["model"])
+            outcome = outcomes[len(calls) - 1]
+            if isinstance(outcome, Exception):
+                raise outcome
+            return outcome
+
+        with mock.patch("openai.resources.chat.completions.Completions.create", side_effect=fake):
+            ids = quiz_item_ids_for(self.skill)
+        return ids, calls
+
+    def _prompts(self, ids):
+        from .models import ChallengeItem
+        return list(ChallengeItem.objects.filter(id__in=ids).values_list("prompt", flat=True))
+
+    def test_chain_order(self):
+        from .llm import providers
+        self.assertEqual([p.label for p in providers()], ["GEMINI_API_KEY", "API_KEY_1", "API_KEY_2", "AZURE_OPENAI"])
+
+    def test_gemini_401_falls_back_to_agentrouter_for_ten_questions(self):
+        with self.assertLogs("internest_skills.llm", "INFO") as logs:
+            ids, calls = self._run(_http_error(401, "API key not valid"), _quiz_reply("agentrouter"))
+        self.assertEqual(calls, ["gemini-2.5-flash", "gpt-4o-mini"])
+        self.assertEqual(len(ids), QUIZ_LENGTH)
+        self.assertTrue(all(p.startswith("agentrouter:") for p in self._prompts(ids)))
+        self.assertIn("HTTP 401", "\n".join(logs.output))
+        self.assertIn("answered via API_KEY_1", "\n".join(logs.output))
+
+    def test_429_and_timeout_keep_rotating(self):
+        ids, calls = self._run(_http_error(429, "quota exceeded"), openai.APITimeoutError(request=httpx.Request("POST", "https://x")),
+                               _quiz_reply("backup"))
+        self.assertEqual(len(calls), 3)
+        self.assertTrue(all(p.startswith("backup:") for p in self._prompts(ids)))
+
+    def test_a_200_with_unusable_questions_moves_to_the_next_provider(self):
+        ids, calls = self._run(_llm_reply('{"q": [{"p": "bad"}]}'), _llm_reply("not json at all"), _http_error(500, "boom"),
+                               _quiz_reply("azure"))
+        self.assertEqual(calls, ["gemini-2.5-flash", "gpt-4o-mini", "llama-3.3-70b-versatile", "gpt-4o-mini"])
+        self.assertTrue(all(p.startswith("azure:") for p in self._prompts(ids)))
+
+    def test_bank_only_when_every_provider_fails(self):
+        saved = set(self.skill.items.values_list("id", flat=True))
+        errors = [_http_error(401, "no"), _http_error(429, "slow down"), _http_error(500, "down"), _http_error(404, "no deployment")]
+        ids, calls = self._run(*errors)
+        self.assertEqual(len(calls), 4)
+        self.assertTrue(ids and set(ids) <= saved)

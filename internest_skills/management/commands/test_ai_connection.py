@@ -26,24 +26,27 @@ class Command(BaseCommand):
     def handle(self, *args, skill, count, timeout, **opts):
         chain = providers()
         if not chain:
-            raise CommandError("No AI key configured: set API_KEY_1 (and API_BASE_URL_1 / SKILLS_LLM_MODEL) in .env.")
+            raise CommandError("No AI key configured: set GEMINI_API_KEY (and/or API_KEY_1, API_KEY_2, AZURE_OPENAI_API_KEY) in .env.")
 
-        self.stdout.write(self.style.MIGRATE_HEADING("1) Connection check, one call per key"))
+        self.stdout.write(self.style.MIGRATE_HEADING("1) Connection check, in failover order (one call per key)"))
         working = []
-        for p in chain:
+        for n, p in enumerate(chain, 1):
             started = time.monotonic()
             try:
                 reply = _ask(p, "You are a health check.", 'Reply exactly {"ok": true}', max_tokens=20, timeout=timeout, max_retries=0)
             except Exception as exc:  # report every failure mode, never crash the command
-                self.stdout.write(self.style.ERROR(f"  ✗ {p.label}  {p.base_url}  model={p.model}\n    {describe_error(exc)}"))
+                ms = int((time.monotonic() - started) * 1000)
+                self.stdout.write(self.style.ERROR(f"  {n}. ✗ {p.label}  {p.base_url}  model={p.model}  {ms} ms\n       {describe_error(exc)}"))
                 continue
             ms = int((time.monotonic() - started) * 1000)
-            self.stdout.write(self.style.SUCCESS(f"  ✓ {p.label}  {p.base_url}  model={p.model}  200 OK  {ms} ms  reply={reply}"))
+            self.stdout.write(self.style.SUCCESS(f"  {n}. ✓ {p.label}  {p.base_url}  model={p.model}  200 OK  {ms} ms  reply={reply}"))
             working.append(p)
-        if not working:
-            raise CommandError("Every key failed; see the errors above (also in logs/ai.log).")
 
         target = Skill.objects.filter(name__iexact=skill).first() or Skill(name=skill, discipline=_guess_discipline(skill))
+        bank = target.items.filter(is_active=True).count() if target.pk else 0
+        self.stdout.write(f"  {len(chain) + 1}. ⛁ saved question bank (last resort): {bank} questions for “{target.name}”")
+        if not working:
+            raise CommandError("Every AI key failed; see the errors above (also in logs/ai.log). Quizzes use the saved bank.")
         self.stdout.write(self.style.MIGRATE_HEADING(f"\n2) Generating {count} questions for “{target.name}” (not saved)"))
         self.stdout.write(f"  style: {'technical (code)' if 'TECHNICAL skill' in build_system_prompt(target) else 'scenario'}")
         started = time.monotonic()

@@ -64,8 +64,8 @@ class GeminiKeyTests(SimpleTestCase):
 
     @override_settings(AGENTROUTER_API_KEY="k1", AGENTROUTER_BASE_URL="https://agentrouter.org/v1", LLM_BACKUP_API_KEY="",
                        GEMINI_API_KEY="g-key", GOOGLE_BASE_URL="https://generativelanguage.googleapis.com/v1beta/openai/")
-    def test_gemini_is_the_failover_after_api_key_1(self):
-        self.assertEqual([p.label for p in providers()], ["API_KEY_1", "GEMINI_API_KEY"])
+    def test_gemini_comes_first_then_agentrouter(self):
+        self.assertEqual([p.label for p in providers()], ["GEMINI_API_KEY", "API_KEY_1"])
         calls = []
 
         def fake(**kwargs):
@@ -77,7 +77,7 @@ class GeminiKeyTests(SimpleTestCase):
         from .llm import chat_json
         with mock.patch(CHAT, side_effect=fake), self.assertLogs("internest_skills.llm", "WARNING"):
             self.assertEqual(chat_json("sys", "user"), {"ok": True})
-        self.assertEqual(calls[1], "gemini-2.5-flash")
+        self.assertEqual(calls, ["gemini-2.5-flash", "gpt-4o-mini"])
 
 
 @override_settings(AGENTROUTER_API_KEY="k1", AGENTROUTER_BASE_URL="https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -98,7 +98,7 @@ class TestAIConnectionCommandTests(TestCase):
     def test_reports_the_exact_provider_error(self):
         out = io.StringIO()
         with mock.patch(CHAT, side_effect=_status_error(400, {"error": {"message": "Invalid JSON payload received"}})), \
-                self.assertRaisesMessage(CommandError, "Every key failed"):
+                self.assertRaisesMessage(CommandError, "Every AI key failed"):
             call_command("test_ai_connection", stdout=out)
         self.assertIn("HTTP 400", out.getvalue())
         self.assertIn("Invalid JSON payload received", out.getvalue())

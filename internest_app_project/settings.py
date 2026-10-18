@@ -249,7 +249,7 @@ LOGGING = {
             "propagate": False,
         },
         "internest_skills.llm": {
-            "handlers": ["console", "ai_file"],
+            "handlers": ["ai_file"],  # provider failures are logged quietly; the chain moves on
             "level": "INFO",
             "propagate": False,
         },
@@ -274,6 +274,10 @@ LLM_BACKUP_MODEL = os.getenv("API_MODEL_2", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY", "")
 GOOGLE_BASE_URL = os.getenv("GOOGLE_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "")
+# Azure OpenAI / Copilot (v1 API): endpoint like https://<resource>.openai.azure.com/openai/v1/, model = deployment name.
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("AZURE_COPILOT_API_KEY", "")
+AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "")
+AZURE_OPENAI_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini")
 # Empty = auto: gemini-2.5-flash for googleapis.com endpoints, gpt-4o-mini otherwise.
 SKILLS_LLM_MODEL = env.str("SKILLS_LLM_MODEL", default="")
 # Off by default: PythonAnywhere free accounts must reach external APIs through the platform proxy.

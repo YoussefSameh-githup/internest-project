@@ -58,16 +58,26 @@ class Provider:
 
 
 def providers() -> list[Provider]:
-    """Configured keys in failover order: API_KEY_1, then API_KEY_2 (own endpoint/model, or the primary's)."""
+    """Configured keys in failover order (unset ones are skipped):
+
+    1. GEMINI_API_KEY   direct Google Gemini (gemini-2.5-flash)
+    2. API_KEY_1        AGENTROUTER_API_KEY / API_BASE_URL_1 (gpt-4o-mini)
+    3. API_KEY_2        backup key (own endpoint/model, or the primary's)
+    4. AZURE_OPENAI     Azure OpenAI / Copilot deployment
+    The saved question bank is the last resort, handled by the callers.
+    """
     primary_url = settings.AGENTROUTER_BASE_URL
     backup_url = settings.LLM_BACKUP_BASE_URL or primary_url
     google_url = getattr(settings, "GOOGLE_BASE_URL", "")
+    azure_url = getattr(settings, "AZURE_OPENAI_ENDPOINT", "")
     candidates = [
+        Provider("GEMINI_API_KEY", getattr(settings, "GEMINI_API_KEY", ""), google_url,
+                 resolve_model(google_url, getattr(settings, "GEMINI_MODEL", ""))),
         Provider("API_KEY_1", settings.AGENTROUTER_API_KEY, primary_url, resolve_model(primary_url, settings.SKILLS_LLM_MODEL)),
         Provider("API_KEY_2", settings.LLM_BACKUP_API_KEY, backup_url, resolve_model(
             backup_url, settings.LLM_BACKUP_MODEL or (settings.SKILLS_LLM_MODEL if backup_url == primary_url else ""))),
-        Provider("GEMINI_API_KEY", getattr(settings, "GEMINI_API_KEY", ""), google_url,
-                 resolve_model(google_url, getattr(settings, "GEMINI_MODEL", ""))),
+        Provider("AZURE_OPENAI", getattr(settings, "AZURE_OPENAI_API_KEY", ""), azure_url,
+                 getattr(settings, "AZURE_OPENAI_DEPLOYMENT", "") or OPENAI_DEFAULT_MODEL),
     ]
     return [p for p in candidates if p.api_key and p.base_url]
 
@@ -166,8 +176,12 @@ def _ask(provider: Provider, system: str, user: str, max_tokens: int, timeout: f
     return parse_json_object(choice.message.content or "")
 
 
-def chat_json(system: str, user: str, max_tokens: int = 1000, timeout: float | None = None) -> dict:
-    """JSON-mode completion with key failover. Raises LLMUnavailable only when every configured key fails."""
+def chat_json(system: str, user: str, max_tokens: int = 1000, timeout: float | None = None, validate=None) -> dict:
+    """JSON-mode completion with key failover. Raises LLMUnavailable only when every configured key fails.
+
+    `validate(data)` may raise to reject a 200 reply (e.g. too few usable questions): that provider then
+    counts as failed and the next one in the chain is tried.
+    """
     chain = providers()
     if not chain:
         raise LLMUnavailable("LLM not configured")
@@ -176,7 +190,12 @@ def chat_json(system: str, user: str, max_tokens: int = 1000, timeout: float | N
         has_backup = i + 1 < len(chain)
         try:
             # No SDK retries when a backup key exists: failing over is faster than retrying a rate-limited key.
-            return _ask(provider, system, user, max_tokens, timeout or settings.SKILLS_LLM_TIMEOUT, 0 if has_backup else 1)
+            data = _ask(provider, system, user, max_tokens, timeout or settings.SKILLS_LLM_TIMEOUT, 0 if has_backup else 1)
+            if validate is not None:
+                validate(data)
+            if i:
+                logger.info("LLM answered via %s after %s failed", provider.label, ", ".join(p.label for p in chain[:i]))
+            return data
         except LLM_ERRORS as exc:
             detail = describe_error(exc)
             errors.append(f"{provider.label}: {detail}")

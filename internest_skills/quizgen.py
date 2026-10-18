@@ -118,13 +118,21 @@ def build_user_prompt(skill, count=GENERATE_BATCH, avoid=()) -> str:
     return user
 
 
-def request_raw_items(skill, count=GENERATE_BATCH, avoid=(), chat=None) -> list:
-    """One LLM round trip → the raw 'q' list (not validated or saved). `chat` defaults to chat_json (key failover)."""
-    data = (chat or chat_json)(build_system_prompt(skill), build_user_prompt(skill, count, avoid), max_tokens=MAX_TOKENS, timeout=60)
+def validate_quiz_reply(data) -> None:
+    """A provider's 200 reply only counts if it holds enough usable questions; otherwise try the next key."""
     raw_items = data.get("q")
     if not isinstance(raw_items, list):
         raise ValueError(f"LLM quiz response missing 'q' list (keys: {sorted(data)[:5]})")
-    return raw_items
+    usable = sum(1 for raw in raw_items if _clean_item(raw) is not None)
+    if usable < MIN_ITEMS_TO_START:
+        raise ValueError(f"only {usable} usable questions in the reply")
+
+
+def request_raw_items(skill, count=GENERATE_BATCH, avoid=(), chat=None) -> list:
+    """One trip down the provider chain → the raw 'q' list of the first provider whose reply is usable."""
+    data = (chat or chat_json)(build_system_prompt(skill), build_user_prompt(skill, count, avoid), max_tokens=MAX_TOKENS,
+                               timeout=60, validate=validate_quiz_reply)
+    return data["q"]
 
 
 def generate_items(skill, count=GENERATE_BATCH, avoid=()) -> list[ChallengeItem]:
