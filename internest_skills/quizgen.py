@@ -92,17 +92,39 @@ def fingerprint(prompt: str, code: str = "") -> str:
 
 def skill_context(skill) -> str:
     """Everything the prompt knows about ANY skill: name, field, aliases, typical signals and sub-skills."""
-    parts = [f"Skill: {skill.name} ({skill.get_discipline_display()})."]
+    field = skill.get_discipline_display() if skill.discipline else "general"
+    parts = [f"Skill: {skill.name} ({field})."]
     aliases = [a.strip() for a in (skill.aliases or "").split(",") if a.strip()]
     if aliases:
         parts.append(f"Also known as: {', '.join(aliases[:8])}.")
     signals = [s.strip() for s in (skill.implicit_signals or "").split(",") if s.strip()]
     if signals:
         parts.append(f"Used in work such as: {', '.join(signals[:8])}.")
-    subs = list(skill.sub_skills.values_list("name", flat=True)[:12])
+    subs = list(skill.sub_skills.values_list("name", flat=True)[:12]) if skill.pk else []
     if subs:
         parts.append(f"Prefer these sub-skills: {', '.join(subs)}.")
     return " ".join(parts)
+
+
+def build_user_prompt(skill, count=GENERATE_BATCH, avoid=()) -> str:
+    user = (
+        skill_context(skill)
+        + f" Write exactly {count} NEW, distinct real-world questions; each tests a different point (no repeats or rewordings)."
+        + f' Return {{"q": [...]}} with exactly {count} items.'
+    )
+    if avoid:
+        seen = "; ".join(f"[{i.topic or i.sub_skill.name}] {i.prompt[:90]}" for i in list(avoid)[-AVOID_LIMIT:])
+        user += f" The student already answered these, so do NOT reuse or reword them; pick other angles: {seen}"
+    return user
+
+
+def request_raw_items(skill, count=GENERATE_BATCH, avoid=(), chat=None) -> list:
+    """One LLM round trip → the raw 'q' list (not validated or saved). `chat` defaults to chat_json (key failover)."""
+    data = (chat or chat_json)(build_system_prompt(skill), build_user_prompt(skill, count, avoid), max_tokens=MAX_TOKENS, timeout=60)
+    raw_items = data.get("q")
+    if not isinstance(raw_items, list):
+        raise ValueError(f"LLM quiz response missing 'q' list (keys: {sorted(data)[:5]})")
+    return raw_items
 
 
 def generate_items(skill, count=GENERATE_BATCH, avoid=()) -> list[ChallengeItem]:
@@ -113,17 +135,7 @@ def generate_items(skill, count=GENERATE_BATCH, avoid=()) -> list[ChallengeItem]
     """
     avoid = list(avoid)
     avoid_prints = {fingerprint(i.prompt, i.code_snippet) for i in avoid}
-    user = (
-        skill_context(skill)
-        + f" Write exactly {count} NEW, distinct real-world questions; each tests a different point (no repeats or rewordings)."
-    )
-    if avoid:
-        seen = "; ".join(f"[{i.topic or i.sub_skill.name}] {i.prompt[:90]}" for i in avoid[-AVOID_LIMIT:])
-        user += f" The student already answered these, so do NOT reuse or reword them; pick other angles: {seen}"
-    data = chat_json(build_system_prompt(skill), user, max_tokens=MAX_TOKENS, timeout=60)
-    raw_items = data.get("q")
-    if not isinstance(raw_items, list):
-        raise ValueError("LLM quiz response missing 'q' list")
+    raw_items = request_raw_items(skill, count, avoid)
 
     existing = {i.prompt: i for i in skill.items.filter(is_active=True)}
     items = []

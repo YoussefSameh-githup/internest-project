@@ -28,6 +28,27 @@ class LLMUnavailable(RuntimeError):
     """The LLM could not produce a usable answer; use the local fallback."""
 
 
+_SECRET = re.compile(r"(sk-|AIza|gsk_)[A-Za-z0-9_\-]{8,}|(key=)[A-Za-z0-9_\-]{8,}")
+
+
+def describe_error(exc) -> str:
+    """Why a call failed, in one line: HTTP status + the provider's response body (secrets masked)."""
+    if isinstance(exc, openai.APIStatusError):
+        body = ""
+        try:
+            body = exc.response.text
+        except Exception:  # streamed / unreadable body
+            body = str(getattr(exc, "body", "") or "")
+        body = _SECRET.sub(lambda m: (m.group(1) or m.group(2)) + "***", " ".join(body.split()))[:600]
+        return f"HTTP {exc.status_code} {type(exc).__name__}: {body or exc.message}"
+    if isinstance(exc, openai.APITimeoutError):
+        return "timeout (no reply before SKILLS_LLM_TIMEOUT)"
+    if isinstance(exc, openai.APIConnectionError):
+        cause = exc.__cause__ or exc.__context__
+        return f"connection failed: {type(cause).__name__ if cause else ''} {cause or exc}".strip()
+    return f"{type(exc).__name__}: {exc}"
+
+
 @dataclass(frozen=True)
 class Provider:
     label: str
@@ -40,10 +61,13 @@ def providers() -> list[Provider]:
     """Configured keys in failover order: API_KEY_1, then API_KEY_2 (own endpoint/model, or the primary's)."""
     primary_url = settings.AGENTROUTER_BASE_URL
     backup_url = settings.LLM_BACKUP_BASE_URL or primary_url
+    google_url = getattr(settings, "GOOGLE_BASE_URL", "")
     candidates = [
         Provider("API_KEY_1", settings.AGENTROUTER_API_KEY, primary_url, resolve_model(primary_url, settings.SKILLS_LLM_MODEL)),
         Provider("API_KEY_2", settings.LLM_BACKUP_API_KEY, backup_url, resolve_model(
             backup_url, settings.LLM_BACKUP_MODEL or (settings.SKILLS_LLM_MODEL if backup_url == primary_url else ""))),
+        Provider("GEMINI_API_KEY", getattr(settings, "GEMINI_API_KEY", ""), google_url,
+                 resolve_model(google_url, getattr(settings, "GEMINI_MODEL", ""))),
     ]
     return [p for p in candidates if p.api_key and p.base_url]
 
@@ -154,10 +178,11 @@ def chat_json(system: str, user: str, max_tokens: int = 1000, timeout: float | N
             # No SDK retries when a backup key exists: failing over is faster than retrying a rate-limited key.
             return _ask(provider, system, user, max_tokens, timeout or settings.SKILLS_LLM_TIMEOUT, 0 if has_backup else 1)
         except LLM_ERRORS as exc:
-            errors.append(f"{provider.label}: {type(exc).__name__}")
+            detail = describe_error(exc)
+            errors.append(f"{provider.label}: {detail}")
+            where = f"{provider.label} [{provider.base_url} · model {provider.model}]"
             if has_backup:
-                logger.warning("LLM failover: %s failed (%s: %s); switching to %s",
-                               provider.label, type(exc).__name__, exc, chain[i + 1].label)
+                logger.warning("LLM failover: %s failed: %s; switching to %s", where, detail, chain[i + 1].label)
             else:
-                logger.warning("LLM call failed (%s: %s)", type(exc).__name__, exc)
+                logger.warning("LLM call failed: %s: %s", where, detail)
     raise LLMUnavailable("; ".join(errors))

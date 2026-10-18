@@ -42,7 +42,8 @@ class FailoverTests(TestCase):
                 self.assertLogs("internest_skills.llm", "WARNING") as logs:
             self.assertEqual(chat_json("s", "u"), {"ok": True})
         self.assertEqual(create.call_count, 2)
-        self.assertIn("LLM failover: API_KEY_1 failed (RateLimitError", logs.output[0])
+        self.assertIn("LLM failover: API_KEY_1 [https://llm.test/v1", logs.output[0])
+        self.assertIn("failed: HTTP 429 RateLimitError: quota exceeded; switching to API_KEY_2", logs.output[0])
         self.assertNotIn("key-1", " ".join(logs.output))  # keys are never logged
 
     def test_timeout_http_error_and_bad_json_all_fail_over(self):
@@ -82,7 +83,7 @@ class FailoverTests(TestCase):
                 mock.patch("openai._base_client.SyncAPIClient._calculate_retry_timeout", return_value=0):
             with self.assertRaises(LLMUnavailable) as ctx:
                 chat_json("s", "u")
-        self.assertEqual(str(ctx.exception), "API_KEY_1: RateLimitError; API_KEY_2: RateLimitError")
+        self.assertEqual(str(ctx.exception), "API_KEY_1: HTTP 429 RateLimitError: quota exceeded; API_KEY_2: HTTP 429 RateLimitError: quota exceeded")
         self.assertEqual(create.call_count, 2)
 
     @override_settings(AGENTROUTER_API_KEY="", LLM_BACKUP_API_KEY="")

@@ -210,6 +210,9 @@ else:
     SECURE_SSL_REDIRECT = False
 
 # --- (8) Logging ---
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -224,6 +227,16 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
+        # AI provider failures (HTTP status + response body) also go to logs/ai.log for later debugging.
+        "ai_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(LOG_DIR / "ai.log"),
+            "maxBytes": 1024 * 1024,
+            "backupCount": 3,
+            "encoding": "utf-8",
+            "formatter": "verbose",
+            "level": "WARNING",
+        },
     },
     "root": {
         "handlers": ["console"],
@@ -232,6 +245,11 @@ LOGGING = {
     "loggers": {
         "internest_core": {
             "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "internest_skills.llm": {
+            "handlers": ["console", "ai_file"],
             "level": "INFO",
             "propagate": False,
         },
@@ -252,6 +270,10 @@ AGENTROUTER_BASE_URL = os.getenv("API_BASE_URL_1") or os.getenv("AGENTROUTER_BAS
 LLM_BACKUP_API_KEY = os.getenv("API_KEY_2", "")
 LLM_BACKUP_BASE_URL = os.getenv("API_BASE_URL_2", "")
 LLM_BACKUP_MODEL = os.getenv("API_MODEL_2", "")
+# Direct Google Gemini key (Google AI Studio), tried after API_KEY_1/2. Reachable from PythonAnywhere free accounts.
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY", "")
+GOOGLE_BASE_URL = os.getenv("GOOGLE_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "")
 # Empty = auto: gemini-2.5-flash for googleapis.com endpoints, gpt-4o-mini otherwise.
 SKILLS_LLM_MODEL = env.str("SKILLS_LLM_MODEL", default="")
 # Off by default: PythonAnywhere free accounts must reach external APIs through the platform proxy.
