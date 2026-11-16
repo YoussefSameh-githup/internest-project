@@ -180,13 +180,20 @@ LOGOUT_REDIRECT_URL = "landing"
 # --- (6) Email (Gmail SMTP) ---
 # .env is loaded into os.environ above by environ.Env.read_env().
 # EMAIL_HOST_PASSWORD must be a Gmail App Password (requires 2-Step Verification).
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# Backend: DJANGO_EMAIL_BACKEND / EMAIL_BACKEND from .env, else SendGrid (django-anymail) when ANYMAIL_SENDGRID_API_KEY is set,
+# else the Gmail SMTP settings below.
+EMAIL_BACKEND = (
+    os.getenv("DJANGO_EMAIL_BACKEND") or os.getenv("EMAIL_BACKEND")
+    or ("anymail.backends.sendgrid.EmailBackend" if os.getenv("ANYMAIL_SENDGRID_API_KEY") else "django.core.mail.backends.smtp.EmailBackend")
+)
+if os.getenv("ANYMAIL_SENDGRID_API_KEY") or "anymail" in EMAIL_BACKEND:
+    ANYMAIL = {"SENDGRID_API_KEY": os.getenv("ANYMAIL_SENDGRID_API_KEY", "")}
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "internest.opportunities@gmail.com")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = f"Internest <{EMAIL_HOST_USER}>"
+DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL") or os.getenv("DEFAULT_FROM_EMAIL") or f"Internest <{EMAIL_HOST_USER}>"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 EMAIL_TIMEOUT = 20
 
