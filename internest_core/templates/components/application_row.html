@@ -1,0 +1,8 @@
+{# Compact application line. Context: app (Application). #}{% load i18n %}<li class="px-arow">
+    {% include "components/logo.html" with company=app.internship.partner %}
+    <div class="px-arow__body">
+        <a href="{% url 'internship_detail' app.internship.id %}" dir="auto">{{ app.internship.title }}</a>
+        <span>{{ app.internship.partner.company_name }} · {{ app.application_date|date:"Y/m/d" }}</span>
+    </div>
+    {% include "components/app_status.html" %}
+</li>

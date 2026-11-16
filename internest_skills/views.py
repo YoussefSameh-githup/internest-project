@@ -210,7 +210,7 @@ def freelance_gig_proof(request, gig_id):
         messages.success(request, _("Proof uploaded. Our team will review it soon."))
     else:
         messages.error(request, " ".join(form.errors.get("proof", [])))
-    return redirect(f"{reverse('profile')}?tab=portfolio")
+    return redirect(f"{reverse('profile')}?tab=activity")
 
 
 @student_gate()
@@ -222,7 +222,7 @@ def skills_share_university(request):
         skill_profile.partner_university = form.cleaned_data["partner_university"]
         skill_profile.save(update_fields=["partner_university"])
         messages.success(request, _("Your sharing preference was saved."))
-    return redirect(f"{reverse('profile')}?tab=settings")
+    return redirect(f"{reverse('profile')}?tab=edit")
 
 
 # ---------------------------------------------------------------- market fit & certificates

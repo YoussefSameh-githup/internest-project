@@ -1,0 +1,4 @@
+{# Card title row. Context: icon, title, href + action (optional link), tab (optional: switch the profile tab), action_icon (optional). #}<div class="px-card__head">
+    <h2 class="px-card__title"><span class="px-ico"><i class="bi {{ icon }}"></i></span> {{ title }}</h2>
+    {% if href %}<a href="{{ href }}" class="px-ghost"{% if tab %} data-tab-link="{{ tab }}"{% endif %}>{% if action_icon %}<i class="bi {{ action_icon }}"></i> {% endif %}{{ action }}</a>{% endif %}
+</div>

@@ -1,0 +1,115 @@
+{% load i18n %}
+<section class="px-panel" id="panel-activity" role="tabpanel" aria-labelledby="tab-activity" data-panel="activity" {% if active_tab != 'activity' %}hidden{% endif %}>
+    <div class="px-card">
+        {% trans "View all" as view_all %}
+        {% trans "Internship applications" as card_title %}{% include "components/card_head.html" with icon="bi-send-check-fill" title=card_title href=applications_url action=view_all %}
+        {% if invitations %}
+            <ul class="px-alist" style="margin-bottom: 12px;">
+                {% for inv in invitations %}
+                    <li class="px-arow">
+                        {% include "components/logo.html" with company=inv.partner %}
+                        <div class="px-arow__body"><a href="{{ inv.apply_url }}" dir="auto">{{ inv.internship.title }}</a><span>{{ inv.partner.company_name }}</span></div>
+                        <span class="sh-pill sh-pill--invited">🎟️ {% trans "Invited" %}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if applications %}
+            <ul class="px-alist">{% for app in applications %}{% include "components/application_row.html" %}{% endfor %}</ul>
+        {% elif not invitations %}
+            {% trans "You haven't applied yet. Browse opportunities that match your verified skills." as no_apps %}{% trans "Browse opportunities" as browse %}
+            {% include "components/empty_state.html" with icon="bi-send" text=no_apps href=list_url cta=browse %}
+        {% endif %}
+    </div>
+
+    <div class="px-card">
+        {% trans "Verified Internest gigs" as card_title %}{% include "components/card_head.html" with icon="bi-award-fill" title=card_title %}
+        <div class="pow-banner{% if proof.top %} pow-banner--top{% endif %}">
+            <span class="pow-banner__icon">{% if proof.top %}🏅{% else %}<i class="bi bi-briefcase-fill"></i>{% endif %}</span>
+            <div>
+                {% if proof.count %}
+                    <strong>{% blocktrans with n=proof.count avg=proof.avg|stringformat:".1f" %}Completed {{ n }} verified gigs | Average rating ⭐️ {{ avg }}/5{% endblocktrans %}</strong>
+                    {% if proof.top %}<small>{% trans "Top Verified Candidate 🏅 — you're shown first to Pro startups." %}</small>
+                    {% else %}<small>{% blocktrans with n=top_min %}Complete {{ n }} verified gigs to earn the Top Verified Candidate 🏅 badge.{% endblocktrans %}</small>{% endif %}
+                {% else %}
+                    <strong>{% trans "No verified gigs yet" %}</strong>
+                    <small>{% trans "When a startup marks your gig as completed and rates it, it appears here with a verified recommendation letter." %}</small>
+                {% endif %}
+            </div>
+        </div>
+        {% if experiences %}
+            <ul class="pow-list">
+                {% for e in experiences %}
+                    <li class="pow-item">
+                        {% include "components/logo.html" with company=e.company %}
+                        <div class="pow-item__body">
+                            <strong>{{ e.gig_title }}</strong>
+                            <span>{{ e.company.company_name }} · {{ e.completion_date|date:"Y/m/d" }}</span>
+                            <span class="pow-item__stars">{% for icon in e.star_icons %}<i class="bi {% if icon == 'full' %}bi-star-fill{% elif icon == 'half' %}bi-star-half{% else %}bi-star{% endif %}"></i>{% endfor %}</span>
+                        </div>
+                        <span class="pow-verified"><i class="bi bi-patch-check-fill"></i> {% trans "Verified" %}</span>
+                        <a href="{% url 'experience_letter' e.verification_uuid %}" class="btn btn--outline btn--sm">{% trans "Download the verified recommendation letter" %} 📄</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <div class="px-card">
+        {% trans "Freelance work" as card_title %}{% include "components/card_head.html" with icon="bi-briefcase-fill" title=card_title %}
+        {% if gigs %}
+            <div class="px-gigs">
+                {% for g in gigs %}
+                    <article class="px-gig">
+                        <span class="px-gig__logo" style="background: {% if g.platform == 'mostaql' %}#2386c8{% elif g.platform == 'khamsat' %}#f37b22{% elif g.platform == 'upwork' %}#14a800{% elif g.platform == 'fiverr' %}#1dbf73{% else %}#475569{% endif %};">{% if g.platform == 'mostaql' %}م{% elif g.platform == 'khamsat' %}خ{% elif g.platform == 'upwork' %}Up{% elif g.platform == 'fiverr' %}fi{% else %}<i class="bi bi-link-45deg"></i>{% endif %}</span>
+                        <div style="min-width: 0;">
+                            <div class="px-gig__top">
+                                <strong dir="auto">{{ g.project_title|default:g.get_platform_display }}</strong>
+                                <span class="px-pill px-pill--{{ g.status }}">{% if g.status == 'verified' %}✅ {% trans "Approved & verified" %}{% elif g.status == 'needs_proof' %}📎 {{ g.get_status_display }}{% elif g.status == 'pending' %}⏳ {{ g.get_status_display }}{% else %}{{ g.get_status_display }}{% endif %}</span>
+                                {% if g.owner_matched %}<span class="px-pill px-pill--verified">👤 {% trans "Account matches you" %}</span>{% endif %}
+                                {% if g.rating %}<span style="color: #f59e0b; font-weight: 800;">★ {{ g.rating }}</span>{% endif %}
+                            </div>
+                            <div class="px-gig__meta">{{ g.get_platform_display }}{% if g.platform_username %} · @{{ g.platform_username }}{% endif %} · <a href="{{ g.link }}" target="_blank" rel="noopener nofollow" dir="ltr">{{ g.link|truncatechars:48 }}</a></div>
+                            {% if g.skills.all %}<div class="px-chips mt-2">{% for skill in g.skills.all %}<span class="px-chip {% if g.status == 'verified' %}px-chip--verified{% else %}px-chip--explicit{% endif %}" style="padding: 4px 10px;">{{ skill.name }}</span>{% endfor %}</div>{% endif %}
+                            {% if g.status == 'needs_proof' or g.status == 'pending' and not g.proof %}
+                                <form method="post" action="{% url 'freelance_gig_proof' g.pk %}" enctype="multipart/form-data" class="px-alert">
+                                    {% csrf_token %}
+                                    <p>{% if g.status == 'needs_proof' %}⚠️ {% blocktrans with handle=g.platform_username %}“{{ handle }}” doesn't match your name, so our team will check your proof of account ownership.{% endblocktrans %}{% else %}{% trans "A screenshot of the completed order or review speeds up verification. Max 5 MB." %}{% endif %}
+                                        {% if g.proof %}<br><strong>✓ {% trans "Proof uploaded — waiting for review." %}</strong>{% endif %}</p>
+                                    <label class="px-upload"><i class="bi bi-upload"></i> {% if g.proof %}{% trans "Replace screenshot" %}{% else %}{% trans "Upload a proof screenshot" %}{% endif %}
+                                        <input type="file" name="proof" accept="image/png,image/jpeg,image/webp,application/pdf" data-autosubmit>
+                                    </label>
+                                </form>
+                            {% elif g.status == 'rejected' %}
+                                <p class="px-alert">{% if g.review_note %}{{ g.review_note }}{% else %}{% trans "We couldn't confirm this work from the link and proof. Add a clearer screenshot and import it again." %}{% endif %}</p>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            {% trans "Freelance work you import appears here with its review status." as no_gigs %}
+            {% include "components/empty_state.html" with text=no_gigs %}
+        {% endif %}
+    </div>
+
+    <div class="px-card">
+        {% trans "Manage in the CV builder" as manage_cv %}
+        {% trans "Projects" as card_title %}{% include "components/card_head.html" with icon="bi-kanban-fill" title=card_title href=cv_builder_url action=manage_cv action_icon="bi-pencil" %}
+        {% if projects %}
+            <div class="px-projects">
+                {% for p in projects %}
+                    <article class="px-project">
+                        <strong dir="auto">{{ p.title }}</strong>
+                        {% if p.description %}<p dir="auto">{{ p.description|truncatechars:140 }}</p>{% endif %}
+                        {% if p.tech_stack %}<small><i class="bi bi-cpu"></i> {{ p.tech_stack }}</small>{% endif %}
+                        {% if p.link %}<div><a href="{{ p.link }}" target="_blank" rel="noopener nofollow" class="px-ghost mt-2" aria-label="{% trans 'Open project' %}"><i class="bi bi-box-arrow-up-right"></i> {% trans "Open project" %}</a></div>{% endif %}
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            {% trans "Course, graduation or personal projects. They are also added to your Internest profile." as no_projects %}
+            {% include "components/empty_state.html" with text=no_projects %}
+        {% endif %}
+    </div>
+</section>

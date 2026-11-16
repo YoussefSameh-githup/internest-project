@@ -26,7 +26,7 @@ class PasswordChangeTests(TestCase):
         self.assertTemplateNotUsed(page, "admin/base.html")
         for marker in ("Change password", "Enter your current password and a new one to keep your account safe.",
                        'name="old_password"', 'name="new_password1"', 'name="new_password2"', "data-pw-toggle",
-                       "At least 8 characters", "Save the new password", f'{reverse("profile")}?tab=settings',
+                       "At least 8 characters", "Save the new password", f'{reverse("profile")}?tab=edit',
                        "Back to your Student Hub"):
             self.assertContains(page, marker)
 
@@ -47,7 +47,7 @@ class PasswordChangeTests(TestCase):
         done = self.client.get(reverse("password_change_done"))
         self.assertTemplateUsed(done, "registration/password_change_done.html")
         self.assertContains(done, "Your password was changed successfully!")
-        self.assertContains(done, f'{reverse("profile")}?tab=settings')
+        self.assertContains(done, f'{reverse("profile")}?tab=edit')
 
     def test_partners_go_back_to_their_dashboard(self):
         partner = User.objects.create_user("founder", password="pw-Strong-1")

@@ -1,0 +1,10 @@
+{# A verified skill as a shareable badge. Context: s (StudentSkill, verified). #}{% load i18n %}<article class="px-sbadge" data-kind="verified">
+    <span class="px-sbadge__seal"><i class="bi bi-patch-check-fill"></i></span>
+    <div class="px-sbadge__body">
+        <strong dir="auto">{{ s.skill.name }}</strong>
+        {% include "skills/_verified_badge.html" %}
+    </div>
+    <div class="px-sbadge__score">
+        {% if s.score is not None %}<b>{{ s.score }}%</b>{% if s.percentile is not None %}<small>P{{ s.percentile }}</small>{% endif %}{% elif s.verified_via == 'freelance' %}<b>💼</b>{% else %}<b>✓</b>{% endif %}
+    </div>
+</article>

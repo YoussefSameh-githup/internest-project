@@ -29,8 +29,9 @@ from .models import (
     PartnerApplicantData,
     GamificationTask, TaskAnswer, StudentTaskRecord,
     DiscountCode, StudentEnrollment,
-    EmailVerification, GigExperience, RATING_CHOICES, TOP_VERIFIED_MIN_GIGS, proof_of_work,
+    EmailVerification, GigExperience, RATING_CHOICES,
 )
+from .student_hub import hub_header, open_invitations, profile_context, skill_quizzes, student_applications
 from .forms import (
     ProfileForm, PartnerInternshipForm, PartnerCourseForm,
     PartnerProfileEditForm,
@@ -379,68 +380,6 @@ def internship_detail_view(request, pk):
     return render(request, "internship/detail.html", context)
 
 
-def _talent_pool_eligible(profile):
-    """Has a verified skill or a score ≥ the match threshold. The profile must render even if skills tables are unavailable."""
-    from django.db import DatabaseError
-
-    from internest_startups.talent import qualifying_skills
-
-    try:
-        with transaction.atomic():
-            return qualifying_skills().filter(student=profile).exists()
-    except DatabaseError:
-        logger.exception("Could not check Talent Pool eligibility")
-        return False
-
-
-def _verified_skills_count(profile):
-    from django.db import DatabaseError
-
-    try:
-        with transaction.atomic():
-            return profile.skills.filter(status="verified").count()
-    except DatabaseError:
-        return 0
-
-
-def _campus_share(request, profile):
-    """Share link + text when the student already voted for their campus, else None."""
-    from django.db import DatabaseError
-
-    from internest_campus.models import CampusDemandVote
-    from internest_campus.views import _share_payload
-
-    try:
-        with transaction.atomic():
-            vote = CampusDemandVote.objects.filter(student=profile).first()
-    except DatabaseError:
-        return None
-    return _share_payload(request, vote) if vote else None
-
-
-def _student_hub(request, profile, tab):
-    """Header + tabs shared by My applications, Tasks & quizzes and Courses."""
-    return {
-        "hub_tab": tab,
-        "hub_stats": {
-            "applications": Application.objects.filter(applicant=request.user).count(),
-            "verified": _verified_skills_count(profile),
-            "certificates": StudentEnrollment.objects.filter(student=profile, status=StudentEnrollment.STATUS_COMPLETED).count(),
-        },
-    }
-
-
-def _skill_quizzes(profile):
-    """The student's skill tests (claimed → start, lag → retake, verified → done). [] if tables are unavailable."""
-    from django.db import DatabaseError
-
-    try:
-        with transaction.atomic():
-            return list(profile.skills.select_related("skill").order_by("status", "skill__name"))
-    except DatabaseError:
-        return []
-
-
 @login_required
 def profile_view(request):
     if _get_partner_profile(request.user) is not None:
@@ -477,75 +416,8 @@ def profile_view(request):
         form = ProfileForm(instance=profile)
 
     context = get_user_context(request)
-    context.update({
-        "profile": profile, "form": form, "talent_pool_eligible": _talent_pool_eligible(profile),
-        "verified_skills_count": _verified_skills_count(profile), "campus_share": _campus_share(request, profile),
-        "certificates_count": StudentEnrollment.objects.filter(student=profile, status=StudentEnrollment.STATUS_COMPLETED).count(),
-        "proof": proof_of_work(profile) if profile.pk else None,
-        "top_min": TOP_VERIFIED_MIN_GIGS,
-        "experiences": profile.gig_experiences.verified().select_related("company") if profile.pk else [],
-        "active_tab": "details" if form.errors or request.GET.get("tab") not in HUB_TABS else request.GET["tab"],
-        **_profile_hub(profile),
-    })
+    context.update(profile_context(request, profile, form))
     return render(request, "internship/profile.html", context)
-
-
-HUB_TABS = ("details", "skills", "portfolio", "settings")
-
-
-def _profile_hub(profile):
-    """Student Hub extras: skill chips, freelance gigs, projects, CV links, sharing and completion hints.
-    Every query is optional: the page must render even if the skills/CV tables are unavailable."""
-    from django.db import DatabaseError
-
-    from internest_skills.forms import SkillSourceForm, UniversityShareForm
-    from internest_skills.models import SkillProfile, StudentSkill
-    from internest_students.cv_builder_service import clean_url, format_period
-    from internest_students.models import StudentCV
-
-    missing = [label for done, label in (
-        (profile.university or profile.major, _("University & major")), (profile.study_level, _("Study level")),
-        (profile.cv_file, _("CV file")), (profile.profile_picture, _("Profile picture")),
-        ((profile.linkedin_url or "").startswith("http"), _("LinkedIn URL")),
-    ) if not done]
-    hub = {"missing": missing, "analyze_form": SkillSourceForm(), "skill_groups": {}, "gigs": [], "projects": [], "cv": None, "education": [],
-           "expected_graduation": "", "graduation_expected": False, "github_url": "", "share_form": None, "needs_proof": 0}
-    if not profile.pk:
-        return hub
-    try:
-        with transaction.atomic():
-            skills = list(profile.skills.select_related("skill").order_by("skill__name"))
-            hub["skill_groups"] = {
-                "verified": [s for s in skills if s.status == StudentSkill.STATUS_VERIFIED],
-                "explicit": [s for s in skills if s.status != StudentSkill.STATUS_VERIFIED and s.source == StudentSkill.SOURCE_EXPLICIT],
-                "inferred": [s for s in skills if s.status != StudentSkill.STATUS_VERIFIED and s.source == StudentSkill.SOURCE_IMPLICIT],
-            }
-            hub["gigs"] = list(profile.freelance_gigs.prefetch_related("skills"))
-            hub["needs_proof"] = sum(1 for g in hub["gigs"] if g.status == g.STATUS_NEEDS_PROOF)
-            hub["projects"] = list(profile.projects.all())
-            record = StudentCV.objects.filter(student=profile).exclude(data={}).first()
-            skill_profile = SkillProfile.objects.filter(student=profile).first()
-            hub["share_form"] = UniversityShareForm(initial={"partner_university": skill_profile.partner_university_id if skill_profile else None})
-    except DatabaseError:
-        logger.exception("Student Hub data unavailable")
-        return hub
-    cv = record.data if record else {}
-    hub["cv"] = record
-    for e in cv.get("education") or []:
-        hub["education"].append({**e, "period": format_period(e.get("start_date", ""), e.get("end_date", ""), e.get("is_current", False))})
-    graduation = next((e for e in cv.get("education") or [] if e.get("end_date") or e.get("is_current")), None)
-    if graduation:
-        if graduation.get("is_current"):
-            hub["expected_graduation"] = "Present"
-        else:
-            period = format_period("", graduation["end_date"])
-            hub["expected_graduation"] = period.replace(" (Expected)", "")
-            hub["graduation_expected"] = period.endswith("(Expected)")
-    for url in (profile.portfolio_url, cv.get("github")):
-        if url and "github.com" in url:
-            hub["github_url"] = clean_url(url).href_url
-            break
-    return hub
 
 
 @login_required
@@ -632,25 +504,13 @@ def my_applications_view(request):
         messages.warning(request, _("You are signed in as a partner, so you were taken to the partner dashboard."))
         return redirect("partner_dashboard")
 
-    applications = (
-        Application.objects
-        .filter(applicant=request.user)
-        .select_related("internship", "internship__partner", "experience")
-        .order_by("-application_date")
-    )
-    from internest_startups.models import TalentInvitation
-
-    applied = {a.internship_id for a in applications}
-    invitations = [
-        inv for inv in TalentInvitation.objects.filter(student__user=request.user, internship__in=Internship.objects.open())
-        .select_related("internship", "partner")[:10]
-        if inv.internship_id not in applied
-    ]
+    applications = list(student_applications(request.user))
+    invitations = open_invitations(request.user, {a.internship_id for a in applications})
     context = get_user_context(request)
     context.update({"applications": applications, "invitations": invitations})
     student = _get_student_profile(request.user)
     if student is not None:
-        context.update(_student_hub(request, student, "applications"))
+        context.update(hub_header(request, student, "applications"))
     return render(request, "internship/my_applications.html", context)
 
 
@@ -899,11 +759,11 @@ def task_list_view(request):
     )
     context = get_user_context(request)
     context["tasks"] = available_tasks
-    context["skill_quizzes"] = _skill_quizzes(student_profile)
+    context["skill_quizzes"] = skill_quizzes(student_profile)
     context["completed_tasks"] = (
         StudentTaskRecord.objects.filter(student=student_profile).select_related("task").order_by("-completed_on")[:6]
     )
-    context.update(_student_hub(request, student_profile, "tasks"))
+    context.update(hub_header(request, student_profile, "tasks"))
     return render(request, "internship/task_list.html", context)
 
 
@@ -987,7 +847,7 @@ def course_list_view(request):
     # Learning paths: one track per tested skill (gaps first) with its score and its own courses.
     tracks = [
         {"record": ss, "recs": track_recommendations(ss)}
-        for ss in _skill_quizzes(student_profile) if ss.status in ("lag", "verified")
+        for ss in skill_quizzes(student_profile) if ss.status in ("lag", "verified")
     ][:6]
 
     context = get_user_context(request)
@@ -997,7 +857,7 @@ def course_list_view(request):
                                  .select_related("course__partner", "course__skill").order_by("-enrolled_on"))
     context["recommended"] = recommended
     context["tracks"] = tracks
-    context.update(_student_hub(request, student_profile, "courses"))
+    context.update(hub_header(request, student_profile, "courses"))
     return render(request, "internship/course_list.html", context)
 
 

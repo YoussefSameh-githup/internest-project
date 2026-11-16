@@ -1,0 +1,118 @@
+{% load i18n %}
+<section class="px-panel" id="panel-edit" role="tabpanel" aria-labelledby="tab-edit" data-panel="edit" {% if active_tab != 'edit' %}hidden{% endif %}>
+    <form method="POST" enctype="multipart/form-data" id="pf-form" novalidate class="px-panel">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+        <details class="px-acc"{% if "contact" in open_sections %} open{% endif %}>
+            <summary><span class="px-ico"><i class="bi bi-person-lines-fill"></i></span> <span>{% trans "Contact & academic details" %}<br><small>{% trans "Emails, phone, university, major and study year" %}</small></span></summary>
+            <div class="px-acc__body">
+                <div class="pf-grid">
+                    {% include "internship/_pf_field.html" with field=form.personal_email %}
+                    {% include "internship/_pf_field.html" with field=form.university_email %}
+                    {% include "internship/_pf_field.html" with field=form.phone_number %}
+                    {% include "internship/_pf_field.html" with field=form.university %}
+                    {% include "internship/_pf_field.html" with field=form.major %}
+                    {% include "internship/_pf_field.html" with field=form.study_level %}
+                </div>
+            </div>
+        </details>
+
+        <details class="px-acc"{% if "about" in open_sections %} open{% endif %}>
+            <summary><span class="px-ico"><i class="bi bi-link-45deg"></i></span> <span>{% trans "About me & professional links" %}<br><small>{% trans "What startups read before your CV" %}</small></span></summary>
+            <div class="px-acc__body">
+                <div class="pf-grid">
+                    {% trans "Startups see this with your verified skills before your CV and contact details are shared. Mention projects, tools and achievements." as bio_help %}
+                    {% include "internship/_pf_field.html" with field=form.bio help=bio_help full=True %}
+                    {% include "internship/_pf_field.html" with field=form.linkedin_url %}
+                    {% trans "Shown to Pro startups in your Talent Pool profile. Don't use a link that shows your phone or email." as portfolio_help %}
+                    {% include "internship/_pf_field.html" with field=form.portfolio_url help=portfolio_help %}
+                </div>
+            </div>
+        </details>
+
+        <details class="px-acc"{% if "files" in open_sections %} open{% endif %}>
+            <summary><span class="px-ico"><i class="bi bi-paperclip"></i></span> <span>{% trans "Attachments (photo and CV)" %}<br><small>{% trans "Profile picture and your CV file" %}</small></span></summary>
+            <div class="px-acc__body">
+                <div class="pf-grid">
+                    {% include "internship/_pf_dropzone.html" with field=form.profile_picture current=profile.profile_picture kind="image" accept="image/png,image/jpeg,image/webp" hint="JPG / PNG / WEBP" %}
+                    {% include "internship/_pf_dropzone.html" with field=form.cv_file current=profile.cv_file kind="doc" accept=".pdf,.doc,.docx" hint="PDF / DOC / DOCX" %}
+                </div>
+            </div>
+        </details>
+
+        <div class="px-savebar">
+            <small><i class="bi bi-info-circle"></i> {% trans "Changes are saved for your whole profile." %}</small>
+            <button type="submit" class="btn btn--primary"><i class="bi bi-save"></i> {% trans "Save changes" %}</button>
+        </div>
+    </form>
+
+    <details class="px-acc" id="talent-pool">
+        <summary><span class="px-ico"><i class="bi bi-eye"></i></span> <span>{% trans "Visibility & sharing" %}<br><small>{% trans "Who can find you" %}</small></span></summary>
+        <div class="px-acc__body">
+            <div class="px-setting">
+                <label class="pf-switch" style="flex: 1;">
+                    <input type="checkbox" name="{{ form.talent_pool_visible.html_name }}" id="{{ form.talent_pool_visible.id_for_label }}" form="pf-form" {% if form.talent_pool_visible.value %}checked{% endif %}>
+                    <span class="pf-switch__track" aria-hidden="true"></span>
+                    <span class="pf-switch__text">
+                        <strong>{{ form.talent_pool_visible.label }}</strong>
+                        <small>{% trans "Pro startups can find you by your verified skills and invite you to apply. They see your name, university, major, study year, bio and verified skills — never your phone, email or CV." %}</small>
+                    </span>
+                </label>
+            </div>
+            <p class="pf-pool__privacy"><i class="bi bi-shield-lock-fill"></i> {% trans "Your phone, email and CV are shared only if you apply and a startup shortlists you for an interview." %}</p>
+            {% if not talent_pool_eligible %}
+                <small class="talent-hint"><i class="bi bi-info-circle"></i>
+                    {% blocktrans with t=MATCH_THRESHOLD %}A verified skill or a score of {{ t }}%+ is required to appear in the talent pool.{% endblocktrans %}
+                    <a href="{{ skills_url }}">{% trans "Verify a skill" %}</a>
+                </small>
+            {% endif %}
+            {% if share_form %}
+                <form method="post" action="{% url 'skills_share_university' %}" class="px-setting">
+                    {% csrf_token %}
+                    <div><strong>{{ share_form.partner_university.label }}</strong><p>{% trans "Your university sees your skill analytics only — never your contact details." %}</p></div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <select name="partner_university" class="px-select" aria-label="{{ share_form.partner_university.label }}">
+                            {% for value, label in share_form.partner_university.field.choices %}<option value="{{ value }}" {% if share_form.partner_university.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                        </select>
+                        <button type="submit" class="px-ghost">{% trans "Save" %}</button>
+                    </div>
+                </form>
+            {% endif %}
+            <div class="px-savebar mt-4" style="position: static;">
+                <small>{% trans "Save to apply your visibility choice." %}</small>
+                <button type="submit" form="pf-form" class="btn btn--primary btn--sm"><i class="bi bi-save"></i> {% trans "Save changes" %}</button>
+            </div>
+        </div>
+    </details>
+
+    <details class="px-acc">
+        <summary><span class="px-ico"><i class="bi bi-bell"></i></span> <span>{% trans "Email notifications" %}<br><small>{% trans "New opportunities and news" %}</small></span></summary>
+        <div class="px-acc__body">
+            <div class="px-setting">
+                <div><strong>{{ form.email_new_opportunities.label }}</strong>
+                    <p>{% trans "Account emails (verification codes, shortlist news and invitations) are always sent." %}</p></div>
+                <label class="px-toggle"><input type="checkbox" name="{{ form.email_new_opportunities.html_name }}" form="pf-form" aria-label="{{ form.email_new_opportunities.label }}" {% if form.email_new_opportunities.value %}checked{% endif %}><span></span></label>
+            </div>
+            <div class="px-setting"><span></span><button type="submit" form="pf-form" class="btn btn--primary btn--sm"><i class="bi bi-save"></i> {% trans "Save changes" %}</button></div>
+        </div>
+    </details>
+
+    <details class="px-acc">
+        <summary><span class="px-ico"><i class="bi bi-key"></i></span> <span>{% trans "Account & security" %}<br><small>{% trans "Password and sign out" %}</small></span></summary>
+        <div class="px-acc__body">
+            <div class="px-setting">
+                <div><strong>{% trans "Personal email" %}</strong><p dir="ltr" style="text-align: start;">{{ profile.personal_email|default:"—" }}</p></div>
+                {% if profile.has_any_pending_email_verification %}<a href="{% url 'verify_email' %}" class="px-ghost">{% trans "Verify now" %}</a>{% endif %}
+            </div>
+            <div class="px-setting">
+                <div><strong>{% trans "Password" %}</strong><p>{% trans "Use a strong password you don't use anywhere else." %}</p></div>
+                <a href="{% url 'password_change' %}" class="px-ghost"><i class="bi bi-shield-lock"></i> {% trans "Change password" %}</a>
+            </div>
+            <div class="px-setting">
+                <div><strong>{% trans "Sign out" %}</strong><p>{% trans "Sign out of Internest on this device." %}</p></div>
+                <button type="submit" form="logout-form" class="px-ghost"><i class="bi bi-box-arrow-right"></i> {% trans "Logout" %}</button>
+            </div>
+        </div>
+    </details>
+</section>

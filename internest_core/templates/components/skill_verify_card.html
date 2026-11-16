@@ -1,0 +1,15 @@
+{# A skill still to verify, with a one-click AI test. Context: s (StudentSkill, not verified). #}{% load i18n %}<article class="px-vcard" data-kind="unverified">
+    <div class="px-vcard__body">
+        <strong dir="auto">{{ s.skill.name }}</strong>
+        <span class="px-tag {% if s.source == 'explicit' %}px-tag--cv{% else %}px-tag--ai{% endif %}">{% if s.source == 'explicit' %}<i class="bi bi-file-earmark-text"></i> {% trans "From your CV" %}{% else %}<i class="bi bi-stars"></i> {% trans "AI-inferred" %}{% endif %}{% if s.years_experience %} · {{ s.years_experience|floatformat:"-1" }}y{% endif %}</span>
+        {% if s.status == 'lag' %}<small class="px-vcard__hint">{% trans "Almost there — retake it to earn the badge." %}</small>{% endif %}
+    </div>
+    {% if s.in_cooldown %}
+        <span class="px-vcard__wait"><i class="bi bi-hourglass-split"></i> {% blocktrans with h=s.cooldown_hours_remaining %}You can retake this skill test in {{ h }} hours{% endblocktrans %}</span>
+    {% else %}
+        <form method="post" action="{% url 'skills_challenge_start' s.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="px-primary px-primary--sm"><i class="bi bi-stars"></i> {% if s.status == 'lag' %}{% trans "Retake with AI" %}{% else %}{% trans "Verify with AI" %}{% endif %}</button>
+        </form>
+    {% endif %}
+</article>

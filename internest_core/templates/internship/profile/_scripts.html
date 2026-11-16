@@ -1,0 +1,115 @@
+{% load i18n %}
+{% trans "File is larger than 5 MB." as too_big %}{% trans "Ready to upload" as ready %}
+<script>
+(function () {
+  // Tabs: links work without JS (?tab=…); with JS they switch in place and keep the URL shareable.
+  var tabs = document.querySelectorAll("[data-tab]"), panels = document.querySelectorAll("[data-panel]");
+  function show(name, focus) {
+    var found = false;
+    tabs.forEach(function (t) { var on = t.dataset.tab === name; t.setAttribute("aria-selected", on ? "true" : "false"); t.tabIndex = on ? 0 : -1; if (on) found = true; });
+    if (!found) return;
+    panels.forEach(function (p) { p.hidden = p.dataset.panel !== name; });
+    history.replaceState(null, "", "?tab=" + name + location.hash);
+    if (focus) document.getElementById("tab-" + name).focus();
+  }
+  tabs.forEach(function (t, i) {
+    t.addEventListener("click", function (e) { e.preventDefault(); show(t.dataset.tab); });
+    t.addEventListener("keydown", function (e) {
+      var dir = {ArrowRight: 1, ArrowLeft: -1}[e.key];
+      if (!dir) return;
+      if (document.dir === "rtl") dir = -dir;
+      var next = tabs[(i + dir + tabs.length) % tabs.length];
+      e.preventDefault();
+      show(next.dataset.tab, true);
+    });
+  });
+  document.querySelectorAll("[data-tab-link]").forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      e.preventDefault();
+      show(a.dataset.tabLink);
+      document.getElementById("hub").scrollIntoView({behavior: "smooth"});
+    });
+  });
+
+  // Skills tab: All / Verified / To verify filter (hidden until JS runs, so no-JS users see everything).
+  document.querySelectorAll("[data-skill-filter]").forEach(function (bar) {
+    bar.hidden = false;
+    var buttons = bar.querySelectorAll("[data-filter]"), groups = document.querySelectorAll("[data-group]");
+    buttons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        buttons.forEach(function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
+        groups.forEach(function (g) { g.hidden = b.dataset.filter !== "all" && g.dataset.group !== b.dataset.filter; });
+      });
+    });
+  });
+
+  // Share verified skills: native share sheet when available, else copy the text + link.
+  document.querySelectorAll("[data-share-skills]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var text = btn.dataset.shareText, url = btn.dataset.shareUrl;
+      if (navigator.share) { navigator.share({title: "Internest", text: text, url: url}).catch(function () {}); return; }
+      var label = btn.innerHTML;
+      function done() {
+        btn.innerHTML = '<i class="bi bi-check2-circle"></i> ' + btn.dataset.copied;
+        setTimeout(function () { btn.innerHTML = label; }, 2500);
+      }
+      function legacy() {
+        var area = document.createElement("textarea");
+        area.value = text + " " + url; document.body.appendChild(area); area.select();
+        try { document.execCommand("copy"); done(); } catch (e) {}
+        area.remove();
+      }
+      if (navigator.clipboard) navigator.clipboard.writeText(text + " " + url).then(done, legacy); else legacy();
+    });
+  });
+
+  // "Add / verify a skill" dialog
+  document.querySelectorAll("[data-open-dialog]").forEach(function (b) {
+    b.addEventListener("click", function () { document.getElementById(b.dataset.openDialog).showModal(); });
+  });
+  document.querySelectorAll("[data-close-dialog]").forEach(function (b) {
+    b.addEventListener("click", function () { b.closest("dialog").close(); });
+  });
+
+  // Proof screenshots upload as soon as a file is picked.
+  document.querySelectorAll("[data-autosubmit]").forEach(function (input) {
+    input.addEventListener("change", function () { if (input.files.length) input.form.submit(); });
+  });
+
+  // Dropzones: drag & drop, live preview, 5 MB check.
+  document.querySelectorAll("[data-dropzone]").forEach(function (box) {
+    var input = box.querySelector("input[type=file]"), zone = box.querySelector(".pf-drop__zone");
+    var preview = box.querySelector("[data-preview]"), status = box.querySelector("[data-status]");
+    var max = +box.dataset.maxBytes;
+    function chip(cls, icon, text) { return '<span class="pf-chip ' + cls + '"><i class="bi ' + icon + '"></i> ' + text + "</span>"; }
+    function update() {
+      var f = input.files[0];
+      if (!f) return;
+      var size = (f.size / 1048576).toFixed(1) + " MB";
+      if (f.size > max) {
+        input.value = "";
+        status.innerHTML = chip("pf-chip--error", "bi-x-circle-fill", "{{ too_big|escapejs }} (" + size + ")");
+        return;
+      }
+      var name = document.createElement("span");
+      name.className = "pf-chip"; name.textContent = f.name + " · " + size;
+      status.innerHTML = chip("pf-chip--ok", "bi-cloud-arrow-up-fill", "{{ ready|escapejs }}");
+      status.appendChild(name);
+      if (box.dataset.kind === "image") {
+        preview.innerHTML = "";
+        var img = document.createElement("img"); img.src = URL.createObjectURL(f); img.alt = "";
+        preview.appendChild(img);
+      } else {
+        preview.innerHTML = '<i class="bi bi-file-earmark-check-fill"></i>';
+      }
+    }
+    input.addEventListener("change", update);
+    ["dragenter", "dragover"].forEach(function (ev) { zone.addEventListener(ev, function (e) { e.preventDefault(); box.classList.add("is-drag"); }); });
+    ["dragleave", "drop"].forEach(function (ev) { zone.addEventListener(ev, function () { box.classList.remove("is-drag"); }); });
+    zone.addEventListener("drop", function (e) {
+      e.preventDefault();
+      if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; update(); }
+    });
+  });
+})();
+</script>

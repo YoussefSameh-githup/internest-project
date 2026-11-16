@@ -50,9 +50,7 @@
                 {% with pro=internship.partner|is_pro_partner %}
                 <article class="ol-card {% if pro %}ol-card--pro{% endif %} fade-up">
                     <header class="ol-card__head">
-                        <span class="ol-logo">
-                            {% if internship.partner.logo %}<img src="{{ internship.partner.logo.url }}" alt="">{% else %}{{ internship.partner.company_name|slice:":1"|upper }}{% endif %}
-                        </span>
+                        {% include "components/logo.html" with company=internship.partner %}
                         <div class="ol-card__company">
                             <span class="ol-card__company-name">
                                 {{ internship.partner.company_name }}

@@ -1,0 +1,16 @@
+{% load i18n %}
+<dialog class="px-dialog" id="skill-dialog" aria-labelledby="skill-dialog-title">
+    <h2 id="skill-dialog-title" style="margin: 0; font-size: 1.2rem;">{% trans "Add / verify a new skill" %}</h2>
+    <p class="text-muted" style="font-size: 14px; margin: 4px 0 14px;">{% trans "Upload your CV or LinkedIn PDF, or paste your profile text — our AI finds your skills." %}</p>
+    {% if analyze_form %}
+        <form method="post" action="{{ skills_url }}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'profile' %}?tab=skills">
+            {% include "skills/_analyze_inputs.html" with form=analyze_form %}
+        </form>
+    {% endif %}
+    <div class="px-options">
+        <a href="{{ skills_url }}#claimed" class="px-option"><span>⏱️</span><span><strong>{% trans "Take a skill challenge" %}</strong><small>{% trans "A short timed test turns a claimed skill into a verified badge." %}</small></span></a>
+    </div>
+    <div style="margin-top: 12px; text-align: end;"><button type="button" class="px-ghost" data-close-dialog>{% trans "Close" %}</button></div>
+</dialog>

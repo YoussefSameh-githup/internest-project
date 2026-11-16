@@ -1,0 +1,5 @@
+{# Dashed empty placeholder. Context: text, icon (optional), href + cta (optional action). #}<div class="px-empty">
+    {% if icon %}<i class="bi {{ icon }} px-empty__icon"></i>{% endif %}
+    <p>{{ text }}</p>
+    {% if href %}<a href="{{ href }}" class="px-ghost">{{ cta }}</a>{% endif %}
+</div>

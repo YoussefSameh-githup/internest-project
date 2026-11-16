@@ -1,0 +1,62 @@
+{% load i18n %}
+{% trans "Profile readiness" as readiness_label %}
+<aside class="px-side" aria-label="{% trans 'Your profile' %}">
+    <section class="px-me">
+        <div class="px-me__top">
+            {% include "components/avatar.html" with picture=profile.profile_picture name=user.get_full_name|default:user.username verified=profile.is_personal_email_verified %}
+            <div style="min-width: 0;">
+                <h1 class="px-name">{{ user.get_full_name|default:user.username }}</h1>
+                <span class="px-handle"><bdi dir="ltr">@{{ user.username }}</bdi></span>
+            </div>
+        </div>
+
+        <p class="px-meta">
+            {% if profile.university %}<span><i class="bi bi-bank"></i> {{ profile.university }}</span>{% endif %}
+            {% if profile.major %}<span><i class="bi bi-book"></i> {{ profile.major }}</span>{% endif %}
+            {% if expected_graduation %}<span><i class="bi bi-mortarboard"></i> {% trans "Graduation" %}: {% if expected_graduation == "Present" %}{% trans "still studying" %}{% else %}<bdi dir="ltr">{{ expected_graduation }}</bdi>{% if graduation_expected %} ({% trans "expected" %}){% endif %}{% endif %}</span>
+            {% elif profile.study_level %}<span><i class="bi bi-calendar3"></i> {{ profile.get_study_level_display }}</span>{% endif %}
+        </p>
+
+        <div class="px-badges">
+            {% if profile.is_personal_email_verified %}<span class="px-badge px-badge--ok"><i class="bi bi-envelope-check-fill"></i> {% trans "Verified" %}</span>
+            {% elif profile.personal_email %}<a href="{% url 'verify_email' %}" class="px-badge px-badge--warn"><i class="bi bi-exclamation-circle-fill"></i> {% trans "Unverified" %}</a>{% endif %}
+            {% if profile.is_university_email_verified %}<span class="px-badge px-badge--ok"><i class="bi bi-mortarboard-fill"></i> {% trans "Verified student" %}</span>{% endif %}
+            {% if proof.top %}<span class="px-badge px-badge--gold">🏅 {% trans "Top Verified Candidate" %}</span>{% endif %}
+            {% if profile.talent_pool_visible and talent_pool_eligible %}<span class="px-badge px-badge--ok"><i class="bi bi-eye-fill"></i> {% trans "Visible to Pro startups" %}</span>
+            {% elif profile.talent_pool_visible %}<span class="px-badge px-badge--warn"><i class="bi bi-hourglass-split"></i> {% trans "Waiting for a verified skill" %}</span>{% endif %}
+            {% if profile.linkedin_url %}<a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener" class="px-badge"><i class="bi bi-linkedin"></i> {% trans "LinkedIn connected" %}</a>{% endif %}
+            {% if github_url %}<a href="{{ github_url }}" target="_blank" rel="noopener" class="px-badge"><i class="bi bi-github"></i> {% trans "GitHub connected" %}</a>{% endif %}
+        </div>
+
+        <div class="px-ready">
+            {% include "components/progress_ring.html" with value=profile.profile_completion_score label=readiness_label %}
+            <div class="px-ready__text">
+                {% if missing %}
+                    <strong>{% trans "Complete to unlock applying" %}</strong>
+                    <ul class="px-missing" aria-label="{% trans 'Still missing' %}">{% for m in missing %}<li>+ {{ m }}</li>{% endfor %}</ul>
+                    <a href="?tab=edit#pf-form" class="px-ghost" data-tab-link="edit"><i class="bi bi-pencil-square"></i> {% trans "Complete your profile" %}</a>
+                {% else %}
+                    <strong><i class="bi bi-check-circle-fill" style="color: #86efac;"></i> {% trans "Ready to apply" %}</strong>
+                    <span>{% trans "Your profile is complete. Verified skills move you up the list." %}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <a href="{% url 'skills_hub' %}" class="px-cta-main"><i class="bi bi-stars"></i> {% trans "Take AI Skill Assessment" %}</a>
+
+        <nav class="px-quick" aria-label="{% trans 'Quick actions' %}">
+            {% if cv %}
+                <a href="{% url 'cv_builder_pdf' %}"><i class="bi bi-file-earmark-pdf-fill"></i><span>{% trans "Download your professional CV (PDF)" %}<small>{% trans "ATS-friendly, ready to send" %}</small></span></a>
+                <a href="{% url 'cv_builder' %}"><i class="bi bi-pencil-square"></i> {% trans "Edit / regenerate" %}</a>
+            {% else %}
+                <a href="{% url 'cv_builder' %}"><i class="bi bi-file-earmark-person"></i><span>{% trans "Create your CV with AI" %}<small>{% trans "Type it or just talk 🎙️" %}</small></span></a>
+            {% endif %}
+            <a href="{% url 'freelance_importer' %}"><i class="bi bi-briefcase-fill"></i><span>{% trans "Import a freelance gig" %}<small>Mostaql · Khamsat · Upwork · Fiverr</small></span></a>
+            {% if skills_share %}
+                <button type="button" data-share-skills data-share-text="{{ skills_share.text }}" data-share-url="{{ skills_share.url }}" data-copied="{% trans 'Link copied' %}"><i class="bi bi-share-fill"></i><span>{% trans "Share my verified skills" %}<small>{% trans "Copy the link or send it anywhere" %}</small></span></button>
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ skills_share.url|urlencode:'' }}" target="_blank" rel="noopener"><i class="bi bi-linkedin"></i> {% trans "Post it on LinkedIn" %}</a>
+            {% endif %}
+        </nav>
+    </section>
+    {% include "campus/_cta.html" %}
+</aside>

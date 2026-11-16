@@ -100,7 +100,7 @@
                 {% for course in courses %}
                     <article class="sh-card">
                         <header class="sh-card__head">
-                            <span class="ol-logo">{% if course.partner.logo %}<img src="{{ course.partner.logo.url }}" alt="">{% else %}{{ course.partner.company_name|slice:":1"|upper }}{% endif %}</span>
+                            {% include "components/logo.html" with company=course.partner %}
                             <div class="sh-card__who">
                                 <h3 class="sh-card__title">{{ course.title }}</h3>
                                 <span class="sh-card__sub">{{ course.partner.company_name }}{% if course.partner.is_fully_verified %} <i class="bi bi-patch-check-fill" style="color: var(--brand-500);"></i>{% endif %}</span>

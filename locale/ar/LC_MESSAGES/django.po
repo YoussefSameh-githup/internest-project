@@ -5759,3 +5759,136 @@ msgstr "اكتب مجال عمل الشركة."
 
 msgid "Industry name"
 msgstr "اسم المجال"
+
+msgid ""
+"I'm AI-verified in %(skills)s on Internest. Verify your skills and meet "
+"startups hiring Egyptian students:"
+msgstr ""
+"تم توثيق مهاراتي في %(skills)s بالذكاء الاصطناعي على Internest. وثّق مهاراتك"
+" وتعرّف على الشركات الناشئة التي توظّف طلاب مصر:"
+
+msgid "From your CV"
+msgstr "من سيرتك الذاتية"
+
+msgid "AI-inferred"
+msgstr "استنتجها الذكاء الاصطناعي"
+
+msgid "Almost there — retake it to earn the badge."
+msgstr "اقتربت — أعد الاختبار لتحصل على الشارة."
+
+msgid "Retake with AI"
+msgstr "أعد الاختبار بالذكاء الاصطناعي"
+
+msgid "Verify with AI"
+msgstr "وثّقها بالذكاء الاصطناعي"
+
+msgid "Overview & badges"
+msgstr "نظرة عامة والشارات"
+
+msgid "Skills & AI assessments"
+msgstr "المهارات وتقييمات الذكاء الاصطناعي"
+
+msgid "Internship activity"
+msgstr "نشاط التدريب"
+
+msgid "Edit profile & settings"
+msgstr "تعديل الملف والإعدادات"
+
+msgid "Profile readiness"
+msgstr "جاهزية الملف"
+
+msgid "Your profile"
+msgstr "ملفك الشخصي"
+
+msgid "Your profile is complete. Verified skills move you up the list."
+msgstr "ملفك مكتمل. المهارات الموثقة ترفعك في قائمة المرشحين."
+
+msgid "Take AI Skill Assessment"
+msgstr "ابدأ تقييم المهارات بالذكاء الاصطناعي"
+
+msgid "Share my verified skills"
+msgstr "شارك مهاراتي الموثقة"
+
+msgid "Copy the link or send it anywhere"
+msgstr "انسخ الرابط أو أرسله لأي مكان"
+
+msgid "Post it on LinkedIn"
+msgstr "انشرها على لينكدإن"
+
+msgid "View all"
+msgstr "عرض الكل"
+
+msgid ""
+"You haven't applied yet. Browse opportunities that match your verified "
+"skills."
+msgstr "لم تتقدم لأي فرصة بعد. تصفح الفرص التي تناسب مهاراتك الموثقة."
+
+msgid "Contact & academic details"
+msgstr "بيانات التواصل والدراسة"
+
+msgid "Emails, phone, university, major and study year"
+msgstr "البريد والهاتف والجامعة والتخصص والسنة الدراسية"
+
+msgid "What startups read before your CV"
+msgstr "ما تقرؤه الشركات قبل سيرتك الذاتية"
+
+msgid "Profile picture and your CV file"
+msgstr "صورة الملف وملف السيرة الذاتية"
+
+msgid "Who can find you"
+msgstr "من يستطيع العثور عليك"
+
+msgid "New opportunities and news"
+msgstr "الفرص الجديدة والأخبار"
+
+msgid "Password and sign out"
+msgstr "كلمة المرور وتسجيل الخروج"
+
+msgid "All skills & assessments"
+msgstr "كل المهارات والتقييمات"
+
+msgid ""
+"No verified skills yet. A short AI-timed test turns a skill into a badge "
+"startups trust."
+msgstr ""
+"لا توجد مهارات موثقة بعد. اختبار قصير بالذكاء الاصطناعي يحوّل مهارتك إلى "
+"شارة تثق بها الشركات."
+
+msgid ""
+"Write two lines about your projects and tools — startups read this before "
+"your CV."
+msgstr "اكتب سطرين عن مشاريعك وأدواتك — تقرؤهما الشركات قبل سيرتك الذاتية."
+
+msgid "Add a bio"
+msgstr "أضف نبذة عنك"
+
+msgid "Filter skills"
+msgstr "تصفية المهارات"
+
+msgid "All"
+msgstr "الكل"
+
+msgid "To verify"
+msgstr "بانتظار التوثيق"
+
+msgid "Verified by AI"
+msgstr "موثقة بالذكاء الاصطناعي"
+
+msgid "Ready to verify"
+msgstr "جاهزة للتوثيق"
+
+msgid ""
+"One click starts a short timed test. Pass it and the skill becomes a "
+"verified badge."
+msgstr ""
+"بضغطة واحدة يبدأ اختبار قصير بوقت محدد. انجح فيه لتتحول المهارة إلى شارة "
+"موثقة."
+
+msgid "AI-verified skill badges"
+msgstr "شارات المهارات الموثقة بالذكاء الاصطناعي"
+
+msgid "About me"
+msgstr "نبذة عني"
+
+msgid "Internship applications"
+msgstr "طلبات التدريب"

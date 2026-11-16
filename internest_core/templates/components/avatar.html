@@ -1,0 +1,4 @@
+{# Profile picture or initial, optional verified tick. Context: picture, name, verified (bool). #}{% load i18n %}<div class="px-avatar">
+    {% if picture %}<img src="{{ picture.url }}" alt="">{% else %}{{ name|slice:":1"|upper }}{% endif %}
+    {% if verified %}<span class="px-avatar__check" title="{% trans 'Verified' %}"><i class="bi bi-check-lg"></i></span>{% endif %}
+</div>
