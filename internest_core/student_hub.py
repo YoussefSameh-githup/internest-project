@@ -109,10 +109,6 @@ def student_applications(user):
             .select_related("internship", "internship__partner", "experience").order_by("-application_date"))
 
 
-def applied_internship_ids(user):
-    return set(Application.objects.filter(applicant=user).values_list("internship_id", flat=True))
-
-
 def open_invitations(user, applied_ids, limit=10):
     """Talent Pool invitations to opportunities that are still open and not applied to yet."""
     from internest_startups.models import TalentInvitation
@@ -228,18 +224,14 @@ def profile_context(request, profile, form):
 
     skills = student_skills(profile) if profile.pk else []
     groups = group_skills(skills)
-    applied = applied_internship_ids(request.user) if profile.pk else set()
     ctx = {
         "profile": profile, "form": form, "open_sections": open_sections(form),
         "active_tab": resolve_tab(request.GET.get("tab"), has_errors=bool(form.errors)),
         "missing": missing_fields(profile), "skill_groups": groups, "verified_skills_count": len(groups["verified"]),
         "skills_share": skills_share(request, groups["verified"]),
-        "talent_pool_eligible": talent_pool_eligible(profile), "campus_share": campus_share(request, profile),
-        "certificates_count": completed_courses(profile), "top_min": TOP_VERIFIED_MIN_GIGS,
+        "talent_pool_eligible": talent_pool_eligible(profile), "campus_share": campus_share(request, profile), "top_min": TOP_VERIFIED_MIN_GIGS,
         "proof": proof_of_work(profile) if profile.pk else None,
         "experiences": profile.gig_experiences.verified().select_related("company") if profile.pk else [],
-        "applications": list(student_applications(request.user)[:5]) if applied else [], "applications_total": len(applied),
-        "invitations": open_invitations(request.user, applied) if profile.pk else [],
         "gigs": [], "projects": [], "needs_proof": 0, "cv": None, "education": [], "expected_graduation": "",
         "graduation_expected": False, "github_url": "", "analyze_form": SkillSourceForm(), "share_form": None,
     }

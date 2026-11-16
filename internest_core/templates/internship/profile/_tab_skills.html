@@ -1,32 +1,13 @@
 {% load i18n %}
+{# Only adding skills happens here. Verifying and tracking them lives in the Student Workspace (skills hub). #}
 <section class="px-panel" id="panel-skills" role="tabpanel" aria-labelledby="tab-skills" data-panel="skills" {% if active_tab != 'skills' %}hidden{% endif %}>
     <div class="px-card">
-        <div class="px-card__head">
-            <h2 class="px-card__title"><span class="px-ico"><i class="bi bi-patch-check-fill"></i></span> {% trans "Skills & AI assessments" %}</h2>
-            <button type="button" class="px-primary" data-open-dialog="skill-dialog"><i class="bi bi-plus-lg"></i> {% trans "Add / verify a new skill" %}</button>
+        {% trans "Skill assessments" as card_title %}
+        {% include "components/card_head.html" with icon="bi-patch-check-fill" title=card_title %}
+        <p class="px-card__sub" style="margin-top: 0;">{% trans "Add skills from your CV, LinkedIn or a profile text. After adding them, verify and track every skill in your student workspace." %}</p>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button type="button" class="px-primary" data-open-dialog="skill-dialog"><i class="bi bi-plus-lg"></i> {% trans "Add a skill" %}</button>
+            <a href="{{ skills_url }}" class="px-ghost" style="padding: 10px 14px;"><i class="bi bi-box-arrow-up-right"></i> {% trans "View & assess my skills" %}</a>
         </div>
-        {% if skill_groups.verified or skill_groups.unverified %}
-            <div class="px-filter" role="group" aria-label="{% trans 'Filter skills' %}" data-skill-filter hidden>
-                <button type="button" data-filter="all" aria-pressed="true">{% trans "All" %}</button>
-                <button type="button" data-filter="verified" aria-pressed="false">{% trans "Verified" %} ({{ skill_groups.verified|length }})</button>
-                <button type="button" data-filter="unverified" aria-pressed="false">{% trans "To verify" %} ({{ skill_groups.unverified|length }})</button>
-            </div>
-            {% if skill_groups.verified %}
-                <div class="px-group" data-group="verified">
-                    <h3>✅ {% trans "Verified by AI" %} ({{ skill_groups.verified|length }})</h3>
-                    <div class="px-sbadges">{% for s in skill_groups.verified %}{% include "components/skill_badge.html" %}{% endfor %}</div>
-                </div>
-            {% endif %}
-            {% if skill_groups.unverified %}
-                <div class="px-group" data-group="unverified">
-                    <h3><i class="bi bi-hourglass-split" style="color: #3b82f6;"></i> {% trans "Ready to verify" %} ({{ skill_groups.unverified|length }})</h3>
-                    <p class="px-card__sub">{% trans "One click starts a short timed test. Pass it and the skill becomes a verified badge." %}</p>
-                    <div class="px-vcards">{% for s in skill_groups.unverified %}{% include "components/skill_verify_card.html" %}{% endfor %}</div>
-                </div>
-            {% endif %}
-        {% else %}
-            {% trans "No skills yet. Analyze your CV or import freelance work to fill your skills bank." as no_skills %}
-            {% include "components/empty_state.html" with icon="bi-stars" text=no_skills %}
-        {% endif %}
     </div>
 </section>

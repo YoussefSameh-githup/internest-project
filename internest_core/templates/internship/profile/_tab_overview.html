@@ -1,28 +1,48 @@
 {% load i18n %}
-{% trans "Verified skills" as t_verified %}{% trans "Applications" as t_apps %}{% trans "Verified gigs" as t_gigs %}{% trans "Course certificates" as t_certs %}
 <section class="px-panel" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" data-panel="overview" {% if active_tab != 'overview' %}hidden{% endif %}>
-    <div class="px-stats">
-        {% include "components/stat_tile.html" with value=verified_skills_count label=t_verified icon="bi-patch-check-fill" href="?tab=skills" tab="skills" %}
-        {% include "components/stat_tile.html" with value=applications_total label=t_apps href="?tab=activity" tab="activity" %}
-        {% include "components/stat_tile.html" with value=proof.count|default:0 label=t_gigs href="?tab=activity" tab="activity" %}
-        {% include "components/stat_tile.html" with value=certificates_count label=t_certs icon="bi-mortarboard-fill" href=courses_url %}
+    <div class="px-card">
+        {% trans "Profile readiness" as card_title %}
+        {% include "components/card_head.html" with icon="bi-speedometer2" title=card_title %}
+        <div class="px-ready">
+            {% include "components/progress_ring.html" with value=profile.profile_completion_score label=card_title %}
+            <div class="px-ready__text">
+                {% if missing %}
+                    <strong>{% trans "Complete to unlock applying" %}</strong>
+                    <ul class="px-missing" aria-label="{% trans 'Still missing' %}">{% for m in missing %}<li>+ {{ m }}</li>{% endfor %}</ul>
+                    <div><a href="?tab=edit#pf-form" class="px-ghost" data-tab-link="edit"><i class="bi bi-pencil-square"></i> {% trans "Complete your profile" %}</a></div>
+                {% else %}
+                    <strong><i class="bi bi-check-circle-fill" style="color: #16a34a;"></i> {% trans "Ready to apply" %}</strong>
+                    <span>{% trans "Your profile is complete. Verified skills move you up the list." %}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="px-badges" style="margin-top: 14px;">
+            {% if profile.is_personal_email_verified %}<span class="px-badge px-badge--ok"><i class="bi bi-envelope-check-fill"></i> {% trans "Verified" %}</span>
+            {% elif profile.personal_email %}<a href="{% url 'verify_email' %}" class="px-badge px-badge--warn"><i class="bi bi-exclamation-circle-fill"></i> {% trans "Unverified" %}</a>{% endif %}
+            {% if profile.is_university_email_verified %}<span class="px-badge px-badge--ok"><i class="bi bi-mortarboard-fill"></i> {% trans "Verified student" %}</span>{% endif %}
+            {% if proof.top %}<span class="px-badge px-badge--gold">🏅 {% trans "Top Verified Candidate" %}</span>{% endif %}
+            {% if profile.talent_pool_visible and talent_pool_eligible %}<span class="px-badge px-badge--ok"><i class="bi bi-eye-fill"></i> {% trans "Visible to Pro startups" %}</span>
+            {% elif profile.talent_pool_visible %}<span class="px-badge px-badge--warn"><i class="bi bi-hourglass-split"></i> {% trans "Waiting for a verified skill" %}</span>{% endif %}
+            {% if profile.linkedin_url %}<a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener" class="px-badge"><i class="bi bi-linkedin"></i> {% trans "LinkedIn connected" %}</a>{% endif %}
+            {% if github_url %}<a href="{{ github_url }}" target="_blank" rel="noopener" class="px-badge"><i class="bi bi-github"></i> {% trans "GitHub connected" %}</a>{% endif %}
+        </div>
     </div>
 
     <div class="px-card">
-        {% trans "All skills & assessments" as all_skills %}
-        {% trans "AI-verified skill badges" as card_title %}{% include "components/card_head.html" with icon="bi-patch-check-fill" title=card_title href="?tab=skills" tab="skills" action=all_skills %}
+        {% trans "Skill assessments" as all_skills %}{% trans "Verified skill badges" as badges_title %}
+        {% include "components/card_head.html" with icon="bi-patch-check-fill" title=badges_title href=skills_url action=all_skills %}
         {% if skill_groups.verified %}
             <div class="px-sbadges">{% for s in skill_groups.verified %}{% include "components/skill_badge.html" %}{% endfor %}</div>
         {% else %}
-            {% trans "No verified skills yet. A short AI-timed test turns a skill into a badge startups trust." as no_badges %}{% trans "Take AI Skill Assessment" as take_test %}
+            {% trans "No verified skills yet. A short timed test turns a skill into a badge startups trust." as no_badges %}{% trans "Take a skill assessment" as take_test %}
             {% include "components/empty_state.html" with icon="bi-patch-check" text=no_badges href=skills_url cta=take_test %}
         {% endif %}
     </div>
 
     <div class="px-bento">
         <div class="px-card">
-            {% trans "Edit" as edit_label %}
-            {% trans "About me" as card_title %}{% include "components/card_head.html" with icon="bi-person-lines-fill" title=card_title href="?tab=edit#pf-form" tab="edit" action=edit_label action_icon="bi-pencil" %}
+            {% trans "Edit" as edit_label %}{% trans "About me" as about_title %}
+            {% include "components/card_head.html" with icon="bi-person-lines-fill" title=about_title href="?tab=edit#pf-form" tab="edit" action=edit_label action_icon="bi-pencil" %}
             {% if profile.bio %}<p class="px-bio" dir="auto">{{ profile.bio }}</p>
             {% else %}
                 {% trans "Write two lines about your projects and tools — startups read this before your CV." as no_bio %}{% trans "Add a bio" as add_bio %}
@@ -30,8 +50,8 @@
             {% endif %}
         </div>
         <div class="px-card">
-            {% trans "Edit in the CV builder" as edit_cv %}
-            {% trans "Education, programs & certificates" as card_title %}{% include "components/card_head.html" with icon="bi-journal-bookmark" title=card_title href=cv_builder_url action=edit_cv action_icon="bi-pencil" %}
+            {% trans "Edit in the CV builder" as edit_cv %}{% trans "Education, programs & certificates" as edu_title %}
+            {% include "components/card_head.html" with icon="bi-journal-bookmark" title=edu_title href=cv_builder_url action=edit_cv action_icon="bi-pencil" %}
             {% if education %}
                 <ul class="px-edu">{% for e in education %}<li><strong dir="auto">{{ e.university|default:e.major }}{% if e.university and e.major %} · {{ e.major }}{% endif %}</strong><span dir="ltr">{{ e.period }}</span></li>{% endfor %}</ul>
             {% else %}

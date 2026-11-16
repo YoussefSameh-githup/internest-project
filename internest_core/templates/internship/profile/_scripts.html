@@ -31,22 +31,10 @@
     });
   });
 
-  // Skills tab: All / Verified / To verify filter (hidden until JS runs, so no-JS users see everything).
-  document.querySelectorAll("[data-skill-filter]").forEach(function (bar) {
-    bar.hidden = false;
-    var buttons = bar.querySelectorAll("[data-filter]"), groups = document.querySelectorAll("[data-group]");
-    buttons.forEach(function (b) {
-      b.addEventListener("click", function () {
-        buttons.forEach(function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
-        groups.forEach(function (g) { g.hidden = b.dataset.filter !== "all" && g.dataset.group !== b.dataset.filter; });
-      });
-    });
-  });
-
-  // Share verified skills: native share sheet when available, else copy the text + link.
-  document.querySelectorAll("[data-share-skills]").forEach(function (btn) {
+  // Share verified skills / the campus vote link: native share sheet when available, else copy the text + link.
+  document.querySelectorAll("[data-share-skills], [data-share-link]").forEach(function (btn) {
     btn.addEventListener("click", function () {
-      var text = btn.dataset.shareText, url = btn.dataset.shareUrl;
+      var text = btn.dataset.shareText, url = btn.dataset.shareUrl || btn.dataset.shareLink;
       if (navigator.share) { navigator.share({title: "Internest", text: text, url: url}).catch(function () {}); return; }
       var label = btn.innerHTML;
       function done() {

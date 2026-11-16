@@ -33,7 +33,7 @@ class StudentHubTests(Base):
             {"university": "Cairo", "major": "Finance", "start_date": "2023-09", "end_date": "2027-06", "is_current": False}]})
         page = self._page()
         for marker in ("Your Student Hub", "Youssef Sameh", "Jun 2027</bdi> (expected)", "LinkedIn connected",
-                       "GitHub connected", "Profile readiness", "Complete your profile", "CV file", "Take AI Skill Assessment",
+                       "GitHub connected", "Profile readiness", "Complete your profile", "CV file", "University voting",
                        reverse("cv_builder_pdf"), reverse("cv_builder"), reverse("freelance_importer"),
                        "Sep 2023 – Jun 2027 (Expected)"):
             self.assertContains(page, marker)
@@ -52,12 +52,12 @@ class StudentHubTests(Base):
         self.assertEqual(page.count(f'href="{reverse("freelance_importer")}"'), 1)  # only the identity card button
         dialog = page[page.index('id="skill-dialog"'):]
         self.assertNotIn(reverse("freelance_importer"), dialog)
-        for marker in ('name="pasted_text"', 'name="cv_file"', 'data-mode="text"', f'value="{reverse("profile")}?tab=skills"'):
+        for marker in ('name="pasted_text"', 'name="cv_file"', 'data-mode="text"', f'name="next" value="{reverse("skills_hub")}"'):
             self.assertIn(marker, dialog)
         self.assertIn("Take a skill challenge", dialog)
 
     def test_market_fit_lives_in_the_hub_tabs_not_the_profile_card(self):
-        card = self._page().content.decode().split('id="tab-overview"')[0]
+        card, _ = self._split(self._page())
         self.assertNotIn(reverse("student_dashboard"), card)
         self.assertContains(self.client.get(reverse("course_list")), f'href="{reverse("student_dashboard")}" class="sh-tab"')
 
@@ -65,7 +65,7 @@ class StudentHubTests(Base):
         page = self._page(tab="skills")
         self.assertContains(page, 'id="tab-skills" href="?tab=skills#hub" data-tab="skills" aria-controls="panel-skills" aria-selected="true"')
         self.assertContains(page, 'data-panel="overview" hidden')
-        for name in ("Overview & badges", "Skills & AI assessments", "Internship activity", "Edit profile & settings"):
+        for name in ("Overview & badges", "Skill assessments", "Freelance work & projects", "Edit profile & settings"):
             self.assertContains(page, name)
         self.assertEqual(self._page().context["active_tab"], "overview")
         self.assertEqual(self._page(tab="nope").context["active_tab"], "overview")
@@ -88,7 +88,7 @@ class StudentHubTests(Base):
                                     status="verified", score=88, percentile=91, verified_via="challenge")
         page = self._page().content.decode()
         panel = page[page.index('id="panel-overview"'):page.index('id="panel-skills"')]
-        self.assertIn("AI-verified skill badges", panel)
+        self.assertIn("Verified skill badges", panel)
         self.assertIn('class="px-sbadge"', panel)
         self.assertIn("88%", panel)
         self.assertIn("P91", panel)
@@ -98,48 +98,8 @@ class StudentHubTests(Base):
         page = self._page().content.decode()
         panel = page[page.index('id="panel-overview"'):page.index('id="panel-skills"')]
         self.assertIn("No verified skills yet", panel)
+        self.assertIn("Take a skill assessment", panel)
         self.assertIn(f'href="{reverse("skills_hub")}"', panel)
-
-    def test_skill_cards_verify_with_one_click(self):
-        skills = {}
-        for slug, source, status in (("python", "explicit", "claimed"), ("sql", "implicit", "claimed"), ("excel", "explicit", "verified")):
-            skills[slug] = StudentSkill.objects.create(student=self.student, skill=Skill.objects.get(slug=slug), source=source, status=status)
-        page = self._page(tab="skills").content.decode()
-        panel = page[page.index('id="panel-skills"'):page.index('id="panel-activity"')]
-        self.assertIn("Verified by AI (1)", panel)
-        self.assertIn("Ready to verify (2)", panel)
-        self.assertEqual(panel.count('class="px-vcard"'), 2)
-        self.assertEqual(panel.count('class="px-sbadge"'), 1)
-        for slug in ("python", "sql"):
-            self.assertIn(f'action="{reverse("skills_challenge_start", args=[skills[slug].pk])}"', panel)
-        self.assertNotIn(reverse("skills_challenge_start", args=[skills["excel"].pk]), panel)  # verified: nothing to start
-        self.assertIn("From your CV", panel)
-        self.assertIn("AI-inferred", panel)
-        self.assertIn('data-open-dialog="skill-dialog"', panel)
-        self.assertIn("data-skill-filter", panel)
-
-    def test_skill_in_cooldown_has_no_start_button(self):
-        ss = StudentSkill.objects.create(student=self.student, skill=Skill.objects.get(slug="python"), source="explicit", status="lag",
-                                         cooldown_until=timezone.now() + timezone.timedelta(hours=5))
-        panel = self._page(tab="skills").content.decode()
-        self.assertNotIn(reverse("skills_challenge_start", args=[ss.pk]), panel)
-        self.assertIn("You can retake this skill test in", panel)
-        self.assertIn("Almost there", panel)
-
-    def test_activity_tab_lists_applications_and_invitations(self):
-        internship = Internship.objects.create(partner=self.pro, title="Finance Analyst", description="d", location="Cairo",
-                                               required_majors="any", deadline=timezone.now().date() + timezone.timedelta(days=5))
-        Application.objects.create(internship=internship, applicant=self.student_user, status="shortlisted")
-        panel = self._page(tab="activity").content.decode()
-        self.assertIn("Finance Analyst", panel)
-        self.assertIn("You&#x27;re shortlisted for an interview", panel.replace("&#39;", "&#x27;"))
-        self.assertIn(reverse("my_applications"), panel)
-        self.assertNotIn("You haven't applied yet", panel)
-
-    def test_activity_tab_empty_state(self):
-        panel = self._page(tab="activity").content.decode()
-        self.assertIn("applied yet", panel)
-        self.assertIn(f'href="{reverse("list")}"', panel)
 
     def test_share_verified_skills_needs_a_verified_skill(self):
         self.assertNotContains(self._page(), "data-share-url=")
@@ -147,7 +107,6 @@ class StudentHubTests(Base):
         page = self._page()
         self.assertContains(page, "data-share-url=")
         self.assertContains(page, "AI-verified in Excel on Internest")
-        self.assertContains(page, "linkedin.com/sharing/share-offsite")
         self.assertNotContains(page, self.student.phone_number or "no-phone-in-share")
 
     def test_freelance_cards_and_proof_upload(self):
@@ -206,7 +165,78 @@ class StudentHubTests(Base):
         self.client.cookies["internest_lang"] = "ar"
         page = self._page()
         for text in ("مساحتك الطلابية", "أنشئ سيرتك الذاتية بالذكاء الاصطناعي", "استيراد عمل حر", "لصق نص", "حلّل مهاراتي", "خُض اختبار مهارة",
-                     "إكمال بيانات الملف", "نظرة عامة والشارات", "المهارات وتقييمات الذكاء الاصطناعي", "نشاط التدريب",
-                     "تعديل الملف والإعدادات", "جاهزية الملف", "ابدأ تقييم المهارات بالذكاء الاصطناعي", "بيانات التواصل والدراسة",
+                     "إكمال بيانات الملف", "نظرة عامة والشارات", "تقييم المهارات", "الأعمال الحرة والمشاريع",
+                     "تعديل الملف والإعدادات", "جاهزية الملف", "التصويت للجامعة", "بيانات التواصل والدراسة",
                      "الحساب والأمان", "إضافة / توثيق مهارة جديدة"):
             self.assertContains(page, text)
+
+    # ---- declutter: one source of truth, the Student Workspace owns stats, applications and skill lists
+    def _split(self, page):
+        html = page.content.decode()
+        aside = html[html.index('<aside class="px-side"'):html.index("</aside>")]
+        return aside, html[html.index('id="panel-overview"'):]
+
+    def test_sidebar_is_identity_only(self):
+        StudentSkill.objects.create(student=self.student, skill=Skill.objects.get(slug="excel"), source="explicit", status="verified")
+        card, _ = self._split(self._page())
+        self.assertIn("Youssef Sameh", card)
+        self.assertIn(f'href="{reverse("campus_vote")}?open=1"', card)
+        self.assertIn("University voting", card)
+        for gone in ("px-ring", "px-badges", "px-badge ", "Take AI Skill Assessment", "Complete your profile", "px-stat",
+                     reverse("freelance_importer")):
+            self.assertNotIn(gone, card)
+
+    def test_readiness_and_badges_moved_into_the_overview_tab(self):
+        _, tabs = self._split(self._page())
+        self.assertIn("px-ring", tabs)
+        self.assertIn("LinkedIn connected", tabs)
+        self.assertEqual(tabs.count('class="px-ring"'), 1)
+
+    def test_workspace_stats_are_not_repeated_on_the_profile(self):
+        page = self._page().content.decode()
+        for gone in ('class="px-stats"', "Course certificates", "Imported freelance work"):
+            self.assertNotIn(gone, page)
+
+    def test_skills_tab_only_adds_skills_and_links_to_the_workspace(self):
+        StudentSkill.objects.create(student=self.student, skill=Skill.objects.get(slug="python"), source="explicit", status="claimed")
+        page = self._page(tab="skills").content.decode()
+        panel = page[page.index('id="panel-skills"'):page.index('id="panel-activity"')]
+        self.assertIn("Add a skill", panel)
+        self.assertIn('data-open-dialog="skill-dialog"', panel)
+        self.assertIn(f'href="{reverse("skills_hub")}"', panel)
+        for gone in ("Ready to verify", "Verify with AI", "px-vcard", "Python"):
+            self.assertNotIn(gone, panel)
+        self.assertNotIn("AI Skill Assessment", page)
+        self.assertNotIn("AI assessments", page)
+
+    def test_freelance_tab_has_no_application_list(self):
+        internship = Internship.objects.create(partner=self.pro, title="Finance Analyst", description="d", location="Cairo",
+                                               required_majors="any", deadline=timezone.now().date() + timezone.timedelta(days=5))
+        Application.objects.create(internship=internship, applicant=self.student_user)
+        page = self._page(tab="activity").content.decode()
+        self.assertNotIn("Finance Analyst", page)
+        self.assertNotIn("Internship applications", page)
+        panel = page[page.index('id="panel-activity"'):page.index('id="panel-edit"')]
+        for expected in ("Freelance work", "Projects", reverse("freelance_importer")):
+            self.assertIn(expected, panel)
+        self.assertEqual(page.count(f'href="{reverse("freelance_importer")}"'), 1)
+
+    def test_avatar_is_a_fixed_square_with_the_badge_outside_the_clipped_image(self):
+        html = self._page().content.decode()
+        avatar = html[html.index('class="px-avatar"'):html.index('class="px-name"')]
+        self.assertLess(avatar.index("px-avatar__img"), avatar.index("px-avatar__check"))
+        css = html[html.index(".px-avatar__img {"):]
+        css = css[:css.index("}")]
+        for rule in ("width: 84px", "height: 84px", "aspect-ratio: 1 / 1", "border-radius: 50%", "overflow: hidden"):
+            self.assertIn(rule, css)
+        img_rule = html[html.index(".px-avatar__img img {"):]
+        img_rule = img_rule[:img_rule.index("}")]
+        for rule in ("width: 100%", "height: 100%", "object-fit: cover", "object-position: center top", "display: block"):
+            self.assertIn(rule, img_rule)
+
+    def test_arabic_sidebar_and_tabs(self):
+        self.client.cookies["internest_lang"] = "ar"
+        page = self._page()
+        for text in ("التصويت للجامعة", "تقييم المهارات", "الأعمال الحرة والمشاريع"):
+            self.assertContains(page, text)
+        self.assertNotContains(page, "بالذكاء الاصطناعي</a>")

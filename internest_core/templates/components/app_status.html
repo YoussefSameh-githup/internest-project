@@ -1,4 +1,0 @@
-{# Application status pill. Context: app (Application). #}<span class="app-status app-status--{{ app.status }}">
-    {% if app.status == "accepted" %}🎉{% elif app.status == "completed" %}✅{% elif app.status == "shortlisted" %}<i class="bi bi-star-fill"></i>{% elif app.status == "under_review" %}<i class="bi bi-eye"></i>{% elif app.status == "fulfilled" %}<i class="bi bi-people"></i>{% else %}<i class="bi bi-send-check"></i>{% endif %}
-    {{ app.student_status_label }}
-</span>

@@ -43,7 +43,10 @@
                                 <h3 class="sh-card__title"><a href="{% url 'internship_detail' app.internship.id %}">{{ app.internship.title }}</a></h3>
                                 <span class="sh-card__sub">{{ app.internship.partner.company_name }}</span>
                             </div>
-                            {% include "components/app_status.html" %}
+                            <span class="app-status app-status--{{ app.status }}">
+    {% if app.status == "accepted" %}🎉{% elif app.status == "completed" %}✅{% elif app.status == "shortlisted" %}<i class="bi bi-star-fill"></i>{% elif app.status == "under_review" %}<i class="bi bi-eye"></i>{% elif app.status == "fulfilled" %}<i class="bi bi-people"></i>{% else %}<i class="bi bi-send-check"></i>{% endif %}
+    {{ app.student_status_label }}
+</span>
                         </header>
 
                         {% if app.progress_step %}

@@ -5,7 +5,7 @@
     {% if analyze_form %}
         <form method="post" action="{{ skills_url }}" enctype="multipart/form-data">
             {% csrf_token %}
-            <input type="hidden" name="next" value="{% url 'profile' %}?tab=skills">
+            <input type="hidden" name="next" value="{{ skills_url }}">
             {% include "skills/_analyze_inputs.html" with form=analyze_form %}
         </form>
     {% endif %}

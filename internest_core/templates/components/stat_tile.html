@@ -1,3 +1,0 @@
-{# Number + caption tile. Context: value, label, icon (optional), href (optional), tab (optional, switches the profile tab). #}<{% if href %}a href="{{ href }}"{% if tab %} data-tab-link="{{ tab }}"{% endif %}{% else %}div{% endif %} class="px-stat">
-    <strong>{% if icon %}<i class="bi {{ icon }}"></i> {% endif %}{{ value }}</strong><span>{{ label }}</span>
-</{% if href %}a{% else %}div{% endif %}>

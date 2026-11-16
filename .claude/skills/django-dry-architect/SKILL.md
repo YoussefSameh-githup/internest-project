@@ -19,5 +19,8 @@ description: Enforce strict DRY architecture in the Internest Django project. Us
 - Large pages are split into `internship/<page>/_*.html` partials; the main template only assembles.
 - Strings: use `{% trans "..." as var %}` before an include when a component needs translated text (never `_("...")` in include args: the catalog tool misses them). Always add Arabic via `scripts/i18n_catalog.py apply|check|compile`.
 
+## Cross-page duplication
+- Data or widgets already shown by the Student Workspace pages (applications, tasks, courses, skills hub) must not be re-queried or re-rendered on the profile page. Link there. A component used once is a smell: inline it or delete it. Delete components that become unused.
+
 ## Definition of done
 Tests added, full suite green, no duplicated query or markup left behind, AR/EN strings present.

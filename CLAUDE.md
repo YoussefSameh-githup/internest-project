@@ -10,6 +10,10 @@ On every coding, UI or marketing prompt, use the relevant skills in `.claude/ski
 - `startup-growth-marketer` — any copy, landing page, onboarding or CTA.
 - `frontend-design`, `webapp-testing`, `skill-creator` — as their descriptions fit.
 
+## Non-negotiable UI rules (all future work)
+1. **Zero duplication, single source of truth.** Never render the same stat card, widget, list or action button twice on one page, and never copy dashboard widgets (overview stats, full skill-assessment lists, application lists) that already live in the Student Workspace (`مساحتك الطلابية`: My applications / Tasks / Courses / Skills hub). Link to the workspace instead.
+2. **Multi-device, RTL + LTR.** Every layout, avatar, tab bar and card grid is styled and checked at Desktop (>=1024px), Tablet (768-1023px) and Mobile (<768px), in Arabic (`dir="rtl"`) and English (`dir="ltr"`): no text/image overlap, no horizontal overflow.
+
 ## Working style
 - **Scoped reads:** open only files tied to the task (grep first, read ranges). Do not scan unrelated apps.
 - **Ultra-brief terminal replies:** result, what changed, what to run. No recaps, no filler. Reply in Egyptian Arabic to the user.

@@ -932,9 +932,6 @@ msgstr "تأكيد الشراء"
 msgid "Secure and fully protected payment"
 msgstr "دفع آمن ومحمي بالكامل"
 
-msgid "Apply"
-msgstr "تطبيق"
-
 msgid "Purchase successful"
 msgstr "تم الشراء بنجاح"
 
@@ -5892,3 +5889,32 @@ msgstr "نبذة عني"
 
 msgid "Internship applications"
 msgstr "طلبات التدريب"
+
+msgid "Skill assessments"
+msgstr "تقييم المهارات"
+
+msgid "Freelance work & projects"
+msgstr "الأعمال الحرة والمشاريع"
+
+msgid "University voting"
+msgstr "التصويت للجامعة"
+
+msgid ""
+"No verified skills yet. A short timed test turns a skill into a badge "
+"startups trust."
+msgstr ""
+"لا توجد مهارات موثقة بعد. اختبار قصير بوقت محدد يحوّل مهارتك إلى شارة تثق "
+"بها الشركات."
+
+msgid "Take a skill assessment"
+msgstr "ابدأ تقييم مهارة"
+
+msgid ""
+"Add skills from your CV, LinkedIn or a profile text. After adding them, "
+"verify and track every skill in your student workspace."
+msgstr ""
+"أضف مهاراتك من سيرتك الذاتية أو لينكدإن أو نص ملفك. وبعد إضافتها، وثّق كل "
+"مهارة وتابعها من مساحتك الطلابية."
+
+msgid "View & assess my skills"
+msgstr "عرض مهاراتي وتقييمها"

@@ -5,7 +5,7 @@
 
 {% block content %}
 {# Student Hub: sticky identity card on the left, four tabs on the right. Each piece lives in internship/profile/_*.html. #}
-{% url 'skills_hub' as skills_url %}{% url 'cv_builder' as cv_builder_url %}{% url 'course_list' as courses_url %}{% url 'my_applications' as applications_url %}{% url 'list' as list_url %}
+{% url 'skills_hub' as skills_url %}{% url 'cv_builder' as cv_builder_url %}{% url 'freelance_importer' as importer_url %}
 {% include "internship/profile/_styles.html" %}
 
 <section class="px">
@@ -24,8 +24,8 @@
             <div>
                 <nav class="px-tabs" role="tablist" aria-label="{% trans 'Your Student Hub' %}">
                     <a class="px-tab" role="tab" id="tab-overview" href="?tab=overview#hub" data-tab="overview" aria-controls="panel-overview" aria-selected="{% if active_tab == 'overview' %}true{% else %}false{% endif %}"><i class="bi bi-grid-1x2"></i> {% trans "Overview & badges" %}</a>
-                    <a class="px-tab" role="tab" id="tab-skills" href="?tab=skills#hub" data-tab="skills" aria-controls="panel-skills" aria-selected="{% if active_tab == 'skills' %}true{% else %}false{% endif %}"><i class="bi bi-patch-check"></i> {% trans "Skills & AI assessments" %}</a>
-                    <a class="px-tab" role="tab" id="tab-activity" href="?tab=activity#hub" data-tab="activity" aria-controls="panel-activity" aria-selected="{% if active_tab == 'activity' %}true{% else %}false{% endif %}"><i class="bi bi-send-check"></i> {% trans "Internship activity" %}{% if needs_proof %} <b title="{% trans 'Needs proof review' %}">{{ needs_proof }}</b>{% endif %}</a>
+                    <a class="px-tab" role="tab" id="tab-skills" href="?tab=skills#hub" data-tab="skills" aria-controls="panel-skills" aria-selected="{% if active_tab == 'skills' %}true{% else %}false{% endif %}"><i class="bi bi-patch-check"></i> {% trans "Skill assessments" %}</a>
+                    <a class="px-tab" role="tab" id="tab-activity" href="?tab=activity#hub" data-tab="activity" aria-controls="panel-activity" aria-selected="{% if active_tab == 'activity' %}true{% else %}false{% endif %}"><i class="bi bi-briefcase"></i> {% trans "Freelance work & projects" %}{% if needs_proof %} <b title="{% trans 'Needs proof review' %}">{{ needs_proof }}</b>{% endif %}</a>
                     <a class="px-tab" role="tab" id="tab-edit" href="?tab=edit#hub" data-tab="edit" aria-controls="panel-edit" aria-selected="{% if active_tab == 'edit' %}true{% else %}false{% endif %}"><i class="bi bi-sliders"></i> {% trans "Edit profile & settings" %}</a>
                 </nav>
 

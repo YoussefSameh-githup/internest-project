@@ -15,7 +15,13 @@ description: Linear/Stripe-level SaaS UI standards for Internest screens. Use fo
 - Every list has an **empty state** with an action (`components/empty_state.html`).
 - Status is a pill (colour + icon + text), never colour alone.
 
+## Zero duplication (single source of truth)
+- Never show the same stat card, widget, list or action button in two places on a page, and never repeat dashboard widgets (stats, full skill-assessment lists, application lists) that live in the Student Workspace (`مساحتك الطلابية`). Link to it.
+- Sidebars/identity cards stay minimal: avatar, name, handle, university/major, one or two subtle links. Details live in tabs.
+
 ## Responsive and RTL
+- Explicitly verify **Desktop (>=1024px), Tablet (768-1023px), Mobile (<768px)** in both `dir="rtl"` and `dir="ltr"`: zero text/image overlap, zero horizontal overflow.
+- Avatars: fixed square box (`width`/`height` in px, `flex-shrink: 0`, `overflow: hidden`, `border-radius: 50%`), `img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }`, with a margin below before any text; badges sit on an outer wrapper so they are never clipped.
 - Mobile-first. Test at 375px: no horizontal scroll, tap targets ≥ 40px, sticky parts become static on small screens.
 - Use logical CSS (`inset-inline-*`, `margin-inline-*`) so Arabic RTL mirrors correctly. Wrap LTR fragments (emails, URLs, handles) in `dir="ltr"`/`<bdi>`.
 

@@ -84,13 +84,17 @@ class ProfileDataTests(Base):
         self.assertEqual(ctx["verified_skills_count"], 1)
         self.assertEqual(len(ctx["skill_groups"]["unverified"]), 1)
 
-    def test_applications_are_shared_with_the_applications_page(self):
+    def test_applications_selectors_feed_the_applications_page(self):
         internship = Internship.objects.create(partner=self.pro, title="Analyst", description="d", location="Cairo", required_majors="any",
                                                deadline=timezone.localdate() + timezone.timedelta(days=3))
         Application.objects.create(internship=internship, applicant=self.student_user)
         self.assertEqual([a.internship_id for a in student_hub.student_applications(self.student_user)], [internship.pk])
-        self.assertEqual(student_hub.applied_internship_ids(self.student_user), {internship.pk})
         self.assertEqual(student_hub.open_invitations(self.student_user, {internship.pk}), [])
+
+    def test_profile_context_has_no_workspace_data(self):
+        ctx = student_hub.profile_context(self.request, self.student, ProfileForm(instance=self.student))
+        for key in ("applications", "invitations", "applications_total", "certificates_count"):
+            self.assertNotIn(key, ctx)
 
     def test_skills_share_is_none_without_verified_skills_and_names_at_most_four(self):
         self.assertIsNone(student_hub.skills_share(self.request, []))
@@ -118,12 +122,6 @@ class ComponentTests(SimpleTestCase):
         self.assertNotIn("<a ", render_to_string("components/empty_state.html", {"text": "Nothing here"}))
         html = render_to_string("components/empty_state.html", {"text": "Nothing", "href": "/x/", "cta": "Go"})
         self.assertIn('<a href="/x/" class="px-ghost">Go</a>', html)
-
-    def test_stat_tile_is_a_link_only_with_an_href(self):
-        self.assertTrue(render_to_string("components/stat_tile.html", {"value": 3, "label": "Skills"}).lstrip().startswith("<div"))
-        html = render_to_string("components/stat_tile.html", {"value": 3, "label": "Skills", "href": "?tab=skills", "tab": "skills"})
-        self.assertIn('<a href="?tab=skills" data-tab-link="skills" class="px-stat">', html)
-        self.assertIn("</a>", html)
 
     def test_card_head_renders_title_and_optional_action(self):
         html = render_to_string("components/card_head.html", {"icon": "bi-x", "title": "Title"})

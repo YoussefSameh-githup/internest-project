@@ -1,28 +1,6 @@
 {% load i18n %}
 <section class="px-panel" id="panel-activity" role="tabpanel" aria-labelledby="tab-activity" data-panel="activity" {% if active_tab != 'activity' %}hidden{% endif %}>
     <div class="px-card">
-        {% trans "View all" as view_all %}
-        {% trans "Internship applications" as card_title %}{% include "components/card_head.html" with icon="bi-send-check-fill" title=card_title href=applications_url action=view_all %}
-        {% if invitations %}
-            <ul class="px-alist" style="margin-bottom: 12px;">
-                {% for inv in invitations %}
-                    <li class="px-arow">
-                        {% include "components/logo.html" with company=inv.partner %}
-                        <div class="px-arow__body"><a href="{{ inv.apply_url }}" dir="auto">{{ inv.internship.title }}</a><span>{{ inv.partner.company_name }}</span></div>
-                        <span class="sh-pill sh-pill--invited">🎟️ {% trans "Invited" %}</span>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-        {% if applications %}
-            <ul class="px-alist">{% for app in applications %}{% include "components/application_row.html" %}{% endfor %}</ul>
-        {% elif not invitations %}
-            {% trans "You haven't applied yet. Browse opportunities that match your verified skills." as no_apps %}{% trans "Browse opportunities" as browse %}
-            {% include "components/empty_state.html" with icon="bi-send" text=no_apps href=list_url cta=browse %}
-        {% endif %}
-    </div>
-
-    <div class="px-card">
         {% trans "Verified Internest gigs" as card_title %}{% include "components/card_head.html" with icon="bi-award-fill" title=card_title %}
         <div class="pow-banner{% if proof.top %} pow-banner--top{% endif %}">
             <span class="pow-banner__icon">{% if proof.top %}🏅{% else %}<i class="bi bi-briefcase-fill"></i>{% endif %}</span>
@@ -56,7 +34,7 @@
     </div>
 
     <div class="px-card">
-        {% trans "Freelance work" as card_title %}{% include "components/card_head.html" with icon="bi-briefcase-fill" title=card_title %}
+        {% trans "Freelance work" as card_title %}{% trans "Import a freelance gig" as import_label %}{% include "components/card_head.html" with icon="bi-briefcase-fill" title=card_title href=importer_url action=import_label action_icon="bi-plus-lg" %}
         {% if gigs %}
             <div class="px-gigs">
                 {% for g in gigs %}
