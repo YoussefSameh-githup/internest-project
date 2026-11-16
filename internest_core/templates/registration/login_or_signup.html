@@ -50,11 +50,7 @@
                 <i class="bi bi-person-plus"></i> {% trans "Create a new account" %}
             </a>
 
-            <div class="divider">{% trans "or" %}</div>
-
-            <button type="button" class="btn btn--ghost btn--lg btn--block" disabled style="border: 1px solid var(--color-border);">
-                <i class="bi bi-google"></i> {% trans "Sign in with Google (coming soon)" %}
-            </button>
+            {% include "components/social_auth_buttons.html" with role="student" next=request.GET.next %}
 
             <p class="text-muted mt-6 text-center" style="font-size: var(--text-sm);">
                 {% trans "Are you a partner?" %} <a href="{% url 'login' %}" class="fw-bold">{% trans "Partner login" %}</a>

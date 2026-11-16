@@ -5956,3 +5956,43 @@ msgstr "واجهنا مشكلة غير متوقعة وتم إبلاغ فريقن
 
 msgid "Contact & support"
 msgstr "تواصل معنا والدعم"
+
+msgid "Continue with %(name)s"
+msgstr "المتابعة عبر %(name)s"
+
+msgid ""
+"An Internest account already uses this email. Sign in with your password "
+"(and verify the email) first, then try again."
+msgstr ""
+"يوجد حساب على Internest يستخدم هذا البريد بالفعل. سجّل الدخول بكلمة المرور "
+"(وأكّد البريد) أولاً ثم حاول مرة أخرى."
+
+msgid ""
+"We couldn't sign you in with %(provider)s. Please try again or use another "
+"method."
+msgstr ""
+"تعذّر تسجيل دخولك عبر %(provider)s. حاول مرة أخرى أو استخدم طريقة أخرى."
+
+msgid ""
+"%(provider)s did not share an email address with us. Use another sign-in "
+"method."
+msgstr ""
+"لم يشارك %(provider)s عنوان بريد إلكتروني معنا. استخدم طريقة تسجيل دخول "
+"أخرى."
+
+msgid "Sign-in failed"
+msgstr "فشل تسجيل الدخول"
+
+msgid ""
+"We couldn't complete the sign-in. Please try again or use another method."
+msgstr "تعذّر إكمال تسجيل الدخول. حاول مرة أخرى أو استخدم طريقة أخرى."
+
+msgid "Back to sign in"
+msgstr "العودة لتسجيل الدخول"
+
+msgid "Sign-in cancelled"
+msgstr "تم إلغاء تسجيل الدخول"
+
+msgid "You cancelled the sign-in. You can try again or use another method."
+msgstr ""
+"لقد ألغيت تسجيل الدخول. يمكنك المحاولة مرة أخرى أو استخدام طريقة أخرى."

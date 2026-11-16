@@ -69,6 +69,14 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django.contrib.staticfiles",
     "anymail",  # SendGrid HTTP API backend (works on PythonAnywhere free tier)
+    # Social login (internest_core/adapters.py). Only the providers below are installed; keys come from .env.
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.linkedin_oauth2",
+    "allauth.socialaccount.providers.github",
+    "allauth.socialaccount.providers.microsoft",
     "internest_core.apps.InternestCoreConfig",
     "internest_skills.apps.InternestSkillsConfig",
     "internest_lounge.apps.InternestLoungeConfig",
@@ -90,6 +98,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     # Internest: per-IP / per-user limits on login, signup, password reset and uploads.
     "internest_core.ratelimit.RateLimitMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -115,6 +124,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "internest_core.context_processors.skill_gate",
                 "internest_core.context_processors.site_contact",
+                "internest_core.context_processors.social_providers",
             ],
         },
     },
@@ -176,6 +186,44 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_REDIRECT_URL = "home_redirect"
 LOGIN_URL = "login_or_signup"
 LOGOUT_REDIRECT_URL = "landing"
+
+# --- (5b) Social login (django-allauth) ---
+# Keep Django's ModelBackend as the only backend: existing code calls login(request, user) without a backend and allauth
+# falls back to ModelBackend. Credentials are read from .env; a provider with a missing key is simply not offered.
+SOCIALACCOUNT_ADAPTER = "internest_core.adapters.SocialAccountAdapter"
+ACCOUNT_ADAPTER = "internest_core.adapters.AccountAdapter"
+ACCOUNT_EMAIL_VERIFICATION = "none"          # Internest verifies student emails itself (OTP); allauth's flow is unused
+ACCOUNT_LOGIN_METHODS = {"username"}
+SOCIALACCOUNT_LOGIN_ON_GET = True            # one click: straight to the provider, no confirmation page
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_STORE_TOKENS = False           # we never call the provider again, so we never keep its tokens
+# Auto-connect to an existing account by email ONLY when the provider vouches for that email (allauth checks
+# `verified`; the adapter adds the Internest-side checks). Unverified provider emails never link to anything.
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+SOCIAL_LOGIN_PROVIDER_ORDER = ("google", "linkedin_oauth2", "github", "microsoft")  # Google first (primary button)
+
+
+def _social_app(client_id_var: str, secret_var: str) -> dict:
+    client_id, secret = os.getenv(client_id_var, ""), os.getenv(secret_var, "")
+    return {"APP": {"client_id": client_id, "secret": secret, "key": ""}} if client_id and secret else {}
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {**_social_app("GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"), "SCOPE": ["profile", "email"], "AUTH_PARAMS": {"access_type": "online"}},
+    "linkedin_oauth2": {**_social_app("LINKEDIN_CLIENT_ID", "LINKEDIN_CLIENT_SECRET"), "SCOPE": ["openid", "profile", "email"]},
+    "github": {**_social_app("GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"), "SCOPE": ["user:email", "read:user"]},
+    # "common" accepts university (.edu.eg, work/school) and personal Microsoft accounts.
+    "microsoft": {**_social_app("MICROSOFT_CLIENT_ID", "MICROSOFT_CLIENT_SECRET"), "TENANT": os.getenv("MICROSOFT_TENANT", "common"), "SCOPE": ["User.Read"]},
+}
+# Cookies: the session and CSRF cookies are never readable from JavaScript (all page scripts take the token from the DOM),
+# and stay SameSite=Lax so the provider's redirect back to /oauth/<provider>/login/callback/ keeps the session.
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
 
 # --- (6) Email (Gmail SMTP) ---
 # .env is loaded into os.environ above by environ.Env.read_env().

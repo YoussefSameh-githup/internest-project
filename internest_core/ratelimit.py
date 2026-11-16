@@ -16,6 +16,7 @@ RULES = {
     "resend_verification": (5, 60 * 60),
     "certificate_submit": (10, 60 * 60),
     "checkout": (10, 60 * 60),  # payment receipt uploads
+    "social_start": (20, 15 * 60),  # "Continue with Google / LinkedIn / GitHub / Microsoft" clicks
 }
 
 

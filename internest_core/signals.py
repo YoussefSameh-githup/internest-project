@@ -85,7 +85,7 @@ def sync_education_from_cv(sender, instance, created, update_fields=None, **kwar
 @receiver(user_logged_in)
 def re_verify_emails_on_login(sender, request, user, **kwargs):
     """Every login resets verified flags + issues fresh OTPs so the student
-    must re-confirm ownership of their personal/university emails."""
+    must re-confirm ownership of their personal/university emails (except an address a social provider just vouched for)."""
     from .email_helpers import issue_and_send_verification  # local: avoid circular import
 
     try:
@@ -93,11 +93,13 @@ def re_verify_emails_on_login(sender, request, user, **kwargs):
     except StudentProfile.DoesNotExist:
         return
 
+    # A social login whose provider vouched for this very address (see SocialAccountAdapter.pre_social_login) keeps it verified.
+    vouched = getattr(request, "social_verified_emails", set())
     touched = False
-    if profile.personal_email and profile.personal_email_verified_at is not None:
+    if profile.personal_email and profile.personal_email_verified_at is not None and profile.personal_email.lower() not in vouched:
         profile.personal_email_verified_at = None
         touched = True
-    if profile.university_email and profile.university_email_verified_at is not None:
+    if profile.university_email and profile.university_email_verified_at is not None and profile.university_email.lower() not in vouched:
         profile.university_email_verified_at = None
         touched = True
 

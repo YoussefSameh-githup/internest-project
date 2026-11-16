@@ -1,0 +1,10 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Sign-in cancelled" %} — Internest{% endblock %}
+
+{% block content %}
+{% trans "Sign-in cancelled" as t %}{% trans "You cancelled the sign-in. You can try again or use another method." as txt %}{% trans "Back to sign in" as label %}
+{% url 'login_or_signup' as url %}
+{% include "components/error_page.html" with code="" emoji="↩️" title=t text=txt home_url=url home_label=label %}
+{% endblock %}

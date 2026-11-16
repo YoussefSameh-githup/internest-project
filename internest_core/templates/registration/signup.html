@@ -49,6 +49,8 @@
                 </button>
             </form>
 
+            {% include "components/social_auth_buttons.html" with role="student" %}
+
             <p class="text-muted mt-6 text-center" style="font-size: var(--text-sm);">
                 {% trans "Already have an account?" %} <a href="{% url 'login' %}" class="fw-bold">{% trans "Sign in" %}</a>
             </p>

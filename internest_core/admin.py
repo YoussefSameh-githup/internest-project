@@ -1,3 +1,5 @@
+from allauth.account.models import EmailAddress
+from allauth.socialaccount.models import SocialAccount, SocialApp, SocialToken
 from django.contrib import admin, messages
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
@@ -84,6 +86,42 @@ admin.site.unregister(Site)
 @admin.register(Site)
 class SiteAdmin(BaseSiteAdmin, ModelAdmin):
     pass
+
+
+# Social login (django-allauth) registers plain admins; re-register them on the Unfold theme like the built-in ones.
+for _model in (EmailAddress, SocialAccount, SocialApp, SocialToken):
+    if admin.site.is_registered(_model):
+        admin.site.unregister(_model)
+
+
+@admin.register(EmailAddress)
+class EmailAddressAdmin(ModelAdmin):
+    list_display = ("email", "user", "verified", "primary")
+    list_filter = ("verified", "primary")
+    search_fields = ("email", "user__username")
+    raw_id_fields = ("user",)
+
+
+@admin.register(SocialAccount)
+class SocialAccountAdmin(ModelAdmin):
+    """Which provider identity is linked to which Internest user (no tokens are stored)."""
+    list_display = ("user", "provider", "uid", "last_login", "date_joined")
+    list_filter = ("provider",)
+    search_fields = ("user__username", "user__email", "uid")
+    raw_id_fields = ("user",)
+    readonly_fields = ("last_login", "date_joined")
+
+
+@admin.register(SocialApp)
+class SocialAppAdmin(ModelAdmin):
+    """Unused: provider keys are read from .env (SOCIALACCOUNT_PROVIDERS), not from this table."""
+    list_display = ("name", "provider", "client_id")
+
+
+@admin.register(SocialToken)
+class SocialTokenAdmin(ModelAdmin):
+    list_display = ("account", "app", "expires_at")
+    raw_id_fields = ("account", "app")
 
 
 @admin.register(LogEntry)

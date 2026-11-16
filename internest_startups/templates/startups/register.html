@@ -24,6 +24,8 @@
                 <button type="submit" class="btn btn--primary btn--lg btn--block"><i class="bi bi-person-plus"></i> {% trans "Create startup account" %}</button>
             </form>
 
+            {% include "components/social_auth_buttons.html" with role="partner" %}
+
             <p class="text-muted text-center mt-5 mb-0">
                 {% trans "Already have an account?" %} <a href="{% url 'login' %}">{% trans "Log in with your email" %}</a>
             </p>

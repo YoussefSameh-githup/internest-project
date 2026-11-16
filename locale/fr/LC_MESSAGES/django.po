@@ -1244,3 +1244,50 @@ msgstr ""
 
 msgid "Contact & support"
 msgstr "Contact et assistance"
+
+#, python-format
+msgid "Continue with %(name)s"
+msgstr "Continuer avec %(name)s"
+
+msgid ""
+"An Internest account already uses this email. Sign in with your password "
+"(and verify the email) first, then try again."
+msgstr ""
+"Un compte Internest utilise déjà cet e-mail. Connectez-vous d'abord avec "
+"votre mot de passe (et vérifiez l'e-mail), puis réessayez."
+
+#, python-format
+msgid ""
+"We couldn't sign you in with %(provider)s. Please try again or use another "
+"method."
+msgstr ""
+"Impossible de vous connecter avec %(provider)s. Veuillez réessayer ou "
+"utiliser une autre méthode."
+
+#, python-format
+msgid ""
+"%(provider)s did not share an email address with us. Use another sign-in "
+"method."
+msgstr ""
+"%(provider)s ne nous a pas communiqué d'adresse e-mail. Utilisez une autre "
+"méthode de connexion."
+
+msgid "Sign-in failed"
+msgstr "Échec de la connexion"
+
+msgid ""
+"We couldn't complete the sign-in. Please try again or use another method."
+msgstr ""
+"La connexion n'a pas pu aboutir. Veuillez réessayer ou utiliser une autre "
+"méthode."
+
+msgid "Back to sign in"
+msgstr "Retour à la connexion"
+
+msgid "Sign-in cancelled"
+msgstr "Connexion annulée"
+
+msgid "You cancelled the sign-in. You can try again or use another method."
+msgstr ""
+"Vous avez annulé la connexion. Vous pouvez réessayer ou utiliser une autre "
+"méthode."
