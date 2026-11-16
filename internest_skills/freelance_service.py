@@ -12,6 +12,8 @@ from django.db import transaction
 from django.utils import timezone
 
 from .extraction import _clean_str, compact_cv_text, extract_skills_local
+from internest_core.api_monitor import api_feature
+
 from .llm import LLMUnavailable, chat_json, llm_enabled
 from .models import Skill, StudentFreelanceGig, StudentSkill
 from .taxonomy import TaxonomyIndex
@@ -45,8 +47,9 @@ def parse_gig(platform: str, link: str, text: str) -> dict:
     index = TaxonomyIndex(skills)
     if llm_enabled():
         try:
-            data = chat_json(_PROMPT, f"Known: {', '.join(s.name for s in skills)}\nPlatform: {platform}\nLink: {link}\n"
-                                      f"Text:\n{compact_cv_text(text)[:8000]}", max_tokens=700, timeout=45)
+            with api_feature("Freelance Gig Analysis"):
+                data = chat_json(_PROMPT, f"Known: {', '.join(s.name for s in skills)}\nPlatform: {platform}\nLink: {link}\n"
+                                          f"Text:\n{compact_cv_text(text)[:8000]}", max_tokens=700, timeout=45)
             names = data.get("extracted_skills") if isinstance(data.get("extracted_skills"), list) else []
             matched = []
             for name in names:

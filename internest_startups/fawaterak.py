@@ -6,6 +6,8 @@ Fawaterak dashboard and activates it with the "Payment received → activate Pro
 import logging
 
 import httpx
+
+from internest_core.api_monitor import monitored_api_call
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -33,8 +35,9 @@ def create_invoice_link(order, item_name: str, return_urls: dict) -> tuple[str, 
         "payLoad": {"order_id": order.pk},
     }
     try:
-        resp = httpx.post(f"{settings.FAWATERAK_BASE_URL.rstrip('/')}/api/v2/createInvoiceLink", json=payload, timeout=20,
-                          headers={"Authorization": f"Bearer {settings.FAWATERAK_API_KEY}", "Content-Type": "application/json"})
+        resp = monitored_api_call("Fawaterak", "Payment invoice link", httpx.post,
+                                  f"{settings.FAWATERAK_BASE_URL.rstrip('/')}/api/v2/createInvoiceLink", json=payload, timeout=20,
+                                  headers={"Authorization": f"Bearer {settings.FAWATERAK_API_KEY}", "Content-Type": "application/json"})
         resp.raise_for_status()
         data = resp.json().get("data") or {}
     except (httpx.HTTPError, ValueError) as exc:

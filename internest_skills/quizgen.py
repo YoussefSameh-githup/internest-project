@@ -6,6 +6,8 @@ import re
 
 from django.db import transaction
 
+from internest_core.api_monitor import api_feature
+
 from .llm import LLM_ERRORS, chat_json, llm_enabled
 from .models import ChallengeItem, Discipline, SubSkill
 
@@ -130,8 +132,9 @@ def validate_quiz_reply(data) -> None:
 
 def request_raw_items(skill, count=GENERATE_BATCH, avoid=(), chat=None) -> list:
     """One trip down the provider chain → the raw 'q' list of the first provider whose reply is usable."""
-    data = (chat or chat_json)(build_system_prompt(skill), build_user_prompt(skill, count, avoid), max_tokens=MAX_TOKENS,
-                               timeout=60, validate=validate_quiz_reply)
+    with api_feature("Question Generation"):
+        data = (chat or chat_json)(build_system_prompt(skill), build_user_prompt(skill, count, avoid), max_tokens=MAX_TOKENS,
+                                   timeout=60, validate=validate_quiz_reply)
     return data["q"]
 
 

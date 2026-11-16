@@ -14,6 +14,8 @@ from django.db import IntegrityError, transaction
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
+from internest_core.api_monitor import api_feature
+
 from .llm import LLM_ERRORS, chat_json, llm_enabled
 from .models import Discipline, Skill, StudentSkill
 from .taxonomy import TaxonomyIndex
@@ -206,7 +208,8 @@ def compact_cv_text(text: str) -> str:
 def analyze_cv_llm(text: str, skills) -> CVAnalysis:
     cv = compact_cv_text(text)[:LLM_INPUT_CHARS]
     known = ", ".join(s.name for s in skills)
-    data = chat_json(_SYSTEM_PROMPT, f"Known: {known}\nCV:\n{cv}", max_tokens=700, timeout=LLM_TIMEOUT)
+    with api_feature("CV Analysis"):
+        data = chat_json(_SYSTEM_PROMPT, f"Known: {known}\nCV:\n{cv}", max_tokens=700, timeout=LLM_TIMEOUT)
     names = data.get("extracted_skills")
     if not isinstance(names, list):
         raise ValueError("LLM response missing 'extracted_skills' list")

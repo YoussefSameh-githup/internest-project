@@ -13,6 +13,8 @@ import httpx
 import openai
 from django.conf import settings
 
+from internest_core.api_monitor import current_feature, mask_secrets, monitored_api_call
+
 logger = logging.getLogger(__name__)
 
 GEMINI_DEFAULT_MODEL = "gemini-2.5-flash"
@@ -28,9 +30,6 @@ class LLMUnavailable(RuntimeError):
     """The LLM could not produce a usable answer; use the local fallback."""
 
 
-_SECRET = re.compile(r"(sk-|AIza|gsk_)[A-Za-z0-9_\-]{8,}|(key=)[A-Za-z0-9_\-]{8,}")
-
-
 def describe_error(exc) -> str:
     """Why a call failed, in one line: HTTP status + the provider's response body (secrets masked)."""
     if isinstance(exc, openai.APIStatusError):
@@ -39,7 +38,7 @@ def describe_error(exc) -> str:
             body = exc.response.text
         except Exception:  # streamed / unreadable body
             body = str(getattr(exc, "body", "") or "")
-        body = _SECRET.sub(lambda m: (m.group(1) or m.group(2)) + "***", " ".join(body.split()))[:600]
+        body = mask_secrets(" ".join(body.split()))[:600]
         return f"HTTP {exc.status_code} {type(exc).__name__}: {body or exc.message}"
     if isinstance(exc, openai.APITimeoutError):
         return "timeout (no reply before SKILLS_LLM_TIMEOUT)"
@@ -55,6 +54,14 @@ class Provider:
     api_key: str
     base_url: str
     model: str
+
+
+_PROVIDER_NAMES = {"GEMINI_API_KEY": "Google Gemini", "API_KEY_1": "AgentRouter", "API_KEY_2": "Backup LLM", "AZURE_OPENAI": "Azure OpenAI"}
+
+
+def provider_name(provider: Provider) -> str:
+    """Human name for admin alerts ("Google Gemini"); unknown labels are shown as they are."""
+    return _PROVIDER_NAMES.get(provider.label, provider.label)
 
 
 def providers() -> list[Provider]:
@@ -162,7 +169,8 @@ def _ask(provider: Provider, system: str, user: str, max_tokens: int, timeout: f
     if "googleapis.com" in provider.base_url:
         # Gemini 2.5 "thinking" tokens count against max_tokens and used to cut the JSON short; leave headroom.
         max_tokens += GEMINI_THINKING_HEADROOM
-    resp = _client(timeout, provider, max_retries).chat.completions.create(
+    resp = monitored_api_call(
+        provider_name(provider), current_feature() or "LLM request", _client(timeout, provider, max_retries).chat.completions.create,
         model=provider.model,
         response_format={"type": "json_object"},
         max_tokens=max_tokens,

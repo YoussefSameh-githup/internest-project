@@ -15,6 +15,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.db import transaction
 
+from internest_core.api_monitor import api_feature, monitored_api_call
 from internest_skills import llm
 from internest_skills.extraction import ExtractedSkill, save_claimed_skills
 from internest_skills.models import Skill, StudentSkill
@@ -284,7 +285,8 @@ def polish_cv(current: dict, transcript: str = "") -> dict:
     current = clean_cv(current)
     known = ", ".join(Skill.objects.filter(is_active=True).values_list("name", flat=True)[:400])
     payload = f"Known: {known}\nCURRENT: {json.dumps(current, ensure_ascii=False)}\nVOICE: {transcript or '(none)'}"
-    polished = clean_cv(llm.chat_json(_POLISH_PROMPT, payload, max_tokens=2500, timeout=45))
+    with api_feature("CV Builder AI Polish"):
+        polished = clean_cv(llm.chat_json(_POLISH_PROMPT, payload, max_tokens=2500, timeout=45))
     for field in PERSONAL_FIELDS:  # contacts typed by the student always win
         polished[field] = current[field] or polished[field]
     polished["skills"], _matched = standardize_skills(polished["skills"])
@@ -320,7 +322,9 @@ def transcribe(audio: bytes, filename: str, content_type: str) -> str:
         raise VoiceUnavailable("No transcription key configured")
     for i, provider in enumerate(chain):
         try:
-            resp = llm._client(60, provider, 0 if i + 1 < len(chain) else 1).audio.transcriptions.create(
+            resp = monitored_api_call(
+                llm.provider_name(provider), "Voice-to-CV Transcription",
+                llm._client(60, provider, 0 if i + 1 < len(chain) else 1).audio.transcriptions.create,
                 model=provider.model, file=(filename, audio, content_type), prompt=WHISPER_PROMPT, temperature=0,
             )
             return (getattr(resp, "text", "") or "").strip()

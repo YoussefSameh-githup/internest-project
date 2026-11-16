@@ -127,6 +127,8 @@ def relate_skill_ai(skill: Skill) -> int:
 
 
 def _relate_skill_ai(skill: Skill) -> int:
+    from internest_core.api_monitor import api_feature
+
     from .llm import chat_json, llm_enabled
 
     if not llm_enabled():
@@ -135,7 +137,8 @@ def _relate_skill_ai(skill: Skill) -> int:
     if not candidates:
         return 0
     by_name = {c.name.lower(): c for c in candidates}
-    data = chat_json(_AI_PROMPT, f"TARGET: {skill.name}\nKNOWN: {', '.join(c.name for c in candidates)}", max_tokens=400)
+    with api_feature("Skill Matching (semantic)"):
+        data = chat_json(_AI_PROMPT, f"TARGET: {skill.name}\nKNOWN: {', '.join(c.name for c in candidates)}", max_tokens=400)
     written = 0
     for item in (data.get("r") or [])[:15]:
         if not isinstance(item, dict):

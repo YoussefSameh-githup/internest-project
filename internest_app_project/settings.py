@@ -309,6 +309,11 @@ SALES_EMAIL = env("SALES_EMAIL", default="sales@internest.app")
 SUPPORT_PHONE = env("SUPPORT_PHONE", default="01113999387")
 SUPPORT_EMAIL = env("SUPPORT_EMAIL", default="engineerthe973@gmail.com")
 
+# API health alerts (internest_core/api_monitor.py): failures and low balance go to this admin address ONLY.
+ADMIN_ALERT_EMAIL = os.getenv("ADMIN_ALERT_EMAIL", "engineerthe973@gmail.com")
+API_LOW_BALANCE_THRESHOLD = float(os.getenv("API_LOW_BALANCE_THRESHOLD", "2.0"))
+API_ALERT_COOLDOWN_SECONDS = 30 * 60  # one email per (provider, alert type) per window
+
 # --- Admin panel (django-unfold 0.81.0: last line we pin that runs on Python 3.10, used on PythonAnywhere) ---
 from django.templatetags.static import static  # noqa: E402
 from django.urls import reverse, reverse_lazy  # noqa: E402

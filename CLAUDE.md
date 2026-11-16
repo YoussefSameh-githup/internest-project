@@ -19,6 +19,10 @@ On every coding, UI or marketing prompt, use the relevant skills in `.claude/ski
 - **Ultra-brief terminal replies:** result, what changed, what to run. No recaps, no filler. Reply in Egyptian Arabic to the user.
 - Complete drop-in code only; no placeholders or truncation.
 
+## External APIs
+Every external API call (AI, payments, any future paid or free API) MUST go through `internest_core/api_monitor.py` (`monitored_api_call`, `@monitored`, `api_feature`, `BaseMonitoredAPIClient`).
+It emails failures and low-balance warnings to `ADMIN_ALERT_EMAIL` only (30-min cooldown); add `check_api_balance(...)` for any API with a balance endpoint. Test with `python manage.py test_api_alert`.
+
 ## Delivery workflow
 Implement → add tests → AR/EN i18n (`scripts/i18n_catalog.py apply|check|compile`) → run the full suite → commit → `git push origin main`. End replies with the PythonAnywhere steps (`git pull`, plus migrate / pip install / collectstatic / compilemessages when needed, then Reload).
 
