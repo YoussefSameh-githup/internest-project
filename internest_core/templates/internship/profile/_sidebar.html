@@ -3,7 +3,7 @@
 <aside class="px-side" aria-label="{% trans 'Your profile' %}">
     <section class="px-me">
         <div class="px-me__top">
-            {% include "components/avatar.html" with picture=profile.profile_picture name=user.get_full_name|default:user.username verified=profile.is_personal_email_verified %}
+            {% include "components/avatar.html" with picture=profile.profile_picture name=user.get_full_name|default:user.username verified=profile.is_personal_email_verified zoom=True %}
             <div class="px-me__id">
                 <h1 class="px-name">{{ user.get_full_name|default:user.username }}</h1>
                 <span class="px-handle"><bdi dir="ltr">@{{ user.username }}</bdi></span>
@@ -11,8 +11,8 @@
         </div>
 
         <p class="px-meta">
-            {% if profile.university %}<span><i class="bi bi-bank"></i> <span>{{ profile.university }}</span></span>{% endif %}
-            {% if profile.major %}<span><i class="bi bi-book"></i> <span>{{ profile.major }}</span></span>{% endif %}
+            {% if display_university %}<span><i class="bi bi-bank"></i> <span>{{ display_university }}</span></span>{% endif %}
+            {% if display_major %}<span><i class="bi bi-book"></i> <span>{{ display_major }}</span></span>{% endif %}
             {% if expected_graduation %}<span><i class="bi bi-mortarboard"></i> <span>{% trans "Graduation" %}: {% if expected_graduation == "Present" %}{% trans "still studying" %}{% else %}<bdi dir="ltr">{{ expected_graduation }}</bdi>{% if graduation_expected %} ({% trans "expected" %}){% endif %}{% endif %}</span></span>
             {% elif profile.study_level %}<span><i class="bi bi-calendar3"></i> <span>{{ profile.get_study_level_display }}</span></span>{% endif %}
         </p>

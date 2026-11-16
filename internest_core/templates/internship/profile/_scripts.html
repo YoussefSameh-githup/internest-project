@@ -51,6 +51,17 @@
     });
   });
 
+  // Avatar lightbox: opens the full photo; ×, a click outside the photo, or Escape (native) closes it.
+  var lightbox = document.getElementById("photo-lightbox");
+  if (lightbox) {
+    var lightboxImg = document.getElementById("photo-lightbox-img");
+    document.querySelectorAll("[data-lightbox]").forEach(function (b) {
+      b.addEventListener("click", function () { lightboxImg.src = b.dataset.lightbox; lightbox.showModal(); });
+    });
+    lightbox.addEventListener("click", function (e) { if (e.target !== lightboxImg) lightbox.close(); });
+    lightbox.addEventListener("close", function () { lightboxImg.removeAttribute("src"); });
+  }
+
   // "Add / verify a skill" dialog
   document.querySelectorAll("[data-open-dialog]").forEach(function (b) {
     b.addEventListener("click", function () { document.getElementById(b.dataset.openDialog).showModal(); });

@@ -66,11 +66,14 @@ class ProfileForm(forms.ModelForm):
             'talent_pool_visible': forms.CheckboxInput(),
         }
         
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, education_locked=False, **kwargs):
         instance = kwargs.get('instance')
         if instance and not kwargs.get('initial'):
             kwargs['initial'] = {'personal_email': instance.personal_email}
         super().__init__(*args, **kwargs)
+        if education_locked:  # the CV Builder owns university/major; a disabled field ignores posted values
+            for name in ('university', 'major'):
+                self.fields[name].disabled = True
 
     def clean_personal_email(self):
         email = self.cleaned_data.get('personal_email')

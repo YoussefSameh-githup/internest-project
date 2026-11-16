@@ -148,6 +148,24 @@ def format_period(start: str, end: str, is_current: bool = False, today=None) ->
     return " – ".join(v for v in (_label(start) if start else "", end_text) if v)
 
 
+def _period_key(value) -> tuple:
+    """Sortable (year, month) from "YYYY-MM" / "YYYY"; (0, 0) when empty. A bare year counts as December."""
+    year, _sep, month = (value or "").partition("-")
+    return (int(year), int(month or 12)) if year.isdigit() else (0, 0)
+
+
+def primary_education(education):
+    """The degree the student is on now: a current entry, else the one that ends last (earlier rows win ties).
+
+    Entries with neither a university nor a major are ignored. Returns None when there is nothing to pick."""
+    rows = [e for e in education or [] if isinstance(e, dict) and (e.get("university") or e.get("major"))]
+    if not rows:
+        return None
+    best = max(enumerate(rows), key=lambda pair: (bool(pair[1].get("is_current")),
+                                                 _period_key(pair[1].get("end_date") or pair[1].get("start_date")), -pair[0]))
+    return best[1]
+
+
 def _education_row(raw) -> dict:
     row = {"university": _text(raw.get("university"), 120), "major": _text(raw.get("major"), 120),
            "start_date": month_year(raw.get("start_date")),

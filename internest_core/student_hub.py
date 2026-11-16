@@ -180,10 +180,38 @@ def _portfolio(profile):
     }
 
 
+def sync_profile_education(profile, education):
+    """CV Builder education is the single source of truth: copy its primary entry to StudentProfile.university / major.
+
+    Returns True when the profile changed. A CV without a usable education entry never blanks the profile."""
+    from internest_students.cv_builder_service import primary_education
+
+    primary = primary_education(education)
+    if not primary:
+        return False
+    profile.refresh_from_db()  # never save a stale copy over concurrent edits
+    university, major = primary.get("university", ""), primary.get("major", "")
+    if (profile.university, profile.major) == (university, major):
+        return False
+    profile.university, profile.major = university, major
+    profile.calculate_completion()  # saves; university/major count towards the readiness score
+    return True
+
+
+@db_safe(None)
+def cv_primary_education(profile):
+    """The student's primary CV Builder education entry (dict) or None."""
+    from internest_students.cv_builder_service import primary_education
+    from internest_students.models import StudentCV
+
+    record = StudentCV.objects.filter(student=profile).only("data").first()
+    return primary_education((record.data or {}).get("education")) if record else None
+
+
 @db_safe(dict)
 def _cv_details(profile):
     """The saved CV record, its education timeline, expected graduation and a GitHub link."""
-    from internest_students.cv_builder_service import clean_url, format_period
+    from internest_students.cv_builder_service import clean_url, format_period, primary_education
     from internest_students.models import StudentCV
 
     record = StudentCV.objects.filter(student=profile).exclude(data={}).first()
@@ -191,8 +219,8 @@ def _cv_details(profile):
     out = {"cv": record, "education": [], "expected_graduation": "", "graduation_expected": False, "github_url": ""}
     for e in cv.get("education") or []:
         out["education"].append({**e, "period": format_period(e.get("start_date", ""), e.get("end_date", ""), e.get("is_current", False))})
-    graduation = next((e for e in cv.get("education") or [] if e.get("end_date") or e.get("is_current")), None)
-    if graduation:
+    graduation = primary_education(cv.get("education"))
+    if graduation and (graduation.get("end_date") or graduation.get("is_current")):
         if graduation.get("is_current"):
             out["expected_graduation"] = "Present"
         else:
@@ -239,4 +267,10 @@ def profile_context(request, profile, form):
         ctx.update(_portfolio(profile))
         ctx.update(_cv_details(profile))
         ctx.update(_skill_forms(profile))
+    # Out of sync (CV edited elsewhere, old profile row): show the CV's degree, not the stale profile fields.
+    from internest_students.cv_builder_service import primary_education
+
+    primary = primary_education(ctx["education"]) or {}
+    ctx.update({"education_locked": bool(primary), "display_university": primary.get("university") or profile.university,
+                "display_major": primary.get("major") or profile.major})
     return ctx

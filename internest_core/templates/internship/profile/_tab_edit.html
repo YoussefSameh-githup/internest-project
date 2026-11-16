@@ -11,8 +11,9 @@
                     {% include "internship/_pf_field.html" with field=form.personal_email %}
                     {% include "internship/_pf_field.html" with field=form.university_email %}
                     {% include "internship/_pf_field.html" with field=form.phone_number %}
-                    {% include "internship/_pf_field.html" with field=form.university %}
-                    {% include "internship/_pf_field.html" with field=form.major %}
+                    {% trans "Synced from your CV education. Change it in the CV builder." as edu_hint %}{% if education_locked %}{% firstof edu_hint as edu_help %}{% endif %}
+                    {% include "internship/_pf_field.html" with field=form.university help=edu_help %}
+                    {% include "internship/_pf_field.html" with field=form.major help=edu_help %}
                     {% include "internship/_pf_field.html" with field=form.study_level %}
                 </div>
             </div>

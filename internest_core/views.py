@@ -31,7 +31,7 @@ from .models import (
     DiscountCode, StudentEnrollment,
     EmailVerification, GigExperience, RATING_CHOICES,
 )
-from .student_hub import hub_header, open_invitations, profile_context, skill_quizzes, student_applications
+from .student_hub import cv_primary_education, hub_header, open_invitations, profile_context, skill_quizzes, student_applications
 from .forms import (
     ProfileForm, PartnerInternshipForm, PartnerCourseForm,
     PartnerProfileEditForm,
@@ -387,10 +387,11 @@ def profile_view(request):
         return redirect("partner_dashboard")
 
     profile, _created = StudentProfile.objects.get_or_create(user=request.user)
+    education_locked = cv_primary_education(profile) is not None
     if request.method == "POST":
         old_personal = profile.personal_email
         old_university = profile.university_email
-        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        form = ProfileForm(request.POST, request.FILES, instance=profile, education_locked=education_locked)
         if form.is_valid():
             profile = form.save()
             # Trigger OTP when an email changes; reset verified flag on that slot.
@@ -413,7 +414,7 @@ def profile_view(request):
                 return redirect("verify_email")
             return redirect("profile")
     else:
-        form = ProfileForm(instance=profile)
+        form = ProfileForm(instance=profile, education_locked=education_locked)
 
     context = get_user_context(request)
     context.update(profile_context(request, profile, form))

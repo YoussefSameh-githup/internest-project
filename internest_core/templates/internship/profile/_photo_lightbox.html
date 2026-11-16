@@ -1,0 +1,6 @@
+{% load i18n %}
+{# Full-size profile photo. Opened by [data-lightbox] buttons; closes on ×, a click outside the photo, or Escape. #}
+<dialog class="px-lightbox" id="photo-lightbox" aria-label="{% trans 'Profile photo' %}">
+    <button type="button" class="px-lightbox__close" data-lightbox-close aria-label="{% trans 'Close' %}">&times;</button>
+    <img class="px-lightbox__img" id="photo-lightbox-img" src="" alt="{% trans 'Profile photo' %}">
+</dialog>

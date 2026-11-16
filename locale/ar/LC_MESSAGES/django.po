@@ -5918,3 +5918,12 @@ msgstr ""
 
 msgid "View & assess my skills"
 msgstr "عرض مهاراتي وتقييمها"
+
+msgid "View profile photo"
+msgstr "عرض صورة الملف الشخصي"
+
+msgid "Profile photo"
+msgstr "صورة الملف الشخصي"
+
+msgid "Synced from your CV education. Change it in the CV builder."
+msgstr "مُزامَن مع تعليمك في السيرة الذاتية. عدّله من منشئ السيرة الذاتية."

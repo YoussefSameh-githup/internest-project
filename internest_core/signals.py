@@ -72,6 +72,16 @@ def send_new_internship_notification(sender, instance, created, **kwargs):
         logger.exception("Failed to send new-internship notification")
 
 
+@receiver(post_save, sender="internest_students.StudentCV")
+def sync_education_from_cv(sender, instance, created, update_fields=None, **kwargs):
+    """Creating, editing or deleting an education entry in the CV Builder updates StudentProfile.university / major."""
+    if update_fields is not None and "data" not in update_fields:
+        return  # AI-usage counters etc.
+    from .student_hub import sync_profile_education
+
+    sync_profile_education(instance.student, (instance.data or {}).get("education"))
+
+
 @receiver(user_logged_in)
 def re_verify_emails_on_login(sender, request, user, **kwargs):
     """Every login resets verified flags + issues fresh OTPs so the student

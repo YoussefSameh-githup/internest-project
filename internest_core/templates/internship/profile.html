@@ -39,6 +39,7 @@
 </section>
 
 {% include "internship/profile/_skill_dialog.html" %}
+{% if profile.profile_picture %}{% include "internship/profile/_photo_lightbox.html" %}{% endif %}
 {% endblock %}
 
 {% block extra_scripts %}{% include "internship/profile/_scripts.html" %}{% endblock %}

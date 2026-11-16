@@ -1,4 +1,8 @@
-{# Profile picture or initial in a fixed square, optional verified tick. Context: picture, name, verified (bool). #}{% load i18n %}<div class="px-avatar">
-    <span class="px-avatar__img">{% if picture %}<img src="{{ picture.url }}" alt="" width="84" height="84">{% else %}{{ name|slice:":1"|upper }}{% endif %}</span>
+{# Profile picture or initial in a fixed square, optional verified tick. Context: picture, name, verified (bool), zoom (bool: photo opens the lightbox). #}{% load i18n %}<div class="px-avatar">
+    {% if picture and zoom %}
+        <button type="button" class="px-avatar__btn" data-lightbox="{{ picture.url }}" aria-haspopup="dialog" aria-label="{% trans 'View profile photo' %}"><span class="px-avatar__img"><img src="{{ picture.url }}" alt="" width="84" height="84"></span></button>
+    {% else %}
+        <span class="px-avatar__img">{% if picture %}<img src="{{ picture.url }}" alt="" width="84" height="84">{% else %}{{ name|slice:":1"|upper }}{% endif %}</span>
+    {% endif %}
     {% if verified %}<span class="px-avatar__check" title="{% trans 'Verified' %}"><i class="bi bi-check-lg"></i></span>{% endif %}
 </div>
