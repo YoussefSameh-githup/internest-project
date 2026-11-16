@@ -30,6 +30,7 @@
             <a href="{% url 'privacy' %}" {% if page == 'privacy' %}aria-current="page"{% endif %}><i class="bi bi-shield-lock"></i> {% trans "Privacy policy" %}</a>
             <a href="{% url 'terms' %}" {% if page == 'terms' %}aria-current="page"{% endif %}><i class="bi bi-file-text"></i> {% trans "Terms & conditions" %}</a>
             <a href="{% url 'refund_policy' %}" {% if page == 'refund' %}aria-current="page"{% endif %}><i class="bi bi-arrow-counterclockwise"></i> {% trans "Refund & cancellation policy" %}</a>
+            <a href="{% url 'contact' %}" {% if page == 'contact' %}aria-current="page"{% endif %}><i class="bi bi-headset"></i> {% trans "Contact & support" %}</a>
             <hr>
             <small><i class="bi bi-telephone"></i> <a href="tel:{{ SUPPORT_PHONE_INTL }}" dir="ltr">{{ SUPPORT_PHONE }}</a><br>
                 <i class="bi bi-envelope"></i> <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a><br>

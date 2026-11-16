@@ -7,11 +7,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0b1e4d">
-    <meta name="description" content="{% trans 'Internest — the verified student talent marketplace. Students get real work, startups hire verified talent, universities prove outcomes.' %}">
+    {% trans 'Internest — the verified student talent marketplace. Students get real work, startups hire verified talent, universities prove outcomes.' as site_description %}
+    {% trans "Verified student talent marketplace" as site_tagline %}
+    {% static 'img/internest_logo.jpg' as logo_path %}
+    <meta name="description" content="{{ meta_description|default:site_description }}">
+    {# Signed-in pages are private: keep them out of search results. #}
+    {% if user.is_authenticated %}<meta name="robots" content="noindex, nofollow">{% endif %}
+    <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Internest">
+    <meta property="og:title" content="{{ meta_title|default:'Internest' }} — {{ site_tagline }}">
+    <meta property="og:description" content="{{ meta_description|default:site_description }}">
+    <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ logo_path }}">
+    <meta property="og:locale" content="{{ LANGUAGE_CODE }}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ meta_title|default:'Internest' }} — {{ site_tagline }}">
+    <meta name="twitter:description" content="{{ meta_description|default:site_description }}">
+    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ logo_path }}">
 
     <title>{% block title %}Internest — {% trans "Verified student talent marketplace" %}{% endblock title %}</title>
 
     <link rel="icon" type="image/jpeg" href="{% static 'img/internest_logo.jpg' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/internest_logo.jpg' %}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,6 +66,13 @@
       .nav__cta .nav__cta-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
       .nav__cta .btn, .nav__cta .lang-switcher__toggle { padding-inline: 10px; }
     }
+    </style>
+    <style>
+    .nav__drawer-only { display: none; }
+    .nav__logout { width: 100%; border: 0; background: none; text-align: start; font: inherit; cursor: pointer; }
+    @media (max-width: 900px) { .nav__drawer-only { display: list-item; } }
+    /* A form that was just submitted: its buttons are locked until the page changes (see the submit guard below). */
+    .is-loading { opacity: .65; cursor: progress; pointer-events: none; }
     </style>
     <style>
     .footer__contact { margin-top: 14px; }
@@ -92,6 +117,10 @@
                     <li><a href="{% url 'landing' %}#startups" class="nav__link">{% trans "For startups" %}</a></li>
                     <li><a href="{% url 'university_landing' %}" class="nav__link">{% trans "For universities" %}</a></li>
                     <li><a href="{% url 'landing' %}#how-it-works" class="nav__link">{% trans "How it works" %}</a></li>
+                {% endif %}
+                {# Phones: the bar's Logout button is hidden by the stylesheet, so the drawer carries it (same shared form). #}
+                {% if user.is_authenticated %}
+                    <li class="nav__drawer-only"><button type="submit" form="logout-form" class="nav__link nav__logout"><i class="bi bi-box-arrow-right"></i> {% trans "Logout" %}</button></li>
                 {% endif %}
             </ul>
 
@@ -139,36 +168,7 @@
 
     {% if messages %}
         <div class="flash-stack" id="flashStack">
-            {% for message in messages %}
-                {% if message.tags == 'success' %}{% with icon='bi-check-circle-fill' cls='success' %}
-                <div class="flash flash--{{ cls }}">
-                    <span class="flash__icon"><i class="bi {{ icon }}"></i></span>
-                    <span class="flash__body">{{ message }}</span>
-                    <button class="flash__close" aria-label="{% trans 'Close' %}"><i class="bi bi-x"></i></button>
-                </div>
-                {% endwith %}
-                {% elif message.tags == 'error' or message.tags == 'danger' %}{% with icon='bi-x-circle-fill' cls='error' %}
-                <div class="flash flash--{{ cls }}">
-                    <span class="flash__icon"><i class="bi {{ icon }}"></i></span>
-                    <span class="flash__body">{{ message }}</span>
-                    <button class="flash__close" aria-label="{% trans 'Close' %}"><i class="bi bi-x"></i></button>
-                </div>
-                {% endwith %}
-                {% elif message.tags == 'warning' %}{% with icon='bi-exclamation-triangle-fill' cls='warning' %}
-                <div class="flash flash--{{ cls }}">
-                    <span class="flash__icon"><i class="bi {{ icon }}"></i></span>
-                    <span class="flash__body">{{ message }}</span>
-                    <button class="flash__close" aria-label="{% trans 'Close' %}"><i class="bi bi-x"></i></button>
-                </div>
-                {% endwith %}
-                {% else %}{% with icon='bi-info-circle-fill' cls='info' %}
-                <div class="flash flash--{{ cls }}">
-                    <span class="flash__icon"><i class="bi {{ icon }}"></i></span>
-                    <span class="flash__body">{{ message }}</span>
-                    <button class="flash__close" aria-label="{% trans 'Close' %}"><i class="bi bi-x"></i></button>
-                </div>
-                {% endwith %}{% endif %}
-            {% endfor %}
+            {% for message in messages %}{% include "components/flash.html" %}{% endfor %}
         </div>
     {% endif %}
 
@@ -220,7 +220,7 @@
                         <li><a href="{% url 'privacy' %}">{% trans "Privacy policy" %}</a></li>
                         <li><a href="{% url 'terms' %}">{% trans "Terms & conditions" %}</a></li>
                         <li><a href="{% url 'refund_policy' %}">{% trans "Refund & cancellation policy" %}</a></li>
-                        <li><a href="mailto:{{ SUPPORT_EMAIL }}">{% trans "Contact us" %}</a></li>
+                        <li><a href="{% url 'contact' %}">{% trans "Contact us" %}</a></li>
                     </ul>
                 </div>
             </div>
@@ -253,6 +253,33 @@
             if (!nav || !toggle) return;
             toggle.addEventListener('click', function() {
                 nav.classList.toggle('is-open');
+            });
+        })();
+
+        // Double-submit guard: after a POST form is submitted, lock its buttons so a second click cannot send it twice.
+        // Opt out with data-no-lock. Unlocks on back/forward (bfcache) and after 20s (e.g. a file download keeps the page open).
+        (function() {
+            function unlock(form) {
+                delete form.dataset.submitting;
+                Array.prototype.forEach.call(form.elements, function(el) {
+                    if (el.dataset.locked) { el.disabled = false; el.classList.remove('is-loading'); delete el.dataset.locked; }
+                });
+            }
+            document.addEventListener('submit', function(e) {
+                var form = e.target;
+                if (e.defaultPrevented || form.hasAttribute('data-no-lock') || (form.method || '').toLowerCase() !== 'post') return;
+                if (form.dataset.submitting) { e.preventDefault(); return; }
+                form.dataset.submitting = '1';
+                // Disabled after the browser has read the form, so the clicked button's name/value still gets posted.
+                setTimeout(function() {
+                    Array.prototype.forEach.call(form.elements, function(el) {
+                        if (el.type === 'submit' && !el.disabled) { el.disabled = true; el.dataset.locked = '1'; el.classList.add('is-loading'); }
+                    });
+                }, 0);
+                setTimeout(function() { unlock(form); }, 20000);
+            });
+            window.addEventListener('pageshow', function(e) {
+                if (e.persisted) document.querySelectorAll('form[data-submitting]').forEach(unlock);
             });
         })();
 

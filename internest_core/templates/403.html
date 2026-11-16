@@ -1,0 +1,10 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Access denied" %} — Internest{% endblock %}
+
+{% block content %}
+{% trans "Access denied" as t %}{% trans "You don't have permission to view this page." as txt %}{% trans "Back to home" as home %}
+{% url 'landing' as home_url %}
+{% include "components/error_page.html" with code="403" emoji="🔒" title=t text=txt home_url=home_url home_label=home %}
+{% endblock %}

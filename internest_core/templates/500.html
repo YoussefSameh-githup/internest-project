@@ -1,0 +1,17 @@
+{% load i18n static %}{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as BIDI %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if BIDI %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>{% trans "Something went wrong" %} — Internest</title>
+    <link rel="icon" href="{% static 'img/internest_logo.jpg' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>body { margin: 0; background: #f8fafc; }</style>
+</head>
+<body>
+{# Standalone on purpose: a 500 renders without request context, so it never extends the base layout. #}
+{% trans "Something went wrong" as t %}{% trans "We hit an unexpected problem and our team was notified. Please try again in a few minutes." as txt %}{% trans "Back to home" as home %}
+{% include "components/error_page.html" with code="500" emoji="🛠️" title=t text=txt home_url="/" home_label=home %}
+</body>
+</html>

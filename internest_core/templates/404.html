@@ -1,0 +1,10 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Page not found" %} — Internest{% endblock %}
+
+{% block content %}
+{% trans "Page not found" as t %}{% trans "The page you are looking for doesn't exist or has moved." as txt %}{% trans "Back to home" as home %}
+{% url 'landing' as home_url %}
+{% include "components/error_page.html" with code="404" emoji="🧭" title=t text=txt home_url=home_url home_label=home %}
+{% endblock %}

@@ -1,4 +1,4 @@
-"""Public policy pages (required for payment-gateway approval): privacy, terms, refund & cancellation."""
+"""Public trust pages (required for payment gateways, Google OAuth and universities): privacy, terms, refund, contact."""
 import datetime
 
 from django.shortcuts import render
@@ -20,3 +20,4 @@ def _policy(template, page):
 privacy = _policy("privacy", "privacy")
 terms = _policy("terms", "terms")
 refund_policy = _policy("refund", "refund")
+contact = _policy("contact", "contact")

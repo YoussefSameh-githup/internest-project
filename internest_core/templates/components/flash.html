@@ -1,0 +1,5 @@
+{# One toast in the flash stack. Context: message (django.contrib.messages). #}{% load i18n %}<div class="flash flash--{% if message.tags == 'success' %}success{% elif message.tags == 'error' or message.tags == 'danger' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}">
+    <span class="flash__icon"><i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% elif message.tags == 'error' or message.tags == 'danger' %}bi-x-circle-fill{% elif message.tags == 'warning' %}bi-exclamation-triangle-fill{% else %}bi-info-circle-fill{% endif %}"></i></span>
+    <span class="flash__body">{{ message }}</span>
+    <button class="flash__close" aria-label="{% trans 'Close' %}"><i class="bi bi-x"></i></button>
+</div>

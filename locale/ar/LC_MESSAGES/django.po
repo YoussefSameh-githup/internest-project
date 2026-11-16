@@ -5927,3 +5927,32 @@ msgstr "صورة الملف الشخصي"
 
 msgid "Synced from your CV education. Change it in the CV builder."
 msgstr "مُزامَن مع تعليمك في السيرة الذاتية. عدّله من منشئ السيرة الذاتية."
+
+msgid "Access denied"
+msgstr "الوصول مرفوض"
+
+msgid "You don't have permission to view this page."
+msgstr "ليس لديك صلاحية لعرض هذه الصفحة."
+
+msgid "Session expired"
+msgstr "انتهت صلاحية الجلسة"
+
+msgid "Your form session expired. Go back, refresh the page and try again."
+msgstr "انتهت صلاحية جلسة النموذج. ارجع وحدّث الصفحة وحاول مرة أخرى."
+
+msgid "Page not found"
+msgstr "الصفحة غير موجودة"
+
+msgid "The page you are looking for doesn't exist or has moved."
+msgstr "الصفحة التي تبحث عنها غير موجودة أو تم نقلها."
+
+msgid "Something went wrong"
+msgstr "حدث خطأ ما"
+
+msgid ""
+"We hit an unexpected problem and our team was notified. Please try again in "
+"a few minutes."
+msgstr "واجهنا مشكلة غير متوقعة وتم إبلاغ فريقنا. حاول مرة أخرى بعد دقائق."
+
+msgid "Contact & support"
+msgstr "تواصل معنا والدعم"

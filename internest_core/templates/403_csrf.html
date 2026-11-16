@@ -1,0 +1,10 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Session expired" %} — Internest{% endblock %}
+
+{% block content %}
+{% trans "Session expired" as t %}{% trans "Your form session expired. Go back, refresh the page and try again." as txt %}{% trans "Back to home" as home %}
+{% url 'landing' as home_url %}
+{% include "components/error_page.html" with code="403" emoji="⏱️" title=t text=txt home_url=home_url home_label=home %}
+{% endblock %}
