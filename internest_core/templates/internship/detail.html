@@ -118,7 +118,7 @@
                                                 <i class="bi bi-hourglass-split"></i> {% blocktrans with h=record.cooldown_hours_remaining %}You can retake this skill test in {{ h }} hours{% endblocktrans %}
                                             </span>
                                         {% else %}
-                                            <form method="post" action="{% url 'skills_challenge_start_for_skill' skill.id %}">
+                                            <form method="post" action="{% url 'skills_challenge_start_for_skill' skill.id %}" data-async-task data-async-busy="{% trans 'Preparing your questions…' %}">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn--primary btn--sm"><i class="bi bi-stopwatch"></i> {% trans "Take skill test" %}</button>
                                             </form>

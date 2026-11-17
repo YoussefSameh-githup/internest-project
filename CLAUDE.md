@@ -24,6 +24,11 @@ Every external API call (AI, payments, email, any future paid or free API) MUST 
 Describe every API ONCE in `internest_core/api_registry.py` (`register(ProviderSpec(...))`: name, category, role, impact, `.env` key, code location, console/billing URL, optional balance tracking). That is all a new API needs for alert emails with full context, the incident log, the Django-admin budget row and `manage.py check_api_health`.
 Alerts go to `ADMIN_ALERT_EMAIL` only (30-min cooldown per provider and type). Verify with `python manage.py test_api_alert` and `python manage.py check_api_health` (schedule the latter daily on PythonAnywhere).
 
+## Performance
+- Heavy AI work (> ~1 s) runs through `internest_core/async_tasks.py` (`@register` a job in `<app>/jobs.py`, answer `Prefer: respond-async` with `accepted(enqueue(...))`, poll with `static/js/async_task_poller.js`); outbound HTTP uses the pooled `internest_core/http_client.py`; idempotent AI answers go through `ai_cache` (quiz generation stays uncached).
+- Profile lookups use `internest_core/identity.py` (never `user.partnerprofile` directly); shared aggregates use `page_cache.cached_value` + `bump()` in signals; anonymous public pages use `@cache_public_page`.
+- `internest_core/tests_performance.py` holds query ceilings per page: a new query on those pages must be justified, not just the ceiling raised.
+
 ## Delivery workflow
 Implement → add tests → AR/EN i18n (`scripts/i18n_catalog.py apply|check|compile`) → run the full suite → commit → `git push origin main`. End replies with the PythonAnywhere steps (`git pull`, plus migrate / pip install / collectstatic / compilemessages when needed, then Reload).
 

@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Internest_Project.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'internest_app_project.settings')  # was a non-existent module
 
 application = get_asgi_application()

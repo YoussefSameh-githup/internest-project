@@ -31,6 +31,8 @@ from .models import (
     DiscountCode, StudentEnrollment,
     EmailVerification, GigExperience, RATING_CHOICES,
 )
+from . import identity
+from .page_cache import cache_public_page
 from .student_hub import cv_primary_education, hub_header, open_invitations, profile_context, skill_quizzes, student_applications
 from .forms import (
     ProfileForm, PartnerInternshipForm, PartnerCourseForm,
@@ -118,18 +120,12 @@ def _whatsapp_number(phone):
 
 
 def _get_student_profile(user):
-    """Return the StudentProfile for `user` or None if it doesn't exist."""
-    try:
-        return user.studentprofile
-    except StudentProfile.DoesNotExist:
-        return None
+    """Return the StudentProfile for `user` or None if it doesn't exist (memoised per request)."""
+    return identity.student_profile(user)
 
 
 def _get_partner_profile(user):
-    try:
-        return user.partnerprofile
-    except PartnerProfile.DoesNotExist:
-        return None
+    return identity.partner_profile(user)
 
 
 def get_user_context(request):
@@ -159,6 +155,7 @@ def home_redirect_view(request):
     return redirect("list")
 
 
+@cache_public_page(ttl=600)  # anonymous visitors: rendered once per language and deploy
 def landing_view(request):
     # Authenticated users skip the landing page entirely and go to their workspace.
     if request.user.is_authenticated:
@@ -386,7 +383,8 @@ def profile_view(request):
         messages.warning(request, _("You are signed in as a partner, so you were taken to the partner dashboard."))
         return redirect("partner_dashboard")
 
-    profile, _created = StudentProfile.objects.get_or_create(user=request.user)
+    # The verification gate already loaded the profile this request; create it only for a brand-new account.
+    profile = _get_student_profile(request.user) or StudentProfile.objects.get_or_create(user=request.user)[0]
     education_locked = cv_primary_education(profile) is not None
     if request.method == "POST":
         old_personal = profile.personal_email
@@ -602,6 +600,7 @@ def partner_dashboard_view(request, section="overview"):
         + course_submissions.filter(status="Pending").count()
     )
     posting_block = posting_block_reason(partner_profile)
+    month_posts = posts_this_month(partner_profile)  # counted once, used for the quota too
 
     context = get_user_context(request)
     context.update({
@@ -612,8 +611,8 @@ def partner_dashboard_view(request, section="overview"):
         "active_opportunities": published_internships.open().count(),
         "posting_block": posting_block,
         "is_pro": is_pro(partner_profile),
-        "quota_reached": monthly_quota_reached(partner_profile),
-        "posts_this_month": posts_this_month(partner_profile),
+        "quota_reached": monthly_quota_reached(partner_profile, posts=month_posts),
+        "posts_this_month": month_posts,
         "free_posts_limit": FREE_POSTS_PER_MONTH,
         "upsell_open": request.GET.get("upsell") == "limit",
         "upsell_reason": request.GET.get("upsell", ""),

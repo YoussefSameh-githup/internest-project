@@ -4,18 +4,13 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 
-from internest_core.models import PartnerProfile
+from internest_core import identity
 
 
 def lounge_member(user):
     """Verified startup/company partner (not universities, not students), else None."""
-    if not getattr(user, "is_authenticated", False):
-        return None
-    try:
-        partner = user.partnerprofile
-    except PartnerProfile.DoesNotExist:
-        return None
-    if partner.is_academic or not partner.is_fully_verified:
+    partner = identity.partner_profile(user)
+    if partner is None or partner.is_academic or not partner.is_fully_verified:
         return None
     return partner
 

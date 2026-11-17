@@ -3,7 +3,7 @@ from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 from django.urls import Resolver404, resolve
 
-from internest_core.models import PartnerProfile
+from internest_core import identity
 
 # URL names a startup without a company profile may still reach.
 PROFILE_GATE_ALLOWED = frozenset({
@@ -15,13 +15,8 @@ PROFILE_GATE_PREFIXES = ("/admin/", "/static/", "/i18n/", "/accounts/")
 
 def startup_partner(user):
     """Non-academic partner account (startups/companies), else None."""
-    if not getattr(user, "is_authenticated", False):
-        return None
-    try:
-        partner = user.partnerprofile
-    except PartnerProfile.DoesNotExist:
-        return None
-    return None if partner.is_academic else partner
+    partner = identity.partner_profile(user)
+    return None if partner is None or partner.is_academic else partner
 
 
 def needs_company_profile(partner) -> bool:

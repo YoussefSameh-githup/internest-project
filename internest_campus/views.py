@@ -7,6 +7,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
+from internest_core.page_cache import cached_value
 from internest_core.views import _get_partner_profile, _get_student_profile, get_user_context
 
 from .forms import DUPLICATE_VOTE_MESSAGE, CampusVoteForm
@@ -59,11 +60,12 @@ def campus_vote(request):
         form = CampusVoteForm(initial=initial, student=student)
 
     card_vote = CampusDemandVote.objects.filter(referral_code=request.GET.get("card", "")).first()
-    leaderboard = (
+    # One aggregate over every vote, shared by all visitors; a new vote invalidates it (internest_campus/signals.py).
+    leaderboard = cached_value("campus", "leaderboard", 300, lambda: list(
         CampusDemandVote.objects.values("campus_key")
         .annotate(votes=Count("id"), university=Max("university_name"), faculty=Max("faculty_name"))
         .order_by("-votes")[:10]
-    )
+    ))
     context = get_user_context(request)
     context.update({
         "form": form,

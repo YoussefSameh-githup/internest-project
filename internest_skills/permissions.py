@@ -1,4 +1,5 @@
 """RBAC for skill badges / analytics: self, affiliated partner university, Pro employers."""
+from internest_core import identity
 from internest_core.models import Application, PartnerProfile, StudentProfile
 
 ROLE_SELF = "self"
@@ -8,17 +9,11 @@ ROLE_STAFF = "staff"
 
 
 def _partner(user):
-    try:
-        return user.partnerprofile
-    except PartnerProfile.DoesNotExist:
-        return None
+    return identity.partner_profile(user)
 
 
 def _student(user):
-    try:
-        return user.studentprofile
-    except StudentProfile.DoesNotExist:
-        return None
+    return identity.student_profile(user)
 
 
 def is_student_role(user) -> bool:

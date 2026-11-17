@@ -41,9 +41,50 @@ class EmailVerificationGateMiddleware:
         return match.url_name in self.ALLOWED_URL_NAMES
 
     def _needs_verification(self, request) -> bool:
-        from .models import StudentProfile  # local import: avoid AppRegistryNotReady
-        try:
-            profile = request.user.studentprofile
-        except StudentProfile.DoesNotExist:
-            return False
-        return profile.has_any_pending_email_verification
+        from .identity import student_profile  # local import: avoid AppRegistryNotReady
+
+        profile = student_profile(request.user)
+        return profile is not None and profile.has_any_pending_email_verification
+
+
+class SlidingSessionMiddleware:
+    """Keep the 30-day login sliding without a database write on every request.
+
+    With SESSION_SAVE_EVERY_REQUEST=False a session is only saved when it changes. Touching one key at most once per
+    SESSION_REFRESH_INTERVAL (a day) re-saves it, which renews both the stored expiry and the cookie max-age.
+    Only signed-in sessions are touched, so anonymous visitors never get a session row."""
+
+    KEY = "_refreshed_at"
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        session = getattr(request, "session", None)
+        if session is not None and session.session_key and "_auth_user_id" in session:
+            import time
+
+            from django.conf import settings
+
+            now = int(time.time())
+            if now - int(session.get(self.KEY, 0) or 0) >= getattr(settings, "SESSION_REFRESH_INTERVAL", 86400):
+                session[self.KEY] = now
+        return response
+
+
+from django.middleware.gzip import GZipMiddleware  # noqa: E402
+
+COMPRESSIBLE_TYPES = ("text/", "application/json", "application/javascript", "application/xml", "image/svg+xml",
+                      "application/manifest+json")
+
+
+class TextGZipMiddleware(GZipMiddleware):
+    """GZip for HTML / JSON / text only. PDFs, images and uploads are already compressed: gzipping them again only
+    burns CPU. Django's GZipMiddleware already adds random padding against BREACH."""
+
+    def process_response(self, request, response):
+        content_type = response.get("Content-Type", "").split(";")[0].strip().lower()
+        if not content_type.startswith(COMPRESSIBLE_TYPES):
+            return response
+        return super().process_response(request, response)

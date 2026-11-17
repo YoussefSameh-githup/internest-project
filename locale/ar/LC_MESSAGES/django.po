@@ -6078,3 +6078,6 @@ msgstr "التكلفة المقدّرة لكل 1000 رمز"
 
 msgid "API health & billing"
 msgstr "صحة الـ API والفواتير"
+
+msgid "Preparing your questions…"
+msgstr "جارٍ تجهيز أسئلتك…"

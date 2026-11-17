@@ -3,12 +3,14 @@ import datetime
 
 from django.shortcuts import render
 
+from .page_cache import cache_public_page
 from .views import get_user_context
 
 POLICIES_UPDATED = datetime.date(2026, 10, 13)  # change when a policy's content changes
 
 
 def _policy(template, page):
+    @cache_public_page(ttl=3600)
     def view(request):
         context = get_user_context(request)
         context.update({"page": page, "updated": POLICIES_UPDATED})

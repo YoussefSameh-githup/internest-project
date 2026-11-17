@@ -1,7 +1,9 @@
 from django.urls import path
-from . import legal_views, site_views, university_views, views
+from . import legal_views, site_views, task_views, university_views, views
 
 urlpatterns = [
+    path('api/tasks/<uuid:task_id>/status/', task_views.task_status, name='async_task_status'),
+    path('api/tasks/<uuid:task_id>/cancel/', task_views.task_cancel, name='async_task_cancel'),
     path('universities/', university_views.university_landing, name='university_landing'),
     path('universities/inquiry/', university_views.university_inquiry, name='university_inquiry'),
     path('robots.txt', site_views.robots_txt, name='robots'),

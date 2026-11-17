@@ -249,7 +249,14 @@ class Internship(models.Model):
     def applicants_count(self):
         """حساب عدد المتقدمين للفرصة."""
         return self.application_set.count()
-        
+
+    class Meta:
+        indexes = [
+            # Internship.objects.open() (is_active + deadline >= today) feeds every student list and the dashboards.
+            models.Index(fields=["is_active", "deadline"], name="internship_open_idx"),
+            models.Index(fields=["partner", "-created_at"], name="internship_partner_idx"),
+        ]
+
     def __str__(self):
         return self.title
 
@@ -293,6 +300,10 @@ class Application(models.Model):
 
     class Meta:
         unique_together = ('internship', 'applicant')
+        indexes = [
+            models.Index(fields=["applicant", "-application_date"], name="application_student_idx"),  # My applications
+            models.Index(fields=["internship", "status"], name="application_intern_status_idx"),  # applicant inbox
+        ]
 
     @property
     def contact_unlocked(self):
@@ -341,6 +352,12 @@ class PartnerInternshipSubmission(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES_SUBMISSION, default='Pending')
     submission_date = models.DateTimeField(default=timezone.now)
 
+    class Meta:
+        indexes = [  # dashboard: pending count + this month's posts (free-plan quota)
+            models.Index(fields=["partner", "status"], name="internsub_partner_status_idx"),
+            models.Index(fields=["partner", "submission_date"], name="internsub_partner_date_idx"),
+        ]
+
     def __str__(self):
         return f"تقديم تدريب: {self.title} من {self.partner.company_name} ({self.status})"
 
@@ -358,6 +375,9 @@ class PartnerCourseSubmission(models.Model):
                               related_name="partner_courses", verbose_name=_("Skill taught"))
     status = models.CharField(max_length=10, choices=STATUS_CHOICES_SUBMISSION, default='Pending')
     submission_date = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        indexes = [models.Index(fields=["partner", "status"], name="coursesub_partner_status_idx")]
 
     def __str__(self):
         return f"كورس {self.title} من {self.partner.company_name} ({self.status})"
@@ -741,3 +761,38 @@ class APIIncident(models.Model):
 
     def __str__(self):
         return f"{self.provider} · {self.alert_type} · {self.created_at:%Y-%m-%d %H:%M}"
+
+
+class AsyncTask(models.Model):
+    """A heavy job (AI polish, voice transcription, quiz preparation) run off the request thread.
+
+    The web request creates the row and answers 202 right away; the browser polls /api/tasks/<id>/status/.
+    See internest_core/async_tasks.py for the backends (sync, thread, db worker, celery)."""
+
+    STATUS_QUEUED, STATUS_RUNNING, STATUS_DONE, STATUS_FAILED, STATUS_CANCELLED = "queued", "running", "done", "failed", "cancelled"
+    STATUS_CHOICES = [(STATUS_QUEUED, "Queued"), (STATUS_RUNNING, "Running"), (STATUS_DONE, "Done"),
+                      (STATUS_FAILED, "Failed"), (STATUS_CANCELLED, "Cancelled")]
+    FINISHED = (STATUS_DONE, STATUS_FAILED, STATUS_CANCELLED)
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="async_tasks")
+    kind = models.CharField(max_length=60)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_QUEUED)
+    payload = models.JSONField(default=dict, blank=True)    # arguments, only kept for out-of-process backends
+    result = models.JSONField(null=True, blank=True)        # the JSON body the synchronous endpoint would have returned
+    http_status = models.PositiveSmallIntegerField(default=200)
+    error = models.CharField(max_length=300, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    started_at = models.DateTimeField(null=True, blank=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["status", "created_at"], name="asynctask_status_created_idx")]
+
+    @property
+    def is_finished(self):
+        return self.status in self.FINISHED
+
+    def __str__(self):
+        return f"{self.kind} · {self.status} · {self.pk}"

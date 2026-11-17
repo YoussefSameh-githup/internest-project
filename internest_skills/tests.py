@@ -537,10 +537,14 @@ class LLMClientConfigTests(TestCase):
     @override_settings(AGENTROUTER_API_KEY="k", AGENTROUTER_BASE_URL="https://llm.test/v1")
     def test_proxy_bypass_is_opt_in(self):
         from .llm import _client
-        with override_settings(ENABLE_PROXY_BYPASS=False):
-            self.assertTrue(_client(5)._client._trust_env)
-        with override_settings(ENABLE_PROXY_BYPASS=True):
-            self.assertFalse(_client(5)._client._trust_env)
+        from internest_core import http_client
+
+        with mock.patch.dict("os.environ", {"HTTPS_PROXY": "http://proxy.server:3128"}):
+            with override_settings(ENABLE_PROXY_BYPASS=False):
+                self.assertEqual(http_client.proxy_url(), "http://proxy.server:3128")  # PythonAnywhere's platform proxy
+                self.assertIs(_client(5)._client, http_client.get_client())          # pooled client shared by every call
+            with override_settings(ENABLE_PROXY_BYPASS=True):
+                self.assertIsNone(http_client.proxy_url())
 
     @override_settings(AGENTROUTER_API_KEY="k", SKILLS_LLM_MODEL="",
                        AGENTROUTER_BASE_URL="https://generativelanguage.googleapis.com/v1beta/openai/")

@@ -95,7 +95,7 @@
                             <h3>{{ g.skill.name }}</h3>
                             <span class="mf-demand"><i class="bi bi-graph-up-arrow"></i> {% blocktrans with n=g.demand %}Open opportunities requiring it: {{ n }}{% endblocktrans %}</span>
                             <div class="mf-actions">
-                                <form method="post" action="{% url 'skills_challenge_start_for_skill' g.skill.pk %}">{% csrf_token %}
+                                <form method="post" action="{% url 'skills_challenge_start_for_skill' g.skill.pk %}" data-async-task data-async-busy="{% trans 'Preparing your questions…' %}">{% csrf_token %}
                                     <button type="submit" class="mf-btn mf-btn--primary"><i class="bi bi-stopwatch"></i> {% trans "Take a skill test" %}</button>
                                 </form>
                                 <button type="button" class="mf-btn" data-cert-skill="{{ g.skill.pk }}"><i class="bi bi-award"></i> {% trans "Add a certificate" %}</button>

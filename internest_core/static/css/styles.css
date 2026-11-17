@@ -1964,3 +1964,10 @@ a.pf-stat:hover { border-color: #c7d2fe; }
 .gx-done__stars { color: #f59e0b; letter-spacing: 1px; }
 
 
+
+/* Async task UI (static/js/async_task_poller.js) */
+.ia-spinner { display: inline-block; width: 1em; height: 1em; border: 2px solid currentColor; border-inline-end-color: transparent; border-radius: 50%;
+  vertical-align: -.15em; animation: ia-spin .7s linear infinite; }
+@keyframes ia-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ia-spinner { animation-duration: 2s; } }
+.ia-error { margin: 8px 0 0; padding: 8px 12px; border-radius: 10px; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; font-size: 13px; }

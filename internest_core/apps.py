@@ -17,6 +17,9 @@ class InternestCoreConfig(AppConfig):
         from django.db.models.signals import post_migrate
 
         post_migrate.connect(_sync_api_registry, sender=self)
+        from .async_tasks import autodiscover
+
+        autodiscover()  # registers the <app>/jobs.py async tasks
 
 def _sync_api_registry(sender, **kwargs):
     """After every migrate: make sure each API in internest_core/api_registry.py has its admin row."""

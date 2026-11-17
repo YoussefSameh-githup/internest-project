@@ -1,1 +1,1 @@
-{# Company logo, or its first letter. Context: company (PartnerProfile). #}<span class="ol-logo">{% if company.logo %}<img src="{{ company.logo.url }}" alt="">{% else %}{{ company.company_name|slice:":1"|upper }}{% endif %}</span>
+{# Company logo, or its first letter. Context: company (PartnerProfile). #}<span class="ol-logo">{% if company.logo %}<img src="{{ company.logo.url }}" alt="" width="48" height="48" loading="lazy" decoding="async">{% else %}{{ company.company_name|slice:":1"|upper }}{% endif %}</span>

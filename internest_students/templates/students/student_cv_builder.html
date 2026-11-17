@@ -434,15 +434,22 @@ button.is-busy { opacity: .7; pointer-events: none; }
     });
   });
 
-  function post(url, body, button) {
+  function post(url, body, button, async) {
     if (button) button.classList.add("is-busy");
     var isForm = body instanceof FormData;
-    return fetch(url, {
+    var init = {
       method: "POST", credentials: "same-origin", body: isForm ? body : JSON.stringify(body),
       headers: Object.assign({"X-CSRFToken": csrf, "X-Requested-With": "fetch"}, isForm ? {} : {"Content-Type": "application/json"})
-    }).then(function (r) {
-      return r.json().catch(function () { return {error: T.network}; }).then(function (d) { return {ok: r.ok, d: d}; });
-    }).catch(function () { return {ok: false, d: {error: T.network}}; })
+    };
+    // AI calls (polish, voice) run as background tasks when the poller is loaded: 202 + polling, same {ok, d} result.
+    var request = async && window.InternestAsync
+      ? window.InternestAsync.fetchJSON(url, Object.assign(init, {timeoutMessage: T.network})).then(function (res) {
+          return {ok: res.ok, d: res.data && Object.keys(res.data).length ? res.data : {error: T.network}};
+        })
+      : fetch(url, init).then(function (r) {
+          return r.json().catch(function () { return {error: T.network}; }).then(function (d) { return {ok: r.ok, d: d}; });
+        });
+    return request.catch(function () { return {ok: false, d: {error: T.network}}; })
       .finally(function () { if (button) button.classList.remove("is-busy"); });
   }
 
@@ -453,7 +460,7 @@ button.is-busy { opacity: .7; pointer-events: none; }
 
   if (polish) polish.addEventListener("click", function () {
     showAlert(T.polishing, "ok");
-    post(form.dataset.polishUrl, {cv: cv}, polish).then(function (res) {
+    post(form.dataset.polishUrl, {cv: cv}, polish, true).then(function (res) {
       if (res.d.cv) { cv = res.d.cv; fill(); }
       if (res.d.error) showAlert(res.d.error, "warn");
       else { showAlert(T.polished, "ok"); flagPlaceholders(); }
@@ -549,7 +556,7 @@ button.is-busy { opacity: .7; pointer-events: none; }
     data.append("audio", blob, "voice." + ext);
     data.append("cv", JSON.stringify(cv));
     setStatus(T.processing, "busy");
-    post(voice.dataset.url, data, sendBtn).then(function (res) {
+    post(voice.dataset.url, data, sendBtn, true).then(function (res) {
       if (res.d.transcript) {
         transcriptBox.hidden = false;
         transcriptBox.querySelector("[data-transcript-text]").textContent = res.d.transcript;

@@ -15,6 +15,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _, gettext_lazy as _lazy
 from django.views.decorators.http import require_GET, require_POST
 
+from internest_core import async_tasks
 from internest_core.models import StudentProfile
 from internest_core.views import _get_partner_profile, get_user_context
 
@@ -268,10 +269,14 @@ def certificate_submit(request):
 
 
 # ---------------------------------------------------------------- challenge flow
-@student_gate()
-@require_POST
-def challenge_start(request, student_skill_id):
-    student = request.student
+CHALLENGE_STARTED, CHALLENGE_UNAVAILABLE, CHALLENGE_REFUSED = "started", "unavailable", "refused"
+
+
+def start_challenge(student, student_skill_id):
+    """Prepare the quiz (AI first, else the saved bank) and open the attempt.
+
+    Returns (outcome, value): (STARTED, attempt) | (UNAVAILABLE, student_skill) | (REFUSED, message).
+    Shared by the synchronous view and the async job, so both behave identically."""
     ss = get_object_or_404(StudentSkill.objects.select_related("skill"), pk=student_skill_id, student=student)
     item_ids = None
     # Live quiz generation (network) happens outside the row lock; skipped when resuming or not eligible.
@@ -283,20 +288,44 @@ def challenge_start(request, student_skill_id):
             logger.exception("Preparing a quiz failed for skill %s", ss.skill_id)
             item_ids = []
         if not item_ids:
-            return _quiz_unavailable(request, ss)
+            return CHALLENGE_UNAVAILABLE, ss
     try:
         with transaction.atomic():
             ss = get_object_or_404(StudentSkill.objects.select_for_update().select_related("skill"), pk=student_skill_id, student=student)
             attempt = engine.start_attempt(ss, item_ids=item_ids)
     except engine.ChallengeError as exc:  # cooldown, already verified, abandoned session
-        messages.warning(request, str(exc))
-        return redirect("skills_hub")
+        return CHALLENGE_REFUSED, str(exc)
     except Http404:
         raise
     except Exception:
         logger.exception("Starting a challenge failed for student skill %s", student_skill_id)
-        return _quiz_unavailable(request, ss)
-    return redirect("skills_challenge", token=attempt.token)
+        return CHALLENGE_UNAVAILABLE, ss
+    return CHALLENGE_STARTED, attempt
+
+
+def challenge_outcome(student, student_skill_id) -> tuple[int, dict]:
+    """JSON form of start_challenge for the async path: {redirect} on success, {error[, redirect]} otherwise."""
+    outcome, value = start_challenge(student, student_skill_id)
+    if outcome == CHALLENGE_STARTED:
+        return 200, {"redirect": reverse("skills_challenge", kwargs={"token": value.token})}
+    if outcome == CHALLENGE_REFUSED:
+        return 409, {"error": value, "redirect": reverse("skills_hub")}
+    return 503, {"error": _("Not enough questions are available for this challenge right now. Please try again later.")}
+
+
+@student_gate()
+@require_POST
+def challenge_start(request, student_skill_id):
+    if async_tasks.wants_async(request):  # quiz generation can take 5-60 s: answer 202 and let the page poll
+        get_object_or_404(StudentSkill, pk=student_skill_id, student=request.student)  # ownership checked before queueing
+        return async_tasks.accepted(async_tasks.enqueue("skill_challenge_start", request.user, student_skill_id=student_skill_id))
+    outcome, value = start_challenge(request.student, student_skill_id)
+    if outcome == CHALLENGE_UNAVAILABLE:
+        return _quiz_unavailable(request, value)
+    if outcome == CHALLENGE_REFUSED:
+        messages.warning(request, value)
+        return redirect("skills_hub")
+    return redirect("skills_challenge", token=value.token)
 
 
 def _quiz_unavailable(request, student_skill):

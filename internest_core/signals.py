@@ -4,12 +4,13 @@ from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
-from django.db.models.signals import post_save
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 from django.urls import reverse
 
-from .models import EmailVerification, Internship, StudentProfile
+from . import identity
+from .models import EmailVerification, Internship, PartnerProfile, StudentProfile
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +81,26 @@ def sync_education_from_cv(sender, instance, created, update_fields=None, **kwar
     from .student_hub import sync_profile_education
 
     sync_profile_education(instance.student, (instance.data or {}).get("education"))
+
+
+@receiver(post_save, sender=StudentProfile)
+def _remember_student(sender, instance, **kwargs):
+    identity.remember(instance, identity.STUDENT_ATTR)
+
+
+@receiver(post_save, sender=PartnerProfile)
+def _remember_partner(sender, instance, **kwargs):
+    identity.remember(instance, identity.PARTNER_ATTR)
+
+
+@receiver(post_delete, sender=StudentProfile)
+def _forget_student(sender, instance, **kwargs):
+    identity.remember(instance, identity.STUDENT_ATTR, deleted=True)
+
+
+@receiver(post_delete, sender=PartnerProfile)
+def _forget_partner(sender, instance, **kwargs):
+    identity.remember(instance, identity.PARTNER_ATTR, deleted=True)
 
 
 @receiver(user_logged_in)

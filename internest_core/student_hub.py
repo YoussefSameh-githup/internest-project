@@ -28,13 +28,18 @@ FORM_SECTIONS = {
 
 
 def db_safe(default):
-    """Run in a savepoint; on a database error log it and return `default` (a value, or a factory for mutable ones)."""
+    """On a database error log it and return `default` (a value, or a factory for mutable ones).
+
+    Inside a transaction the call runs in a savepoint so a failed query cannot poison the outer transaction
+    (PostgreSQL). In autocommit mode (normal requests) no savepoint is needed: that saves two statements per call."""
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
             try:
-                with transaction.atomic():
-                    return fn(*args, **kwargs)
+                if transaction.get_connection().in_atomic_block:
+                    with transaction.atomic():
+                        return fn(*args, **kwargs)
+                return fn(*args, **kwargs)
             except DatabaseError:
                 logger.exception("Student Hub data unavailable: %s", fn.__name__)
                 return default() if callable(default) else default
@@ -198,13 +203,26 @@ def sync_profile_education(profile, education):
     return True
 
 
+_NO_CV = object()
+
+
+def cv_record(profile):
+    """The student's StudentCV row (or None), read once per request and memoised on the profile instance."""
+    from internest_students.models import StudentCV
+
+    record = getattr(profile, "_internest_cv", _NO_CV)
+    if record is _NO_CV:
+        record = StudentCV.objects.filter(student=profile).first() if profile.pk else None
+        profile._internest_cv = record
+    return record
+
+
 @db_safe(None)
 def cv_primary_education(profile):
     """The student's primary CV Builder education entry (dict) or None."""
     from internest_students.cv_builder_service import primary_education
-    from internest_students.models import StudentCV
 
-    record = StudentCV.objects.filter(student=profile).only("data").first()
+    record = cv_record(profile)
     return primary_education((record.data or {}).get("education")) if record else None
 
 
@@ -212,9 +230,9 @@ def cv_primary_education(profile):
 def _cv_details(profile):
     """The saved CV record, its education timeline, expected graduation and a GitHub link."""
     from internest_students.cv_builder_service import clean_url, format_period, primary_education
-    from internest_students.models import StudentCV
 
-    record = StudentCV.objects.filter(student=profile).exclude(data={}).first()
+    record = cv_record(profile)
+    record = record if record is not None and record.data else None
     cv = record.data if record else {}
     out = {"cv": record, "education": [], "expected_graduation": "", "graduation_expected": False, "github_url": ""}
     for e in cv.get("education") or []:

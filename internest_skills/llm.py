@@ -13,6 +13,8 @@ import httpx
 import openai
 from django.conf import settings
 
+from internest_core import ai_cache
+
 from internest_core.api_monitor import current_feature, failover_scope, mask_secrets, monitored_api_call
 
 logger = logging.getLogger(__name__)
@@ -115,14 +117,13 @@ def resolve_model(base_url: str | None = None, explicit: str | None = None) -> s
 
 
 def _client(timeout: float, provider: Provider | None = None, max_retries: int = 1):
-    from openai import DefaultHttpxClient, OpenAI
+    from openai import OpenAI
+
+    from internest_core.http_client import get_client
 
     provider = provider or Provider("API_KEY_1", settings.AGENTROUTER_API_KEY, settings.AGENTROUTER_BASE_URL, "")
-    kwargs = {}
-    if settings.ENABLE_PROXY_BYPASS:
-        # Ignore HTTP(S)_PROXY env vars. Leave off on PythonAnywhere free accounts (they need the platform proxy).
-        kwargs["http_client"] = DefaultHttpxClient(trust_env=False)
-    return OpenAI(api_key=provider.api_key, base_url=provider.base_url, timeout=timeout, max_retries=max_retries, **kwargs)
+    # The SDK object is cheap; the pooled keep-alive connections (and the proxy choice, see ENABLE_PROXY_BYPASS) are shared.
+    return OpenAI(api_key=provider.api_key, base_url=provider.base_url, timeout=timeout, max_retries=max_retries, http_client=get_client())
 
 
 _FENCE = re.compile(r"^\s*```[a-z]*\s*|\s*```\s*$", re.I)
@@ -201,6 +202,14 @@ def chat_json(system: str, user: str, max_tokens: int = 1000, timeout: float | N
     chain = providers()
     if not chain:
         raise LLMUnavailable("LLM not configured")
+    # Temperature-0 replies are deterministic: an identical prompt for the same models is answered from the cache
+    # (internest_core.ai_cache). Failures raise and are never cached.
+    payload = {"system": system, "user": user, "max_tokens": max_tokens, "validate": getattr(validate, "__qualname__", None),
+               "models": [(p.label, p.base_url, p.model) for p in chain]}
+    return ai_cache.cached("chat_json", payload, lambda: _chat_json_uncached(chain, system, user, max_tokens, timeout, validate))
+
+
+def _chat_json_uncached(chain, system, user, max_tokens, timeout, validate) -> dict:
     errors = []
     with failover_scope() as scope:
         for i, provider in enumerate(chain):

@@ -35,7 +35,7 @@
                             {% elif ss.in_cooldown %}
                                 <span class="sh-pill"><i class="bi bi-hourglass-split"></i> {% blocktrans with h=ss.cooldown_hours_remaining %}You can retake this skill test in {{ h }} hours{% endblocktrans %}</span>
                             {% else %}
-                                <form method="post" action="{% url 'skills_challenge_start' ss.pk %}">
+                                <form method="post" action="{% url 'skills_challenge_start' ss.pk %}" data-async-task data-async-busy="{% trans 'Preparing your questions…' %}">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn--primary btn--sm">
                                         {% if ss.status == "lag" %}<i class="bi bi-arrow-repeat"></i> {% trans "Retake quiz" %}{% else %}<i class="bi bi-play-fill"></i> {% trans "Start quiz" %}{% endif %}

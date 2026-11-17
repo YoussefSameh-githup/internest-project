@@ -26,11 +26,12 @@ def posts_this_month(partner) -> int:
     )
 
 
-def monthly_quota_reached(partner) -> bool:
-    """Free startups get one opportunity per calendar month; Pro and universities are unlimited."""
+def monthly_quota_reached(partner, posts: int | None = None) -> bool:
+    """Free startups get one opportunity per calendar month; Pro and universities are unlimited.
+    Pass `posts` when posts_this_month() was already counted for this request."""
     if partner is None or partner.is_academic or is_pro(partner):
         return False
-    return posts_this_month(partner) >= FREE_POSTS_PER_MONTH
+    return (posts_this_month(partner) if posts is None else posts) >= FREE_POSTS_PER_MONTH
 
 
 def quote(promo=None, period="month", currency="EGP") -> dict:

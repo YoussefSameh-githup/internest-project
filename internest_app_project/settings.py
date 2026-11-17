@@ -25,6 +25,11 @@ env = environ.Env(
 environ.Env.read_env(BASE_DIR / ".env", overwrite=False)
 
 
+TESTING = "test" in sys.argv[1:2]
+# PythonAnywhere: web apps cannot start threads and /home is a network filesystem (no SQLite WAL / mmap there).
+ON_PYTHONANYWHERE = bool(os.getenv("PYTHONANYWHERE_DOMAIN") or os.getenv("PYTHONANYWHERE_SITE"))
+
+
 def env_bool(name: str, default: bool = False) -> bool:
     return env.bool(name, default=default)
 
@@ -92,11 +97,16 @@ MIDDLEWARE = [
     # Internest: site-wide Content-Security-Policy (keeps inline scripts working; see internest_core/csp.py).
     "internest_core.csp.ContentSecurityPolicyMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    # Internest: gzip HTML/JSON (70-85% smaller pages), then 304 Not Modified via ETag / Last-Modified.
+    "internest_core.middleware.TextGZipMiddleware",
+    "django.middleware.http.ConditionalGetMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # Internest: renew the 30-day session at most once a day (instead of saving it on every request).
+    "internest_core.middleware.SlidingSessionMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "allauth.account.middleware.AccountMiddleware",
     # Internest: per-IP / per-user limits on login, signup, password reset and uploads.
@@ -131,12 +141,32 @@ TEMPLATES = [
 ]
 
 # --- (2) Database ---
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+# DATABASE_URL (e.g. postgres://user:pass@host:5432/internest) switches to a client/server database with
+# persistent connections; nothing else changes. Without it: SQLite, tuned for concurrent web workers.
+if os.getenv("DATABASE_URL"):
+    DATABASES = {"default": env.db("DATABASE_URL")}
+    DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=600)
+    DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
+else:
+    # WAL lets readers and the writer work at the same time; it needs a local disk, so it is off on PythonAnywhere
+    # (network filesystem) unless SQLITE_WAL=1 is set explicitly. busy_timeout waits for a lock instead of failing.
+    from internest_core.db_tuning import sqlite_options
+
+    SQLITE_WAL = env.bool("SQLITE_WAL", default=not ON_PYTHONANYWHERE)
+    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3",
+                             "OPTIONS": sqlite_options(SQLITE_WAL)}}
+
+# --- (2b) Cache: Redis when REDIS_URL is set (shared by every worker/server), else a file cache shared by the
+# workers of one machine (PythonAnywhere), local memory in tests. Used by sessions, rate limits, AI answers, alerts.
+if os.getenv("REDIS_URL") and not TESTING:
+    CACHES = {"default": {"BACKEND": "django.core.cache.backends.redis.RedisCache", "LOCATION": os.getenv("REDIS_URL"),
+                          "KEY_PREFIX": "internest", "TIMEOUT": 300}}
+elif TESTING:
+    CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache", "LOCATION": "internest-tests"}}
+else:
+    CACHES = {"default": {"BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+                          "LOCATION": str(BASE_DIR / ".cache" / "django"), "TIMEOUT": 300,
+                          "OPTIONS": {"MAX_ENTRIES": 20000, "CULL_FREQUENCY": 4}}}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -162,14 +192,28 @@ LANGUAGE_COOKIE_AGE = 60 * 60 * 24 * 365  # one year
 # --- (3b) Session persistence: stay logged in across tab/browser closes ---
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30          # 30 days
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_SAVE_EVERY_REQUEST = True               # sliding expiry on every request
+# Sessions are read from the cache and written to the DB only when they change (cached_db). The 30-day expiry
+# still slides: internest_core.middleware.SlidingSessionMiddleware refreshes it at most once a day per user,
+# instead of a database write on every single request.
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+SESSION_SAVE_EVERY_REQUEST = False
+SESSION_REFRESH_INTERVAL = 24 * 3600
 SESSION_COOKIE_NAME = "internest_sessionid"
 
 # --- (4) Static / Media ---
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "internest_core" / "static"]
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# Django 5.1 removed STATICFILES_STORAGE: without STORAGES the hashed + pre-compressed storage was silently off.
+# Hashed names are cached by browsers for a year (immutable); a missing manifest entry falls back to the plain name
+# (WHITENOISE_MANIFEST_STRICT=False) instead of a 500, so a deploy that forgot collectstatic still works.
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage" if TESTING
+                    else "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+}
+WHITENOISE_MANIFEST_STRICT = False
+WHITENOISE_MAX_AGE = 31536000
 # Serve app static files (e.g. internest_skills/static) even if collectstatic wasn't re-run after a deploy.
 WHITENOISE_USE_FINDERS = True
 
@@ -344,6 +388,26 @@ AZURE_OPENAI_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini")
 SKILLS_LLM_MODEL = env.str("SKILLS_LLM_MODEL", default="")
 # Off by default: PythonAnywhere free accounts must reach external APIs through the platform proxy.
 ENABLE_PROXY_BYPASS = env.bool("ENABLE_PROXY_BYPASS", default=False)
+
+# =========================================================================
+# Performance: pooled outbound HTTP, AI response cache, async AI tasks
+# =========================================================================
+# internest_core/http_client.py: one keep-alive pool per process for every AI call (HTTP/2 when `h2` is installed).
+HTTP_CLIENT_MAX_CONNECTIONS = env.int("HTTP_CLIENT_MAX_CONNECTIONS", default=100)
+HTTP_CLIENT_MAX_KEEPALIVE = env.int("HTTP_CLIENT_MAX_KEEPALIVE", default=30)
+HTTP_CLIENT_CONNECT_TIMEOUT = env.float("HTTP_CLIENT_CONNECT_TIMEOUT", default=5.0)
+HTTP_CLIENT_READ_TIMEOUT = env.float("HTTP_CLIENT_READ_TIMEOUT", default=60.0)
+HTTP_CLIENT_RETRIES = env.int("HTTP_CLIENT_RETRIES", default=2)  # connect errors and 502/503 only
+
+# internest_core/ai_cache.py: identical temperature-0 prompts are answered from the cache (0 = off; off in tests).
+AI_CACHE_TTL = env.int("AI_CACHE_TTL", default=0 if TESTING else 7 * 24 * 3600)
+
+# internest_core/async_tasks.py: sync | thread | db | celery. PythonAnywhere web apps cannot start threads, so they
+# default to "sync" (same behaviour as before); set "db" + an always-on `manage.py run_async_tasks` to go async there.
+ASYNC_TASK_BACKEND = env.str("ASYNC_TASK_BACKEND", default="sync" if (TESTING or ON_PYTHONANYWHERE) else "thread")
+ASYNC_TASK_WORKERS = env.int("ASYNC_TASK_WORKERS", default=4)
+ASYNC_TASK_QUEUE_TIMEOUT = env.int("ASYNC_TASK_QUEUE_TIMEOUT", default=120)  # queued this long = no worker: fail it
+ASYNC_TASK_RUN_TIMEOUT = env.int("ASYNC_TASK_RUN_TIMEOUT", default=300)
 SKILLS_LLM_TIMEOUT = env.float("SKILLS_LLM_TIMEOUT", default=30.0)
 # Voice-to-CV transcription (OpenAI-compatible Whisper). Without it, a Groq/OpenAI key above is reused.
 WHISPER_API_KEY = os.getenv("WHISPER_API_KEY", "")

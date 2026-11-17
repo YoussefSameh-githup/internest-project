@@ -33,6 +33,8 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
@@ -181,7 +183,7 @@
             <div class="footer__grid">
                 <div>
                     <a href="{% url 'landing' %}" class="footer__brand">
-                        <img src="{% static 'img/internest_logo.jpg' %}" alt="Internest">
+                        <img src="{% static 'img/internest_logo.jpg' %}" alt="Internest" loading="lazy" decoding="async">
                         <span>INTERNEST</span>
                     </a>
                     <p class="footer__tagline">
@@ -232,7 +234,8 @@
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="{% asset 'js/async_task_poller.js' %}" defer></script>
     <script>
         // Sticky nav shadow on scroll
         (function() {

@@ -11,6 +11,7 @@ from django.utils.text import slugify
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
+from internest_core import async_tasks
 from internest_core.views import get_user_context
 from internest_skills.llm import LLMUnavailable, llm_enabled
 from internest_skills.models import Skill
@@ -83,10 +84,22 @@ def cv_polish(request):
         return JsonResponse({"cv": cv, "error": _("AI polishing isn't available right now. You can still finish and download your CV.")}, status=503)
     if not _use_ai(request.student):
         return _limit_reached()
+    if async_tasks.wants_async(request):  # 202 now, the browser polls /api/tasks/<id>/status/
+        return async_tasks.accepted(async_tasks.enqueue("cv_polish", request.user, cv=cv))
+    return _respond(polish_outcome(cv))
+
+
+def _respond(outcome) -> JsonResponse:
+    status, body = outcome
+    return JsonResponse(body, status=status)
+
+
+def polish_outcome(cv) -> tuple[int, dict]:
+    """(HTTP status, JSON body) of an AI polish. Shared by the sync endpoint and the async job."""
     try:
-        return JsonResponse({"cv": svc.polish_cv(cv)})
+        return 200, {"cv": svc.polish_cv(cv)}
     except LLMUnavailable:
-        return JsonResponse({"cv": cv, "error": _("Our AI is busy right now, so your text was kept as is. Try polishing again in a few minutes.")}, status=503)
+        return 503, {"cv": cv, "error": _("Our AI is busy right now, so your text was kept as is. Try polishing again in a few minutes.")}
 
 
 @student_gate(api=True)
@@ -102,17 +115,26 @@ def process_voice_cv(request):
         return JsonResponse({"error": _("Voice input isn't available right now. Please fill in the form instead.")}, status=503)
     if not _use_ai(request.student):
         return _limit_reached()
+    filename = f"voice.{AUDIO_TYPES[content_type]}"
+    if async_tasks.wants_async(request):
+        return async_tasks.accepted(async_tasks.enqueue(
+            "cv_voice", request.user, cv=cv, audio=audio.read(), filename=filename, content_type=content_type))
+    return _respond(voice_outcome(cv, audio.read(), filename, content_type))
+
+
+def voice_outcome(cv, audio: bytes, filename: str, content_type: str) -> tuple[int, dict]:
+    """(HTTP status, JSON body) of transcription + AI organisation. Shared by the sync endpoint and the async job."""
     try:
-        transcript = svc.transcribe(audio.read(), f"voice.{AUDIO_TYPES[content_type]}", content_type)
+        transcript = svc.transcribe(audio, filename, content_type)
     except svc.VoiceUnavailable:
-        return JsonResponse({"error": _("We couldn't process your voice note right now. Please try again in a few minutes or fill in the form.")}, status=503)
+        return 503, {"error": _("We couldn't process your voice note right now. Please try again in a few minutes or fill in the form.")}
     if len(transcript) < 15:
-        return JsonResponse({"error": _("We couldn't hear enough in this recording. Speak a little closer to the microphone and try again.")}, status=400)
+        return 400, {"error": _("We couldn't hear enough in this recording. Speak a little closer to the microphone and try again.")}
     try:
-        return JsonResponse({"cv": svc.polish_cv(cv, transcript), "transcript": transcript})
+        return 200, {"cv": svc.polish_cv(cv, transcript), "transcript": transcript}
     except LLMUnavailable:
-        return JsonResponse({"cv": cv, "transcript": transcript,
-                             "error": _("We transcribed your voice note, but the AI couldn't organize it right now. Copy the details from the transcript below into the form.")}, status=503)
+        return 503, {"cv": cv, "transcript": transcript,
+                     "error": _("We transcribed your voice note, but the AI couldn't organize it right now. Copy the details from the transcript below into the form.")}
 
 
 @student_gate(api=True)
