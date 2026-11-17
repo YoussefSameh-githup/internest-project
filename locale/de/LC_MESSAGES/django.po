@@ -1294,3 +1294,87 @@ msgid "You cancelled the sign-in. You can try again or use another method."
 msgstr ""
 "Sie haben die Anmeldung abgebrochen. Sie können es erneut versuchen oder "
 "eine andere Methode wählen."
+
+msgid "What this API is"
+msgstr "Was diese API ist"
+
+msgid "Where it lives"
+msgstr "Wo sie liegt"
+
+msgid "Budget & balance (edit after every top-up)"
+msgstr "Budget & Guthaben (nach jedem Aufladen anpassen)"
+
+msgid "Paid"
+msgstr "Kostenpflichtig"
+
+msgid "Remaining"
+msgstr "Verbleibend"
+
+msgid "Low?"
+msgstr "Niedrig?"
+
+msgid "Console / billing"
+msgstr "Konsole / Abrechnung"
+
+msgid "I topped up: set estimated spend back to 0"
+msgstr "Aufgeladen: geschätzte Ausgaben auf 0 setzen"
+
+#, python-format
+msgid ""
+"%(n)s provider(s): estimated spend reset. Update the initial budget to the "
+"amount you now have."
+msgstr ""
+"%(n)s Anbieter: geschätzte Ausgaben zurückgesetzt. Passen Sie das "
+"Anfangsbudget an Ihr aktuelles Guthaben an."
+
+msgid "API provider"
+msgstr "API-Anbieter"
+
+msgid "API providers"
+msgstr "API-Anbieter"
+
+msgid "API incident"
+msgstr "API-Vorfall"
+
+msgid "API incidents"
+msgstr "API-Vorfälle"
+
+msgid "No tracking"
+msgstr "Keine Verfolgung"
+
+msgid "Live (provider balance endpoint)"
+msgstr "Live (Guthaben-Endpunkt des Anbieters)"
+
+msgid "Local ledger (estimated spend)"
+msgstr "Lokales Kontobuch (geschätzte Ausgaben)"
+
+msgid "What this API does on Internest"
+msgstr "Was diese API bei Internest tut"
+
+msgid "Which features break or degrade when it is down"
+msgstr "Welche Funktionen bei einem Ausfall ausfallen oder schlechter werden"
+
+msgid ".env key that holds its secret"
+msgstr ".env-Schlüssel, der das Geheimnis enthält"
+
+msgid "Console / billing page"
+msgstr "Konsolen- / Abrechnungsseite"
+
+msgid "False = seen in a call but never added to api_registry.py"
+msgstr ""
+"False = in einem Aufruf gesehen, aber nie in api_registry.py eingetragen"
+
+msgid "Money you loaded; 0 = tracking off"
+msgstr "Aufgeladener Betrag; 0 = Verfolgung aus"
+
+msgid "Alert when remaining <= this"
+msgstr "Warnen, wenn der Rest <= diesem Wert ist"
+
+msgid "Estimated cost of one request"
+msgstr "Geschätzte Kosten pro Anfrage"
+
+msgid "Estimated cost per 1,000 tokens"
+msgstr "Geschätzte Kosten pro 1.000 Tokens"
+
+msgid "API health & billing"
+msgstr "API-Status & Abrechnung"

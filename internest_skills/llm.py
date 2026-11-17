@@ -13,7 +13,7 @@ import httpx
 import openai
 from django.conf import settings
 
-from internest_core.api_monitor import current_feature, mask_secrets, monitored_api_call
+from internest_core.api_monitor import current_feature, failover_scope, mask_secrets, monitored_api_call
 
 logger = logging.getLogger(__name__)
 
@@ -56,12 +56,20 @@ class Provider:
     model: str
 
 
-_PROVIDER_NAMES = {"GEMINI_API_KEY": "Google Gemini", "API_KEY_1": "AgentRouter", "API_KEY_2": "Backup LLM", "AZURE_OPENAI": "Azure OpenAI"}
+_PROVIDER_KEYS = {"GEMINI_API_KEY": "gemini", "API_KEY_1": "agentrouter", "API_KEY_2": "backup_llm", "AZURE_OPENAI": "azure_openai",
+                  "WHISPER_API_KEY": "whisper"}
 
 
 def provider_name(provider: Provider) -> str:
-    """Human name for admin alerts ("Google Gemini"); unknown labels are shown as they are."""
-    return _PROVIDER_NAMES.get(provider.label, provider.label)
+    """The api_registry key of this provider (the monitor looks its name, role and billing page up there)."""
+    return _PROVIDER_KEYS.get(provider.label, provider.label)
+
+
+def provider_display_name(provider: Provider) -> str:
+    from internest_core.api_registry import spec_for
+
+    spec = spec_for(provider_name(provider))
+    return spec.name if spec else provider.label
 
 
 def providers() -> list[Provider]:
@@ -194,22 +202,24 @@ def chat_json(system: str, user: str, max_tokens: int = 1000, timeout: float | N
     if not chain:
         raise LLMUnavailable("LLM not configured")
     errors = []
-    for i, provider in enumerate(chain):
-        has_backup = i + 1 < len(chain)
-        try:
-            # No SDK retries when a backup key exists: failing over is faster than retrying a rate-limited key.
-            data = _ask(provider, system, user, max_tokens, timeout or settings.SKILLS_LLM_TIMEOUT, 0 if has_backup else 1)
-            if validate is not None:
-                validate(data)
-            if i:
-                logger.info("LLM answered via %s after %s failed", provider.label, ", ".join(p.label for p in chain[:i]))
-            return data
-        except LLM_ERRORS as exc:
-            detail = describe_error(exc)
-            errors.append(f"{provider.label}: {detail}")
-            where = f"{provider.label} [{provider.base_url} · model {provider.model}]"
-            if has_backup:
-                logger.warning("LLM failover: %s failed: %s; switching to %s", where, detail, chain[i + 1].label)
-            else:
-                logger.warning("LLM call failed: %s: %s", where, detail)
+    with failover_scope() as scope:
+        for i, provider in enumerate(chain):
+            has_backup = i + 1 < len(chain)
+            try:
+                # No SDK retries when a backup key exists: failing over is faster than retrying a rate-limited key.
+                data = _ask(provider, system, user, max_tokens, timeout or settings.SKILLS_LLM_TIMEOUT, 0 if has_backup else 1)
+                if validate is not None:
+                    validate(data)
+                if i:
+                    logger.info("LLM answered via %s after %s failed", provider.label, ", ".join(p.label for p in chain[:i]))
+                scope.served_by = provider_display_name(provider)
+                return data
+            except LLM_ERRORS as exc:
+                detail = describe_error(exc)
+                errors.append(f"{provider.label}: {detail}")
+                where = f"{provider.label} [{provider.base_url} · model {provider.model}]"
+                if has_backup:
+                    logger.warning("LLM failover: %s failed: %s; switching to %s", where, detail, chain[i + 1].label)
+                else:
+                    logger.warning("LLM call failed: %s: %s", where, detail)
     raise LLMUnavailable("; ".join(errors))

@@ -5996,3 +5996,85 @@ msgstr "تم إلغاء تسجيل الدخول"
 msgid "You cancelled the sign-in. You can try again or use another method."
 msgstr ""
 "لقد ألغيت تسجيل الدخول. يمكنك المحاولة مرة أخرى أو استخدام طريقة أخرى."
+
+msgid "What this API is"
+msgstr "ما هو هذا الـ API"
+
+msgid "Where it lives"
+msgstr "أين يوجد"
+
+msgid "Budget & balance (edit after every top-up)"
+msgstr "الميزانية والرصيد (عدّلها بعد كل شحن)"
+
+msgid "Paid"
+msgstr "مدفوع"
+
+msgid "Remaining"
+msgstr "المتبقي"
+
+msgid "Low?"
+msgstr "منخفض؟"
+
+msgid "Console / billing"
+msgstr "لوحة التحكم / الفواتير"
+
+msgid "I topped up: set estimated spend back to 0"
+msgstr "قمت بالشحن: أعد الإنفاق المقدّر إلى 0"
+
+msgid ""
+"%(n)s provider(s): estimated spend reset. Update the initial budget to the "
+"amount you now have."
+msgstr ""
+"%(n)s مزوّد: تمت إعادة الإنفاق المقدّر. حدّث الميزانية الأولية بالمبلغ الذي "
+"لديك الآن."
+
+msgid "API provider"
+msgstr "مزوّد API"
+
+msgid "API providers"
+msgstr "مزوّدو API"
+
+msgid "API incident"
+msgstr "حادثة API"
+
+msgid "API incidents"
+msgstr "حوادث API"
+
+msgid "No tracking"
+msgstr "بدون تتبع"
+
+msgid "Live (provider balance endpoint)"
+msgstr "مباشر (من نقطة رصيد المزوّد)"
+
+msgid "Local ledger (estimated spend)"
+msgstr "سجل محلي (إنفاق مقدّر)"
+
+msgid "What this API does on Internest"
+msgstr "ما يفعله هذا الـ API في Internest"
+
+msgid "Which features break or degrade when it is down"
+msgstr "الميزات التي تتعطل أو تضعف عند توقفه"
+
+msgid ".env key that holds its secret"
+msgstr "مفتاح .env الذي يحمل السر"
+
+msgid "Console / billing page"
+msgstr "صفحة لوحة التحكم / الفواتير"
+
+msgid "False = seen in a call but never added to api_registry.py"
+msgstr "False = ظهر في استدعاء ولم يُضف إلى api_registry.py"
+
+msgid "Money you loaded; 0 = tracking off"
+msgstr "المبلغ الذي شحنته؛ 0 = التتبع متوقف"
+
+msgid "Alert when remaining <= this"
+msgstr "نبّه عندما يصبح المتبقي <= هذا الرقم"
+
+msgid "Estimated cost of one request"
+msgstr "التكلفة المقدّرة لطلب واحد"
+
+msgid "Estimated cost per 1,000 tokens"
+msgstr "التكلفة المقدّرة لكل 1000 رمز"
+
+msgid "API health & billing"
+msgstr "صحة الـ API والفواتير"

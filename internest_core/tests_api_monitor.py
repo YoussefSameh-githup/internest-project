@@ -24,12 +24,12 @@ def _http_error(code, body="", cls=None):
 
 @override_settings(ADMIN_ALERT_EMAIL=ADMIN, EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend", API_ALERT_COOLDOWN_SECONDS=1800,
                    API_LOW_BALANCE_THRESHOLD=2.0, DEFAULT_FROM_EMAIL="Internest <noreply@example.com>")
-class MonitorBase(SimpleTestCase):
+class MonitorBase(TestCase):
     def setUp(self):
         cache.clear()
         self.addCleanup(cache.clear)
 
-    def fail(self, exc, provider="Google Gemini", feature="Question Generation"):
+    def trigger(self, exc, provider="Google Gemini", feature="Question Generation"):
         def boom():
             raise exc
 
@@ -57,11 +57,13 @@ class ClassificationTests(MonitorBase):
                     _http_error(429, "Your credit balance is too low"), _http_error(403, "quota exceeded for this key")):
             self.assertEqual(mon.classify(exc).alert_type, mon.QUOTA, repr(exc))
 
-    def test_plain_rate_limit_is_not_exhaustion(self):
+    def test_plain_rate_limit_is_a_429_alert_but_not_urgent(self):
         failure = mon.classify(_http_error(429, "Rate limit reached for requests per minute. Please retry."))
         self.assertEqual(failure.alert_type, mon.RATE_LIMITED)
-        self.fail(_http_error(429, "Rate limit reached for requests per minute"))
-        self.assertEqual(mail.outbox, [])  # transient: never emailed
+        self.trigger(_http_error(429, "Rate limit reached for requests per minute"))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Rate limit hit (429)", mail.outbox[0].subject)
+        self.assertNotIn("URGENT", mail.outbox[0].subject)
 
     def test_secrets_are_masked_in_the_alert_text(self):
         failure = mon.classify(_http_error(401, "Incorrect API key sk-abcdefghijklmnop1234 and ?key=AIzaSyABCDEFGH12345"))
@@ -72,27 +74,28 @@ class ClassificationTests(MonitorBase):
 
 class AlertEmailTests(MonitorBase):
     def test_failure_alert_has_provider_feature_status_details_and_timestamp(self):
-        self.fail(_http_error(500, "upstream exploded"), provider="Google Gemini", feature="CV Analysis")
+        self.trigger(_http_error(500, "upstream exploded"), provider="Google Gemini", feature="CV Analysis")
         self.assertEqual(len(mail.outbox), 1)
         msg = mail.outbox[0]
         self.assertIn("Google Gemini", msg.subject)
         self.assertIn("CV Analysis", msg.subject)
-        for expected in ("API provider : Google Gemini", "Feature      : CV Analysis", "HTTP status  : 500", "upstream exploded", "Timestamp    :", "UTC"):
+        for expected in ("Provider     : Google Gemini (AI Generation)", "Feature      : CV Analysis", "HTTP status  : 500", "upstream exploded",
+                         "Env variable : GEMINI_API_KEY", "Timestamp    :", "UTC"):
             self.assertIn(expected, msg.body)
 
     def test_timeout_alert_says_there_was_no_response(self):
-        self.fail(httpx.ReadTimeout("no answer"), provider="AgentRouter", feature="Question Generation")
+        self.trigger(httpx.ReadTimeout("no answer"), provider="AgentRouter", feature="Question Generation")
         self.assertIn("n/a (no response)", mail.outbox[0].body)
         self.assertIn("Request timed out", mail.outbox[0].subject)
 
     def test_quota_alert_is_urgent_and_separate(self):
-        self.fail(_http_error(429, "insufficient_quota: You exceeded your current quota"), provider="Azure OpenAI", feature="CV Analysis")
+        self.trigger(_http_error(429, "insufficient_quota: You exceeded your current quota"), provider="Azure OpenAI", feature="CV Analysis")
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("URGENT: Low Balance / Quota Exhausted", mail.outbox[0].subject)
-        self.assertIn("Top up", mail.outbox[0].body)
+        self.assertIn("top up", mail.outbox[0].body)
 
     def test_402_is_urgent_too(self):
-        self.fail(_http_error(402, "Payment Required"))
+        self.trigger(_http_error(402, "Payment Required"))
         self.assertIn("URGENT", mail.outbox[0].subject)
 
     def test_original_exception_and_result_are_untouched(self):
@@ -134,55 +137,68 @@ class AlertEmailTests(MonitorBase):
 class CooldownTests(MonitorBase):
     def test_a_spike_sends_one_email_per_provider_and_type(self):
         for _ in range(25):
-            self.fail(_http_error(500, "boom"))
+            self.trigger(_http_error(500, "boom"))
         self.assertEqual(len(mail.outbox), 1)
 
     def test_other_provider_or_type_is_not_suppressed(self):
-        self.fail(_http_error(500, "boom"), provider="Google Gemini")
-        self.fail(_http_error(500, "boom"), provider="AgentRouter")
-        self.fail(_http_error(401, "bad key"), provider="Google Gemini")
-        self.fail(_http_error(402, "pay"), provider="Google Gemini")
+        self.trigger(_http_error(500, "boom"), provider="Google Gemini")
+        self.trigger(_http_error(500, "boom"), provider="AgentRouter")
+        self.trigger(_http_error(401, "bad key"), provider="Google Gemini")
+        self.trigger(_http_error(402, "pay"), provider="Google Gemini")
         self.assertEqual(len(mail.outbox), 4)
 
     def test_uses_cache_add_with_the_thirty_minute_window(self):
         with mock.patch.object(mon.cache, "add", return_value=True) as add:
-            self.fail(_http_error(500, "boom"), provider="Google Gemini")
+            self.trigger(_http_error(500, "boom"), provider="Google Gemini")
         key, _value, seconds = add.call_args.args
-        self.assertEqual((key, seconds), ("api-alert:google gemini:server", 1800))
+        self.assertEqual((key, seconds), ("api-alert:gemini:server", 1800))
 
     def test_an_email_is_allowed_again_after_the_window(self):
-        self.fail(_http_error(500, "boom"))
-        cache.clear()  # the 30 minutes have passed
-        self.fail(_http_error(500, "boom"))
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from internest_core.models import APIIncident
+
+        self.trigger(_http_error(500, "boom"))
+        cache.clear()
+        APIIncident.objects.update(created_at=timezone.now() - timedelta(minutes=31))  # the 30 minutes have passed
+        self.trigger(_http_error(500, "boom"))
         self.assertEqual(len(mail.outbox), 2)
+
+    def test_the_cooldown_also_holds_across_workers(self):
+        self.trigger(_http_error(500, "boom"))
+        cache.clear()  # another worker process has its own empty cache; the incident table still remembers the email
+        self.trigger(_http_error(500, "boom"))
+        self.assertEqual(len(mail.outbox), 1)
 
 
 class RecipientAndSafetyTests(MonitorBase):
     def test_only_the_admin_address_is_ever_emailed(self):
-        self.fail(_http_error(500, "contact student@uni.edu or company@startup.io"), provider="P1")
-        self.fail(_http_error(402, "pay"), provider="P2")
+        self.trigger(_http_error(500, "contact student@uni.edu or company@startup.io"), provider="P1")
+        self.trigger(_http_error(402, "pay"), provider="P2")
         for msg in mail.outbox:
             self.assertEqual((msg.to, msg.cc, msg.bcc), ([ADMIN], [], []))
         self.assertEqual(len(mail.outbox), 2)
 
     def test_nothing_is_sent_when_no_admin_is_configured(self):
         with override_settings(ADMIN_ALERT_EMAIL=""):
-            self.fail(_http_error(500, "boom"))
+            self.trigger(_http_error(500, "boom"))
         self.assertEqual(mail.outbox, [])
 
     def test_the_admin_address_is_not_written_to_the_log(self):
         with self.assertLogs("internest_core.api_monitor", "WARNING") as logs:
-            self.fail(_http_error(500, "boom"))
+            self.trigger(_http_error(500, "boom"))
         self.assertNotIn(ADMIN, "\n".join(logs.output))
 
     def test_a_broken_mail_server_never_breaks_the_call(self):
         with mock.patch.object(mon, "send_mail", side_effect=OSError("smtp down")), self.assertLogs("internest_core.api_monitor", "ERROR"):
-            self.fail(_http_error(500, "boom"))
+            self.trigger(_http_error(500, "boom"))
         self.assertEqual(mail.outbox, [])
 
     def test_a_bug_inside_the_monitor_never_masks_the_original_error(self):
         with mock.patch.object(mon, "classify", side_effect=RuntimeError("monitor bug")), self.assertLogs("internest_core.api_monitor", "ERROR"):
-            self.fail(_http_error(500, "boom"))
+            self.trigger(_http_error(500, "boom"))
 
     def test_a_missing_admin_setting_means_no_mail_and_no_crash(self):
         from django.conf import settings

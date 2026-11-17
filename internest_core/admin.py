@@ -17,7 +17,7 @@ from internest_skills.models import Skill
 
 from .admin_base import BAD, INFO, OK, WAIT, ModelAdmin, StackedInline, TabularInline, flag_badge, status_badge
 from .models import (
-    Application, DiscountCode, EmailVerification, GamificationTask, GigExperience, Internship,
+    APIIncident, APIProvider, Application, DiscountCode, EmailVerification, GamificationTask, GigExperience, Internship,
     PartnerApplicantData, PartnerCourseSubmission, PartnerInternshipSubmission, PartnerProfile, StudentEnrollment,
     StudentProfile, StudentTaskRecord, TaskAnswer, TaskQuestion, UniversityInquiry,
 )
@@ -466,6 +466,69 @@ class UniversityInquiryAdmin(ModelAdmin):
     date_hierarchy = "created_at"
     status_col = status_badge("status", {UniversityInquiry.STATUS_NEW: WAIT, UniversityInquiry.STATUS_CONTACTED: INFO,
                                          UniversityInquiry.STATUS_PILOT: OK, UniversityInquiry.STATUS_CLOSED: None})
+
+    def has_add_permission(self, request):
+        return False
+
+
+# --- External API health & billing (registry: internest_core/api_registry.py) ---
+@admin.register(APIProvider)
+class APIProviderAdmin(ModelAdmin):
+    """What each external API does for Internest, plus the budget you maintain. Descriptions come from the code registry."""
+    list_display = ("name", "category", "paid", "balance", "low_alert", "last_check_result", "registered")
+    list_filter = ("category", "is_paid", "tracking_mode", "registered")
+    search_fields = ("name", "key", "role")
+    actions = ["reset_spend_after_top_up"]
+    readonly_fields = ("key", "name", "category", "role", "impact", "degraded_behavior", "env_var", "code_location", "dashboard_link",
+                       "registered", "is_paid", "tracking_mode", "remaining", "last_balance", "last_checked_at", "last_check_result")
+    fieldsets = (
+        (_("What this API is"), {"fields": ("name", "category", "role", "impact", "degraded_behavior")}),
+        (_("Where it lives"), {"fields": ("key", "env_var", "code_location", "dashboard_link", "registered")}),
+        (_("Budget & balance (edit after every top-up)"), {"fields": (
+            "is_paid", "tracking_mode", "currency", "initial_budget", "estimated_spent", "remaining", "low_balance_threshold",
+            "cost_per_call", "cost_per_1k_tokens", "last_balance", "last_checked_at", "last_check_result")}),
+    )
+
+    def has_add_permission(self, request):
+        return False  # rows come from api_registry.py (or are created automatically the first time an unknown API is used)
+
+    @admin.display(description=_("Paid"), boolean=True)
+    def paid(self, obj):
+        return obj.is_paid
+
+    @admin.display(description=_("Remaining"))
+    def balance(self, obj):
+        remaining = obj.remaining_balance
+        return "—" if remaining is None else f"{remaining:,.2f} {obj.currency}"
+
+    remaining = balance
+
+    @admin.display(description=_("Low?"), boolean=True)
+    def low_alert(self, obj):
+        return obj.is_low
+
+    @admin.display(description=_("Console / billing"))
+    def dashboard_link(self, obj):
+        from django.utils.html import format_html
+
+        return format_html('<a href="{0}" target="_blank" rel="noopener">{0}</a>', obj.dashboard_url) if obj.dashboard_url else "—"
+
+    @admin.action(description=_("I topped up: set estimated spend back to 0"))
+    def reset_spend_after_top_up(self, request, queryset):
+        from decimal import Decimal
+
+        updated = queryset.update(estimated_spent=Decimal("0"))
+        self.message_user(request, _("%(n)s provider(s): estimated spend reset. Update the initial budget to the amount you now have.") % {"n": updated})
+
+
+@admin.register(APIIncident)
+class APIIncidentAdmin(ModelAdmin):
+    """Every API problem seen (the email is limited to one per 30 minutes per provider and type; this log keeps them all)."""
+    list_display = ("created_at", "provider", "alert_type", "http_status", "feature", "emailed")
+    list_filter = ("provider", "alert_type", "emailed")
+    search_fields = ("feature", "detail", "provider__name")
+    date_hierarchy = "created_at"
+    readonly_fields = ("provider", "feature", "alert_type", "http_status", "detail", "failover_status", "emailed", "created_at")
 
     def has_add_permission(self, request):
         return False

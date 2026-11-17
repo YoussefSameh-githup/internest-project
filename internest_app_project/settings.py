@@ -230,11 +230,18 @@ CSRF_COOKIE_SAMESITE = "Lax"
 # EMAIL_HOST_PASSWORD must be a Gmail App Password (requires 2-Step Verification).
 # Backend: DJANGO_EMAIL_BACKEND / EMAIL_BACKEND from .env, else SendGrid (django-anymail) when ANYMAIL_SENDGRID_API_KEY is set,
 # else the Gmail SMTP settings below.
-EMAIL_BACKEND = (
+MONITORED_EMAIL_BACKEND = (
     os.getenv("DJANGO_EMAIL_BACKEND") or os.getenv("EMAIL_BACKEND")
     or ("anymail.backends.sendgrid.EmailBackend" if os.getenv("ANYMAIL_SENDGRID_API_KEY") else "django.core.mail.backends.smtp.EmailBackend")
 )
-if os.getenv("ANYMAIL_SENDGRID_API_KEY") or "anymail" in EMAIL_BACKEND:
+# Real SendGrid / SMTP delivery is wrapped so its failures raise admin alerts (internest_core/email_backend.py).
+# Console / file / test backends are used as they are.
+EMAIL_BACKEND = (
+    "internest_core.email_backend.MonitoredEmailBackend"
+    if MONITORED_EMAIL_BACKEND in ("anymail.backends.sendgrid.EmailBackend", "django.core.mail.backends.smtp.EmailBackend")
+    else MONITORED_EMAIL_BACKEND
+)
+if os.getenv("ANYMAIL_SENDGRID_API_KEY") or "anymail" in MONITORED_EMAIL_BACKEND:
     ANYMAIL = {"SENDGRID_API_KEY": os.getenv("ANYMAIL_SENDGRID_API_KEY", "")}
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
@@ -457,6 +464,8 @@ UNFOLD = {
                 _nav(_("Groups & permissions"), "admin_panel_settings", "auth_group"),
                 _nav(_("Opted out of opportunity emails"), "notifications_off", "internest_core_studentprofile", "?email_new_opportunities__exact=0"),
                 _nav(_("Audit log"), "history", "admin_logentry"),
+                _nav(_("API health & billing"), "monitor_heart", "internest_core_apiprovider"),
+                _nav(_("API incidents"), "report", "internest_core_apiincident"),
                 _nav(_("Skill relations"), "hub", "internest_skills_skillrelation"),
                 _nav(_("External courses"), "school", "internest_skills_externalcourse"),
             ]},

@@ -35,7 +35,7 @@ def create_invoice_link(order, item_name: str, return_urls: dict) -> tuple[str, 
         "payLoad": {"order_id": order.pk},
     }
     try:
-        resp = monitored_api_call("Fawaterak", "Payment invoice link", httpx.post,
+        resp = monitored_api_call("fawaterak", "Payment invoice link", httpx.post,
                                   f"{settings.FAWATERAK_BASE_URL.rstrip('/')}/api/v2/createInvoiceLink", json=payload, timeout=20,
                                   headers={"Authorization": f"Bearer {settings.FAWATERAK_API_KEY}", "Content-Type": "application/json"})
         resp.raise_for_status()

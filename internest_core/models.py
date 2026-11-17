@@ -666,3 +666,78 @@ class UniversityInquiry(models.Model):
 
     def __str__(self):
         return f"{self.university} · {self.name}"
+
+
+# === External API health & billing (internest_core/api_registry.py is the source of truth for the descriptive fields) ===
+class APIProvider(models.Model):
+    """One external API. Descriptive fields are synced from the code registry; the budget numbers are edited in Django admin."""
+
+    TRACKING_CHOICES = [("none", _("No tracking")), ("live", _("Live (provider balance endpoint)")), ("ledger", _("Local ledger (estimated spend)"))]
+
+    key = models.SlugField(max_length=60, unique=True)
+    name = models.CharField(max_length=120)
+    category = models.CharField(max_length=20, default="other")
+    role = models.TextField(blank=True, help_text=_("What this API does on Internest"))
+    impact = models.TextField(blank=True, help_text=_("Which features break or degrade when it is down"))
+    degraded_behavior = models.TextField(blank=True)
+    env_var = models.CharField(max_length=80, blank=True, help_text=_(".env key that holds its secret"))
+    code_location = models.CharField(max_length=255, blank=True)
+    dashboard_url = models.URLField(blank=True, help_text=_("Console / billing page"))
+    registered = models.BooleanField(default=True, help_text=_("False = seen in a call but never added to api_registry.py"))
+    is_paid = models.BooleanField(default=False)
+    tracking_mode = models.CharField(max_length=10, choices=TRACKING_CHOICES, default="none")
+    currency = models.CharField(max_length=10, default="USD")
+    # Ledger mode: remaining = initial_budget - estimated_spent. Edit initial_budget after every top-up.
+    initial_budget = models.DecimalField(max_digits=14, decimal_places=4, default=Decimal("0"), help_text=_("Money you loaded; 0 = tracking off"))
+    estimated_spent = models.DecimalField(max_digits=14, decimal_places=4, default=Decimal("0"))
+    low_balance_threshold = models.DecimalField(max_digits=14, decimal_places=4, default=Decimal("0"), help_text=_("Alert when remaining <= this"))
+    cost_per_call = models.DecimalField(max_digits=12, decimal_places=6, default=Decimal("0"), help_text=_("Estimated cost of one request"))
+    cost_per_1k_tokens = models.DecimalField(max_digits=12, decimal_places=6, default=Decimal("0"), help_text=_("Estimated cost per 1,000 tokens"))
+    # Live mode: the last balance read from the provider.
+    last_balance = models.DecimalField(max_digits=14, decimal_places=4, null=True, blank=True)
+    last_checked_at = models.DateTimeField(null=True, blank=True)
+    last_check_result = models.CharField(max_length=200, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["category", "name"]
+        verbose_name = _("API provider")
+        verbose_name_plural = _("API providers")
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def remaining_balance(self):
+        """Money left, or None when it cannot be known (live mode not read yet, or no budget entered in ledger mode)."""
+        if self.tracking_mode == "live":
+            return self.last_balance
+        if self.tracking_mode == "ledger" and self.initial_budget > 0:
+            return self.initial_budget - self.estimated_spent
+        return None
+
+    @property
+    def is_low(self):
+        remaining = self.remaining_balance
+        return remaining is not None and remaining <= self.low_balance_threshold
+
+
+class APIIncident(models.Model):
+    """Every API problem seen, whether or not it produced an email (the 30-minute cooldown suppresses repeats)."""
+
+    provider = models.ForeignKey(APIProvider, on_delete=models.CASCADE, related_name="incidents")
+    feature = models.CharField(max_length=160, blank=True)
+    alert_type = models.CharField(max_length=20, db_index=True)
+    http_status = models.PositiveSmallIntegerField(null=True, blank=True)
+    detail = models.TextField(blank=True)
+    failover_status = models.TextField(blank=True)
+    emailed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = _("API incident")
+        verbose_name_plural = _("API incidents")
+
+    def __str__(self):
+        return f"{self.provider} · {self.alert_type} · {self.created_at:%Y-%m-%d %H:%M}"

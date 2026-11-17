@@ -20,8 +20,9 @@ On every coding, UI or marketing prompt, use the relevant skills in `.claude/ski
 - Complete drop-in code only; no placeholders or truncation.
 
 ## External APIs
-Every external API call (AI, payments, any future paid or free API) MUST go through `internest_core/api_monitor.py` (`monitored_api_call`, `@monitored`, `api_feature`, `BaseMonitoredAPIClient`).
-It emails failures and low-balance warnings to `ADMIN_ALERT_EMAIL` only (30-min cooldown); add `check_api_balance(...)` for any API with a balance endpoint. Test with `python manage.py test_api_alert`.
+Every external API call (AI, payments, email, any future paid or free API) MUST go through `internest_core/api_monitor.py` (`monitored_api_call`, `@monitored`, `api_feature`, `failover_scope`, `BaseMonitoredAPIClient`).
+Describe every API ONCE in `internest_core/api_registry.py` (`register(ProviderSpec(...))`: name, category, role, impact, `.env` key, code location, console/billing URL, optional balance tracking). That is all a new API needs for alert emails with full context, the incident log, the Django-admin budget row and `manage.py check_api_health`.
+Alerts go to `ADMIN_ALERT_EMAIL` only (30-min cooldown per provider and type). Verify with `python manage.py test_api_alert` and `python manage.py check_api_health` (schedule the latter daily on PythonAnywhere).
 
 ## Delivery workflow
 Implement → add tests → AR/EN i18n (`scripts/i18n_catalog.py apply|check|compile`) → run the full suite → commit → `git push origin main`. End replies with the PythonAnywhere steps (`git pull`, plus migrate / pip install / collectstatic / compilemessages when needed, then Reload).

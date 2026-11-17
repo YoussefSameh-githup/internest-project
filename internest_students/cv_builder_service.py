@@ -15,7 +15,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.db import transaction
 
-from internest_core.api_monitor import api_feature, monitored_api_call
+from internest_core.api_monitor import api_feature, failover_scope, monitored_api_call
 from internest_skills import llm
 from internest_skills.extraction import ExtractedSkill, save_claimed_skills
 from internest_skills.models import Skill, StudentSkill
@@ -320,17 +320,19 @@ def transcribe(audio: bytes, filename: str, content_type: str) -> str:
     chain = transcription_providers()
     if not chain:
         raise VoiceUnavailable("No transcription key configured")
-    for i, provider in enumerate(chain):
-        try:
-            resp = monitored_api_call(
-                llm.provider_name(provider), "Voice-to-CV Transcription",
-                llm._client(60, provider, 0 if i + 1 < len(chain) else 1).audio.transcriptions.create,
-                model=provider.model, file=(filename, audio, content_type), prompt=WHISPER_PROMPT, temperature=0,
-            )
-            return (getattr(resp, "text", "") or "").strip()
-        except llm.LLM_ERRORS as exc:
-            logger.warning("Transcription via %s failed (%s: %s)%s", provider.label, type(exc).__name__, exc,
-                           "; failing over" if i + 1 < len(chain) else "")
+    with failover_scope() as scope:
+        for i, provider in enumerate(chain):
+            try:
+                resp = monitored_api_call(
+                    llm.provider_name(provider), "Voice-to-CV Transcription",
+                    llm._client(60, provider, 0 if i + 1 < len(chain) else 1).audio.transcriptions.create,
+                    model=provider.model, file=(filename, audio, content_type), prompt=WHISPER_PROMPT, temperature=0,
+                )
+                scope.served_by = llm.provider_display_name(provider)
+                return (getattr(resp, "text", "") or "").strip()
+            except llm.LLM_ERRORS as exc:
+                logger.warning("Transcription via %s failed (%s: %s)%s", provider.label, type(exc).__name__, exc,
+                               "; failing over" if i + 1 < len(chain) else "")
     raise VoiceUnavailable("All transcription keys failed")
 
 

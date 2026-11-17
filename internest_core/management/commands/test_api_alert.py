@@ -24,7 +24,7 @@ class Command(BaseCommand):
                                                           f"{settings.API_LOW_BALANCE_THRESHOLD:g}. Nothing is wrong."))
         failed = 0
         for label, alert_type, status, detail in samples:
-            sent = send_alert("Test Provider", "test_api_alert command", alert_type, status, detail, force=True)
+            sent = send_alert("Test Provider", "test_api_alert command", alert_type, status, detail, force=True, record=False)
             failed += not sent
             self.stdout.write(f"{label}: {'sent' if sent else 'NOT sent (check EMAIL_HOST_PASSWORD / SMTP settings)'}")
         if failed:
