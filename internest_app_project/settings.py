@@ -536,3 +536,18 @@ UNFOLD = {
         ],
     },
 }
+
+
+# =========================================================================
+# Sentry (errors + performance). Off until SENTRY_DSN is set in .env; never in tests.
+# Privacy: no PII, no request bodies, secrets scrubbed (internest_core/observability.py).
+# =========================================================================
+SENTRY_DSN = os.getenv("SENTRY_DSN", "")
+SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "pythonanywhere" if ON_PYTHONANYWHERE else ("development" if DEBUG else "production"))
+SENTRY_TRACES_SAMPLE_RATE = env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.1)
+SENTRY_PROFILES_SAMPLE_RATE = env.float("SENTRY_PROFILES_SAMPLE_RATE", default=0.0)
+if SENTRY_DSN and not TESTING:
+    from internest_core.observability import init_sentry
+
+    init_sentry(SENTRY_DSN, environment=SENTRY_ENVIRONMENT, release=os.getenv("SENTRY_RELEASE", ""),
+                traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE, profiles_sample_rate=SENTRY_PROFILES_SAMPLE_RATE)

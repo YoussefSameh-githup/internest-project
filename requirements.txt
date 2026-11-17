@@ -16,3 +16,4 @@ arabic-reshaper==3.0.0
 python-bidi==0.4.2
 qrcode==8.0
 django-unfold==0.81.0
+sentry-sdk[django]==2.75.0  # error + performance monitoring (enabled by SENTRY_DSN)
