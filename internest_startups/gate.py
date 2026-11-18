@@ -66,7 +66,7 @@ class CompanyProfileGateMiddleware:
 
 
 def pro_company_required(view):
-    """Pro startups only. Others are sent to the upgrade page with an explanation; non-startups get a 404."""
+    """Pro startups only. Others are sent to the free anonymous preview with an explanation; non-startups get a 404."""
     from functools import wraps
 
     from django.contrib import messages
@@ -83,7 +83,7 @@ def pro_company_required(view):
             raise Http404
         if not is_pro(partner):
             messages.warning(request, _("Upgrade to Internest Pro to access the Talent Pool."))
-            return redirect("startup_upgrade")
+            return redirect("talent_pool_preview")
         request.partner = partner
         return view(request, *args, **kwargs)
 

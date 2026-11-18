@@ -6,7 +6,7 @@ from django.shortcuts import render
 from .page_cache import cache_public_page
 from .views import get_user_context
 
-POLICIES_UPDATED = datetime.date(2026, 10, 13)  # change when a policy's content changes
+POLICIES_UPDATED = datetime.date(2026, 11, 18)  # change when a policy's content changes
 
 
 def _policy(template, page):

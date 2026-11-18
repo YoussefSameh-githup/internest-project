@@ -125,6 +125,14 @@
                         <i class="bi bi-chevron-left dash-card__go" aria-hidden="true"></i>
                     </a>
                 {% else %}
+                    <a href="{% url 'talent_pool_preview' %}" class="dash-card">
+                        <span class="dash-card__icon dash-card__icon--blue"><i class="bi bi-people"></i></span>
+                        <span class="dash-card__text">
+                            <span class="dash-card__title">{% trans "Talent Pool preview" %}</span>
+                            <span class="dash-card__sub">{% trans "Real verified counts and anonymous candidates, free" %}</span>
+                        </span>
+                        <i class="bi bi-chevron-left dash-card__go" aria-hidden="true"></i>
+                    </a>
                     <a href="{% url 'startup_upgrade' %}" class="dash-card dash-card--gold" data-upsell>
                         <span class="dash-card__icon dash-card__icon--gold"><i class="bi bi-gem"></i></span>
                         <span class="dash-card__text">

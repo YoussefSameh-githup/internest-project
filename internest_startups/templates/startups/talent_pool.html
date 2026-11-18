@@ -83,7 +83,7 @@
         <header class="tp-head">
             <div>
                 <h1>{% trans "Talent Pool" %} <span class="pro-chip">PRO</span></h1>
-                <p>{% blocktrans with t=MATCH_THRESHOLD %}Students who opted in, with verified skills or a skill score of {{ t }}% or more. Contact details stay private until they apply and you shortlist them.{% endblocktrans %}</p>
+                <p>{% trans "Students who opted in and hold at least one verified skill. Contact details stay private until they apply and you shortlist them." %}</p>
             </div>
             <span class="tp-quota" role="status" title="{% blocktrans with n=invites_per_opportunity d=invites_daily %}{{ n }} per opportunity · {{ d }} per day{% endblocktrans %}">
                 <i class="bi bi-send-fill"></i> {% blocktrans with n=invites_left %}{{ n }} invitations left today{% endblocktrans %}

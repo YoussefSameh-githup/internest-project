@@ -6081,3 +6081,131 @@ msgstr "صحة الـ API والفواتير"
 
 msgid "Preparing your questions…"
 msgstr "جارٍ تجهيز أسئلتك…"
+
+msgid "Talent Pool preview"
+msgstr "معاينة قاعدة المواهب"
+
+msgid "Real verified counts and anonymous candidates, free"
+msgstr "أعداد حقيقية للمتحقَّق منهم ومرشحين مجهولي الهوية، مجاناً"
+
+msgid ""
+"Pro startups can find you by your verified skills and invite you to apply. "
+"They see your name, university, major, study year, bio and verified skills —"
+" never your phone, email or CV. Other company accounts see only an anonymous"
+" summary: major, study year and verified skills with a score range."
+msgstr ""
+"الشركات الناشئة المشتركة في Pro تقدر تلاقيك بمهاراتك المتحقَّق منها وتدعوك "
+"للتقديم. بيشوفوا اسمك وجامعتك وتخصصك وسنتك الدراسية ونبذتك ومهاراتك "
+"المتحقَّق منها، ومش بيشوفوا أبداً رقمك أو إيميلك أو الـ CV. باقي حسابات "
+"الشركات بتشوف ملخص مجهول الهوية بس: التخصص والسنة الدراسية والمهارات "
+"المتحقَّق منها مع نطاق الدرجة."
+
+msgid ""
+"You need at least one verified skill to appear in the Talent Pool. A high "
+"score alone is not enough: pass the challenge with no weak sub-skill, or get"
+" work, a certificate or a course reviewed."
+msgstr ""
+"محتاج مهارة واحدة على الأقل متحقَّق منها عشان تظهر في قاعدة المواهب. الدرجة "
+"العالية لوحدها مش كفاية: اعدِّي التحدي من غير أي مهارة فرعية ضعيفة، أو خلّي "
+"شغل أو شهادة أو كورس يتراجع."
+
+msgid "Other review"
+msgstr "مراجعة أخرى"
+
+msgid ""
+"Students who opted in and hold at least one verified skill. Contact details "
+"stay private until they apply and you shortlist them."
+msgstr ""
+"طلاب وافقوا على الظهور وعندهم مهارة واحدة على الأقل متحقَّق منها. بيانات "
+"التواصل بتفضل خاصة لحد ما يقدّموا وتختارهم للمقابلة."
+
+msgid ""
+"See who is really available before you pay. Every number is live and every "
+"candidate below holds at least one verified skill. Names, universities and "
+"contact details stay hidden."
+msgstr ""
+"اعرف مين متاح فعلاً قبل ما تدفع. كل رقم هنا لحظي، وكل مرشح تحت عنده مهارة "
+"واحدة على الأقل متحقَّق منها. الأسماء والجامعات وبيانات التواصل مخفية."
+
+msgid "Anonymous candidate summaries"
+msgstr "ملخصات مرشحين مجهولي الهوية"
+
+msgid "Candidate %(n)s"
+msgstr "مرشح %(n)s"
+
+msgid "Major not stated"
+msgstr "التخصص غير مذكور"
+
+msgid "Want names, full profiles and invitations?"
+msgstr "عايز الأسماء والملفات الكاملة والدعوات؟"
+
+msgid ""
+"Pro shows each candidate's name, university, bio, portfolio and exact "
+"scores, and lets you invite them to apply. Phone, email and CV are shared "
+"only after they apply and you shortlist them."
+msgstr ""
+"باقة Pro بتعرض اسم كل مرشح وجامعته ونبذته وأعماله ودرجاته بالظبط، وتقدر "
+"تدعوه للتقديم. الرقم والإيميل والـ CV بيظهروا بس بعد ما يقدّم وتختاره "
+"للمقابلة."
+
+msgid "See plans"
+msgstr "شوف الباقات"
+
+msgid "Preview anonymous candidates for free"
+msgstr "عاين المرشحين مجهولي الهوية مجاناً"
+
+msgid "Talent Pool numbers"
+msgstr "أرقام قاعدة المواهب"
+
+msgid "verified candidates open to offers"
+msgstr "مرشح متحقَّق منه ومتاح للعروض"
+
+msgid "verified skills"
+msgstr "مهارة متحقَّق منها"
+
+msgid "How the skills were verified"
+msgstr "طريقة التحقق من المهارات"
+
+msgid "Verified candidates per skill"
+msgstr "عدد المرشحين المتحقَّق منهم لكل مهارة"
+
+msgid ""
+"No verified candidates yet. We only count students who opted in and passed a"
+" verification, so this number starts small and grows as students pass "
+"challenges."
+msgstr ""
+"لسه مفيش مرشحين متحقَّق منهم. إحنا بنعدّ بس الطلاب اللي وافقوا على الظهور "
+"وعدّوا التحقق، فالرقم بيبدأ صغير ويكبر مع كل طالب بيعدّي تحدي."
+
+msgid ""
+"Live count. A high score alone is never counted: only skills that passed a "
+"challenge with no weak sub-skill, or reviewed work, certificates and "
+"courses."
+msgstr ""
+"عدد لحظي. الدرجة العالية لوحدها مش بتتحسب أبداً: بس المهارات اللي عدّت تحدي "
+"من غير مهارة فرعية ضعيفة، أو شغل وشهادات وكورسات اتراجعت."
+
+msgid ""
+"Pro startups can find you by your verified skills and invite you to apply. "
+"They see your name, university, major, study year, bio and verified skills —"
+" never your phone, email or CV. Verified companies without Pro see only an "
+"anonymous summary: major, study year and verified skills with a score range."
+msgstr ""
+"الشركات الناشئة المشتركة في Pro تقدر تلاقيك بمهاراتك المتحقَّق منها وتدعوك "
+"للتقديم. بيشوفوا اسمك وجامعتك وتخصصك وسنتك الدراسية ونبذتك ومهاراتك "
+"المتحقَّق منها، ومش بيشوفوا أبداً رقمك أو إيميلك أو الـ CV. الشركات "
+"الموثَّقة غير المشتركة في Pro بتشوف ملخص مجهول الهوية بس: التخصص والسنة "
+"الدراسية والمهارات المتحقَّق منها مع نطاق الدرجة."
+
+msgid "Visible in the Talent Pool"
+msgstr "ظاهر في قاعدة المواهب"
+
+msgid ""
+"Anonymous candidate summaries appear once our team verifies your company "
+"(usually within 24 hours). The numbers above are already live."
+msgstr ""
+"ملخصات المرشحين مجهولي الهوية هتظهر بعد ما فريقنا يوثّق شركتك (غالباً خلال "
+"24 ساعة). الأرقام اللي فوق لحظية من دلوقتي."
+
+msgid "Verified candidates open to offers"
+msgstr "المرشحون المتحقَّق منهم والمتاحون للعروض"

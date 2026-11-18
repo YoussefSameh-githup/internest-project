@@ -21,7 +21,7 @@
             {% elif profile.personal_email %}<a href="{% url 'verify_email' %}" class="px-badge px-badge--warn"><i class="bi bi-exclamation-circle-fill"></i> {% trans "Unverified" %}</a>{% endif %}
             {% if profile.is_university_email_verified %}<span class="px-badge px-badge--ok"><i class="bi bi-mortarboard-fill"></i> {% trans "Verified student" %}</span>{% endif %}
             {% if proof.top %}<span class="px-badge px-badge--gold">🏅 {% trans "Top Verified Candidate" %}</span>{% endif %}
-            {% if profile.talent_pool_visible and talent_pool_eligible %}<span class="px-badge px-badge--ok"><i class="bi bi-eye-fill"></i> {% trans "Visible to Pro startups" %}</span>
+            {% if profile.talent_pool_visible and talent_pool_eligible %}<span class="px-badge px-badge--ok"><i class="bi bi-eye-fill"></i> {% trans "Visible in the Talent Pool" %}</span>
             {% elif profile.talent_pool_visible %}<span class="px-badge px-badge--warn"><i class="bi bi-hourglass-split"></i> {% trans "Waiting for a verified skill" %}</span>{% endif %}
             {% if profile.linkedin_url %}<a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener" class="px-badge"><i class="bi bi-linkedin"></i> {% trans "LinkedIn connected" %}</a>{% endif %}
             {% if github_url %}<a href="{{ github_url }}" target="_blank" rel="noopener" class="px-badge"><i class="bi bi-github"></i> {% trans "GitHub connected" %}</a>{% endif %}

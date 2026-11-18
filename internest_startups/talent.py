@@ -1,17 +1,21 @@
-"""Talent Pool: opted-in students with verified skills (or a quiz score ≥ MATCH_THRESHOLD), searchable by Pro startups."""
+"""Talent Pool: opted-in students with verified skills, searchable by Pro startups.
+
+Who counts as a candidate is defined once, in `internest_skills.verification` (a high score alone never counts).
+"""
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
-from django.db.models import Avg, Case, Count, IntegerField, Max, OuterRef, Prefetch, Q, Subquery, Value, When
+from django.db.models import Avg, Case, Count, F, IntegerField, Max, OuterRef, Prefetch, Q, Subquery, Value, When
 from django.db.models.functions import Coalesce
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from internest_core.models import TOP_VERIFIED_MIN_GIGS, GigExperience, StudentProfile
-from internest_skills.models import Skill, StudentSkill
+from internest_core.models import TOP_VERIFIED_MIN_GIGS, GigExperience
+from internest_skills.models import Skill
+from internest_skills.verification import parse_id, pool_candidates, verified_skills
 
 from internest_skills.matching import MATCH_THRESHOLD
 
-TOP_SCORE = MATCH_THRESHOLD
+TOP_SCORE = MATCH_THRESHOLD  # lowest step of the min-score filter only; eligibility is `verification.verified_skills`
 DAILY_INVITATIONS = 20  # per startup, anti-spam
 INVITES_PER_OPPORTUNITY = 3  # invited students skip the skill gate, so keep it scarce
 
@@ -32,17 +36,18 @@ def valid_invitation(user, internship, token):
 
 
 def qualifying_skills():
-    return StudentSkill.objects.filter(Q(status=StudentSkill.STATUS_VERIFIED) | Q(score__gte=TOP_SCORE))
+    return verified_skills()
 
 
 def pool_queryset(params):
     """Opted-in candidates matching the GET filters, best score first, with their qualifying skills attached."""
     skills = qualifying_skills()
-    if params.get("skill", "").isdigit():
-        skills = skills.filter(skill_id=int(params["skill"]))
-    if params.get("min_score", "").isdigit():
-        skills = skills.filter(score__gte=min(int(params["min_score"]), 100))
-    students = StudentProfile.objects.filter(talent_pool_visible=True, pk__in=skills.values("student_id"))
+    skill_id, min_score = parse_id(params.get("skill")), parse_id(params.get("min_score"))
+    if skill_id:
+        skills = skills.filter(skill_id=skill_id)
+    if min_score:
+        skills = skills.filter(score__gte=min(min_score, 100))
+    students = pool_candidates().filter(pk__in=skills.values("student_id"))
 
     q = params.get("q", "").strip()[:80]
     if q:
@@ -68,12 +73,12 @@ def pool_queryset(params):
         # Top Verified Candidates (≥ TOP_VERIFIED_MIN_GIGS completed gigs) come first.
         .annotate(top_verified=Case(When(gig_count__gte=TOP_VERIFIED_MIN_GIGS, then=Value(1)), default=Value(0), output_field=IntegerField()))
         .prefetch_related(Prefetch("skills", queryset=shown, to_attr="pool_skills"))
-        .order_by("-top_verified", "-best_score", "-pk")
+        .order_by("-top_verified", F("best_score").desc(nulls_last=True), "-pk")
     )
 
 
 def filter_options():
-    pool = StudentProfile.objects.filter(talent_pool_visible=True, pk__in=qualifying_skills().values("student_id"))
+    pool = pool_candidates()
 
     def distinct(field):  # stored values as-is, so the exact-match filter finds them
         return sorted({v for v in pool.exclude(**{f"{field}__isnull": True}).values_list(field, flat=True) if v and v.strip()},

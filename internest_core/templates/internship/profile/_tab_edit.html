@@ -57,14 +57,14 @@
                     <span class="pf-switch__track" aria-hidden="true"></span>
                     <span class="pf-switch__text">
                         <strong>{{ form.talent_pool_visible.label }}</strong>
-                        <small>{% trans "Pro startups can find you by your verified skills and invite you to apply. They see your name, university, major, study year, bio and verified skills — never your phone, email or CV." %}</small>
+                        <small>{% trans "Pro startups can find you by your verified skills and invite you to apply. They see your name, university, major, study year, bio and verified skills — never your phone, email or CV. Verified companies without Pro see only an anonymous summary: major, study year and verified skills with a score range." %}</small>
                     </span>
                 </label>
             </div>
             <p class="pf-pool__privacy"><i class="bi bi-shield-lock-fill"></i> {% trans "Your phone, email and CV are shared only if you apply and a startup shortlists you for an interview." %}</p>
             {% if not talent_pool_eligible %}
                 <small class="talent-hint"><i class="bi bi-info-circle"></i>
-                    {% blocktrans with t=MATCH_THRESHOLD %}A verified skill or a score of {{ t }}%+ is required to appear in the talent pool.{% endblocktrans %}
+                    {% trans "You need at least one verified skill to appear in the Talent Pool. A high score alone is not enough: pass the challenge with no weak sub-skill, or get work, a certificate or a course reviewed." %}
                     <a href="{{ skills_url }}">{% trans "Verify a skill" %}</a>
                 </small>
             {% endif %}

@@ -11,6 +11,7 @@ urlpatterns = [
     path("checkout/", views.checkout, name="checkout"),
     path("checkout/<int:order_id>/<str:outcome>/", views.checkout_return, name="checkout_return"),
     path("app/talent-pool/", views.talent_pool_search_view, name="talent_pool"),
+    path("app/talent-pool/preview/", views.talent_pool_preview, name="talent_pool_preview"),
     path("app/talent-pool/candidate/<int:student_id>/", views.talent_pool_candidate, name="talent_pool_candidate"),
     path("app/talent-pool/invite/<int:student_id>/", views.talent_pool_invite, name="talent_pool_invite"),
 ]

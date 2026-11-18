@@ -102,10 +102,10 @@ def skill_quizzes(profile):
 
 @db_safe(False)
 def talent_pool_eligible(profile):
-    """Has a verified skill or a score ≥ the match threshold."""
-    from internest_startups.talent import qualifying_skills
+    """Has a verified skill (one rule for the pool, its counts and this hint: `internest_skills.verification`)."""
+    from internest_skills.verification import is_pool_eligible
 
-    return qualifying_skills().filter(student=profile).exists()
+    return is_pool_eligible(profile)
 
 
 # ---------------------------------------------------------------- applications (shared with "My applications")

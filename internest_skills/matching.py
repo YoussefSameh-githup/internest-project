@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from .models import Skill, StudentSkill
 from .semantic import aggregate_score, relation_map
 
-MATCH_THRESHOLD = 70  # single source for the apply gate, Talent Pool eligibility and every UI text that mentions it
+MATCH_THRESHOLD = 70  # single source for the apply gate and every UI text that mentions it (Talent Pool: verification.py)
 SKILL_COVERED = MATCH_THRESHOLD / 100  # a single required skill counts as covered at this relevance
 
 

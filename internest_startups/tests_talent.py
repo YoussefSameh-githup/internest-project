@@ -32,7 +32,10 @@ class PoolBase(ApplicationsBase):
         _skill(self.amr, "python", score=95)
         self.sara_user, self.sara = _student("sara")
         StudentProfile.objects.filter(pk=self.sara.pk).update(talent_pool_visible=True, university="Ain Shams", major="Finance")
-        _skill(self.sara, "financial-analysis", status=StudentSkill.STATUS_LAG, score=82)  # not verified but ≥ 80
+        _skill(self.sara, "financial-analysis", score=82)
+        lagger_user, self.lagger = _student("lagger")  # opted in, scored 90% but failed on a weak sub-skill (H-1)
+        StudentProfile.objects.filter(pk=self.lagger.pk).update(talent_pool_visible=True, major="Accounting")
+        _skill(self.lagger, "excel", status=StudentSkill.STATUS_LAG, score=90)
         hidden_user, self.hidden = _student("hidden")  # verified but did not opt in
         _skill(self.hidden, "python")
         weak_user, self.weak = _student("weak")  # opted in, only a claimed/low skill
@@ -52,7 +55,7 @@ class TalentPoolTests(PoolBase):
     def test_free_startup_redirected_to_upgrade_with_message(self):
         self.client.force_login(self.founder)
         resp = self.client.get(URL, follow=True)
-        self.assertEqual(resp.redirect_chain[-1][0], reverse("startup_upgrade"))
+        self.assertEqual(resp.redirect_chain[-1][0], reverse("talent_pool_preview"))
         self.assertContains(resp, "Upgrade to Internest Pro to access the Talent Pool.")
         self.client.cookies["internest_lang"] = "ar"
         self.assertContains(self.client.get(URL, follow=True), "ترقية الحساب لباقة Pro مطلوبة للوصول لقاعدة بيانات المواهب")
@@ -71,7 +74,7 @@ class TalentPoolTests(PoolBase):
         self.assertEqual(self._names(resp), {"amr", "sara"})
         self.assertEqual(resp.context["page"][0].user.username, "amr")  # best score first
         self.assertContains(resp, '<span class="tp-skill__name">Python <span class="vs-badge"')
-        self.assertContains(resp, "Verified skill ✅", count=1)  # Sara's 82% skill is scored, not verified
+        self.assertContains(resp, "Verified skill ✅", count=2)  # only verified skills are ever listed
         self.assertContains(resp, '<span class="tp-skill__score">95%</span>')
         self.assertContains(resp, "Cairo University")
 
@@ -166,13 +169,13 @@ class TalentPoolProfileSettingTests(ApplicationsBase):
     def test_checkbox_visible_to_all_with_eligibility_hint(self):
         page = self.client.get(reverse("profile"))
         self.assertContains(page, 'name="talent_pool_visible"')
-        self.assertContains(page, "A verified skill or a score of 70%+ is required to appear in the talent pool.")
+        self.assertContains(page, "You need at least one verified skill to appear in the Talent Pool.")
         _skill(self.profile, "python")
         page = self.client.get(reverse("profile"))
         self.assertContains(page, 'name="talent_pool_visible"')
-        self.assertNotContains(page, "A verified skill or a score of 70%+ is required")
+        self.assertNotContains(page, "You need at least one verified skill to appear in the Talent Pool.")
         self._save(talent_pool_visible="on")
-        self.assertContains(self.client.get(reverse("profile")), "Visible to Pro startups")
+        self.assertContains(self.client.get(reverse("profile")), "Visible in the Talent Pool")
 
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
@@ -253,7 +256,7 @@ class InvitationBypassAndPreviewTests(PoolBase):
 
         EmployerSubscription.objects.filter(partner=self.partner).update(plan=EmployerSubscription.PLAN_FREE)
         resp = self.client.get(reverse("talent_pool_candidate", args=[self.amr.pk]))
-        self.assertRedirects(resp, reverse("startup_upgrade"), fetch_redirect_response=False)
+        self.assertRedirects(resp, reverse("talent_pool_preview"), fetch_redirect_response=False)
 
 
 class ProfileRedesignTests(ApplicationsBase):
@@ -288,21 +291,22 @@ class ProfileRedesignTests(ApplicationsBase):
 
 
 class ThresholdAndQuotaBadgeTests(PoolBase):
-    def test_score_70_qualifies_for_pool_but_69_does_not(self):
-        from internest_skills.matching import MATCH_THRESHOLD
-
-        self.assertEqual(MATCH_THRESHOLD, 70)
+    def test_only_verified_skills_qualify_never_a_score_alone(self):
         u1, at70 = _student("at70")
-        u2, below = _student("below")
-        type(at70).objects.filter(pk__in=[at70.pk, below.pk]).update(talent_pool_visible=True)
-        _skill(at70, "excel", status=StudentSkill.STATUS_LAG, score=70)
-        _skill(below, "excel", status=StudentSkill.STATUS_LAG, score=69)
+        u2, top = _student("top")
+        u3, claimed = _student("claimed")
+        type(at70).objects.filter(pk__in=[at70.pk, top.pk, claimed.pk]).update(talent_pool_visible=True)
+        _skill(at70, "excel", score=70)
+        _skill(top, "excel", status=StudentSkill.STATUS_LAG, score=100)
+        _skill(claimed, "excel", status=StudentSkill.STATUS_CLAIMED, score=95)
         self._pro()
         names = self._names(self.client.get(URL))
         self.assertIn("at70", names)
-        self.assertNotIn("below", names)
+        self.assertNotIn("top", names)
+        self.assertNotIn("claimed", names)
+        self.assertNotIn("lagger", names)
         page = self.client.get(URL)
-        self.assertContains(page, "skill score of 70% or more")
+        self.assertContains(page, "hold at least one verified skill")
         self.assertContains(page, '<option value="70"')
 
     def test_badge_counts_real_remaining_invitations(self):

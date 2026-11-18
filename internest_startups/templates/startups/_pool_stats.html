@@ -1,0 +1,25 @@
+{% load i18n %}
+{# Real Talent Pool numbers from internest_skills.verification.pool_stats(); `link_skills` turns skill chips into preview filters. #}
+<section class="pool-stats" aria-labelledby="pool-stats-title">
+    <h2 id="pool-stats-title" class="visually-hidden">{% trans "Talent Pool numbers" %}</h2>
+    <div class="pool-stats__totals">
+        <p class="pool-stats__total"><span>{% trans "Verified candidates open to offers" %}</span> <strong>{{ stats.candidates }}</strong></p>
+        <p class="pool-stats__total"><span>{% trans "Verified skills" %}</span> <strong>{{ stats.verified_skills }}</strong></p>
+    </div>
+    {% if stats.candidates %}
+        {% if stats.per_method %}
+            <ul class="pool-stats__methods" aria-label="{% trans 'How the skills were verified' %}">
+                {% for m in stats.per_method %}<li><i class="bi bi-patch-check-fill" aria-hidden="true"></i> {{ m.label }} <b>{{ m.skills }}</b></li>{% endfor %}
+            </ul>
+        {% endif %}
+        <ul class="pool-stats__skills" aria-label="{% trans 'Verified candidates per skill' %}">
+            {% for s in stats.per_skill %}
+                <li>{% if link_skills and s.filterable %}<a href="?skill={{ s.id }}" class="pool-chip{% if s.id == skill_id %} is-active{% endif %}"{% if s.id == skill_id %} aria-current="true"{% endif %}><bdi>{{ s.name }}</bdi> <b>{{ s.candidates }}</b></a>{% else %}<span class="pool-chip"><bdi>{{ s.name }}</bdi> <b>{{ s.candidates }}</b></span>{% endif %}</li>
+            {% endfor %}
+            {% if link_skills and skill_id %}<li><a href="?" class="pool-chip pool-chip--clear">{% trans "All skills" %}</a></li>{% endif %}
+        </ul>
+    {% else %}
+        <p class="pool-stats__empty">{% trans "No verified candidates yet. We only count students who opted in and passed a verification, so this number starts small and grows as students pass challenges." %}</p>
+    {% endif %}
+    <p class="pool-stats__note"><i class="bi bi-info-circle" aria-hidden="true"></i> {% trans "Live count. A high score alone is never counted: only skills that passed a challenge with no weak sub-skill, or reviewed work, certificates and courses." %}</p>
+</section>

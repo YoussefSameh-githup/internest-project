@@ -183,6 +183,10 @@ def upgrade(request):
         "pending_request": ProUpgradeRequest.objects.filter(partner=partner, status__in=ProUpgradeRequest.OPEN_STATUSES).first(),
         "free_posts": FREE_POSTS_PER_MONTH,
     })
+    if not context["is_pro"]:  # real pool numbers before paying (H-3)
+        from internest_skills.verification import pool_stats
+
+        context["stats"] = pool_stats()
     return render(request, "startups/upgrade.html", context)
 
 
@@ -214,6 +218,39 @@ def company_logo_update(request):
     if not url_has_allowed_host_and_scheme(nxt, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
         nxt = reverse("startup_company_profile")
     return redirect(nxt)
+
+
+@login_required
+def talent_pool_preview(request):
+    """Free for every company account: real verified counts and anonymised summaries, so nobody pays blind (H-3).
+
+    Names, universities, bios, photos, contacts and candidate ids are never sent; the full search stays Pro-only.
+    """
+    from django.http import Http404
+
+    from internest_skills.verification import anonymous_previews, parse_id, pool_stats
+
+    from .tiers import is_pro
+
+    partner = startup_partner(request.user)
+    if partner is None:
+        raise Http404
+    skill_id = parse_id(request.GET.get("skill"))
+    if is_pro(partner):
+        return redirect(reverse("talent_pool") + (f"?skill={skill_id}" if skill_id else ""))
+    stats = pool_stats()
+    if not any(r["id"] == skill_id and r["filterable"] for r in stats["per_skill"]):
+        skill_id = None
+    # Counts are for every company account; candidate summaries only for companies an admin has verified.
+    can_see_cards = partner.is_fully_verified
+    context = get_user_context(request)
+    context.update({
+        "stats": stats,
+        "previews": anonymous_previews(skill_id) if can_see_cards else [],
+        "can_see_cards": can_see_cards,
+        "skill_id": skill_id,
+    })
+    return render(request, "startups/talent_pool_preview.html", context)
 
 
 @pro_company_required

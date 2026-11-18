@@ -1,0 +1,53 @@
+{% extends 'internship/base.html' %}
+{% load i18n asset_tags %}
+
+{% block title %}{% trans "Talent Pool preview" %} — Internest{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% asset 'startups/startups.css' %}">{% endblock %}
+
+{% block content %}
+<section class="section pool-preview">
+    <div class="container">
+        <a href="{% url 'partner_dashboard' %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short" aria-hidden="true"></i> {% trans "Dashboard" %}</a>
+        <header class="pool-preview__head">
+            <h1>{% trans "Talent Pool preview" %} <span class="pool-chip pool-chip--free">{% trans "Free" %}</span></h1>
+            <p>{% trans "See who is really available before you pay. Every number is live and every candidate below holds at least one verified skill. Names, universities and contact details stay hidden." %}</p>
+        </header>
+
+        {% include "startups/_pool_stats.html" with link_skills=True %}
+
+        {% if not can_see_cards %}
+            <p class="pool-preview__locked"><i class="bi bi-shield-lock" aria-hidden="true"></i> {% trans "Anonymous candidate summaries appear once our team verifies your company (usually within 24 hours). The numbers above are already live." %}</p>
+        {% elif previews %}
+            <h2 class="pool-preview__title">{% trans "Anonymous candidate summaries" %}</h2>
+            <ul class="pool-preview__grid">
+                {% for c in previews %}
+                    <li class="pool-card">
+                        <div class="pool-card__head">
+                            <span class="pool-card__avatar" aria-hidden="true"><i class="bi bi-person-badge"></i></span>
+                            <div class="pool-card__who">
+                                <h3>{% blocktrans with n=forloop.counter %}Candidate {{ n }}{% endblocktrans %}</h3>
+                                <p>{% if c.major %}<bdi>{{ c.major }}</bdi>{% else %}{% trans "Major not stated" %}{% endif %}{% if c.study_level %} · <bdi>{{ c.study_level }}</bdi>{% endif %}</p>
+                            </div>
+                        </div>
+                        <ul class="pool-card__skills">
+                            {% for s in c.skills %}
+                                <li><span class="pool-card__skill"><bdi>{{ s.name }}</bdi></span>
+                                    {% if s.band %}<span class="pool-card__band" dir="ltr">{{ s.band }}</span>{% endif %}
+                                    <small>{{ s.via }}</small></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <aside class="pool-preview__cta">
+            <div>
+                <h2>{% trans "Want names, full profiles and invitations?" %}</h2>
+                <p>{% trans "Pro shows each candidate's name, university, bio, portfolio and exact scores, and lets you invite them to apply. Phone, email and CV are shared only after they apply and you shortlist them." %}</p>
+            </div>
+            <a href="{% url 'startup_upgrade' %}" class="btn btn--primary">{% trans "See plans" %}</a>
+        </aside>
+    </div>
+</section>
+{% endblock %}

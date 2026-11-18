@@ -83,8 +83,8 @@ class PlanMatrixTests(ApplicationsBase):
 
     # 4 · Talent Pool
     def test_talent_pool_locked_on_free_open_on_pro(self):
-        self.assertRedirects(self.client.get(reverse("talent_pool")), reverse("startup_upgrade"), fetch_redirect_response=False)
-        self.assertRedirects(self.client.get(reverse("talent_pool_candidate", args=[self.student.pk])), reverse("startup_upgrade"),
+        self.assertRedirects(self.client.get(reverse("talent_pool")), reverse("talent_pool_preview"), fetch_redirect_response=False)
+        self.assertRedirects(self.client.get(reverse("talent_pool_candidate", args=[self.student.pk])), reverse("talent_pool_preview"),
                              fetch_redirect_response=False)
         self._go_pro()
         self.assertEqual(self.client.get(reverse("talent_pool")).status_code, 200)
@@ -132,7 +132,7 @@ class PlanMatrixTests(ApplicationsBase):
         EmployerSubscription.objects.filter(partner=self.partner).update(valid_until=timezone.now().date() - timedelta(days=1))
         self.partner = PartnerProfile.objects.get(pk=self.partner.pk)
         self.assertFalse(is_pro(self.partner))
-        self.assertRedirects(self.client.get(reverse("talent_pool")), reverse("startup_upgrade"), fetch_redirect_response=False)
+        self.assertRedirects(self.client.get(reverse("talent_pool")), reverse("talent_pool_preview"), fetch_redirect_response=False)
 
 
 # ---------------------------------------------------------------- courses → certificates → verified skills
