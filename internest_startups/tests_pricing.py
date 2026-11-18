@@ -52,14 +52,14 @@ class UpgradePageTests(ApplicationsBase):
         self.assertNotRegex(page.content.decode(), r"(700|800|8,000|8000)\s*EGP|EGP\s*(700|800|8,000)|/ month|/ year|Subscribe now")
         self.assertNotContains(page, "$")
 
-    def test_outside_egypt_gets_no_invented_price(self):
-        for country, currency in (("SA", "USD"), ("DE", "EUR")):
+    def test_outside_egypt_prices(self):
+        for country, label in (("SA", "$29"), ("US", "$29"), ("DE", "€27"), ("GB", "€27")):
             self._country(country)
             page = self.client.get(UPGRADE)
-            self.assertIsNone(page.context["quote"])
-            self.assertContains(page, "Contact sales")
-            self.assertNotContains(page, "$")
-            self.assertNotContains(page, "€")
+            self.assertEqual(page.context["quote"]["final_label"], label)
+            self.assertContains(page, label)
+            self.assertNotContains(page, "Contact sales")
+            self.assertContains(page, "0 EGP")  # Free is free for everyone
 
     def test_yearly_activation_lasts_a_year(self):
         sub = activate_pro(self.partner, months=12)

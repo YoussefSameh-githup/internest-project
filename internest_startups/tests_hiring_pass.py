@@ -55,12 +55,12 @@ def _opportunity(partner, title="Role"):
 class PriceRulesTests(ApplicationsBase):
     def test_free_is_zero_and_pass_is_500_for_30_days(self):
         self.assertEqual(FREE_PRICE, Decimal("0"))
-        self.assertEqual(HIRING_PASS_PRICES, {"EGP": Decimal("500")})
+        self.assertEqual(HIRING_PASS_PRICES, {"EGP": Decimal("500"), "USD": Decimal("29"), "EUR": Decimal("27")})
         q = pass_quote("EGP")
         self.assertEqual((q["list_price"], q["final_price"], q["final_label"]), (500, 500, "500 EGP"))
         self.assertEqual(entitlements.PASS_DAYS, 30)
-        self.assertIsNone(pass_quote("USD"))
-        self.assertIsNone(pass_quote("EUR"))
+        self.assertEqual((pass_quote("USD")["final_label"], pass_quote("EUR")["final_label"]), ("$29", "€27"))
+        self.assertIsNone(pass_quote("GBP"))  # a currency without a decided price is never sold
 
     def test_no_old_advertised_price_anywhere_in_the_product(self):
         old = re.compile(r"(?:\b(?:700|800|8,000|8000)\s*(?:EGP|جنيه|جنيه مصري))|(?:EGP\s*(?:700|800|8,000|8000)\b)|PERIOD_YEAR|PRICES\s*=")

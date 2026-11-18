@@ -16,10 +16,11 @@ def _policy(template, page):
         context = get_user_context(request)
         from internest_startups.entitlements import MIN_AVAILABLE, PASS_DAYS
         from internest_startups.models import FoundingSeat
-        from internest_startups.pricing import HIRING_PASS_PRICES
+        from internest_startups.pricing import HIRING_PASS_PRICES, format_price
 
         context.update({"page": page, "updated": POLICIES_UPDATED, "change_date": PRICING_CHANGED,
                         "pass_amount": f"{int(HIRING_PASS_PRICES['EGP']):,}", "pass_days": PASS_DAYS,
+                        "pass_usd": format_price(HIRING_PASS_PRICES["USD"], "USD"), "pass_eur": format_price(HIRING_PASS_PRICES["EUR"], "EUR"),
                         "min_available": MIN_AVAILABLE, "founding_limit": FoundingSeat.LIMIT})
         return render(request, f"legal/{template}.html", context)
     view.__name__ = f"{page}_policy"

@@ -1,7 +1,7 @@
-"""Prices and currencies. Free = EGP 0; Hiring Pass = EGP 500, one-time, 30 days, no renewal (business decision 2026-11-18).
+"""Prices and currencies. Free = 0; Hiring Pass = EGP 500 / $29 / €27, one-time, 30 days, no renewal.
 
-The Hiring Pass is priced in EGP only. Companies whose pricing currency is USD or EUR see "contact sales" until the owner
-sets prices for them (no converted or invented price is shown).
+Business decisions: EGP 500 (2026-11-18), USD 29 and EUR 27 for companies outside Egypt (2026-11-19). A currency missing
+from HIRING_PASS_PRICES is not sold (the page shows "contact sales"); no converted price is ever invented.
 
 Country priority: the company's registration country (set at onboarding, locked after verification),
 then the visitor's country (Cloudflare header or a GeoIP2 database when configured), then the default.
@@ -16,7 +16,7 @@ from django.utils.translation import gettext_lazy
 logger = logging.getLogger(__name__)
 
 FREE_PRICE = Decimal("0")
-HIRING_PASS_PRICES = {"EGP": Decimal("500")}  # the only place the Hiring Pass price is written
+HIRING_PASS_PRICES = {"EGP": Decimal("500"), "USD": Decimal("29"), "EUR": Decimal("27")}  # the only place it is written
 EUROZONE = {"AT", "BE", "HR", "CY", "EE", "FI", "FR", "DE", "GR", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PT", "SK", "SI", "ES"}
 # Billed in EUR: the whole EU, the EEA, Switzerland and the UK (not only the euro area).
 EUROPE = EUROZONE | {"BG", "CZ", "DK", "HU", "PL", "RO", "SE", "IS", "LI", "NO", "CH", "GB"}

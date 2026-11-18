@@ -448,7 +448,7 @@ class CompanyCurrencyTests(OnboardingBase):
         partner.refresh_from_db()
         self.assertEqual((partner.custom_country, partner.pricing_currency), ("Monaco", "EUR"))
         self.client.force_login(partner.user)
-        self.assertContains(self.client.get(reverse("checkout")), "The Hiring Pass is priced in EGP.")  # no invented EUR price
+        self.assertEqual(self.client.get(reverse("checkout")).context["quote"]["final_label"], "€27")
 
     def test_other_requires_a_name_and_listed_country_clears_it(self):
         resp, _partner = self._profile(country_of_registration="XX", custom_country="")

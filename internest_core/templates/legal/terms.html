@@ -34,7 +34,7 @@
 <h2>4. الباقات (المجانية وباقة التوظيف)</h2>
 <ul>
     <li><strong>الباقة المجانية (0 جنيه):</strong> تسجيل الشركة وملفها، نشر فرصة واحدة شهرياً، أعداد المرشحين المتحقَّق منهم، وملخصات مجهولة الهوية للشركات الموثَّقة.</li>
-    <li><strong>باقة التوظيف (Hiring Pass):</strong> <strong>{{ pass_amount }} جنيه مصري</strong> لفرصة واحدة ولمدة {{ pass_days }} يوماً، تشمل البحث الكامل في قاعدة المواهب والدعوات لتلك الفرصة والتقارير الكاملة لمتقدميها. تُباع بالجنيه المصري؛ الشركات خارج مصر تتواصل مع فريق المبيعات. المبلغ الظاهر عند الدفع هو المبلغ النهائي.</li>
+    <li><strong>باقة التوظيف (Hiring Pass):</strong> <strong>{{ pass_amount }} جنيه مصري</strong> لفرصة واحدة ولمدة {{ pass_days }} يوماً، تشمل البحث الكامل في قاعدة المواهب والدعوات لتلك الفرصة والتقارير الكاملة لمتقدميها. للشركات المسجلة خارج مصر سعرها <bdi>{{ pass_usd }}</bdi> أو <bdi>{{ pass_eur }}</bdi> لأوروبا، بنفس المزايا والمدة وسياسة الاسترداد. المبلغ الظاهر عند الدفع هو المبلغ النهائي.</li>
     <li>تُدفع الباقة <strong>مرة واحدة</strong> عبر تحويل InstaPay أو بوابة «فواتيرك» وتُفعّل بعد تأكيد الدفع من فريقنا، و<strong>لا تتجدد تلقائياً</strong>.</li>
     <li><strong>Founding 20:</strong> أول {{ founding_limit }} شركات موثَّقة وملفها مكتمل تطلبها تحصل على باقة توظيف واحدة مجاناً. لا يتم التسجيل تلقائياً، والتقييم بعدها اختياري ولا يُشترط أن يكون إيجابياً.</li>
     <li>اشتراكات Internest Pro التي تمت قبل {{ change_date|date:"Y/m/d" }} تظل فعالة بشروطها حتى نهاية مدتها، ولم تعد تُباع.</li>
@@ -87,7 +87,7 @@
 <h2>4. Plans (Free and Hiring Pass)</h2>
 <ul>
     <li><strong>Free (EGP 0):</strong> company registration and profile, one opportunity post per month, verified candidate numbers, and anonymous summaries for verified companies.</li>
-    <li><strong>Hiring Pass:</strong> <strong>EGP {{ pass_amount }}</strong> for one opportunity for {{ pass_days }} days, with full Talent Pool search, invitations to that opportunity and full reports on its applicants. It is sold in EGP; companies outside Egypt contact our sales team. The amount shown at checkout is the final amount.</li>
+    <li><strong>Hiring Pass:</strong> <strong>EGP {{ pass_amount }}</strong> for one opportunity for {{ pass_days }} days, with full Talent Pool search, invitations to that opportunity and full reports on its applicants. Companies registered outside Egypt pay {{ pass_usd }}, or {{ pass_eur }} in Europe, with the same features, duration and refund policy. The amount shown at checkout is the final amount.</li>
     <li>The pass is paid <strong>once</strong> by InstaPay transfer or through the Fawaterak gateway, is activated once our team confirms the payment, and <strong>never renews automatically</strong>.</li>
     <li><strong>Founding 20:</strong> the first {{ founding_limit }} verified companies with a complete profile that ask get one Hiring Pass free. Nobody is enrolled automatically, and feedback afterwards is optional and does not have to be positive.</li>
     <li>Internest Pro subscriptions bought before {{ change_date|date:"F j, Y" }} keep working on their terms until they end; Pro is no longer sold.</li>

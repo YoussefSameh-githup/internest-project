@@ -232,16 +232,24 @@ class ManualPaymentTests(ApplicationsBase):
         section = page.content.decode().split("data-manual-payment", 1)[1].split("</section>", 1)[0]
         self.assertNotRegex(section, r"01[0125]\d{8}")  # no personal phone number in the payment box
 
-    def test_outside_egypt_is_sent_to_sales_and_cannot_order(self):
+    def test_outside_egypt_pays_29_usd_with_redotpay(self):
         PartnerProfile.objects.filter(pk=self.partner.pk).update(country_of_registration="AE")
         page = self.client.get(CHECKOUT)
-        self.assertContains(page, "The Hiring Pass is priced in EGP. For companies outside Egypt, email sales@internest.app")
+        for text in ("$29", "RedotPay", "1588800300", 'href="mailto:sales@internest.app"', 'name="accept_terms"'):
+            self.assertContains(page, text)
         self.assertNotContains(page, "you_zersif7@instapay")
-        self.assertNotContains(page, 'name="accept_terms"')
-        self.assertContains(self.client.get(reverse("startup_upgrade")), "Contact sales")
+        self.assertContains(self.client.get(reverse("startup_upgrade")), "$29")
         resp = self.client.post(CHECKOUT, paid(self.gig.pk, customer_phone="+971501234567"))
-        self.assertEqual(resp.status_code, 200)
-        self.assertFalse(ProUpgradeRequest.objects.exists())  # no invented USD/EUR price is ever charged
+        self.assertEqual(resp.status_code, 302)
+        order = ProUpgradeRequest.objects.get()
+        self.assertEqual((order.final_price, order.currency, order.gateway, order.product), (29, "USD", "redotpay", "hiring_pass"))
+
+    def test_europe_pays_27_eur(self):
+        PartnerProfile.objects.filter(pk=self.partner.pk).update(country_of_registration="DE")
+        self.assertContains(self.client.get(CHECKOUT), "€27")
+        self.client.post(CHECKOUT, paid(self.gig.pk, customer_phone="+4915112345678"))
+        order = ProUpgradeRequest.objects.get()
+        self.assertEqual((order.final_price, order.currency), (27, "EUR"))
 
     def test_receipt_is_required_and_validated(self):
         page = self.client.post(CHECKOUT, {**BUYER, "internship": self.gig.pk})

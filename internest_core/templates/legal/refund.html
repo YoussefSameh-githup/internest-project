@@ -6,7 +6,7 @@
 {% block ar %}
 <h1>سياسة الاسترجاع والإتاحة</h1>
 <p class="lg-updated">آخر تحديث: {{ updated|date:"Y/m/d" }}</p>
-<p>تنطبق هذه السياسة على المدفوعات التي تتم على Internest: <strong>باقة التوظيف (Hiring Pass)</strong> للشركات بسعر <strong>{{ pass_amount }} جنيه مصري</strong> لفرصة واحدة ولمدة {{ pass_days }} يوماً بدفعة واحدة، وطلبات اشتراك Internest Pro التي تمت قبل {{ change_date|date:"Y/m/d" }}، والكورسات المدفوعة.</p>
+<p>تنطبق هذه السياسة على المدفوعات التي تتم على Internest: <strong>باقة التوظيف (Hiring Pass)</strong> للشركات بسعر <strong>{{ pass_amount }} جنيه مصري</strong> (أو <bdi>{{ pass_usd }}</bdi> / <bdi>{{ pass_eur }}</bdi> للشركات خارج مصر) لفرصة واحدة ولمدة {{ pass_days }} يوماً بدفعة واحدة، وطلبات اشتراك Internest Pro التي تمت قبل {{ change_date|date:"Y/m/d" }}، والكورسات المدفوعة.</p>
 
 <h2>1. لا تجديد تلقائي</h2>
 <ul>
@@ -52,7 +52,7 @@
 {% block en %}
 <h1>Refund &amp; Availability Policy</h1>
 <p class="lg-updated">Last updated: {{ updated|date:"F j, Y" }}</p>
-<p>This policy covers payments made on Internest: the <strong>Hiring Pass</strong> for companies (<strong>EGP {{ pass_amount }}</strong> for one opportunity, {{ pass_days }} days, paid once), Internest Pro orders placed before {{ change_date|date:"F j, Y" }}, and paid courses.</p>
+<p>This policy covers payments made on Internest: the <strong>Hiring Pass</strong> for companies (<strong>EGP {{ pass_amount }}</strong>, or {{ pass_usd }} / {{ pass_eur }} for companies outside Egypt, for one opportunity, {{ pass_days }} days, paid once), Internest Pro orders placed before {{ change_date|date:"F j, Y" }}, and paid courses.</p>
 
 <h2>1. No automatic renewal</h2>
 <ul>
