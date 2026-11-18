@@ -50,19 +50,31 @@ logger = logging.getLogger(__name__)
 # -------------------------------------------------------------------
 @login_required
 def serve_protected_media(request, filepath: str):
-    """Stream user-uploaded files; path traversal blocked. CVs are private (see _can_view_cv)."""
-    path = filepath.replace("\\", "/").lstrip("/")
-    if path.startswith("cvs/") and not _can_view_cv(request.user, filepath):
+    """Stream user-uploaded files; path traversal blocked. CVs are private (see _can_view_cv).
+
+    The path is normalised BEFORE any access rule runs, and the same normalised path is the one opened: a rule that
+    tests the raw URL while the file system resolves "./" or "x/../" lets anyone reach a private folder (audit C-1).
+    """
+    path = _normalise_media_path(filepath)
+    if path is None:
         raise Http404()
-    if path.startswith("letters/") and not request.user.is_staff:
+    folder = path.lower()  # case-insensitive file systems must not turn "CVS/" into an unguarded copy of "cvs/"
+    if folder.startswith("cvs/") and not _can_view_cv(request.user, path):
+        raise Http404()
+    if folder.startswith("letters/") and not request.user.is_staff:
         raise Http404()  # use /verify/<uuid>/letter.pdf
-    if path.startswith(("freelance_proofs/", "skill_certificates/")) and not _can_view_evidence(request.user, path):
+    if folder.startswith(("freelance_proofs/", "skill_certificates/")) and not _can_view_evidence(request.user, path):
         raise Http404()  # verification evidence: the student and reviewers only
-    if path.startswith("payment_proofs/") and not (request.user.is_staff or _owns_payment_proof(request.user, path)):
+    if folder.startswith("payment_proofs/") and not (request.user.is_staff or _owns_payment_proof(request.user, path)):
         raise Http404()  # payment receipts: the paying company and staff only
     media_root = os.path.realpath(settings.MEDIA_ROOT)
-    absolute = os.path.realpath(os.path.join(media_root, filepath))
+    absolute = os.path.realpath(os.path.join(media_root, *path.split("/")))
     if not absolute.startswith(media_root + os.sep) and absolute != media_root:
+        raise Http404()
+    # The file actually opened must be the exact path the rules above checked. Windows resolves aliases of a folder
+    # ("cvs./", "cvs /", 8.3 names like "PAYMEN~1/") to the real private folder, and on any OS a symlink could point
+    # into one; both would otherwise skip the folder rules (independent review of the C-1 fix).
+    if os.path.relpath(absolute, media_root).replace(os.sep, "/") != path:
         raise Http404()
     if not os.path.isfile(absolute):
         raise Http404()
@@ -71,11 +83,26 @@ def serve_protected_media(request, filepath: str):
     # and keep private documents out of shared caches.
     response["Content-Security-Policy"] = "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox"
     response["X-Content-Type-Options"] = "nosniff"
-    response["Cache-Control"] = "private, no-store" if path.startswith(PRIVATE_MEDIA_PREFIXES) else "private, max-age=3600"
+    response["Cache-Control"] = "private, no-store" if folder.startswith(PRIVATE_MEDIA_PREFIXES) else "private, max-age=3600"
     return response
 
 
 PRIVATE_MEDIA_PREFIXES = ("cvs/", "letters/", "freelance_proofs/", "skill_certificates/", "payment_proofs/")
+
+
+def _normalise_media_path(filepath):
+    """The media path as stored in FileFields ("cvs/a.pdf"), or None when it is not a plain relative path.
+
+    Rejects empty, "." and ".." segments, NUL bytes and drive letters instead of resolving them, so the path an access
+    rule sees is exactly the file that is served. Uploads never produce such names, so nothing legitimate is lost.
+    """
+    path = (filepath or "").replace("\\", "/").lstrip("/")
+    if not path or "\x00" in path or ":" in path:
+        return None
+    parts = path.split("/")
+    if any(part in ("", ".", "..") for part in parts):
+        return None
+    return "/".join(parts)
 
 
 def _can_view_cv(user, filepath):

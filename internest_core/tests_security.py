@@ -1,4 +1,5 @@
 """Security audit regressions: private verification evidence, rate limits, and ownership (IDOR) checks."""
+import os
 import shutil
 import tempfile
 
@@ -49,6 +50,53 @@ class PrivateEvidenceTests(Base):
         self.client.force_login(self.student_user)
         self.assertEqual(self.client.get("/media/../manage.py").status_code, 404)
         self.assertEqual(self.client.get("/media/skill_certificates/..%2F..%2Fmanage.py").status_code, 404)
+
+    def test_dot_segments_cannot_bypass_private_folder_rules(self):
+        """Audit C-1: "./" or "x/../" before a private folder used to skip the access rule and serve the file."""
+        cv_name = "cvs/__private_cv__.pdf"
+        os.makedirs(os.path.join(MEDIA, "cvs"), exist_ok=True)
+        with open(os.path.join(MEDIA, "cvs", "__private_cv__.pdf"), "wb") as fh:
+            fh.write(b"%PDF-1.4 private")
+        private = [cv_name, self.cert.file.name, self.gig.proof.name]
+        tricks = ["./{}", "x/../{}", "{0}/../{0}", ".//{}", "{}/."]
+        for user in (self.other_user, self.pro_user):
+            self.client.force_login(user)
+            for name in private:
+                for trick in tricks:
+                    url = "/media/" + trick.format(name)
+                    resp = self.client.get(url)
+                    self.assertEqual(resp.status_code, 404, f"{user.username} reached {url}")
+        self.client.force_login(self.student_user)  # the owner still gets the plain URL
+        self.assertEqual(self.client.get("/media/" + self.cert.file.name).status_code, 200)
+        self.assertEqual(self.client.get("/media/./" + self.cert.file.name).status_code, 404)  # no dot paths, even for owners
+
+    def test_folder_aliases_cannot_bypass_rules(self):
+        """Windows resolves "folder.", "folder " and 8.3 short names to the real folder; the served path must match."""
+        self.client.force_login(self.other_user)
+        folder, _, rest = self.cert.file.name.partition("/")
+        for alias in (f"{folder}.", f"{folder}...", f"{folder}%20", f"{folder}.%20", "SKILL_~1", "skill_~1"):
+            url = f"/media/{alias}/{rest}"
+            self.assertEqual(self.client.get(url).status_code, 404, url)
+        self.client.force_login(self.student_user)
+        self.assertEqual(self.client.get("/media/" + self.cert.file.name).status_code, 200)  # owner: exact path still works
+
+    def test_owner_keeps_access_to_arabic_dotted_cv_name(self):
+        name = "cvs/سيرة_ذاتية.final..v2.pdf"
+        os.makedirs(os.path.join(MEDIA, "cvs"), exist_ok=True)
+        with open(os.path.join(MEDIA, *name.split("/")), "wb") as fh:
+            fh.write(b"%PDF-1.4 mine")
+        self.student.cv_file = name
+        self.student.save(update_fields=["cv_file"])
+        self.client.force_login(self.student_user)
+        self.assertEqual(self.client.get(reverse("serve_media", args=[name])).status_code, 200)
+        self.assertEqual(self.client.get(self.student.cv_file.url).status_code, 200)  # percent-encoded FileField URL
+        self.client.force_login(self.other_user)
+        self.assertEqual(self.client.get(reverse("serve_media", args=[name])).status_code, 404)
+
+    def test_folder_case_cannot_bypass_rules(self):
+        self.client.force_login(self.other_user)
+        upper = self.cert.file.name.replace("skill_certificates/", "SKILL_CERTIFICATES/", 1)
+        self.assertEqual(self.client.get("/media/" + upper).status_code, 404)
 
 
 @override_settings(RATELIMIT_ENABLED=True)
