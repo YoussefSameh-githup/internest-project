@@ -7,13 +7,20 @@ from .page_cache import cache_public_page
 from .views import get_user_context
 
 POLICIES_UPDATED = datetime.date(2026, 11, 18)  # change when a policy's content changes
+PRICING_CHANGED = datetime.date(2026, 11, 18)  # Hiring Pass replaced the Pro subscription
 
 
 def _policy(template, page):
     @cache_public_page(ttl=3600)
     def view(request):
         context = get_user_context(request)
-        context.update({"page": page, "updated": POLICIES_UPDATED})
+        from internest_startups.entitlements import MIN_AVAILABLE, PASS_DAYS
+        from internest_startups.models import FoundingSeat
+        from internest_startups.pricing import HIRING_PASS_PRICES
+
+        context.update({"page": page, "updated": POLICIES_UPDATED, "change_date": PRICING_CHANGED,
+                        "pass_amount": f"{int(HIRING_PASS_PRICES['EGP']):,}", "pass_days": PASS_DAYS,
+                        "min_available": MIN_AVAILABLE, "founding_limit": FoundingSeat.LIMIT})
         return render(request, f"legal/{template}.html", context)
     view.__name__ = f"{page}_policy"
     return view

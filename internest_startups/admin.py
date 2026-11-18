@@ -74,10 +74,11 @@ class PendingCompanyProfileAdmin(_Base):
         return super().get_queryset(request).filter(partner__is_fully_verified=False).order_by("submitted_at")
 
 
-from django.db.models import F  # noqa: E402
 
-from .models import PromoCode, ProUpgradeRequest  # noqa: E402
-from .tiers import activate_pro  # noqa: E402
+from django.db import IntegrityError  # noqa: E402
+
+from .entitlements import activate_order as activate_paid_order  # noqa: E402
+from .models import FoundingSeat, HiringPass, PromoCode, ProUpgradeRequest  # noqa: E402
 
 
 @admin.register(PromoCode)
@@ -88,21 +89,19 @@ class PromoCodeAdmin(ModelAdmin):
 
 
 def activate_order(req):
-    """Turn a paid (or receipt-verified) order into an active Pro subscription. False if it isn't open any more."""
-    if req.status not in ProUpgradeRequest.OPEN_STATUSES:
-        return False
-    activate_pro(req.partner, req.months)
-    req.status, req.activated_at = ProUpgradeRequest.STATUS_ACTIVE, timezone.now()
-    req.save(update_fields=["status", "activated_at"])
-    if req.promo_code_id:
-        PromoCode.objects.filter(pk=req.promo_code_id).update(times_used=F("times_used") + 1)
-    return True
+    """Admin entry point kept for existing callers: see entitlements.activate_order (idempotent, amount-checked)."""
+    return activate_paid_order(req.pk)
 
 
-@admin.action(description="✅ Receipt verified → activate Pro")
+@admin.action(description="✅ Receipt verified → activate (Hiring Pass, or a legacy Pro order)")
 def activate_requests(modeladmin, request, queryset):
-    count = sum(activate_order(req) for req in queryset.select_related("partner", "promo_code"))
-    modeladmin.message_user(request, f"{count} Pro subscription(s) activated.", messages.SUCCESS)
+    count = 0
+    for req in queryset.only("pk"):
+        try:
+            count += activate_paid_order(req.pk)
+        except (ValueError, IntegrityError) as exc:  # wrong amount/opportunity or a pass already exists: nothing changed
+            modeladmin.message_user(request, f"Order {req.pk} not activated: {exc}", messages.ERROR)
+    modeladmin.message_user(request, f"{count} order(s) activated.", messages.SUCCESS)
 
 
 @admin.action(description="Cancel selected requests")
@@ -114,14 +113,18 @@ def cancel_requests(modeladmin, request, queryset):
 class ProUpgradeRequestAdmin(ModelAdmin):
     """Manual payments: open the receipt, check the transfer arrived, then run "Receipt verified → activate Pro"."""
 
-    list_display = ("partner", "status_col", "final_price", "currency", "gateway", "receipt", "payment_reference", "proof_submitted_at",
-                    "pro_until", "created_at", "activated_at")
-    list_filter = ("status", "gateway", "promo_code", "created_at")
+    list_display = ("partner", "product", "internship", "status_col", "final_price", "currency", "gateway", "receipt", "payment_reference",
+                    "proof_submitted_at", "access_until", "created_at", "activated_at")
+    list_filter = ("product", "status", "gateway", "promo_code", "created_at")
     date_hierarchy = "created_at"
     status_col = status_badge("status", {ProUpgradeRequest.STATUS_PENDING: INFO, ProUpgradeRequest.STATUS_VERIFYING: WAIT,
                                          ProUpgradeRequest.STATUS_ACTIVE: OK, ProUpgradeRequest.STATUS_CANCELLED: BAD})
     search_fields = ("partner__company_name", "partner__user__email", "customer_email", "customer_phone", "gateway_reference", "payment_reference")
-    readonly_fields = ("created_at", "activated_at", "terms_accepted_at", "gateway_reference", "payment_url", "proof_submitted_at", "receipt")
+    # Amounts and what was bought are financial records: never edited after the order exists (only status moves).
+    # Status moves only through the actions, so "activated" always means access was granted exactly once.
+    readonly_fields = ("status", "partner", "product", "internship", "months", "list_price", "promo_code", "discount_percent", "final_price",
+                       "currency", "country", "created_at", "activated_at", "terms_accepted_at", "gateway_reference", "payment_url",
+                       "proof_submitted_at", "receipt")
     actions = [activate_requests, cancel_requests]
 
     @admin.display(description="Receipt")
@@ -130,10 +133,40 @@ class ProUpgradeRequestAdmin(ModelAdmin):
             return "—"
         return format_html('<a href="{}" target="_blank" rel="noopener" style="font-weight:700">🧾 Open receipt</a>', obj.payment_proof.url)
 
-    @admin.display(description="Pro valid until")
-    def pro_until(self, obj):
+    @admin.display(description="Access until")
+    def access_until(self, obj):
+        hiring_pass = getattr(obj, "hiring_pass", None)
+        if hiring_pass is not None:
+            return f"{hiring_pass.expires_at:%Y-%m-%d}"
         sub = getattr(obj.partner, "subscription", None)
-        return sub.valid_until if sub and sub.plan == "pro" else "—"
+        return sub.valid_until if obj.product == "pro" and sub and sub.plan == "pro" else "—"
+
+
+@admin.register(HiringPass)
+class HiringPassAdmin(ModelAdmin):
+    """Read-only record of every pass. Passes are created by order activation or a Founding 20 claim, never by hand."""
+
+    list_display = ("partner", "internship", "source", "starts_at", "expires_at", "available_at_start", "order")
+    list_filter = ("source", "expires_at")
+    search_fields = ("partner__company_name", "internship__title")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(FoundingSeat)
+class FoundingSeatAdmin(ModelAdmin):
+    list_display = ("number", "partner", "claimed_at", "found_candidates", "would_pay", "trust_in_verification", "feedback_at")
+    search_fields = ("partner__company_name",)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 from .models import TalentInvitation  # noqa: E402

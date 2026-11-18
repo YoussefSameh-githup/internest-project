@@ -1,4 +1,4 @@
-{% load static i18n skills_tags lounge_tags asset_tags %}
+{% load static i18n skills_tags lounge_tags asset_tags notice_tags %}
 {% get_current_language as LANGUAGE_CODE %}
 {% get_current_language_bidi as LANGUAGE_BIDI %}
 <!DOCTYPE html>
@@ -175,6 +175,9 @@
     {% endif %}
 
     <main>
+        {% if user.is_authenticated %}{% student_notices user as notice_templates %}{% if notice_templates %}
+            <div class="app-notices container">{% for t in notice_templates %}{% include t %}{% endfor %}</div>
+        {% endif %}{% endif %}
         {% block content %}{% endblock content %}
     </main>
 
@@ -212,7 +215,7 @@
                         <li><a href="{% url 'contact_partner' %}">{% trans "Join as partner" %}</a></li>
                         <li><a href="{% url 'university_landing' %}">{% trans "Internest for universities" %}</a></li>
                         <li><a href="{% url 'login' %}">{% trans "Partner login" %}</a></li>
-                        <li><a href="{% url 'startup_upgrade' %}">{% trans "Internest Pro pricing" %}</a></li>
+                        <li><a href="{% url 'startup_upgrade' %}">{% trans "Plans and Hiring Pass" %}</a></li>
                     </ul>
                 </div>
 

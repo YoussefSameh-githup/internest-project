@@ -136,7 +136,7 @@ register(ProviderSpec(
     code_location="internest_core/email_backend.py (django SMTP backend)", dashboard_url="https://myaccount.google.com/apppasswords",
 ))
 register(ProviderSpec(
-    key="fawaterak", name="Fawaterak", category="payments", role="Online payment gateway for Internest Pro subscriptions and paid courses",
+    key="fawaterak", name="Fawaterak", category="payments", role="Online payment gateway for Hiring Pass orders and paid courses",
     impact="Checkout cannot create invoice links; customers can still pay by InstaPay / RedotPay with a receipt.",
     degraded_behavior="The checkout page shows an error and offers the manual payment methods.",
     env_var="FAWATERAK_API_KEY", key_setting="FAWATERAK_API_KEY", code_location="internest_startups/fawaterak.py: create_invoice_link",

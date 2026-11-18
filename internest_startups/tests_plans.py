@@ -72,7 +72,7 @@ class PlanMatrixTests(ApplicationsBase):
 
     def test_inbox_upsell_matches_the_table(self):
         page = self.client.get(reverse("partner_dashboard_section", args=["applicants"]))
-        self.assertContains(page, "Detailed scores and percentiles on Internest Pro")
+        self.assertContains(page, "Detailed scores and percentiles with a Hiring Pass")
         self.assertNotContains(page, "Verified skills available on Internest Pro")
 
     # 3 · shortlist for interview — both plans
@@ -448,7 +448,7 @@ class CompanyCurrencyTests(OnboardingBase):
         partner.refresh_from_db()
         self.assertEqual((partner.custom_country, partner.pricing_currency), ("Monaco", "EUR"))
         self.client.force_login(partner.user)
-        self.assertContains(self.client.get(reverse("checkout")), "€50")
+        self.assertContains(self.client.get(reverse("checkout")), "The Hiring Pass is priced in EGP.")  # no invented EUR price
 
     def test_other_requires_a_name_and_listed_country_clears_it(self):
         resp, _partner = self._profile(country_of_registration="XX", custom_country="")

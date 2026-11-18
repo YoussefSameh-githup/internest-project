@@ -11,7 +11,7 @@ from django.utils.translation import gettext_lazy as _
 from internest_core.models import PartnerProfile, validate_max_file_size
 
 from .completion import PLACEHOLDER_PREFIX
-from .models import CompanyProfile
+from .models import CompanyProfile, FoundingSeat
 from .pricing import OTHER_COUNTRY
 
 _input = {"class": "form-control"}
@@ -206,9 +206,14 @@ class CheckoutForm(forms.Form):
     payment_proof = forms.FileField(label=_("Payment receipt (screenshot or PDF)"), required=False,
                                     validators=[FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size])
     payment_reference = forms.CharField(label=_("Transfer reference (optional)"), max_length=64, required=False)
+    # The one opportunity the Hiring Pass is for: only the company's own open opportunities are accepted (server-side).
+    internship = forms.ModelChoiceField(label=_("Opportunity this pass is for"), queryset=None, empty_label=None,
+                                        error_messages={"invalid_choice": _("Choose one of your open opportunities."),
+                                                        "required": _("Choose one of your open opportunities.")})
 
-    def __init__(self, *args, egypt=True, manual=True, **kwargs):
+    def __init__(self, *args, egypt=True, manual=True, opportunities=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["internship"].queryset = opportunities
         self.egypt = egypt
         if manual:
             self.fields["payment_proof"].required = True
@@ -225,3 +230,29 @@ class CheckoutForm(forms.Form):
         elif not re.fullmatch(r"\+?\d{8,15}", digits):
             raise forms.ValidationError(_("Enter a valid phone number with its country code."))
         return digits
+
+
+class FoundingClaimForm(forms.Form):
+    internship = forms.ModelChoiceField(label=_("Opportunity for your free Hiring Pass"), queryset=None, empty_label=None,
+                                        error_messages={"invalid_choice": _("Choose one of your open opportunities."),
+                                                        "required": _("Choose one of your open opportunities.")})
+
+    def __init__(self, *args, opportunities=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["internship"].queryset = opportunities
+
+
+class FoundingFeedbackForm(forms.ModelForm):
+    """Optional, structured feedback. No answer is required and none is pre-filled."""
+
+    class Meta:
+        model = FoundingSeat
+        fields = ["found_candidates", "candidates_contacted", "trust_in_verification", "would_pay", "missing"]
+        widgets = {"found_candidates": forms.RadioSelect, "would_pay": forms.RadioSelect,
+                   "missing": forms.Textarea(attrs={"rows": 4})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in ("found_candidates", "would_pay"):
+            self.fields[name].choices = [c for c in self.fields[name].choices if c[0]]  # no "-------" radio
+            self.fields[name].required = False

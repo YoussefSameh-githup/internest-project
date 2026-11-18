@@ -1,0 +1,16 @@
+{% load i18n %}
+{# Notice: since 2026-11-18 admin-verified companies without a Hiring Pass see an anonymous summary of opted-in students. #}
+<section class="app-notice" role="region" aria-labelledby="notice-tps-title">
+    <span class="app-notice__icon" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+    <div class="app-notice__body">
+        <h2 id="notice-tps-title" class="app-notice__title">{% trans "We updated our privacy policy" %}</h2>
+        <p>{% trans "You are visible in the Talent Pool. Verified companies without a Hiring Pass can now also see an anonymous summary of you: your major, study year and verified skills with a score range. They never see your name, university, photo, phone, email or CV." %}</p>
+        <form method="post" action="{% url 'student_notice' 'talent_pool_summary' %}" class="app-notice__actions">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" name="action" value="dismiss" class="btn btn--primary btn--sm">{% trans "OK, keep me visible" %}</button>
+            <button type="submit" name="action" value="hide_from_pool" class="btn btn--ghost btn--sm">{% trans "Stop showing me in the Talent Pool" %}</button>
+            <a href="{% url 'privacy' %}" class="app-notice__link">{% trans "Read the privacy policy" %}</a>
+        </form>
+    </div>
+</section>

@@ -304,7 +304,7 @@ class ProTierTests(OnboardingBase):
         self.assertContains(page, 'id="upsell-dialog"')
         self.assertContains(page, "data-autoopen")
         self.assertContains(page, "You've reached this month's limit")
-        self.assertContains(page, "Subscribe now and unlock every feature")
+        self.assertContains(page, "See the Hiring Pass")
         self.assertContains(page, "1/1 used this month")
 
     def test_free_quota_resets_monthly_and_ignores_rejected(self):
@@ -329,12 +329,16 @@ class ProTierTests(OnboardingBase):
     # --- promo codes & checkout -------------------------------------------------
     def test_promo_code_application_and_validation(self):
         from .models import PromoCode
+        from internest_core.models import Internship
+
+        Internship.objects.create(partner=self.partner(), title="Role", description="d", location="Cairo", required_majors="any",
+                                  deadline=timezone.now().date() + timedelta(days=10))  # the promo box shows once a pass can be bought
         page = self.client.get(reverse("startup_upgrade"))
-        self.assertContains(page, "800 EGP")
+        self.assertContains(page, "500 EGP")
         self.client.post(reverse("startup_upgrade"), {"action": "apply", "promo_code": "startup50"})
         page = self.client.get(reverse("startup_upgrade"))
-        self.assertEqual(page.context["quote"]["final_price"], 400)
-        self.assertContains(page, "400 EGP")
+        self.assertEqual(page.context["quote"]["final_price"], 250)
+        self.assertContains(page, "250 EGP")
         self.assertContains(page, "STARTUP50")
 
         for code, setup in (("NOPE", None),
@@ -346,29 +350,36 @@ class ProTierTests(OnboardingBase):
             self.client.post(reverse("startup_upgrade"), {"action": "remove"})
             resp = self.client.post(reverse("startup_upgrade"), {"action": "apply", "promo_code": code}, follow=True)
             self.assertContains(resp, "This promo code is invalid or has expired.")
-            self.assertEqual(resp.context["quote"]["final_price"], 800)
+            self.assertEqual(resp.context["quote"]["final_price"], 500)
 
-    def test_subscribe_creates_request_and_admin_activation_grants_pro(self):
+    def test_admin_activation_of_a_pass_order_counts_the_promo_once(self):
         from django.contrib.admin.sites import AdminSite
+
+        from internest_core.models import Internship
+
         from .admin import ProUpgradeRequestAdmin, activate_requests
         from .models import PromoCode, ProUpgradeRequest
-        self.client.post(reverse("startup_upgrade"), {"action": "apply", "promo_code": "EGYPT2026"})
-        self.client.post(reverse("startup_upgrade"), {"action": "subscribe"})
-        self.client.post(reverse("startup_upgrade"), {"action": "subscribe"})  # duplicate ignored
-        req = ProUpgradeRequest.objects.get()
-        self.assertEqual((req.final_price, req.currency, req.discount_percent, req.promo_code.code, req.status),
-                         (640, "EGP", 20, "EGYPT2026", "pending"))
+        from .pricing import pass_quote
         from .tiers import is_pro
-        self.assertFalse(is_pro(self.partner()))  # no Pro before payment
+
+        role = Internship.objects.create(partner=self.partner(), title="Role", description="d", location="Cairo", required_majors="any",
+                                         deadline=timezone.now().date() + timedelta(days=10))
+        promo = PromoCode.objects.get(code="EGYPT2026")
+        q = pass_quote("EGP", promo)
+        ProUpgradeRequest.objects.create(partner=self.partner(), product="hiring_pass", internship=role, list_price=q["list_price"],
+                                         promo_code=promo, discount_percent=q["discount_percent"], final_price=q["final_price"])
+        self.assertEqual((q["final_price"], q["discount_percent"]), (400, 20))
+        self.assertFalse(is_pro(self.partner()))  # nothing before payment
 
         request = RequestFactory().post("/admin/")
         request.user = User.objects.get(username="root")
         request.session = {}
         request._messages = FallbackStorage(request)
-        activate_requests(ProUpgradeRequestAdmin(ProUpgradeRequest, AdminSite()), request, ProUpgradeRequest.objects.all())
+        for _ in range(2):  # a double click activates once
+            activate_requests(ProUpgradeRequestAdmin(ProUpgradeRequest, AdminSite()), request, ProUpgradeRequest.objects.all())
         partner = self.partner()
         self.assertTrue(is_pro(partner))
-        self.assertEqual(partner.subscription.valid_until, timezone.now().date() + timedelta(days=30))
+        self.assertEqual(partner.hiring_passes.count(), 1)
         self.assertEqual(PromoCode.objects.get(code="EGYPT2026").times_used, 1)
 
     # --- badges & Founders Network UI ------------------------------------------
@@ -423,7 +434,7 @@ class DashboardGridAndShowcaseDesignTests(OnboardingBase):
         self.assertEqual(html.count('class="dash-card__icon '), len(cards))  # every card has a styled icon badge
         for emoji in ("➕", "📥", "⏳", "💬", "✏️"):
             self.assertNotIn(emoji, html.split('class="dash-grid')[1].split("</nav>")[0])
-        for title in ("Post Opportunity", "Applicants Inbox", "Pending Requests", "Company Profile", "Upgrade to Internest Pro"):
+        for title in ("Post Opportunity", "Applicants Inbox", "Pending Requests", "Company Profile", "Get a Hiring Pass"):
             self.assertContains(page, title)
         self.approve()
         page = self.client.get(reverse("partner_dashboard"))

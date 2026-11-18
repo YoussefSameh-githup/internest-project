@@ -1,5 +1,5 @@
 {% load i18n %}
-{# Manual Pro payment: InstaPay (Egypt) or RedotPay (international), then upload the receipt. Used inside the checkout <form>. #}
+{# Manual payment: InstaPay (Egypt) or RedotPay (international), then upload the receipt. Used inside the checkout <form>. #}
 <style>
 .mp { margin: 4px 0 18px; padding: 18px; border-radius: 18px; background: #f8fafc; border: 1px solid #e2e8f0; }
 .mp h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; font-size: 1rem; color: #0f172a; }
@@ -53,7 +53,7 @@
     {% endif %}
 
     <h3 style="margin-top: 18px;"><span class="mp-step">2</span> {% trans "Upload your payment receipt" %}</h3>
-    <p class="mp-sub">{% trans "A screenshot of the successful transfer. Our team verifies it and activates Pro within 24 hours." %}</p>
+    <p class="mp-sub">{% trans "A screenshot of the successful transfer. Our team verifies it and activates your Hiring Pass within 24 hours." %}</p>
     <label class="mp-upload{% if form.payment_proof.errors %} has-error{% endif %}" data-drop>
         <i class="bi bi-receipt"></i>
         <strong>{% trans "Choose or drop the receipt" %}</strong>

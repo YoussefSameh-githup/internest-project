@@ -56,9 +56,9 @@ class TalentPoolTests(PoolBase):
         self.client.force_login(self.founder)
         resp = self.client.get(URL, follow=True)
         self.assertEqual(resp.redirect_chain[-1][0], reverse("talent_pool_preview"))
-        self.assertContains(resp, "Upgrade to Internest Pro to access the Talent Pool.")
+        self.assertContains(resp, "The full Talent Pool search needs a Hiring Pass.")
         self.client.cookies["internest_lang"] = "ar"
-        self.assertContains(self.client.get(URL, follow=True), "ترقية الحساب لباقة Pro مطلوبة للوصول لقاعدة بيانات المواهب")
+        self.assertContains(self.client.get(URL, follow=True), "البحث الكامل في قاعدة المواهب محتاج باقة توظيف.")
         self.assertEqual(self.client.post(reverse("talent_pool_invite", args=[self.amr.pk])).status_code, 302)
         self.assertFalse(TalentInvitation.objects.exists())
 

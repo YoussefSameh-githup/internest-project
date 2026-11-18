@@ -76,6 +76,9 @@ class StudentProfile(models.Model):
     talent_pool_visible = models.BooleanField(default=False, db_index=True, verbose_name=_("Show me in the Talent Pool"))
     # Bulk "new opportunity" emails only; account emails (verification, shortlist, invitations) are always sent.
     email_new_opportunities = models.BooleanField(default=True, verbose_name=_("Email me about new opportunities"))
+    # In-app notices still to show (keys from internest_core/notices.py). Lives on the profile every student page already
+    # loads, so showing a notice costs no query.
+    pending_notices = models.JSONField(default=list, blank=True, editable=False)
 
     class Meta:
         indexes = [

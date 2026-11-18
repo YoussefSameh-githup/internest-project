@@ -1,20 +1,19 @@
 {% load i18n static asset_tags %}
 <dialog id="upsell-dialog" class="upsell-dialog" {% if upsell_open %}data-autoopen{% endif %} aria-labelledby="upsell-title">
     <form method="dialog" class="upsell-dialog__close"><button aria-label="{% trans 'Close' %}"><i class="bi bi-x-lg"></i></button></form>
-    <div class="upsell-dialog__crest">👑</div>
-    <h2 id="upsell-title">{% trans "Upgrade to Internest Pro" %}</h2>
+    <div class="upsell-dialog__crest" aria-hidden="true">🎟️</div>
+    <h2 id="upsell-title">{% trans "Hire faster with a Hiring Pass" %}</h2>
     {% if upsell_reason == "limit" %}
-        <p class="upsell-dialog__reason">{% blocktrans with n=free_posts_limit %}Free accounts can publish {{ n }} opportunity per month. You've reached this month's limit.{% endblocktrans %}</p>
+        <p class="upsell-dialog__reason">{% blocktrans with n=free_posts_limit %}Free accounts can publish {{ n }} opportunity per month. You've reached this month's limit; you can post again next month.{% endblocktrans %}</p>
     {% elif upsell_reason == "hourly" %}
-        <p class="upsell-dialog__reason">{% blocktrans with n=hourly_limit %}You've reached the free posting limit ({{ n }} posts/hour). Upgrade to Internest Pro for unlimited posting and the gold Pro badge!{% endblocktrans %}</p>
+        <p class="upsell-dialog__reason">{% blocktrans with n=hourly_limit %}You've reached the free posting limit ({{ n }} posts/hour). Companies with an active Hiring Pass post without this limit.{% endblocktrans %}</p>
     {% endif %}
     <ul class="upsell-benefits">
-        <li>♾️ {% trans "Unlimited job posts" %}</li>
-        <li>📊 {% trans "Full scores + percentile reports" %}</li>
-        <li>🔍 {% trans "Talent Pool search & profile preview" %}</li>
+        <li>🔍 {% trans "Full Talent Pool search: names, universities, bios and exact scores" %}</li>
         <li>🎟️ {% blocktrans with t=MATCH_THRESHOLD %}Direct invitations (skip the {{ t }}% skill match){% endblocktrans %}</li>
-        <li>👑 {% trans "Pro badge + priority placement" %}</li>
+        <li>📊 {% trans "Full scores and percentile reports for applicants to that opportunity" %}</li>
+        <li>🗓️ {% trans "One opportunity · 30 days · one-time payment · no automatic renewal" %}</li>
     </ul>
-    <a href="{% url 'startup_upgrade' %}" class="btn btn--gold btn--lg btn--block">{% trans "Subscribe now and unlock every feature" %}</a>
+    <a href="{% url 'startup_upgrade' %}" class="btn btn--primary btn--lg btn--block">{% trans "See the Hiring Pass" %}</a>
 </dialog>
 <script src="{% asset 'startups/upsell.js' %}" defer></script>

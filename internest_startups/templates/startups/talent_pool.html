@@ -1,7 +1,7 @@
 {% extends 'internship/base.html' %}
 {% load i18n asset_tags %}
 
-{% block title %}{% trans "Talent Pool" %} — Internest Pro{% endblock %}
+{% block title %}{% trans "Talent Pool" %} — Internest{% endblock %}
 {% block extra_head %}<link rel="stylesheet" href="{% asset 'startups/startups.css' %}">{% endblock %}
 
 {% block content %}
@@ -82,7 +82,7 @@
         <a href="{% url 'partner_dashboard' %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short"></i> {% trans "Dashboard" %}</a>
         <header class="tp-head">
             <div>
-                <h1>{% trans "Talent Pool" %} <span class="pro-chip">PRO</span></h1>
+                <h1>{% trans "Talent Pool" %}</h1>
                 <p>{% trans "Students who opted in and hold at least one verified skill. Contact details stay private until they apply and you shortlist them." %}</p>
             </div>
             <span class="tp-quota" role="status" title="{% blocktrans with n=invites_per_opportunity d=invites_daily %}{{ n }} per opportunity · {{ d }} per day{% endblocktrans %}">

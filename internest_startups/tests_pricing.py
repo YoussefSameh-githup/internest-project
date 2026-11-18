@@ -20,7 +20,7 @@ class RegionDetectionTests(ApplicationsBase):
     def test_currency_by_country(self):
         self.assertEqual([currency_for(c) for c in ("EG", "eg", "DE", "FR", "SA", "US", "GB", "")],
                          ["EGP", "EGP", "EUR", "EUR", "USD", "USD", "EUR", "USD"])  # GB: European → EUR
-        self.assertEqual((format_price(8000, "EGP"), format_price(50, "USD"), format_price(500, "EUR")), ("8,000 EGP", "$50", "€500"))
+        self.assertEqual((format_price(1500, "EGP"), format_price(12, "USD"), format_price(9.5, "EUR")), ("1,500 EGP", "$12", "€9.50"))
 
     def test_registration_country_beats_visitor_country(self):
         request = RequestFactory().get("/", HTTP_CF_IPCOUNTRY="AE")
@@ -42,34 +42,24 @@ class UpgradePageTests(ApplicationsBase):
     def _country(self, code):
         PartnerProfile.objects.filter(pk=self.partner.pk).update(country_of_registration=code)
 
-    def test_egypt_prices_and_matrix(self):
+    def test_egypt_plans_page(self):
         self._country("EG")
         page = self.client.get(UPGRADE)
-        for text in ("800 EGP", "or 8,000 EGP / year", "1 per month", "Verified skills only (no scores or percentile report)",
-                     "Full scores + percentile reports", "Shortlist for interview", "Talent Pool search & profile preview",
-                     "3 per job post", "Pro badge + priority placement", "3 per hour"):
+        for text in ("Free", "0 EGP", "Hiring Pass", "500 EGP", "One opportunity · 30 days · one-time payment · no automatic renewal",
+                     "1 opportunity post per month", "Invite up to 3 candidates to your opportunity", "We do not guarantee a hire.",
+                     "Founding 20", "20 of 20 seats left", "Founders Network: 3 posts per hour"):
             self.assertContains(page, text)
+        self.assertNotRegex(page.content.decode(), r"(700|800|8,000|8000)\s*EGP|EGP\s*(700|800|8,000)|/ month|/ year|Subscribe now")
         self.assertNotContains(page, "$")
-        self.assertContains(self.client.get(UPGRADE, {"period": "year"}), "8,000 EGP")
 
-    def test_international_prices(self):
-        self._country("SA")
-        self.assertContains(self.client.get(UPGRADE), "$50")
-        self.assertContains(self.client.get(UPGRADE, {"period": "year"}), "$500")
-        self._country("DE")
-        self.assertContains(self.client.get(UPGRADE), "€50")
-
-    def test_subscribe_stores_currency_period_and_gateway(self):
-        self._country("SA")
-        self.client.post(UPGRADE, {"action": "subscribe", "period": "year"})
-        req = ProUpgradeRequest.objects.get()
-        self.assertEqual((req.months, req.final_price, req.currency, req.country, req.gateway), (12, 500, "USD", "SA", "stripe"))
-        self.assertContains(self.client.get(UPGRADE), "Your Pro request ($500) is awaiting payment.")
-        req.delete()
-        self._country("EG")
-        self.client.post(UPGRADE, {"action": "subscribe"})
-        req = ProUpgradeRequest.objects.get()
-        self.assertEqual((req.months, req.final_price, req.currency, req.gateway), (1, 800, "EGP", "fawaterak"))
+    def test_outside_egypt_gets_no_invented_price(self):
+        for country, currency in (("SA", "USD"), ("DE", "EUR")):
+            self._country(country)
+            page = self.client.get(UPGRADE)
+            self.assertIsNone(page.context["quote"])
+            self.assertContains(page, "Contact sales")
+            self.assertNotContains(page, "$")
+            self.assertNotContains(page, "€")
 
     def test_yearly_activation_lasts_a_year(self):
         sub = activate_pro(self.partner, months=12)

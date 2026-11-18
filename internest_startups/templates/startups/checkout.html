@@ -1,7 +1,7 @@
 {% extends 'internship/base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Checkout" %} — Internest Pro{% endblock %}
+{% block title %}{% trans "Checkout" %} — Internest{% endblock %}
 
 {% block content %}
 <style>
@@ -17,6 +17,9 @@
 .co-card h2 { margin: 0 0 16px; font-size: 1.1rem; }
 .co-field { margin-bottom: 14px; }
 .co-field label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 14px; color: #334155; }
+.co-field select { width: 100%; box-sizing: border-box; height: 46px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 13px; font: inherit; background: #fff; }
+.co-avail { margin: 6px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 13px; color: #334155; }
+.co-avail .is-low { color: #b45309; font-weight: 700; }
 .co-field input { width: 100%; box-sizing: border-box; height: 46px; padding: 0 14px; border: 1px solid #cbd5e1; border-radius: 13px; font: inherit; background: #fff; }
 .co-field input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, .12); }
 .co-field.has-error input { border-color: #ef4444; }
@@ -47,7 +50,7 @@
 <section class="co">
     <div class="container co-wrap">
         <header class="co-head">
-            <a href="{% url 'startup_upgrade' %}{% if period == 'year' %}?period=year{% endif %}"><i class="bi bi-arrow-right-short"></i> {% trans "Back to plans" %}</a>
+            <a href="{% url 'startup_upgrade' %}"><i class="bi bi-arrow-right-short"></i> {% trans "Back to plans" %}</a>
             <h1>🔒 {% trans "Checkout" %}</h1>
             <p>{% trans "Review your order, confirm your details and pay securely." %}</p>
         </header>
@@ -55,7 +58,7 @@
         {% if pending_request.status == "verifying" %}
             <div class="co-alert co-alert--verifying" role="status" data-verifying>
                 <strong>⏳ {% blocktrans with price=pending_request.price_label %}We received your receipt ({{ price }}) and are verifying the transfer.{% endblocktrans %}</strong>
-                {% trans "Pro will be activated within 24 hours. You don't need to do anything else." %}
+                {% trans "Your Hiring Pass will be activated within 24 hours. You don't need to do anything else." %}
             </div>
         {% elif pending_request %}
             <div class="co-alert co-alert--pending" role="status">
@@ -66,17 +69,45 @@
                 <div class="co-alert__actions">
                     {% if pending_request.payment_url %}<a href="{{ pending_request.payment_url }}" class="btn btn--primary btn--sm">{% trans "Continue to payment" %}</a>{% endif %}
                     <form method="post" style="margin: 0;">
-                        {% csrf_token %}<input type="hidden" name="period" value="{{ period }}">
+                        {% csrf_token %}
                         <button type="submit" name="action" value="cancel_pending" class="btn btn--ghost btn--sm">{% trans "Cancel it and start a new order" %}</button>
                     </form>
                 </div>
             </div>
         {% endif %}
 
+        {% if legacy_order %}
+            <div class="co-alert co-alert--pending" role="status" data-legacy-order>
+                <div>{% blocktrans with price=legacy_order.price_label date=legacy_order.created_at|date:"Y/m/d" %}You have an Internest Pro order from {{ date }} ({{ price }}), placed before Pro was replaced by the Hiring Pass. If you already paid it, we will honour it. If not, cancel it from checkout; it does not stop you buying a Hiring Pass.{% endblocktrans %}</div>
+                {% if legacy_order.status == "pending" %}
+                    <form method="post" style="margin: 0;">{% csrf_token %}
+                        <button type="submit" name="action" value="cancel_legacy" class="btn btn--ghost btn--sm">{% trans "Cancel the old Pro order" %}</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endif %}
+        {% if legacy_pro %}
+            <div class="co-alert co-alert--verifying" role="status">{% trans "Your Internest Pro subscription is still active, so you don't need a Hiring Pass yet." %}</div>
+        {% elif not quote %}
+            <div class="co-alert" role="status">{% blocktrans with email=sales_email %}The Hiring Pass is priced in EGP. For companies outside Egypt, email {{ email }} and we'll arrange it.{% endblocktrans %}</div>
+        {% elif not has_opportunities %}
+            <div class="co-alert" role="status">{% trans "A Hiring Pass is bought for one of your open opportunities. Post your opportunity first (free), then come back." %}
+                <a href="{% url 'partner_submit_choose' %}" class="fw-bold">{% trans "Post an opportunity" %} →</a></div>
+        {% else %}
         <div class="co-grid">
             <form method="post" class="co-card" enctype="multipart/form-data" novalidate data-checkout>
                 {% csrf_token %}
-                <input type="hidden" name="period" value="{{ period }}">
+                <h2>{% trans "Opportunity" %}</h2>
+                <div class="co-field{% if form.internship.errors %} has-error{% endif %}">
+                    <label for="{{ form.internship.id_for_label }}">{{ form.internship.label }}</label>
+                    {{ form.internship }}
+                    {% if form.internship.errors %}<div class="co-error">{{ form.internship.errors|join:" " }}</div>{% endif %}
+                    <ul class="co-avail" aria-label="{% trans 'Verified candidates matching each opportunity right now' %}">
+                        {% for a in availability %}
+                            <li{% if a.matching < min_available %} class="is-low"{% endif %}><bdi>{{ a.opportunity.title }}</bdi>: {% blocktrans with n=a.matching %}{{ n }} matching verified candidates now{% endblocktrans %}{% if a.matching < min_available %} · {% trans "below our availability minimum" %}{% endif %}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
                 <h2>{% trans "Billing details" %}</h2>
                 {% for field in form %}{% if field.name in "customer_name customer_email customer_phone" %}
                     <div class="co-field{% if field.errors %} has-error{% endif %}">
@@ -106,16 +137,16 @@
                 <p class="co-secure">
                     <i class="bi bi-shield-lock-fill"></i>
                     {% if online %}{% trans "You'll be redirected to Fawaterak's secure page to choose your payment method. We never see your card details." %}
-                    {% else %}{% trans "Your receipt is only visible to our verification team. Pro is activated as soon as the transfer is confirmed." %}{% endif %}
+                    {% else %}{% trans "Your receipt is only visible to our verification team. Your Hiring Pass is activated as soon as the transfer is confirmed." %}{% endif %}
                 </p>
             </form>
 
             <aside class="co-card co-summary" aria-label="{% trans 'Order summary' %}">
                 <h2>{% trans "Order summary" %}</h2>
                 <div class="co-plan">
-                    <span class="co-plan__icon">👑</span>
-                    <div><strong>Internest Pro</strong><br>
-                        <small class="text-muted">{% if period == "year" %}{% trans "Annual plan · 12 months" %}{% else %}{% trans "Monthly plan · 1 month" %}{% endif %}</small></div>
+                    <span class="co-plan__icon" aria-hidden="true">🎟️</span>
+                    <div><strong>{% trans "Hiring Pass" %}</strong><br>
+                        <small class="text-muted">{% blocktrans with days=pass_days %}One opportunity · {{ days }} days{% endblocktrans %}</small></div>
                 </div>
                 <ul class="co-lines">
                     <li><span>{% trans "Subtotal" %}</span><span>{{ quote.list_label }}</span></li>
@@ -124,14 +155,15 @@
                 </ul>
                 <div class="co-total"><span>{% trans "Total due" %}</span><strong>{{ quote.final_label }}</strong></div>
                 <ul class="co-perks">
-                    <li>✅ {% trans "Unlimited opportunity posts" %}</li>
-                    <li>✅ {% trans "Talent Pool search and invitations" %}</li>
-                    <li>✅ {% trans "Full scores + percentile reports" %}</li>
+                    <li>✅ {% trans "One-time payment, no subscription" %}</li>
+                    <li>✅ {% trans "Full Talent Pool search and invitations" %}</li>
+                    <li>✅ {% trans "Full scores for applicants to this opportunity" %}</li>
                 </ul>
                 <p class="co-secure" style="justify-content: flex-start;"><i class="bi bi-arrow-counterclockwise"></i>
-                    <span>{% trans "Full refund within 7 days if you haven't used Pro features." %} <a href="{% url 'refund_policy' %}">{% trans "Refund policy" %}</a></span></p>
+                    <span>{% blocktrans with n=min_available %}Full refund on request within 7 days if fewer than {{ n }} verified candidates matched your opportunity when the pass started.{% endblocktrans %} <a href="{% url 'refund_policy' %}">{% trans "Refund policy" %}</a></span></p>
             </aside>
         </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

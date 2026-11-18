@@ -1,89 +1,123 @@
 {% extends 'internship/base.html' %}
 {% load i18n asset_tags %}
 
-{% block title %}{% trans "Upgrade to Internest Pro" %} — Internest{% endblock %}
+{% block title %}{% trans "Plans: Free and Hiring Pass" %} — Internest{% endblock %}
 {% block extra_head %}<link rel="stylesheet" href="{% asset 'startups/startups.css' %}">{% endblock %}
 
 {% block content %}
-<section class="section">
+<section class="section plans">
     <div class="container">
-        <div class="text-center" style="max-width: 680px; margin-inline: auto; margin-bottom: var(--space-8);">
-            <span class="pro-badge">👑 Internest Pro</span>
-            <h1 class="mt-3">{% trans "Upgrade to Internest Pro" %}</h1>
-            <p class="text-muted">{% trans "Start free. Upgrade when you need more posts, full score reports and direct access to verified talent." %}</p>
-        </div>
+        <header class="plans__head">
+            <h1>{% trans "Plans: Free and Hiring Pass" %}</h1>
+            <p>{% blocktrans with days=pass_days %}Start free. When you're ready to hire for an opportunity, buy one Hiring Pass for it: {{ days }} days, paid once, never renewed automatically.{% endblocktrans %}</p>
+        </header>
 
-        {% if stats %}
-            {% include "startups/_pool_stats.html" %}
-            <p class="text-center mb-6"><a href="{% url 'talent_pool_preview' %}" class="fw-bold">{% trans "Preview anonymous candidates for free" %} →</a></p>
-        {% endif %}
-
-        {% if is_pro %}
-            <div class="alert alert-success text-center mb-6">
-                <strong>👑 {% blocktrans with date=subscription.valid_until|date:"Y/m/d" %}You're on Internest Pro until {{ date }}.{% endblocktrans %}</strong>
+        {% if legacy_pro %}
+            <div class="plans__status plans__status--ok" role="status">
+                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                {% if subscription.valid_until %}{% blocktrans with date=subscription.valid_until|date:"Y/m/d" %}Your Internest Pro subscription stays active until {{ date }}, with everything it included. It will not renew and you don't need a Hiring Pass until then.{% endblocktrans %}
+                {% else %}{% trans "Your Internest Pro subscription is active, with everything it included. You don't need a Hiring Pass." %}{% endif %}
             </div>
-        {% elif pending_request %}
-            <div class="alert alert-warning text-center mb-6">
-                <i class="bi bi-hourglass-split"></i>
-                {% if pending_request.status == "verifying" %}{% blocktrans with price=pending_request.price_label %}We received your receipt ({{ price }}) and are verifying the transfer. Pro will be activated within 24 hours.{% endblocktrans %}
-                {% else %}{% blocktrans with price=pending_request.price_label %}Your Pro request ({{ price }}) is awaiting payment. Our team will contact you within 24 hours.{% endblocktrans %}
-                <a href="{% url 'checkout' %}" class="fw-bold" style="margin-inline-start: 6px;">{% trans "Pay now or change the order" %} →</a>{% endif %}
+        {% elif current_pass %}
+            <div class="plans__status plans__status--ok" role="status">
+                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                {% if current_pass.internship %}{% blocktrans with title=current_pass.internship.title date=current_pass.expires_at|date:"Y/m/d" %}Your Hiring Pass for "{{ title }}" is active until {{ date }}. It ends on its own; nothing is charged again.{% endblocktrans %}
+                {% else %}{% blocktrans with date=current_pass.expires_at|date:"Y/m/d" %}Your Hiring Pass is active until {{ date }}. It ends on its own; nothing is charged again.{% endblocktrans %}{% endif %}
             </div>
         {% endif %}
+        {% if legacy_order %}
+            <div class="plans__status" role="status" data-legacy-order>
+                <i class="bi bi-clock-history" aria-hidden="true"></i>
+                <span>{% blocktrans with price=legacy_order.price_label date=legacy_order.created_at|date:"Y/m/d" %}You have an Internest Pro order from {{ date }} ({{ price }}), placed before Pro was replaced by the Hiring Pass. If you already paid it, we will honour it. If not, cancel it from checkout; it does not stop you buying a Hiring Pass.{% endblocktrans %}</span>
+            </div>
+        {% endif %}
+        {% if pending_request %}
+            <div class="plans__status" role="status">
+                <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                {% if pending_request.status == "verifying" %}{% blocktrans with price=pending_request.price_label %}We received your receipt ({{ price }}) and are verifying the transfer. Access is activated within 24 hours.{% endblocktrans %}
+                {% else %}{% blocktrans with price=pending_request.price_label %}Your order ({{ price }}) is awaiting payment.{% endblocktrans %}
+                    <a href="{% url 'checkout' %}">{% trans "Pay now or change the order" %} →</a>{% endif %}
+            </div>
+        {% endif %}
 
-        <nav class="period-toggle" aria-label="{% trans 'Billing period' %}">
-            <a href="?period=month" class="period-toggle__opt {% if period == 'month' %}is-active{% endif %}">{% trans "Monthly" %}</a>
-            <a href="?period=year" class="period-toggle__opt {% if period == 'year' %}is-active{% endif %}">{% trans "Yearly" %} <span class="period-toggle__save">{% trans "2 months free" %}</span></a>
-        </nav>
+        {% include "startups/_pool_stats.html" %}
+        <p class="plans__preview-link"><a href="{% url 'talent_pool_preview' %}">{% trans "Preview anonymous candidates for free" %} →</a></p>
 
-        <div class="tier-table-wrap">
-            <table class="tier-table">
-                <thead>
-                    <tr>
-                        <th scope="col"></th>
-                        <th scope="col">
-                            <span class="tier-table__name">{% trans "Free" %}</span>
-                            <span class="tier-table__price">{{ free_price }}</span>
-                        </th>
-                        <th scope="col" class="tier-table__pro">
-                            <span class="tier-table__name">👑 Internest Pro</span>
-                            <span class="tier-table__price">
-                                {% if period == "year" %}{{ yearly.list_label }} <small>/ {% trans "year" %}</small>{% else %}{{ monthly.list_label }} <small>/ {% trans "month" %}</small>{% endif %}
-                            </span>
-                            <span class="tier-table__alt">
-                                {% if period == "year" %}{% blocktrans with p=monthly.list_label %}or {{ p }} / month{% endblocktrans %}{% else %}{% blocktrans with p=yearly.list_label %}or {{ p }} / year{% endblocktrans %}{% endif %}
-                            </span>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><th scope="row">{% trans "Job posts" %}</th>
-                        <td>{% blocktrans with n=free_posts %}{{ n }} per month{% endblocktrans %}</td><td class="tier-table__pro">♾️ {% trans "Unlimited" %}</td></tr>
-                    <tr><th scope="row">{% trans "Applicant details" %}</th>
-                        <td>{% trans "Verified skills only (no scores or percentile report)" %}</td><td class="tier-table__pro">{% trans "Full scores + percentile reports" %}</td></tr>
-                    <tr><th scope="row">{% trans "Shortlist for interview" %}</th>
-                        <td>✅</td><td class="tier-table__pro">✅</td></tr>
-                    <tr><th scope="row">{% trans "Talent Pool search & profile preview" %}</th>
-                        <td><span class="tier-off">🔒 {% trans "Locked" %}</span></td><td class="tier-table__pro">✅</td></tr>
-                    <tr><th scope="row">{% blocktrans with t=MATCH_THRESHOLD %}Direct invitations (skip the {{ t }}% skill match){% endblocktrans %}</th>
-                        <td><span class="tier-off">0</span></td><td class="tier-table__pro">{% blocktrans with n=invites_per_opportunity %}{{ n }} per job post{% endblocktrans %}</td></tr>
-                    <tr><th scope="row">{% trans "Pro badge & top listing" %}</th>
-                        <td><span class="tier-off">—</span></td><td class="tier-table__pro">👑 {% trans "Pro badge + priority placement" %}</td></tr>
-                    <tr><th scope="row">{% trans "Founders Network posts" %}</th>
-                        <td>{% blocktrans with n=network_hourly %}{{ n }} per hour{% endblocktrans %}</td><td class="tier-table__pro">♾️ {% trans "Unlimited" %}</td></tr>
-                </tbody>
-            </table>
+        <div class="plans__grid">
+            <article class="plan-card" aria-labelledby="plan-free">
+                <h2 id="plan-free">{% trans "Free" %}</h2>
+                <p class="plan-card__price" dir="ltr">{{ free_price }}</p>
+                <p class="plan-card__note">{% trans "For as long as you like" %}</p>
+                <ul class="plan-card__list">
+                    <li>{% trans "Company registration and profile" %}</li>
+                    <li>{% blocktrans with n=free_posts %}{{ n }} opportunity post per month{% endblocktrans %}</li>
+                    <li>{% trans "Live verified talent numbers per skill" %}</li>
+                    <li>{% trans "Anonymous candidate summaries (verified companies)" %}</li>
+                    <li>{% trans "Applicants' verified skills and shortlisting" %}</li>
+                    <li>{% blocktrans with n=network_hourly %}Founders Network: {{ n }} posts per hour{% endblocktrans %}</li>
+                </ul>
+            </article>
+
+            <article class="plan-card plan-card--pass" aria-labelledby="plan-pass">
+                <h2 id="plan-pass">{% trans "Hiring Pass" %}</h2>
+                {% if list_quote %}
+                    <p class="plan-card__price" dir="ltr">{{ list_quote.list_label }}</p>
+                    <p class="plan-card__note">{% blocktrans with days=pass_days %}One opportunity · {{ days }} days · one-time payment · no automatic renewal{% endblocktrans %}</p>
+                {% else %}
+                    <p class="plan-card__price plan-card__price--ask">{% trans "Contact sales" %}</p>
+                    <p class="plan-card__note">{% blocktrans with email=sales_email %}The Hiring Pass is priced in EGP. For companies outside Egypt, email {{ email }}.{% endblocktrans %}</p>
+                {% endif %}
+                <ul class="plan-card__list">
+                    <li>{% trans "Everything in Free" %}</li>
+                    <li>{% trans "Full Talent Pool search: names, universities, bios and exact scores" %}</li>
+                    <li>{% blocktrans with n=invites_per_opportunity %}Invite up to {{ n }} candidates to your opportunity{% endblocktrans %}</li>
+                    <li>{% trans "Full scores and percentile reports for applicants to that opportunity" %}</li>
+                    <li>{% trans "Founders Network without the hourly limit" %}</li>
+                    <li>{% trans "A clear end date shown on your dashboard" %}</li>
+                </ul>
+                <p class="plan-card__fine">{% trans "Contact details are shared only with the student's consent, after they apply and you shortlist them. We do not guarantee a hire." %}</p>
+                {% if list_quote and not legacy_pro %}
+                    {% if has_opportunities %}
+                        <a href="{% url 'checkout' %}" class="btn btn--primary btn--lg btn--block" data-checkout-cta>{% trans "Buy a Hiring Pass" %}</a>
+                    {% else %}
+                        <a href="{% url 'partner_submit_choose' %}" class="btn btn--outline btn--lg btn--block">{% trans "Post your opportunity first (free)" %}</a>
+                    {% endif %}
+                {% endif %}
+            </article>
         </div>
 
-        {% if not is_pro %}
-            <div class="checkout card">
-                <h3 class="mb-4">{% if period == "year" %}{% trans "Internest Pro (1 year)" %}{% else %}{% trans "Internest Pro (1 month)" %}{% endif %}</h3>
+        <section class="founding card" aria-labelledby="founding-title">
+            <h2 id="founding-title">{% trans "Founding 20" %}</h2>
+            <p>{% blocktrans with limit=seat_limit %}The first {{ limit }} verified companies with a complete profile that ask get one Hiring Pass free. In return we ask for honest feedback: it is optional, and a negative answer is as welcome as a positive one.{% endblocktrans %}</p>
+            {% if seat %}
+                <p class="founding__mine"><i class="bi bi-award-fill" aria-hidden="true"></i>
+                    {% blocktrans with n=seat.number limit=seat_limit date=seat.hiring_pass.expires_at|date:"Y/m/d" %}You hold Founding seat {{ n }} of {{ limit }}. Your free pass runs until {{ date }}.{% endblocktrans %}</p>
+                <a href="{% url 'founding_feedback' %}" class="btn btn--outline btn--sm">{% if seat.feedback_at %}{% trans "Update your feedback" %}{% else %}{% trans "Share feedback (optional)" %}{% endif %}</a>
+            {% else %}
+                <p class="founding__left">{% blocktrans with left=seats_left limit=seat_limit %}{{ left }} of {{ limit }} seats left{% endblocktrans %}</p>
+                {% if founding_block %}
+                    <p class="founding__block"><i class="bi bi-info-circle" aria-hidden="true"></i> {{ founding_block }}</p>
+                {% elif not has_opportunities %}
+                    <p class="founding__block"><i class="bi bi-info-circle" aria-hidden="true"></i> {% trans "Post an opportunity first (free), then claim your seat for it." %}</p>
+                {% else %}
+                    <form method="post" action="{% url 'founding_claim' %}" class="founding__form">
+                        {% csrf_token %}
+                        <label for="{{ claim_form.internship.id_for_label }}">{{ claim_form.internship.label }}</label>
+                        {{ claim_form.internship }}
+                        <button type="submit" class="btn btn--primary">{% trans "Claim my free Hiring Pass" %}</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        </section>
+
+        {% if list_quote and not legacy_pro and has_opportunities %}
+            <section class="card plans__promo" aria-labelledby="promo-title">
+                <h2 id="promo-title" class="visually-hidden">{% trans "Promo code" %}</h2>
                 <form method="post" class="promo-form">
                     {% csrf_token %}
-                    <input type="hidden" name="period" value="{{ period }}">
                     {% if promo %}
                         <div class="promo-applied">
-                            <span><i class="bi bi-ticket-perforated"></i> <strong dir="ltr">{{ promo.code }}</strong> · −{{ quote.discount_percent }}% (−{{ quote.discount_label }})</span>
+                            <span><i class="bi bi-ticket-perforated" aria-hidden="true"></i> <strong dir="ltr">{{ promo.code }}</strong> · −{{ quote.discount_percent }}% (−<span dir="ltr">{{ quote.discount_label }}</span>) · {% trans "Total" %} <span dir="ltr">{{ quote.final_label }}</span></span>
                             <button type="submit" name="action" value="remove" class="btn btn--ghost btn--sm">{% trans "Remove" %}</button>
                         </div>
                     {% else %}
@@ -94,23 +128,14 @@
                         </div>
                     {% endif %}
                 </form>
-
-                <div class="checkout-summary">
-                    <div><span>{% trans "Subtotal" %}</span><span dir="ltr">{{ quote.list_label }}</span></div>
-                    {% if quote.discount_percent %}<div class="text-success"><span>{% trans "Discount" %}</span><span dir="ltr">−{{ quote.discount_label }}</span></div>{% endif %}
-                    <div class="checkout-summary__total"><span>{% trans "Total" %}</span><span dir="ltr">{{ quote.final_label }}</span></div>
-                </div>
-
-                <a href="{% url 'checkout' %}{% if period == 'year' %}?period=year{% endif %}" class="btn btn--gold btn--lg btn--block" data-checkout-cta>
-                    {% trans "Subscribe now and unlock every feature" %}
-                </a>
-                <p class="text-muted text-center mt-3 mb-0" style="font-size: var(--text-xs);">
-                    <i class="bi bi-shield-lock"></i> {% trans "Secure checkout: review your order, accept the terms, then pay." %}
-                    <a href="{% url 'refund_policy' %}">{% trans "Refund policy" %}</a>
-                    {% if currency != "EGP" %}<br>{% blocktrans with c=currency %}Prices in {{ c }} based on your company's country.{% endblocktrans %}{% endif %}
-                </p>
-            </div>
+            </section>
         {% endif %}
+
+        <p class="plans__fine">
+            <i class="bi bi-shield-lock" aria-hidden="true"></i>
+            {% blocktrans with n=min_available %}If fewer than {{ n }} verified candidates matched your opportunity's skills when your pass started, you can ask for a full refund within 7 days.{% endblocktrans %}
+            <a href="{% url 'refund_policy' %}">{% trans "Refund and availability policy" %}</a>
+        </p>
     </div>
 </section>
 {% endblock %}

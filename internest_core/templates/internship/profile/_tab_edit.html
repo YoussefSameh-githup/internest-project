@@ -26,7 +26,7 @@
                     {% trans "Startups see this with your verified skills before your CV and contact details are shared. Mention projects, tools and achievements." as bio_help %}
                     {% include "internship/_pf_field.html" with field=form.bio help=bio_help full=True %}
                     {% include "internship/_pf_field.html" with field=form.linkedin_url %}
-                    {% trans "Shown to Pro startups in your Talent Pool profile. Don't use a link that shows your phone or email." as portfolio_help %}
+                    {% trans "Shown to companies with a Hiring Pass in your Talent Pool profile. Don't use a link that shows your phone or email." as portfolio_help %}
                     {% include "internship/_pf_field.html" with field=form.portfolio_url help=portfolio_help %}
                 </div>
             </div>
@@ -57,7 +57,7 @@
                     <span class="pf-switch__track" aria-hidden="true"></span>
                     <span class="pf-switch__text">
                         <strong>{{ form.talent_pool_visible.label }}</strong>
-                        <small>{% trans "Pro startups can find you by your verified skills and invite you to apply. They see your name, university, major, study year, bio and verified skills — never your phone, email or CV. Verified companies without Pro see only an anonymous summary: major, study year and verified skills with a score range." %}</small>
+                        <small>{% trans "Companies with a Hiring Pass can find you by your verified skills and invite you to apply. They see your name, university, major, study year, bio and verified skills — never your phone, email or CV. Verified companies without a Hiring Pass see only an anonymous summary: major, study year and verified skills with a score range." %}</small>
                     </span>
                 </label>
             </div>

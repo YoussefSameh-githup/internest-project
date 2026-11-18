@@ -227,13 +227,13 @@ class PreviewPageTests(ApplicationsBase):
         self.assertContains(resp, "<strong>0</strong>", html=False)
         self.assertNotContains(resp, "Candidate 1")
 
-    def test_upgrade_page_shows_numbers_to_free_accounts_only(self):
+    def test_upgrade_page_shows_numbers_to_everyone(self):
         self.client.force_login(self.founder)
         page = self.client.get(reverse("startup_upgrade"))
         self.assertContains(page, "Verified candidates open to offers")
         self.assertContains(page, f'href="{PREVIEW}"')
         activate_pro(self.partner)
-        self.assertNotContains(self.client.get(reverse("startup_upgrade")), "Verified candidates open to offers")
+        self.assertContains(self.client.get(reverse("startup_upgrade")), "Verified candidates open to offers")  # plans page shows them to everyone
 
     def test_dashboard_links_free_startups_to_preview(self):
         self.client.force_login(self.founder)

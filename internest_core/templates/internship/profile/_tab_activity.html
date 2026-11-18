@@ -7,7 +7,7 @@
             <div>
                 {% if proof.count %}
                     <strong>{% blocktrans with n=proof.count avg=proof.avg|stringformat:".1f" %}Completed {{ n }} verified gigs | Average rating ⭐️ {{ avg }}/5{% endblocktrans %}</strong>
-                    {% if proof.top %}<small>{% trans "Top Verified Candidate 🏅 — you're shown first to Pro startups." %}</small>
+                    {% if proof.top %}<small>{% trans "Top Verified Candidate 🏅 — you're shown first in the Talent Pool." %}</small>
                     {% else %}<small>{% blocktrans with n=top_min %}Complete {{ n }} verified gigs to earn the Top Verified Candidate 🏅 badge.{% endblocktrans %}</small>{% endif %}
                 {% else %}
                     <strong>{% trans "No verified gigs yet" %}</strong>

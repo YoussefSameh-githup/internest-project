@@ -1971,3 +1971,18 @@ a.pf-stat:hover { border-color: #c7d2fe; }
 @keyframes ia-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .ia-spinner { animation-duration: 2s; } }
 .ia-error { margin: 8px 0 0; padding: 8px 12px; border-radius: 10px; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; font-size: 13px; }
+
+/* ---------- In-app notices (components/notices/*.html, internest_core/notices.py) ---------- */
+.app-notices { display: grid; gap: 12px; padding-top: 16px; }
+.app-notice { display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px; border-radius: 16px; background: #eff6ff;
+  border: 1px solid #bfdbfe; color: #1e293b; }
+.app-notice__icon { flex-shrink: 0; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: #dbeafe; color: #1d4ed8; font-size: 1.2rem; }
+.app-notice__body { min-width: 0; }
+.app-notice__title { margin: 0 0 4px; font-size: 1.05rem; color: #0f172a; }
+.app-notice__body p { margin: 0 0 12px; font-size: 14px; color: #334155; }
+.app-notice__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0; }
+.app-notice__link { font-size: 14px; font-weight: 600; color: #1d4ed8; }
+@media (max-width: 600px) {
+  .app-notice { flex-direction: column; }
+  .app-notice__actions .btn { width: 100%; justify-content: center; }
+}

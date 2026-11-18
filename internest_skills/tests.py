@@ -253,7 +253,7 @@ class AccessControlTests(Base):
         self.client.force_login(self.free_user)
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 403)
-        self.assertContains(resp, "Internest Pro", status_code=403)
+        self.assertContains(resp, "Detailed skill reports need a Hiring Pass", status_code=403)
 
     def test_university_dashboard_only_for_verified_university(self):
         SkillProfile.objects.create(student=self.student, partner_university=self.uni)

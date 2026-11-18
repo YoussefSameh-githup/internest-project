@@ -1,4 +1,7 @@
-"""Regional Pro pricing: EGP for Egypt, EUR for the euro area, USD everywhere else.
+"""Prices and currencies. Free = EGP 0; Hiring Pass = EGP 500, one-time, 30 days, no renewal (business decision 2026-11-18).
+
+The Hiring Pass is priced in EGP only. Companies whose pricing currency is USD or EUR see "contact sales" until the owner
+sets prices for them (no converted or invented price is shown).
 
 Country priority: the company's registration country (set at onboarding, locked after verification),
 then the visitor's country (Cloudflare header or a GeoIP2 database when configured), then the default.
@@ -12,14 +15,8 @@ from django.utils.translation import gettext_lazy
 
 logger = logging.getLogger(__name__)
 
-PERIOD_MONTH, PERIOD_YEAR = "month", "year"
-PERIOD_MONTHS = {PERIOD_MONTH: 1, PERIOD_YEAR: 12}
-
-PRICES = {
-    "EGP": {PERIOD_MONTH: Decimal("800"), PERIOD_YEAR: Decimal("8000")},
-    "USD": {PERIOD_MONTH: Decimal("50"), PERIOD_YEAR: Decimal("500")},
-    "EUR": {PERIOD_MONTH: Decimal("50"), PERIOD_YEAR: Decimal("500")},
-}
+FREE_PRICE = Decimal("0")
+HIRING_PASS_PRICES = {"EGP": Decimal("500")}  # the only place the Hiring Pass price is written
 EUROZONE = {"AT", "BE", "HR", "CY", "EE", "FI", "FR", "DE", "GR", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PT", "SK", "SI", "ES"}
 # Billed in EUR: the whole EU, the EEA, Switzerland and the UK (not only the euro area).
 EUROPE = EUROZONE | {"BG", "CZ", "DK", "HU", "PL", "RO", "SE", "IS", "LI", "NO", "CH", "GB"}
@@ -85,6 +82,23 @@ def visitor_country(request) -> str:
 def pricing_country(request, partner=None) -> str:
     registered = getattr(partner, "country_of_registration", "") if partner is not None else ""
     return registered or visitor_country(request) or getattr(settings, "DEFAULT_PRICING_COUNTRY", "EG")
+
+
+def pass_quote(currency="EGP", promo=None, discount_percent=None):
+    """Hiring Pass price in `currency` after a promo code, or None if the pass is not sold in that currency."""
+    from decimal import ROUND_HALF_UP
+
+    list_price = HIRING_PASS_PRICES.get(currency)
+    if list_price is None:
+        return None
+    percent = discount_percent if discount_percent is not None else (promo.discount_percent if promo else 0)
+    discount = (list_price * percent / 100).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    final = list_price - discount
+    return {
+        "currency": currency, "list_price": list_price, "discount_percent": percent, "discount": discount, "final_price": final,
+        "list_label": format_price(list_price, currency), "discount_label": format_price(discount, currency),
+        "final_label": format_price(final, currency),
+    }
 
 
 def format_price(amount, currency: str) -> str:

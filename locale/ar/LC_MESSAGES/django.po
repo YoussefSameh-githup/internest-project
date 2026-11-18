@@ -6209,3 +6209,497 @@ msgstr ""
 
 msgid "Verified candidates open to offers"
 msgstr "المرشحون المتحقَّق منهم والمتاحون للعروض"
+
+msgid "We updated our privacy policy"
+msgstr "حدّثنا سياسة الخصوصية"
+
+msgid ""
+"You are visible in the Talent Pool. Verified companies without Pro can now "
+"also see an anonymous summary of you: your major, study year and verified "
+"skills with a score range. They never see your name, university, photo, "
+"phone, email or CV."
+msgstr ""
+"إنت ظاهر في قاعدة المواهب. الشركات الموثَّقة اللي مش مشتركة في Pro بقت كمان "
+"تقدر تشوف ملخص مجهول الهوية عنك: تخصصك وسنتك الدراسية ومهاراتك المتحقَّق "
+"منها مع نطاق الدرجة. مش بيشوفوا أبداً اسمك أو جامعتك أو صورتك أو رقمك أو "
+"إيميلك أو الـ CV."
+
+msgid "OK, keep me visible"
+msgstr "تمام، خلّيني ظاهر"
+
+msgid "Stop showing me in the Talent Pool"
+msgstr "وقّف ظهوري في قاعدة المواهب"
+
+msgid "Read the privacy policy"
+msgstr "اقرأ سياسة الخصوصية"
+
+msgid ""
+"You are no longer shown in the Talent Pool. You can turn it back on from "
+"your profile."
+msgstr ""
+"مابقيتش ظاهر في قاعدة المواهب. تقدر ترجّع الظهور من ملفك الشخصي في أي وقت."
+
+msgid "Plans and Hiring Pass"
+msgstr "الباقات وباقة التوظيف"
+
+msgid "Get a Hiring Pass"
+msgstr "احصل على باقة توظيف"
+
+msgid "One opportunity · 30 days · no renewal"
+msgstr "فرصة واحدة · 30 يوم · من غير تجديد"
+
+msgid "Detailed scores and percentiles with a Hiring Pass"
+msgstr "الدرجات والترتيب المئوي بالتفصيل مع باقة التوظيف"
+
+msgid "Top Verified Candidate 🏅 — you're shown first in the Talent Pool."
+msgstr "مرشح متحقَّق منه مميز 🏅 — بتظهر في أول قاعدة المواهب."
+
+msgid ""
+"Shown to companies with a Hiring Pass in your Talent Pool profile. Don't use"
+" a link that shows your phone or email."
+msgstr ""
+"بيظهر للشركات اللي معاها باقة توظيف في ملفك بقاعدة المواهب. ماتستخدمش لينك "
+"بيظهر رقمك أو إيميلك."
+
+msgid ""
+"Companies with a Hiring Pass can find you by your verified skills and invite"
+" you to apply. They see your name, university, major, study year, bio and "
+"verified skills — never your phone, email or CV. Verified companies without "
+"a Hiring Pass see only an anonymous summary: major, study year and verified "
+"skills with a score range."
+msgstr ""
+"الشركات اللي معاها باقة توظيف تقدر تلاقيك بمهاراتك المتحقَّق منها وتدعوك "
+"للتقديم. بيشوفوا اسمك وجامعتك وتخصصك وسنتك الدراسية ونبذتك ومهاراتك "
+"المتحقَّق منها، ومش بيشوفوا أبداً رقمك أو إيميلك أو الـ CV. الشركات "
+"الموثَّقة اللي معهاش باقة توظيف بتشوف ملخص مجهول الهوية بس: التخصص والسنة "
+"الدراسية والمهارات المتحقَّق منها مع نطاق الدرجة."
+
+msgid ""
+"You are visible in the Talent Pool. Verified companies without a Hiring Pass"
+" can now also see an anonymous summary of you: your major, study year and "
+"verified skills with a score range. They never see your name, university, "
+"photo, phone, email or CV."
+msgstr ""
+"إنت ظاهر في قاعدة المواهب. الشركات الموثَّقة اللي معهاش باقة توظيف بقت كمان "
+"تقدر تشوف ملخص مجهول الهوية عنك: تخصصك وسنتك الدراسية ومهاراتك المتحقَّق "
+"منها مع نطاق الدرجة. مش بيشوفوا أبداً اسمك أو جامعتك أو صورتك أو رقمك أو "
+"إيميلك أو الـ CV."
+
+msgid "Hiring Pass"
+msgstr "باقة التوظيف"
+
+msgid "Detailed skill reports need a Hiring Pass"
+msgstr "تقارير المهارات التفصيلية محتاجة باقة توظيف"
+
+msgid ""
+"With a Hiring Pass for an opportunity you see the full scores and "
+"percentiles of the candidates who apply to it."
+msgstr ""
+"مع باقة توظيف لفرصة معينة، بتشوف الدرجات الكاملة والترتيب المئوي للمرشحين "
+"اللي بيقدّموا عليها."
+
+msgid "Employer view"
+msgstr "عرض صاحب العمل"
+
+msgid ""
+"Badges and scores are visible only to you, your partner university, and "
+"employers with a Hiring Pass for an opportunity you applied to."
+msgstr ""
+"الشارات والدرجات بتظهر ليك بس، ولجامعتك الشريكة، ولأصحاب العمل اللي معاهم "
+"باقة توظيف لفرصة إنت قدّمت عليها."
+
+msgid "Unlimited posting with your paid access"
+msgstr "نشر بلا حدود مع اشتراكك المدفوع"
+
+msgid "Your Hiring Pass is active"
+msgstr "باقة التوظيف بتاعتك شغالة"
+
+msgid "See the Hiring Pass"
+msgstr "شوف باقة التوظيف"
+
+msgid "Founding 20 is for companies only."
+msgstr "عرض Founding 20 للشركات بس."
+
+msgid "Your company already has a Founding 20 seat."
+msgstr "شركتك عندها مقعد في Founding 20 بالفعل."
+
+msgid "Founding 20 opens once our team verifies your company."
+msgstr "عرض Founding 20 بيفتح لما فريقنا يوثّق شركتك."
+
+msgid "Complete your company profile to 100% to claim a Founding 20 seat."
+msgstr "كمّل ملف شركتك لـ 100% عشان تاخد مقعد في Founding 20."
+
+msgid "All 20 Founding seats have been claimed."
+msgstr "كل مقاعد Founding 20 اتحجزت."
+
+msgid "Opportunity this pass is for"
+msgstr "الفرصة اللي الباقة دي ليها"
+
+msgid "Opportunity for your free Hiring Pass"
+msgstr "الفرصة اللي هتاخد ليها باقة التوظيف المجانية"
+
+msgid "The full Talent Pool search needs a Hiring Pass."
+msgstr "البحث الكامل في قاعدة المواهب محتاج باقة توظيف."
+
+msgid "Did you find suitable candidates?"
+msgstr "لقيت مرشحين مناسبين؟"
+
+msgid "How many candidates did you contact?"
+msgstr "تواصلت مع كام مرشح؟"
+
+msgid "How much do you trust the skill verification? (1–5)"
+msgstr "قد إيه بتثق في التحقق من المهارات؟ (1–5)"
+
+msgid "Would you pay for your next Hiring Pass?"
+msgstr "هتدفع في باقة التوظيف الجاية؟"
+
+msgid "What was missing or should change?"
+msgstr "إيه اللي كان ناقص أو المفروض يتغير؟"
+
+msgid "Internest Pro (legacy)"
+msgstr "Internest Pro (قديم)"
+
+msgid "Purchase"
+msgstr "شراء"
+
+msgid "Founding 20"
+msgstr "عرض Founding 20"
+
+msgid "Granted by admin"
+msgstr "منحة من الإدارة"
+
+msgid "Yes"
+msgstr "أيوه"
+
+msgid "Partly"
+msgstr "جزئياً"
+
+msgid "No"
+msgstr "لأ"
+
+msgid "Thank you! Your feedback goes straight to the founding team."
+msgstr "شكراً! رأيك بيوصل للفريق المؤسس على طول."
+
+msgid ""
+"Receipt received! We're verifying your transfer and will activate your "
+"Hiring Pass within 24 hours."
+msgstr "استلمنا الإيصال! بنراجع التحويل وهنفعّل باقة التوظيف خلال 24 ساعة."
+
+msgid ""
+"Welcome to Founding 20 (seat %(n)s)! Your free Hiring Pass is active until "
+"%(date)s."
+msgstr ""
+"أهلاً بيك في Founding 20 (مقعد %(n)s)! باقة التوظيف المجانية شغالة لحد "
+"%(date)s."
+
+msgid ""
+"You already have an order awaiting payment. Our team will contact you "
+"shortly."
+msgstr "عندك طلب مستني الدفع بالفعل. فريقنا هيتواصل معاك قريب."
+
+msgid "This opportunity already has paid access. Nothing was charged."
+msgstr "الفرصة دي عليها باقة مدفوعة بالفعل. ماتمش خصم أي مبلغ."
+
+msgid "Internest Hiring Pass — %(days)s days"
+msgstr "باقة توظيف Internest — %(days)s يوم"
+
+msgid ""
+"Your Hiring Pass will be activated within 24 hours. You don't need to do "
+"anything else."
+msgstr "باقة التوظيف هتتفعّل خلال 24 ساعة. مش محتاج تعمل حاجة تانية."
+
+msgid ""
+"Your Internest Pro subscription is still active, so you don't need a Hiring "
+"Pass yet."
+msgstr "اشتراك Internest Pro بتاعك لسه شغال، فمش محتاج باقة توظيف دلوقتي."
+
+msgid ""
+"The Hiring Pass is priced in EGP. For companies outside Egypt, email "
+"%(email)s and we'll arrange it."
+msgstr ""
+"باقة التوظيف بتتسعّر بالجنيه المصري. للشركات اللي برّه مصر، ابعت على "
+"%(email)s وهنرتّبها."
+
+msgid ""
+"A Hiring Pass is bought for one of your open opportunities. Post your "
+"opportunity first (free), then come back."
+msgstr ""
+"باقة التوظيف بتتشترى لفرصة من فرصك المفتوحة. انشر فرصتك الأول (مجاناً) "
+"وارجع."
+
+msgid "Verified candidates matching each opportunity right now"
+msgstr "المرشحون المتحقَّق منهم المطابقون لكل فرصة دلوقتي"
+
+msgid "%(n)s matching verified candidates now"
+msgstr "المرشحون المطابقون المتحقَّق منهم دلوقتي: %(n)s"
+
+msgid "below our availability minimum"
+msgstr "أقل من الحد الأدنى للإتاحة"
+
+msgid ""
+"Your receipt is only visible to our verification team. Your Hiring Pass is "
+"activated as soon as the transfer is confirmed."
+msgstr ""
+"الإيصال بيظهر لفريق المراجعة بس. باقة التوظيف بتتفعّل أول ما التحويل يتأكد."
+
+msgid "One opportunity · %(days)s days"
+msgstr "فرصة واحدة · %(days)s يوم"
+
+msgid "One-time payment, no subscription"
+msgstr "دفعة واحدة، من غير اشتراك"
+
+msgid "Full Talent Pool search and invitations"
+msgstr "بحث كامل في قاعدة المواهب ودعوات"
+
+msgid "Full scores for applicants to this opportunity"
+msgstr "درجات كاملة للمتقدمين على الفرصة دي"
+
+msgid ""
+"Full refund on request within 7 days if fewer than %(n)s verified candidates"
+" matched your opportunity when the pass started."
+msgstr ""
+"استرداد كامل عند الطلب خلال 7 أيام لو عدد المرشحين المتحقَّق منهم المطابقين "
+"لفرصتك وقت بدء الباقة كان أقل من %(n)s."
+
+msgid ""
+"Your Hiring Pass is activated as soon as we confirm the payment — usually "
+"within a few hours. You'll see it on your dashboard."
+msgstr ""
+"باقة التوظيف بتتفعّل أول ما نأكد الدفع — غالباً خلال كام ساعة. هتلاقيها في "
+"لوحة التحكم."
+
+msgid ""
+"Complete the payment using the reference you received (for example at a "
+"Fawry outlet). Your Hiring Pass is activated once the payment is confirmed."
+msgstr ""
+"كمّل الدفع بالرقم المرجعي اللي وصلك (مثلاً في منفذ فوري). باقة التوظيف "
+"بتتفعّل لما الدفع يتأكد."
+
+msgid "Founding 20 feedback"
+msgstr "رأيك في Founding 20"
+
+msgid ""
+"Seat %(n)s. Every question is optional. Tell us what really happened: a "
+"\"no\" helps us as much as a \"yes\"."
+msgstr ""
+"مقعد %(n)s. كل الأسئلة اختيارية. قولنا اللي حصل فعلاً: الـ «لأ» بتفيدنا زي "
+"الـ «أيوه» بالظبط."
+
+msgid "Send feedback"
+msgstr "ابعت رأيك"
+
+msgid ""
+"A Hiring Pass shows each candidate's name, university, bio, portfolio and "
+"exact scores, and lets you invite them to apply. Phone, email and CV are "
+"shared only after they apply and you shortlist them."
+msgstr ""
+"باقة التوظيف بتعرض اسم كل مرشح وجامعته ونبذته وأعماله ودرجاته بالظبط، وتقدر "
+"تدعوه للتقديم. الرقم والإيميل والـ CV بيظهروا بس بعد ما يقدّم وتختاره "
+"للمقابلة."
+
+msgid "Plans: Free and Hiring Pass"
+msgstr "الباقات: المجانية وباقة التوظيف"
+
+msgid ""
+"Start free. When you're ready to hire for an opportunity, buy one Hiring "
+"Pass for it: %(days)s days, paid once, never renewed automatically."
+msgstr ""
+"ابدأ مجاناً. ولما تكون جاهز توظّف لفرصة، اشتري ليها باقة توظيف واحدة: "
+"%(days)s يوم، دفعة واحدة، ومن غير تجديد تلقائي أبداً."
+
+msgid ""
+"Your Internest Pro subscription stays active until %(date)s, with everything"
+" it included. It will not renew and you don't need a Hiring Pass until then."
+msgstr ""
+"اشتراك Internest Pro بتاعك شغال لحد %(date)s بكل مزاياه. مش هيتجدد، ومش "
+"محتاج باقة توظيف لحد التاريخ ده."
+
+msgid ""
+"Your Hiring Pass for \"%(title)s\" is active until %(date)s. It ends on its "
+"own; nothing is charged again."
+msgstr ""
+"باقة التوظيف لفرصة «%(title)s» شغالة لحد %(date)s. بتنتهي لوحدها، ومفيش أي "
+"خصم تاني."
+
+msgid ""
+"We received your receipt (%(price)s) and are verifying the transfer. Access "
+"is activated within 24 hours."
+msgstr ""
+"استلمنا الإيصال (%(price)s) وبنراجع التحويل. الباقة هتتفعّل خلال 24 ساعة."
+
+msgid "Your order (%(price)s) is awaiting payment."
+msgstr "طلبك (%(price)s) مستني الدفع."
+
+msgid "For as long as you like"
+msgstr "لأي مدة تحبها"
+
+msgid "Company registration and profile"
+msgstr "تسجيل الشركة وملفها"
+
+msgid "%(n)s opportunity post per month"
+msgstr "نشر %(n)s فرصة في الشهر"
+
+msgid "Live verified talent numbers per skill"
+msgstr "أعداد لحظية للمرشحين المتحقَّق منهم لكل مهارة"
+
+msgid "Anonymous candidate summaries (verified companies)"
+msgstr "ملخصات مرشحين مجهولي الهوية (للشركات الموثَّقة)"
+
+msgid "Applicants' verified skills and shortlisting"
+msgstr "المهارات المتحقَّق منها للمتقدمين واختيارهم للمقابلة"
+
+msgid "Founders Network: %(n)s posts per hour"
+msgstr "شبكة رواد الأعمال: %(n)s منشورات في الساعة"
+
+msgid ""
+"One opportunity · %(days)s days · one-time payment · no automatic renewal"
+msgstr "فرصة واحدة · %(days)s يوم · دفعة واحدة · من غير تجديد تلقائي"
+
+msgid "Contact sales"
+msgstr "تواصل مع المبيعات"
+
+msgid ""
+"The Hiring Pass is priced in EGP. For companies outside Egypt, email "
+"%(email)s."
+msgstr ""
+"باقة التوظيف بتتسعّر بالجنيه المصري. للشركات اللي برّه مصر، ابعت على "
+"%(email)s."
+
+msgid "Everything in Free"
+msgstr "كل اللي في الباقة المجانية"
+
+msgid "Full Talent Pool search: names, universities, bios and exact scores"
+msgstr "بحث كامل في قاعدة المواهب: الأسماء والجامعات والنبذات والدرجات بالظبط"
+
+msgid "Invite up to %(n)s candidates to your opportunity"
+msgstr "ادعُ لحد %(n)s مرشحين لفرصتك"
+
+msgid "Full scores and percentile reports for applicants to that opportunity"
+msgstr "تقارير كاملة بالدرجات والترتيب المئوي للمتقدمين على الفرصة دي"
+
+msgid "Founders Network without the hourly limit"
+msgstr "شبكة رواد الأعمال من غير حد الساعة"
+
+msgid "A clear end date shown on your dashboard"
+msgstr "تاريخ انتهاء واضح في لوحة التحكم"
+
+msgid ""
+"Contact details are shared only with the student's consent, after they apply"
+" and you shortlist them. We do not guarantee a hire."
+msgstr ""
+"بيانات التواصل بتظهر بموافقة الطالب بس، بعد ما يقدّم وتختاره للمقابلة. إحنا "
+"مش بنضمن التوظيف."
+
+msgid "Buy a Hiring Pass"
+msgstr "اشتري باقة توظيف"
+
+msgid "Post your opportunity first (free)"
+msgstr "انشر فرصتك الأول (مجاناً)"
+
+msgid ""
+"The first %(limit)s verified companies that ask get one Hiring Pass free. In"
+" return we ask for honest feedback: it is optional, and a negative answer is"
+" as welcome as a positive one."
+msgstr ""
+"أول %(limit)s شركة موثَّقة تطلب العرض بتاخد باقة توظيف واحدة مجاناً. وفي "
+"المقابل بنطلب رأيك بصراحة: هو اختياري، والرأي السلبي مرحّب بيه زي الإيجابي."
+
+msgid ""
+"You hold Founding seat %(n)s of %(limit)s. Your free pass runs until "
+"%(date)s."
+msgstr ""
+"معاك مقعد %(n)s من %(limit)s في Founding. باقتك المجانية شغالة لحد %(date)s."
+
+msgid "Update your feedback"
+msgstr "عدّل رأيك"
+
+msgid "Share feedback (optional)"
+msgstr "شاركنا رأيك (اختياري)"
+
+msgid "%(left)s of %(limit)s seats left"
+msgstr "فاضل %(left)s مقعد من %(limit)s"
+
+msgid "Post an opportunity first (free), then claim your seat for it."
+msgstr "انشر فرصة الأول (مجاناً)، وبعدين احجز مقعدك ليها."
+
+msgid "Claim my free Hiring Pass"
+msgstr "احجز باقة التوظيف المجانية"
+
+msgid ""
+"If fewer than %(n)s verified candidates matched your opportunity's skills "
+"when your pass started, you can ask for a full refund within 7 days."
+msgstr ""
+"لو عدد المرشحين المتحقَّق منهم المطابقين لمهارات فرصتك وقت بدء الباقة كان "
+"أقل من %(n)s، تقدر تطلب استرداد كامل خلال 7 أيام."
+
+msgid "Refund and availability policy"
+msgstr "سياسة الاسترداد والإتاحة"
+
+msgid ""
+"A screenshot of the successful transfer. Our team verifies it and activates "
+"your Hiring Pass within 24 hours."
+msgstr ""
+"سكرين شوت للتحويل الناجح. فريقنا بيراجعه ويفعّل باقة التوظيف خلال 24 ساعة."
+
+msgid "Hire faster with a Hiring Pass"
+msgstr "وظّف أسرع مع باقة التوظيف"
+
+msgid ""
+"Free accounts can publish %(n)s opportunity per month. You've reached this "
+"month's limit; you can post again next month."
+msgstr ""
+"الحسابات المجانية تقدر تنشر %(n)s فرصة في الشهر. وصلت لحد الشهر ده، وتقدر "
+"تنشر تاني الشهر الجاي."
+
+msgid ""
+"You've reached the free posting limit (%(n)s posts/hour). Companies with an "
+"active Hiring Pass post without this limit."
+msgstr ""
+"وصلت لحد النشر المجاني (%(n)s منشورات في الساعة). الشركات اللي معاها باقة "
+"توظيف شغالة بتنشر من غير الحد ده."
+
+msgid "One opportunity · 30 days · one-time payment · no automatic renewal"
+msgstr "فرصة واحدة · 30 يوم · دفعة واحدة · من غير تجديد تلقائي"
+
+msgid "Hiring Pass active until %(date)s"
+msgstr "باقة التوظيف شغالة لحد %(date)s"
+
+msgid "Founding 20 is for companies without paid access."
+msgstr "عرض Founding 20 للشركات اللي معهاش اشتراك مدفوع."
+
+msgid ""
+"This opportunity already has paid access or an order in progress. Choose "
+"another one."
+msgstr "الفرصة دي عليها باقة مدفوعة أو طلب لسه بيتنفذ. اختار فرصة تانية."
+
+msgid ""
+"You have an Internest Pro order from %(date)s (%(price)s), placed before Pro"
+" was replaced by the Hiring Pass. If you already paid it, we will honour it."
+" If not, cancel it from checkout; it does not stop you buying a Hiring Pass."
+msgstr ""
+"عندك طلب Internest Pro بتاريخ %(date)s (%(price)s)، اتعمل قبل ما باقة "
+"التوظيف تحل محل Pro. لو دفعته بالفعل هنلتزم بيه. لو مادفعتوش، الغيه من صفحة "
+"الدفع؛ وده مش بيمنعك تشتري باقة توظيف."
+
+msgid "Cancel the old Pro order"
+msgstr "الغي طلب Pro القديم"
+
+msgid ""
+"Your Internest Pro subscription is active, with everything it included. You "
+"don't need a Hiring Pass."
+msgstr "اشتراك Internest Pro بتاعك شغال بكل مزاياه. مش محتاج باقة توظيف."
+
+msgid ""
+"Your Hiring Pass is active until %(date)s. It ends on its own; nothing is "
+"charged again."
+msgstr ""
+"باقة التوظيف بتاعتك شغالة لحد %(date)s. بتنتهي لوحدها، ومفيش أي خصم تاني."
+
+msgid ""
+"The first %(limit)s verified companies with a complete profile that ask get "
+"one Hiring Pass free. In return we ask for honest feedback: it is optional, "
+"and a negative answer is as welcome as a positive one."
+msgstr ""
+"أول %(limit)s شركة موثَّقة وملفها مكتمل تطلب العرض بتاخد باقة توظيف واحدة "
+"مجاناً. وفي المقابل بنطلب رأيك بصراحة: هو اختياري، والرأي السلبي مرحّب بيه "
+"زي الإيجابي."

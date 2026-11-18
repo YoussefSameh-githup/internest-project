@@ -372,3 +372,49 @@ a.pool-chip:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
 .pool-preview__cta h2 { margin: 0 0 6px; font-size: 1.15rem; color: #fff; }
 .pool-preview__cta p { max-width: 640px; margin: 0; font-size: 14px; color: #cbd5e1; }
 @media (max-width: 600px) { .pool-preview__cta .btn { width: 100%; } }
+
+/* ---------- Plans: Free vs Hiring Pass + Founding 20 (startups/upgrade.html) ---------- */
+.plans__head { max-width: 720px; margin: 0 auto 24px; text-align: center; }
+.plans__head h1 { margin: 0 0 8px; font-size: clamp(1.6rem, 3.4vw, 2.3rem); color: #0f172a; }
+.plans__head p { margin: 0; color: #475569; }
+.plans__status { display: flex; align-items: flex-start; gap: 8px; padding: 14px 16px; margin-bottom: 16px; border-radius: 14px;
+  background: #fffbeb; border: 1px solid #fde68a; color: #78350f; }
+.plans__status--ok { background: #f0fdf4; border-color: #bbf7d0; color: #14532d; }
+.plans__preview-link { margin: -12px 0 24px; text-align: center; font-weight: 700; }
+.plans__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 20px; margin-bottom: 24px; }
+.plan-card { display: flex; flex-direction: column; gap: 10px; padding: 24px; border-radius: 22px; background: #fff; border: 1px solid #e2e8f0; min-width: 0; }
+.plan-card--pass { border: 2px solid #2563eb; box-shadow: 0 16px 36px rgba(37, 99, 235, .12); }
+.plan-card h2 { margin: 0; font-size: 1.25rem; color: #0f172a; }
+.plan-card__price { margin: 0; font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; }
+.plan-card__price--ask { font-size: 1.4rem; }
+.plan-card__note { margin: 0; color: #475569; font-size: 14px; }
+.plan-card__list { display: grid; gap: 8px; margin: 6px 0 4px; padding: 0; list-style: none; }
+.plan-card__list li { position: relative; padding-inline-start: 26px; color: #1e293b; font-size: 15px; overflow-wrap: anywhere; }
+.plan-card__list li::before { content: "\2713"; position: absolute; inset-inline-start: 0; color: #16a34a; font-weight: 800; }
+.plan-card__fine { margin: auto 0 4px; color: #64748b; font-size: 13px; }
+.founding { padding: 22px; margin-bottom: 20px; border-radius: 22px; }
+.founding h2 { margin: 0 0 6px; font-size: 1.2rem; }
+.founding p { margin: 0 0 10px; color: #334155; }
+.founding__left { font-weight: 800; color: #1d4ed8; }
+.founding__mine { display: flex; gap: 8px; align-items: flex-start; font-weight: 700; color: #14532d; }
+.founding__block { display: flex; gap: 8px; align-items: flex-start; color: #78350f; }
+.founding__form { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.founding__form label { flex-basis: 100%; font-weight: 700; font-size: 14px; }
+.founding__form select { flex: 1 1 240px; min-width: 0; height: 46px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 12px; font: inherit; background: #fff; }
+.plans__promo { padding: 18px; margin-bottom: 20px; border-radius: 18px; }
+.plans__fine { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; justify-content: center; color: #475569; font-size: 14px; text-align: center; }
+@media (max-width: 600px) { .founding__form .btn { width: 100%; } }
+
+/* ---------- Founding 20 feedback (startups/founding_feedback.html) ---------- */
+.feedback { max-width: 720px; }
+.feedback h1 { margin: 0 0 6px; font-size: clamp(1.4rem, 3vw, 1.9rem); }
+.feedback__intro { margin: 0 0 18px; color: #475569; }
+.feedback__form { display: grid; gap: 18px; padding: 22px; border-radius: 20px; }
+.feedback__field fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+.feedback__field legend, .feedback__field > label { display: block; margin-bottom: 8px; font-weight: 700; color: #1e293b; }
+.feedback__choices { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.feedback__choices label { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 500; }
+.feedback__field input[type="number"], .feedback__field textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 12px; font: inherit; }
+.feedback__field input[type="number"] { max-width: 180px; height: 44px; }
+.feedback__error { margin: 6px 0 0; color: #b91c1c; font-size: 13px; }
+.feedback__field.has-error input, .feedback__field.has-error textarea { border-color: #ef4444; }

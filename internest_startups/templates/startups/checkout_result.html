@@ -1,7 +1,7 @@
 {% extends 'internship/base.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Payment status" %} — Internest Pro{% endblock %}
+{% block title %}{% trans "Payment status" %} — Internest{% endblock %}
 
 {% block content %}
 <style>
@@ -20,17 +20,17 @@
         {% if outcome == "success" %}
             <div class="cr-icon cr-icon--success"><i class="bi bi-check-lg"></i></div>
             <h1>{% trans "Thank you! We're confirming your payment" %}</h1>
-            <p>{% trans "Internest Pro is activated as soon as Fawaterak confirms the payment — usually within a few hours. You'll see it on your dashboard." %}</p>
+            <p>{% trans "Your Hiring Pass is activated as soon as we confirm the payment — usually within a few hours. You'll see it on your dashboard." %}</p>
         {% elif outcome == "pending" %}
             <div class="cr-icon cr-icon--pending"><i class="bi bi-hourglass-split"></i></div>
             <h1>{% trans "Payment pending" %}</h1>
-            <p>{% trans "Complete the payment using the reference you received (for example at a Fawry outlet). Pro is activated once the payment is confirmed." %}</p>
+            <p>{% trans "Complete the payment using the reference you received (for example at a Fawry outlet). Your Hiring Pass is activated once the payment is confirmed." %}</p>
         {% else %}
             <div class="cr-icon cr-icon--fail"><i class="bi bi-x-lg"></i></div>
             <h1>{% trans "The payment didn't go through" %}</h1>
             <p>{% trans "The payment wasn't completed. You can try again, or contact us and we'll help you finish it." %}</p>
         {% endif %}
-        <div class="cr-meta">Internest Pro · {{ order.price_label }}{% if order.gateway_reference %} · #{{ order.gateway_reference }}{% endif %}</div>
+        <div class="cr-meta">{{ order.get_product_display }} · {{ order.price_label }}{% if order.gateway_reference %} · #{{ order.gateway_reference }}{% endif %}</div>
         {% if outcome != "success" and order.payment_url and order.status == "pending" %}
             <a href="{{ order.payment_url }}" class="btn btn--primary btn--block">{% trans "Try the payment again" %}</a>
         {% endif %}

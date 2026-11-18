@@ -23,15 +23,15 @@ def receipt(name="receipt.png"):
     return SimpleUploadedFile(name, b"\x89PNG\r\n\x1a\n" + b"0" * 64, content_type="image/png")
 
 
-def paid(**extra):
-    """Checkout POST for a manual transfer: buyer details + the receipt."""
-    return {**BUYER, "payment_proof": receipt(), **extra}
+def paid(internship, **extra):
+    """Checkout POST for a manual transfer: the opportunity, buyer details and the receipt."""
+    return {**BUYER, "internship": internship, "payment_proof": receipt(), **extra}
 
 
 class PolicyPageTests(ApplicationsBase):
     def test_pages_render_in_both_languages(self):
         pages = {"privacy": ("Privacy Policy", "سياسة الخصوصية"), "terms": ("Terms &amp; Conditions", "الشروط والأحكام"),
-                 "refund_policy": ("Refund &amp; Cancellation Policy", "سياسة الاسترجاع والإلغاء")}
+                 "refund_policy": ("Refund &amp; Availability Policy", "سياسة الاسترجاع والإتاحة")}
         for name, (en, ar) in pages.items():
             with self.subTest(page=name):
                 url = reverse(name)
@@ -44,7 +44,13 @@ class PolicyPageTests(ApplicationsBase):
                 self.assertContains(self.client.get(url), ar)
         self.client.cookies["internest_lang"] = "en"
         self.assertContains(self.client.get(reverse("refund_policy")), "7–14 business days")
-        self.assertContains(self.client.get(reverse("terms")), "EGP 800 per month")
+        self.assertContains(self.client.get(reverse("terms")), "<strong>EGP 500</strong> for one opportunity for 30 days")
+        refund = self.client.get(reverse("refund_policy"))
+        for text in ("<strong>Minimum count:</strong> 3 candidates", "candidates are counted wherever they are", "within 7 days of that date",
+                     "nothing is refunded automatically", "not a hiring guarantee"):
+            self.assertContains(refund, text)
+        for page in ("terms", "refund_policy"):
+            self.assertNotRegex(self.client.get(reverse(page)).content.decode(), r"EGP 8,?000|EGP 800|EGP 700")
 
     def test_footer_links_and_contact_details(self):
         page = self.client.get(reverse("landing"))
@@ -63,29 +69,31 @@ class CheckoutTests(ApplicationsBase):
         self.client.force_login(self.founder)
 
     def test_page_shows_summary_prefilled_details_and_consent(self):
-        page = self.client.get(CHECKOUT, {"period": "year"})
+        page = self.client.get(CHECKOUT)
         self.assertEqual(page.status_code, 200)
-        for marker in ("Order summary", "Annual plan · 12 months", "8,000 EGP", "Total due", 'name="accept_terms"',
+        for marker in ("Order summary", "Hiring Pass", "One opportunity · 30 days", "500 EGP", "Total due", 'name="accept_terms"',
+                       "No automatic renewal", 'name="internship"', "matching verified candidates now",
                        'value="01113999387"', 'value="hi@nilecode.io"', 'href="/terms/"', 'href="/refund-policy/"',
                        "Submit receipt for verification"):
             self.assertContains(page, marker)
         self.assertContains(self.client.get(reverse("startup_upgrade")), f'href="{CHECKOUT}"')
 
     def test_consent_and_phone_are_required(self):
-        page = self.client.post(CHECKOUT, {**BUYER, "accept_terms": ""})
+        page = self.client.post(CHECKOUT, {**BUYER, "internship": self.gig.pk, "accept_terms": ""})
         self.assertContains(page, "Please accept the terms and the refund policy to continue.")
-        page = self.client.post(CHECKOUT, {**BUYER, "customer_phone": "12345"})
+        page = self.client.post(CHECKOUT, {**BUYER, "internship": self.gig.pk, "customer_phone": "12345"})
         self.assertContains(page, "Enter an Egyptian mobile number")
         self.assertFalse(ProUpgradeRequest.objects.exists())
 
     def test_without_fawaterak_key_the_order_is_saved_for_our_team(self):
         PromoCode.objects.create(code="AUC20", discount_percent=20)
         self.client.post(reverse("startup_upgrade"), {"action": "apply", "promo_code": "AUC20"})
-        resp = self.client.post(CHECKOUT, paid(period="month"))
+        resp = self.client.post(CHECKOUT, paid(self.gig.pk))
         self.assertRedirects(resp, reverse("startup_upgrade"), fetch_redirect_response=False)
         order = ProUpgradeRequest.objects.get()
         self.assertEqual((order.status, order.gateway), (ProUpgradeRequest.STATUS_VERIFYING, "instapay"))
-        self.assertEqual((order.final_price, order.currency, order.customer_phone, order.discount_percent), (640, "EGP", "01113999387", 20))
+        self.assertEqual((order.final_price, order.currency, order.customer_phone, order.discount_percent), (400, "EGP", "01113999387", 20))
+        self.assertEqual((order.product, order.internship_id, order.list_price), ("hiring_pass", self.gig.pk, 500))
         self.assertIsNotNone(order.terms_accepted_at)
         self.assertEqual(order.payment_url, "")
 
@@ -95,8 +103,8 @@ class CheckoutTests(ApplicationsBase):
                                request=httpx.Request("POST", "https://staging.fawaterk.com/api/v2/createInvoiceLink"))
         with mock.patch("httpx.post", return_value=reply) as post:
             page = self.client.get(CHECKOUT)
-            self.assertContains(page, "Pay 800 EGP with Fawaterak")
-            resp = self.client.post(CHECKOUT, BUYER)
+            self.assertContains(page, "Pay 500 EGP with Fawaterak")
+            resp = self.client.post(CHECKOUT, {**BUYER, "internship": self.gig.pk})
         self.assertRedirects(resp, "https://staging.fawaterk.com/link/abc", fetch_redirect_response=False)
         order = ProUpgradeRequest.objects.get()
         self.assertEqual((order.gateway_reference, order.status), ("991", "pending"))
@@ -104,7 +112,7 @@ class CheckoutTests(ApplicationsBase):
         self.assertEqual(args[0], "https://staging.fawaterk.com/api/v2/createInvoiceLink")
         self.assertEqual(kwargs["headers"]["Authorization"], "Bearer test-key")
         body = kwargs["json"]
-        self.assertEqual((body["cartTotal"], body["currency"], body["customer"]["phone"]), ("800.00", "EGP", "01113999387"))
+        self.assertEqual((body["cartTotal"], body["currency"], body["customer"]["phone"]), ("500.00", "EGP", "01113999387"))
         self.assertTrue(body["redirectionUrls"]["successUrl"].endswith(reverse("checkout_return", args=[order.pk, "success"])))
 
         page = self.client.get(reverse("checkout_return", args=[order.pk, "success"]))
@@ -115,7 +123,7 @@ class CheckoutTests(ApplicationsBase):
     @override_settings(FAWATERAK_API_KEY="test-key")
     def test_gateway_down_keeps_the_order(self):
         with mock.patch("httpx.post", side_effect=httpx.ConnectError("blocked")), self.assertLogs("internest_startups.fawaterak", "WARNING"):
-            resp = self.client.post(CHECKOUT, BUYER, follow=True)
+            resp = self.client.post(CHECKOUT, {**BUYER, "internship": self.gig.pk}, follow=True)
         self.assertContains(resp, "Online payment is unavailable right now")
         self.assertEqual(ProUpgradeRequest.objects.count(), 1)
 
@@ -148,14 +156,14 @@ class PromoFieldTests(ApplicationsBase):
 
     def test_full_price_until_a_code_is_applied(self):
         page = self.client.get(CHECKOUT, {"promo_code": "STARTUP50"})  # a code in the URL is ignored
-        self.assertEqual((page.context["quote"]["list_price"], page.context["quote"]["final_price"]), (800, 800))
+        self.assertEqual((page.context["quote"]["list_price"], page.context["quote"]["final_price"]), (500, 500))
         self.assertEqual(page.context["quote"]["discount_percent"], 0)
         self.assertNotContains(page, "Promo code")
-        self.assertContains(page, "800 EGP", count=3)  # subtotal, total due and the amount to transfer
+        self.assertContains(page, "500 EGP", count=3)  # subtotal, total due and the amount to transfer
 
         self.client.post(reverse("startup_upgrade"), {"action": "apply", "promo_code": "STARTUP50"})
         page = self.client.get(CHECKOUT)
-        self.assertEqual(page.context["quote"]["final_price"], 400)
+        self.assertEqual(page.context["quote"]["final_price"], 250)
         self.assertContains(page, "Promo code STARTUP50")
 
 
@@ -165,13 +173,13 @@ class UpgradeNavigationAndMethodsTests(ApplicationsBase):
         PartnerProfile.objects.filter(pk=self.partner.pk).update(country_of_registration="EG")
         self.client.force_login(self.founder)
 
-    def test_cta_always_goes_to_checkout_with_plan(self):
-        ProUpgradeRequest.objects.create(partner=self.partner, list_price=800, final_price=800)  # an old unpaid order
-        page = self.client.get(reverse("startup_upgrade"), {"period": "year"})
-        self.assertContains(page, f'href="{CHECKOUT}?period=year" class="btn btn--gold btn--lg btn--block" data-checkout-cta')
+    def test_cta_always_goes_to_checkout(self):
+        ProUpgradeRequest.objects.create(partner=self.partner, product="pro", list_price=800, final_price=800)  # an old unpaid Pro order
+        page = self.client.get(reverse("startup_upgrade"))
+        self.assertContains(page, f'href="{CHECKOUT}" class="btn btn--primary btn--lg btn--block" data-checkout-cta')
         self.assertNotContains(page, 'aria-disabled="true"')
-        self.assertContains(page, "Pay now or change the order")
-        self.assertEqual(self.client.get(f"{CHECKOUT}?period=year").context["quote"]["months"], 12)
+        self.assertContains(page, "placed before Pro was replaced by the Hiring Pass")
+        self.assertEqual(self.client.get(CHECKOUT).context["quote"]["final_price"], 500)
 
     def test_fawaterak_methods_only_when_the_gateway_is_on(self):
         self.assertNotContains(self.client.get(CHECKOUT), "Payment methods via Fawaterak")
@@ -187,7 +195,7 @@ class UpgradeNavigationAndMethodsTests(ApplicationsBase):
         old.refresh_from_db()
         self.assertEqual(old.status, ProUpgradeRequest.STATUS_CANCELLED)
         with override_settings(MEDIA_ROOT=MEDIA):
-            self.client.post(CHECKOUT, paid())
+            self.client.post(CHECKOUT, paid(self.gig.pk))
         self.assertEqual(ProUpgradeRequest.objects.filter(status=ProUpgradeRequest.STATUS_VERIFYING).count(), 1)
 
     def test_pay_button_needs_consent_and_falls_back_to_manual(self):
@@ -195,7 +203,7 @@ class UpgradeNavigationAndMethodsTests(ApplicationsBase):
         self.assertContains(page, "data-consent")
         self.assertContains(page, "pay.disabled = !consent.checked")
         self.assertContains(page, "Submit receipt for verification")  # no FAWATERAK_API_KEY in tests → manual transfer
-        self.assertEqual(self.client.post(CHECKOUT, {**BUYER, "accept_terms": ""}).status_code, 200)
+        self.assertEqual(self.client.post(CHECKOUT, {**BUYER, "internship": self.gig.pk, "accept_terms": ""}).status_code, 200)
         self.assertFalse(ProUpgradeRequest.objects.exists())
 
 
@@ -224,25 +232,25 @@ class ManualPaymentTests(ApplicationsBase):
         section = page.content.decode().split("data-manual-payment", 1)[1].split("</section>", 1)[0]
         self.assertNotRegex(section, r"01[0125]\d{8}")  # no personal phone number in the payment box
 
-    def test_outside_egypt_sees_redotpay_and_sales_contact(self):
+    def test_outside_egypt_is_sent_to_sales_and_cannot_order(self):
         PartnerProfile.objects.filter(pk=self.partner.pk).update(country_of_registration="AE")
         page = self.client.get(CHECKOUT)
-        for text in ("RedotPay", "1588800300", "Transfer directly to RedotPay ID: 1588800300 or contact",
-                     'href="mailto:sales@internest.app"', "for SWIFT/International invoice details."):
-            self.assertContains(page, text)
+        self.assertContains(page, "The Hiring Pass is priced in EGP. For companies outside Egypt, email sales@internest.app")
         self.assertNotContains(page, "you_zersif7@instapay")
-        resp = self.client.post(CHECKOUT, paid(customer_phone="+971501234567"))
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(ProUpgradeRequest.objects.get().gateway, "redotpay")
+        self.assertNotContains(page, 'name="accept_terms"')
+        self.assertContains(self.client.get(reverse("startup_upgrade")), "Contact sales")
+        resp = self.client.post(CHECKOUT, paid(self.gig.pk, customer_phone="+971501234567"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(ProUpgradeRequest.objects.exists())  # no invented USD/EUR price is ever charged
 
     def test_receipt_is_required_and_validated(self):
-        page = self.client.post(CHECKOUT, BUYER)
+        page = self.client.post(CHECKOUT, {**BUYER, "internship": self.gig.pk})
         self.assertContains(page, "Upload a screenshot of your transfer receipt so we can verify it.")
-        self.client.post(CHECKOUT, {**BUYER, "payment_proof": SimpleUploadedFile("r.exe", b"MZ", "application/octet-stream")})
+        self.client.post(CHECKOUT, {**BUYER, "internship": self.gig.pk, "payment_proof": SimpleUploadedFile("r.exe", b"MZ", "application/octet-stream")})
         self.assertFalse(ProUpgradeRequest.objects.exists())
 
     def test_receipt_creates_a_pending_verification_order(self):
-        resp = self.client.post(CHECKOUT, paid(payment_reference="IPN-7781"), follow=True)
+        resp = self.client.post(CHECKOUT, paid(self.gig.pk, payment_reference="IPN-7781"), follow=True)
         self.assertContains(resp, "verifying your transfer")
         order = ProUpgradeRequest.objects.get()
         self.assertEqual((order.status, order.payment_reference), (ProUpgradeRequest.STATUS_VERIFYING, "IPN-7781"))
@@ -255,13 +263,13 @@ class ManualPaymentTests(ApplicationsBase):
         self.client.post(CHECKOUT, {"action": "cancel_pending"})
         order.refresh_from_db()
         self.assertEqual(order.status, ProUpgradeRequest.STATUS_VERIFYING)
-        self.client.post(CHECKOUT, paid())
+        self.client.post(CHECKOUT, paid(self.gig.pk))
         self.assertEqual(ProUpgradeRequest.objects.count(), 1)  # no duplicate order while verifying
 
     def test_receipt_is_private(self):
         from django.contrib.auth.models import User
 
-        self.client.post(CHECKOUT, paid())
+        self.client.post(CHECKOUT, paid(self.gig.pk))
         url = reverse("serve_media", args=[ProUpgradeRequest.objects.get().payment_proof.name])
         self.assertEqual(self.client.get(url).status_code, 200)  # the paying company
         self.client.force_login(User.objects.create_user("snoop", password="pw"))
@@ -272,7 +280,7 @@ class ManualPaymentTests(ApplicationsBase):
 
         from .tiers import is_pro
 
-        self.client.post(CHECKOUT, paid())
+        self.client.post(CHECKOUT, paid(self.gig.pk))
         order = ProUpgradeRequest.objects.get()
         self.client.force_login(User.objects.create_superuser("boss", "boss@example.com", "pw"))
         changelist = reverse("admin:internest_startups_proupgraderequest_changelist")
@@ -284,4 +292,5 @@ class ManualPaymentTests(ApplicationsBase):
         self.assertEqual(order.status, ProUpgradeRequest.STATUS_ACTIVE)
         self.partner.refresh_from_db()
         self.assertTrue(is_pro(self.partner))
+        self.assertEqual(order.hiring_pass.internship_id, self.gig.pk)
         self.assertContains(self.client.get(reverse("admin:index")), "Payment receipts to verify")

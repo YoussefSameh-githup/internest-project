@@ -1,4 +1,4 @@
-"""Talent Pool: opted-in students with verified skills, searchable by Pro startups.
+"""Talent Pool: opted-in students with verified skills, searchable by companies with paid access (Hiring Pass or legacy Pro).
 
 Who counts as a candidate is defined once, in `internest_skills.verification` (a high score alone never counts).
 """

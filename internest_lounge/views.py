@@ -13,6 +13,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from internest_core.views import get_user_context
+from internest_startups.entitlements import is_legacy_pro
 from internest_startups.tiers import is_pro
 
 from . import moderation
@@ -92,6 +93,7 @@ def lounge_feed(request):
         "tags": LoungePost.CATEGORY_CHOICES, "active_tag": tag,
         "compose_open": request.method == "POST" and not hourly_limit_hit,  # reopen the modal on form errors
         "viewer_is_pro": viewer_is_pro, "max_depth": MAX_DEPTH,
+        "viewer_legacy_pro": is_legacy_pro(founder),  # pinned posts and the gold badge belong to legacy Pro only
         "upsell_open": hourly_limit_hit, "upsell_reason": "hourly" if hourly_limit_hit else "",
         "hourly_limit": moderation.POSTS_PER_HOUR,
     })

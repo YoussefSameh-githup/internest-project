@@ -18,6 +18,7 @@ from django.utils.translation import gettext as _
 
 from internest_skills.matching import bulk_match_scores, skill_match
 from internest_startups.gate import posting_block_reason
+from internest_startups.entitlements import current_pass, is_legacy_pro
 from internest_startups.tiers import FREE_POSTS_PER_MONTH, is_pro, monthly_quota_reached, posts_this_month
 
 from .email_helpers import issue_and_send_verification as _issue_and_send_verification
@@ -165,6 +166,28 @@ def get_user_context(request):
         else:
             context["has_partner_profile"] = False
     return context
+
+
+@login_required
+@require_POST
+def student_notice_view(request, key):
+    """Act on an in-app notice: `dismiss`, or `hide_from_pool` (turn Talent Pool visibility off, then dismiss)."""
+    from django.utils.http import url_has_allowed_host_and_scheme
+
+    from . import notices
+
+    profile = _get_student_profile(request.user)
+    if profile is None or key not in notices.KNOWN:
+        raise Http404()
+    if request.POST.get("action") == "hide_from_pool" and key == notices.TALENT_POOL_SUMMARY and profile.talent_pool_visible:
+        profile.talent_pool_visible = False
+        profile.save(update_fields=["talent_pool_visible"])
+        messages.success(request, _("You are no longer shown in the Talent Pool. You can turn it back on from your profile."))
+    notices.dismiss(profile, key)
+    nxt = request.POST.get("next", "")
+    if not url_has_allowed_host_and_scheme(nxt, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        nxt = reverse("list")
+    return redirect(nxt)
 
 
 @login_required
@@ -638,6 +661,8 @@ def partner_dashboard_view(request, section="overview"):
         "active_opportunities": published_internships.open().count(),
         "posting_block": posting_block,
         "is_pro": is_pro(partner_profile),
+        "legacy_pro": is_legacy_pro(partner_profile),
+        "current_pass": current_pass(partner_profile),  # from the same memo as is_pro: no extra query
         "quota_reached": monthly_quota_reached(partner_profile, posts=month_posts),
         "posts_this_month": month_posts,
         "free_posts_limit": FREE_POSTS_PER_MONTH,
@@ -1053,7 +1078,7 @@ def _partner_application_or_404(request, app_id):
 @login_required
 def partner_applicant_view(request, app_id):
     """Startup opens an applicant: the student's status moves Submitted → Under review."""
-    from internest_skills.permissions import is_pro_employer
+    from internest_startups.entitlements import covers
 
     partner, app = _partner_application_or_404(request, app_id)
     app.mark_viewed()
@@ -1061,7 +1086,7 @@ def partner_applicant_view(request, app_id):
     context = get_user_context(request)
     context.update({
         "partner": partner, "app": app, "student": student,
-        "is_pro": is_pro_employer(partner),
+        "is_pro": covers(partner, app.internship),  # full scores only for opportunities with paid access
         "verified_skills": student.skills.filter(status="verified").select_related("skill") if student else [],
         "unlocked": app.contact_unlocked,
         "experience": getattr(app, "experience", None),

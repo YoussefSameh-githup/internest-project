@@ -64,7 +64,7 @@
                         {% for value, label in tags %}<option value="{{ value }}" {% if form.category.value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
                     </select>
                     <span class="ch-composer__hint"><i class="bi bi-shield-check"></i>
-                        {% if viewer_is_pro %}{% trans "Unlimited posting with Pro" %}{% else %}{% blocktrans with n=hourly_limit %}Free accounts: up to {{ n }} posts per hour{% endblocktrans %}{% endif %}
+                        {% if viewer_is_pro %}{% trans "Unlimited posting with your paid access" %}{% else %}{% blocktrans with n=hourly_limit %}Free accounts: up to {{ n }} posts per hour{% endblocktrans %}{% endif %}
                     </span>
                 </div>
             </form>
@@ -72,21 +72,25 @@
 
         <aside class="ch-side">
             <div class="ch-widget nw-widget--pro">
-                {% if viewer_is_pro %}
+                {% if viewer_legacy_pro %}
                     <h4>👑 {% trans "You're on Internest Pro" %}</h4>
                     <ul class="nw-perks">
                         <li><i class="bi bi-infinity"></i> {% trans "Unlimited posting" %}</li>
                         <li><i class="bi bi-pin-angle"></i> {% trans "Your new posts are pinned to the top of the feed for 72 hours." %}</li>
                     </ul>
-                {% else %}
-                    <h4>👑 Internest Pro</h4>
+                {% elif viewer_is_pro %}
+                    <h4>🎟️ {% trans "Your Hiring Pass is active" %}</h4>
                     <ul class="nw-perks">
                         <li><i class="bi bi-infinity"></i> {% trans "Unlimited posting" %}</li>
-                        <li><i class="bi bi-pin-angle"></i> {% trans "Top-of-feed priority" %}</li>
-                        <li><i class="bi bi-patch-check"></i> {% trans "Gold Pro Verified badge" %}</li>
                         <li><i class="bi bi-search"></i> {% trans "Direct talent search" %}</li>
                     </ul>
-                    <a href="{% url 'startup_upgrade' %}" class="btn btn--gold btn--block">{% trans "Upgrade to Pro" %}</a>
+                {% else %}
+                    <h4>🎟️ {% trans "Hiring Pass" %}</h4>
+                    <ul class="nw-perks">
+                        <li><i class="bi bi-infinity"></i> {% trans "Unlimited posting" %}</li>
+                        <li><i class="bi bi-search"></i> {% trans "Direct talent search" %}</li>
+                    </ul>
+                    <a href="{% url 'startup_upgrade' %}" class="btn btn--primary btn--block">{% trans "See the Hiring Pass" %}</a>
                 {% endif %}
             </div>
             <div class="ch-widget">

@@ -8,7 +8,7 @@
 <section class="page-header">
     <div class="container">
         <span class="eyebrow"><i class="bi bi-patch-check"></i>
-            {% if viewer_role == 'university' %}{% trans "University employability view" %}{% elif viewer_role == 'employer_pro' %}Internest Pro{% else %}{% trans "Skill report" %}{% endif %}
+            {% if viewer_role == 'university' %}{% trans "University employability view" %}{% elif viewer_role == 'employer_pro' %}{% trans "Employer view" %}{% else %}{% trans "Skill report" %}{% endif %}
         </span>
         <h1 class="mt-3">{{ student.user.get_full_name|default:student.user.username }}</h1>
         <p>{{ student.major|default:"" }}{% if student.university %} · {{ student.university }}{% endif %}</p>

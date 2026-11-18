@@ -66,7 +66,7 @@
                     <span class="dash-card__title">{% trans "Post Opportunity" %}</span>
                     <span class="dash-card__sub">
                         {% if posting_block %}{% trans "Locked until verified and 100% complete" %}
-                        {% elif is_pro %}{% trans "Unlimited with Pro" %}
+                        {% elif legacy_pro %}{% trans "Unlimited with Pro" %}
                         {% elif partner.is_academic %}{% blocktrans with n=active_opportunities %}Active opportunities: {{ n }}{% endblocktrans %}
                         {% else %}{% blocktrans with used=posts_this_month limit=free_posts_limit %}{{ used }}/{{ limit }} used this month{% endblocktrans %}{% endif %}
                     </span>
@@ -119,8 +119,8 @@
                     <a href="{% url 'talent_pool' %}" class="dash-card">
                         <span class="dash-card__icon dash-card__icon--blue"><i class="bi bi-search"></i></span>
                         <span class="dash-card__text">
-                            <span class="dash-card__title">{% trans "Talent Pool" %} <span class="pro-chip">PRO</span></span>
-                            <span class="dash-card__sub">{% trans "Search verified students and invite them to apply" %}</span>
+                            <span class="dash-card__title">{% trans "Talent Pool" %}</span>
+                            <span class="dash-card__sub">{% if current_pass %}{% blocktrans with date=current_pass.expires_at|date:"Y/m/d" %}Hiring Pass active until {{ date }}{% endblocktrans %}{% else %}{% trans "Search verified students and invite them to apply" %}{% endif %}</span>
                         </span>
                         <i class="bi bi-chevron-left dash-card__go" aria-hidden="true"></i>
                     </a>
@@ -136,8 +136,8 @@
                     <a href="{% url 'startup_upgrade' %}" class="dash-card dash-card--gold" data-upsell>
                         <span class="dash-card__icon dash-card__icon--gold"><i class="bi bi-gem"></i></span>
                         <span class="dash-card__text">
-                            <span class="dash-card__title">{% trans "Upgrade to Internest Pro" %} <span class="pro-chip">PRO</span></span>
-                            <span class="dash-card__sub">{% trans "Unlimited posts · direct talent search" %}</span>
+                            <span class="dash-card__title">{% trans "Get a Hiring Pass" %}</span>
+                            <span class="dash-card__sub">{% trans "One opportunity · 30 days · no renewal" %}</span>
                         </span>
                         <i class="bi bi-chevron-left dash-card__go" aria-hidden="true"></i>
                     </a>
@@ -309,5 +309,5 @@
     </div>
 </section>
 
-{% if not partner.is_academic and not is_pro %}{% include "startups/_upsell_modal.html" %}{% endif %}
+{% if not partner.is_academic and not legacy_pro %}{% include "startups/_upsell_modal.html" %}{% endif %}
 {% endblock %}

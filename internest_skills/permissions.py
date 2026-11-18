@@ -38,10 +38,10 @@ def missing_profile_fields(student) -> list[str]:
 
 
 def is_pro_employer(partner) -> bool:
-    if partner is None or partner.is_academic:
-        return False
-    sub = getattr(partner, "subscription", None)  # RelatedObjectDoesNotExist is an AttributeError
-    return bool(sub and sub.is_pro_active)
+    """Paid hiring access (Hiring Pass or legacy Pro): the rule lives in internest_startups.entitlements."""
+    from internest_startups.entitlements import has_hiring_access
+
+    return has_hiring_access(partner)
 
 
 def is_verified_university(partner) -> bool:
@@ -66,7 +66,13 @@ def skill_view_role(user, student: StudentProfile):
             return ROLE_UNIVERSITY
         return None
     if is_pro_employer(partner):
-        # Pro employers see candidates that applied to their opportunities.
-        if Application.objects.filter(internship__partner=partner, applicant_id=student.user_id).exists():
+        # Paid employers see candidates who applied to an opportunity their access covers (legacy Pro: any of theirs).
+        from internest_startups.entitlements import covered_internship_ids
+
+        covered = covered_internship_ids(partner)
+        applied = Application.objects.filter(internship__partner=partner, applicant_id=student.user_id)
+        if covered is not None:
+            applied = applied.filter(internship_id__in=covered)
+        if applied.exists():
             return ROLE_EMPLOYER_PRO
     return None

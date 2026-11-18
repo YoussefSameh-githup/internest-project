@@ -1,0 +1,33 @@
+{% extends 'internship/base.html' %}
+{% load i18n asset_tags %}
+
+{% block title %}{% trans "Founding 20 feedback" %} — Internest{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% asset 'startups/startups.css' %}">{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container feedback">
+        <a href="{% url 'startup_upgrade' %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short" aria-hidden="true"></i> {% trans "Back to plans" %}</a>
+        <h1>{% trans "Founding 20 feedback" %}</h1>
+        <p class="feedback__intro">{% blocktrans with n=seat.number %}Seat {{ n }}. Every question is optional. Tell us what really happened: a "no" helps us as much as a "yes".{% endblocktrans %}</p>
+        <form method="post" class="card feedback__form" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="feedback__field{% if field.errors %} has-error{% endif %}">
+                    {% if field.field.widget.input_type == "radio" %}
+                        <fieldset>
+                            <legend>{{ field.label }}</legend>
+                            <div class="feedback__choices">{% for radio in field %}<label>{{ radio.tag }} {{ radio.choice_label }}</label>{% endfor %}</div>
+                        </fieldset>
+                    {% else %}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    {% endif %}
+                    {% if field.errors %}<p class="feedback__error">{{ field.errors|join:" " }}</p>{% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn--primary">{% trans "Send feedback" %}</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

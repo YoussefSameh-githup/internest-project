@@ -117,7 +117,7 @@ class AntiSpamTests(LoungeTestBase):
             self.post_as(self.founder, title=f"Post {i}", body=f"Unique body number {i}")
         self.client.cookies["internest_lang"] = "ar"
         resp = self.post_as(self.founder, title="Post 4", body="Another unique body")
-        self.assertContains(resp, "وصلت للحد الأقصى للمشاركات المجانية (3 منشورات/ساعة)")
+        self.assertContains(resp, "وصلت لحد النشر المجاني (3 منشورات في الساعة)")
 
     def test_spam_keywords_are_rejected_before_saving(self):
         for body in ("Invest in crypto now", "Quick cash for founders!", "Best casino bonus", "ربح سريع مضمون"):

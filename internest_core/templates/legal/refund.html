@@ -1,76 +1,96 @@
 {% extends 'legal/_layout.html' %}
 {% load i18n %}
 
-{% block title %}{% trans "Refund & cancellation policy" %} — Internest{% endblock %}
+{% block title %}{% trans "Refund and availability policy" %} — Internest{% endblock %}
 
 {% block ar %}
-<h1>سياسة الاسترجاع والإلغاء</h1>
+<h1>سياسة الاسترجاع والإتاحة</h1>
 <p class="lg-updated">آخر تحديث: {{ updated|date:"Y/m/d" }}</p>
-<p>تنطبق هذه السياسة على المدفوعات التي تتم على Internest، وأهمها اشتراك <strong>Internest Pro</strong> للشركات (800 جنيه شهرياً أو 8,000 جنيه سنوياً داخل مصر)، والكورسات المدفوعة المقدمة عبر المنصة.</p>
+<p>تنطبق هذه السياسة على المدفوعات التي تتم على Internest: <strong>باقة التوظيف (Hiring Pass)</strong> للشركات بسعر <strong>{{ pass_amount }} جنيه مصري</strong> لفرصة واحدة ولمدة {{ pass_days }} يوماً بدفعة واحدة، وطلبات اشتراك Internest Pro التي تمت قبل {{ change_date|date:"Y/m/d" }}، والكورسات المدفوعة.</p>
 
-<h2>1. الإلغاء</h2>
+<h2>1. لا تجديد تلقائي</h2>
 <ul>
-    <li>اشتراك Pro <strong>لا يتجدد تلقائياً</strong>، فلا حاجة لإلغاء أي تجديد.</li>
-    <li>يمكنك طلب إلغاء اشتراكك في أي وقت بمراسلتنا، ويبقى Pro فعالاً حتى نهاية المدة المدفوعة ما لم يُسترد المبلغ وفق البنود التالية.</li>
-    <li>يمكن إلغاء أي طلب اشتراك لم يُدفع بعد دون أي رسوم.</li>
+    <li>باقة التوظيف تُدفع <strong>مرة واحدة</strong> وتنتهي وحدها بعد {{ pass_days }} يوماً. لا يوجد اشتراك متكرر ولا خصم لاحق.</li>
+    <li>يمكن إلغاء أي طلب لم يُدفع بعد دون أي رسوم.</li>
 </ul>
 
-<h2>2. حالات استحقاق الاسترجاع</h2>
+<h2>2. ضمان الإتاحة: متى تسترد المبلغ كاملاً</h2>
+<p>نسجّل تلقائياً، لحظة بدء الباقة، عدد المرشحين المؤهلين لفرصتك. لو كان العدد أقل من الحد الأدنى، يحق لك استرداد المبلغ كاملاً:</p>
 <ul>
-    <li><strong>خلال 7 أيام من الدفع:</strong> استرجاع كامل للمبلغ إذا لم تستخدم مزايا Pro استخداماً فعلياً (مثل إرسال دعوات من بنك المواهب أو نشر فرص إضافية فوق حد الباقة المجانية).</li>
-    <li><strong>الاشتراك السنوي بعد 7 أيام:</strong> استرجاع جزئي يعادل الأشهر الكاملة غير المستخدمة، محسوبة بسعر الشهر في الباقة الشهرية، بعد خصم رسوم بوابة الدفع إن وُجدت.</li>
+    <li><strong>المهارات المشمولة:</strong> المهارات المطلوبة المكتوبة في الفرصة التي اشتريت لها الباقة. لو لم تحدد الفرصة مهارات مطلوبة، يُحسب العدد على كل المرشحين المتحقَّق منهم.</li>
+    <li><strong>شروط المرشح:</strong> حساب طالب نشط، وافق على الظهور في قاعدة المواهب، ولديه واحدة على الأقل من هذه المهارات متحقَّق منها (اجتاز التحدي دون مهارة فرعية ضعيفة، أو شغل حر أو شهادة أو كورس معتمد تمت مراجعته). الدرجة العالية وحدها لا تُحسب.</li>
+    <li><strong>الحد الأدنى:</strong> {{ min_available }} مرشحين.</li>
+    <li><strong>المكان:</strong> يُحسب المرشحون أينما كانوا؛ لا نضمن محافظة أو مدينة بعينها.</li>
+    <li><strong>المدة:</strong> يُقاس العدد عند بدء الباقة، ويُقدَّم طلب الاسترجاع خلال 7 أيام من بدئها.</li>
+</ul>
+<div class="lg-box">هذا ضمان إتاحة وليس ضمان توظيف: لا نضمن أن يرد المرشحون أو يقبلوا العرض. تظهر الأعداد الحالية لكل فرصة قبل الدفع في صفحة الدفع.</div>
+
+<h2>3. حالات أخرى</h2>
+<ul>
     <li><strong>الخصم المكرر أو الخطأ الفني:</strong> استرجاع كامل للمبلغ الزائد في جميع الأحوال.</li>
+    <li><strong>اشتراكات Pro قبل {{ change_date|date:"Y/m/d" }}:</strong> تظل خاضعة للشروط التي بيعت بها: استرجاع كامل خلال 7 أيام من الدفع إن لم تُستخدم مزاياها استخداماً فعلياً، وللاشتراك السنوي استرجاع جزئي للأشهر الكاملة غير المستخدمة.</li>
+    <li><strong>باقة Founding 20:</strong> مجانية، فلا يوجد مبلغ للاسترجاع.</li>
     <li><strong>الكورسات المدفوعة:</strong> استرجاع كامل خلال 7 أيام من الشراء إذا لم تبدأ الكورس أو لم تحصل على شهادته.</li>
 </ul>
 
-<h2>3. حالات لا يُسترد فيها المبلغ</h2>
+<h2>4. حالات لا يُسترد فيها المبلغ</h2>
 <ul>
-    <li>الاشتراك الشهري بعد مرور 7 أيام على الدفع.</li>
+    <li>باقة توظيف كان عدد المرشحين المؤهلين عند بدئها {{ min_available }} أو أكثر، أو طُلب استرجاعها بعد 7 أيام من بدئها.</li>
     <li>الحسابات التي تم إيقافها بسبب مخالفة <a href="{% url 'terms' %}">الشروط والأحكام</a>.</li>
 </ul>
 
-<h2>4. كيفية طلب الاسترجاع</h2>
-<p>أرسل بريداً إلى <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a> أو تواصل معنا على <a href="tel:{{ SUPPORT_PHONE_INTL }}" dir="ltr">{{ SUPPORT_PHONE }}</a> متضمناً: اسم الشركة أو الحساب، رقم الفاتورة، وسبب الطلب. نرد على الطلب خلال 3 أيام عمل.</p>
+<h2>5. كيفية طلب الاسترجاع</h2>
+<p>أرسل بريداً إلى <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a> أو تواصل معنا على <a href="tel:{{ SUPPORT_PHONE_INTL }}" dir="ltr">{{ SUPPORT_PHONE }}</a> متضمناً: اسم الشركة، رقم الطلب، وسبب الطلب. نراجع العدد المسجّل عند بدء الباقة ونرد خلال 3 أيام عمل. كل استرجاع يراجعه ويوافق عليه فريقنا يدوياً؛ لا يوجد استرجاع تلقائي.</p>
 
-<h2>5. مدة تنفيذ الاسترجاع</h2>
-<div class="lg-box">بعد الموافقة على الطلب، يُعاد المبلغ إلى وسيلة الدفع الأصلية عبر بوابة «فواتيرك» خلال <strong>7 إلى 14 يوم عمل</strong>. قد تختلف مدة ظهور المبلغ في حسابك حسب البنك أو المحفظة الإلكترونية.</div>
+<h2>6. مدة تنفيذ الاسترجاع</h2>
+<div class="lg-box">بعد الموافقة، يُعاد المبلغ إلى وسيلة الدفع الأصلية (تحويل InstaPay أو بوابة «فواتيرك») خلال <strong>7 إلى 14 يوم عمل</strong>. قد تختلف مدة ظهور المبلغ حسب البنك أو المحفظة الإلكترونية.</div>
 
-<h2>6. التواصل</h2>
+<h2>7. التواصل</h2>
 <p>Internest — القاهرة، مصر · <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a> · <a href="tel:{{ SUPPORT_PHONE_INTL }}" dir="ltr">{{ SUPPORT_PHONE }}</a></p>
 {% endblock %}
 
 {% block en %}
-<h1>Refund &amp; Cancellation Policy</h1>
+<h1>Refund &amp; Availability Policy</h1>
 <p class="lg-updated">Last updated: {{ updated|date:"F j, Y" }}</p>
-<p>This policy covers payments made on Internest, mainly the <strong>Internest Pro</strong> subscription for companies (EGP 800 per month or EGP 8,000 per year in Egypt) and paid courses offered through the platform.</p>
+<p>This policy covers payments made on Internest: the <strong>Hiring Pass</strong> for companies (<strong>EGP {{ pass_amount }}</strong> for one opportunity, {{ pass_days }} days, paid once), Internest Pro orders placed before {{ change_date|date:"F j, Y" }}, and paid courses.</p>
 
-<h2>1. Cancellation</h2>
+<h2>1. No automatic renewal</h2>
 <ul>
-    <li>Pro <strong>does not renew automatically</strong>, so there is no renewal to cancel.</li>
-    <li>You can ask us to cancel your subscription at any time; Pro stays active until the end of the paid period unless a refund is issued under the terms below.</li>
-    <li>An unpaid subscription request can be cancelled at no charge.</li>
+    <li>A Hiring Pass is paid <strong>once</strong> and ends on its own after {{ pass_days }} days. There is no recurring subscription and nothing is charged later.</li>
+    <li>An unpaid order can be cancelled at no charge.</li>
 </ul>
 
-<h2>2. When you are eligible for a refund</h2>
+<h2>2. Availability guarantee: when you get a full refund</h2>
+<p>When your pass starts, we automatically record how many qualified candidates match your opportunity. If that number is below the minimum, you can get a full refund:</p>
 <ul>
-    <li><strong>Within 7 days of payment:</strong> a full refund if you have not materially used Pro features (such as sending Talent Pool invitations or posting more opportunities than the free plan allows).</li>
-    <li><strong>Annual plan after 7 days:</strong> a partial refund for the full unused months, valued at the monthly plan price, minus any payment-gateway fees.</li>
+    <li><strong>Eligible skills:</strong> the required skills listed on the opportunity the pass is for. If the opportunity lists none, all verified candidates are counted.</li>
+    <li><strong>Candidate requirements:</strong> an active student account, opted in to the Talent Pool, holding at least one of those skills verified (passed the challenge with no weak sub-skill, or reviewed freelance work, certificate or accredited course). A high score alone does not count.</li>
+    <li><strong>Minimum count:</strong> {{ min_available }} candidates.</li>
+    <li><strong>Location:</strong> candidates are counted wherever they are; we do not guarantee a specific governorate or city.</li>
+    <li><strong>Time period:</strong> the count is taken when the pass starts; ask for the refund within 7 days of that date.</li>
+</ul>
+<div class="lg-box">This is an availability guarantee, not a hiring guarantee: we do not guarantee that candidates reply or accept an offer. The current count for each of your opportunities is shown at checkout before you pay.</div>
+
+<h2>3. Other cases</h2>
+<ul>
     <li><strong>Duplicate charges or technical errors:</strong> the extra amount is always refunded in full.</li>
+    <li><strong>Pro subscriptions bought before {{ change_date|date:"F j, Y" }}:</strong> keep the terms they were sold under: a full refund within 7 days of payment if their features were not materially used, and for annual plans a partial refund for full unused months.</li>
+    <li><strong>Founding 20 passes:</strong> free, so there is nothing to refund.</li>
     <li><strong>Paid courses:</strong> a full refund within 7 days of purchase if you have not started the course or received its certificate.</li>
 </ul>
 
-<h2>3. When refunds are not available</h2>
+<h2>4. When refunds are not available</h2>
 <ul>
-    <li>Monthly subscriptions more than 7 days after payment.</li>
+    <li>A Hiring Pass whose recorded count at the start was {{ min_available }} or more, or a request made more than 7 days after the pass started.</li>
     <li>Accounts suspended for breaking our <a href="{% url 'terms' %}">Terms &amp; Conditions</a>.</li>
 </ul>
 
-<h2>4. How to request a refund</h2>
-<p>Email <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a> or call <a href="tel:{{ SUPPORT_PHONE_INTL }}">{{ SUPPORT_PHONE }}</a> with your company or account name, invoice number and the reason. We reply within 3 business days.</p>
+<h2>5. How to request a refund</h2>
+<p>Email <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a> or call <a href="tel:{{ SUPPORT_PHONE_INTL }}">{{ SUPPORT_PHONE }}</a> with your company name, order number and the reason. We check the count recorded when your pass started and reply within 3 business days. Every refund is reviewed and approved by our team by hand; nothing is refunded automatically.</p>
 
-<h2>5. Processing time</h2>
-<div class="lg-box">Once approved, the amount is returned to your original payment method through the Fawaterak gateway within <strong>7–14 business days</strong>. The time it takes to appear in your account may vary by bank or e-wallet.</div>
+<h2>6. Processing time</h2>
+<div class="lg-box">Once approved, the amount is returned to your original payment method (InstaPay transfer or the Fawaterak gateway) within <strong>7–14 business days</strong>. The time it takes to appear may vary by bank or e-wallet.</div>
 
-<h2>6. Contact</h2>
+<h2>7. Contact</h2>
 <p>Internest — Cairo, Egypt · <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a> · <a href="tel:{{ SUPPORT_PHONE_INTL }}">{{ SUPPORT_PHONE }}</a></p>
 {% endblock %}
