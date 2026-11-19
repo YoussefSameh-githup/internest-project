@@ -22,8 +22,12 @@ def _hot_queries():
     )
 
     now = timezone.now()
+    from .models import PartnerProfile
+
     return [
         ("opportunity feed", Internship.objects.open().order_by("-deadline", "-pk")),
+        ("verified company names (feed badge)", PartnerProfile.objects.filter(is_fully_verified=True)
+         .values_list("company_name", flat=True)),
         ("company's opportunities", Internship.objects.filter(partner_id=1).order_by("-created_at")),
         ("applicant inbox", Application.objects.filter(internship__partner_id=1, status="Submitted")),
         ("applicants of one opportunity", Application.objects.filter(internship_id=1, status="Shortlisted")),
@@ -44,12 +48,16 @@ def _hot_queries():
 
 
 def full_scans(plan: str):
-    """Tables read row by row with no index ("SCAN t"; "SCAN t USING INDEX" is an index walk and is fine)."""
+    """Tables read row by row with no index ("SCAN t"; "SCAN t USING INDEX" is an index walk and is fine), plus
+    AUTOMATIC indexes (SQLite builds a temporary index on every run because a real one is missing).
+    Subquery and CTE result scans ("SCAN (subquery-1)", "SCAN SUBQUERY 1") are not tables and are ignored."""
     scans = []
     for line in plan.splitlines():  # rows look like "3 0 216 SCAN internest_core_internship" (ids, then the detail)
         match = re.search(r"\bSCAN (\S+)(.*)$", line)
-        if match and "USING" not in match.group(2):
+        if match and "USING" not in match.group(2) and not match.group(1).startswith(("(", "SUBQUERY", "CONSTANT")):
             scans.append(match.group(1))
+        elif "AUTOMATIC" in line and "INDEX" in line:
+            scans.append(line.split("SEARCH ", 1)[-1].split()[0] + " (automatic index)")
     return scans
 
 

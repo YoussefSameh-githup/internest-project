@@ -168,6 +168,12 @@ class PartnerProfile(models.Model):
     is_fully_verified = models.BooleanField(default=False, verbose_name="حساب موثوق (علامة الصح الزرقاء)")
     profile_completion_score = models.IntegerField(default=0, verbose_name="نسبة الإكمال (%)")
 
+    class Meta:
+        indexes = [
+            # The opportunity feed reads every verified company's name for its badge (Phase 8 query-plan check).
+            models.Index(fields=["company_name"], condition=models.Q(is_fully_verified=True), name="partner_verified_name_idx"),
+        ]
+
     def calculate_completion(self):
         if not self.is_academic:
             # Startups: self-service completion from their own fields, independent of admin verification.

@@ -1,6 +1,6 @@
 # Internest — permanent project rules
 
-Django 5.2 + SQLite app (AI skill verification + internship matching for Egyptian students). Deployed on PythonAnywhere (Python 3.10).
+Django 5.2 + SQLite app (AI skill verification + internship matching for Egyptian students). Deployed on PythonAnywhere (Python 3.12 since 2026-11-19).
 
 ## Skills (invoke automatically, no confirmation)
 On every coding, UI or marketing prompt, use the relevant skills in `.claude/skills/`:

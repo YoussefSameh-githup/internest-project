@@ -4,7 +4,7 @@
     python manage.py db_health --plans      # plus each query plan
     python manage.py db_health --optimize   # also run SQLite's PRAGMA optimize (refreshes planner statistics)
 """
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
 
 from internest_core import db_health
@@ -38,3 +38,5 @@ class Command(BaseCommand):
                 self.stdout.write("    " + row["plan"].replace("\n", "\n    "))
         self.stdout.write(self.style.SUCCESS("All hot queries use an index.") if not problems
                           else self.style.WARNING(f"{problems} hot query(ies) scan a whole table."))
+        if report["quick_check"] != "ok":  # a failing exit code makes the backup task's log show it
+            raise CommandError(f"Database integrity check failed: {report['quick_check']}")
