@@ -532,3 +532,22 @@ class APIIncidentAdmin(ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
+
+# ---------------------------------------------------------------- trust page content (Phase 3)
+from .models import TeamMember, TrustStory  # noqa: E402
+
+
+@admin.register(TeamMember)
+class TeamMemberAdmin(ModelAdmin):
+    list_display = ("name", "role", "order", "is_published")
+    list_editable = ("order", "is_published")
+
+
+@admin.register(TrustStory)
+class TrustStoryAdmin(ModelAdmin):
+    """Only real stories: record where the words came from and when the person agreed before publishing."""
+
+    list_display = ("person_name", "kind", "person_role", "consent_given_at", "is_published", "created_at")
+    list_filter = ("kind", "is_published")
+    search_fields = ("person_name", "person_role", "body")

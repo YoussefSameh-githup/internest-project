@@ -31,3 +31,23 @@ privacy = _policy("privacy", "privacy")
 terms = _policy("terms", "terms")
 refund_policy = _policy("refund", "refund")
 contact = _policy("contact", "contact")
+
+
+@cache_public_page(ttl=600)
+def trust_page(request):
+    """Why trust Internest? Facts come from internest_core.trust (live counts and the enforced rules), never typed in."""
+    from django.utils.translation import gettext as _
+
+    from . import trust
+    from .page_cache import cached_value
+
+    context = get_user_context(request)
+    context.update({
+        "rules": cached_value("trust", "rules", trust.TTL, trust.rules),
+        "numbers": trust.numbers(),
+        "team": trust.team(),
+        "stories": trust.stories(),
+        "meta_description": _("How Internest verifies student skills, what it cannot guarantee, and how it protects "
+                              "candidate data. Every number is live."),
+    })
+    return render(request, "trust/trust.html", context)

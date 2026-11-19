@@ -799,3 +799,57 @@ class AsyncTask(models.Model):
 
     def __str__(self):
         return f"{self.kind} · {self.status} · {self.pk}"
+
+
+class TeamMember(models.Model):
+    """A real person shown on the public trust page (Phase 3). Added by staff; nothing is shown until published."""
+
+    name = models.CharField(max_length=120)
+    role = models.CharField(max_length=120)
+    bio = models.TextField(max_length=600, blank=True)
+    linkedin_url = models.URLField(blank=True)
+    order = models.PositiveSmallIntegerField(default=0)
+    is_published = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["order", "name"]
+
+    def __str__(self):
+        return f"{self.name} · {self.role}"
+
+
+class TrustStory(models.Model):
+    """A real testimonial or case study, published only with the person's recorded consent (Phase 3).
+
+    Never invented: staff fill in where the words came from (`source_note`) and when consent was given. The page shows
+    nothing until a story is published, and a published story must have consent.
+    """
+
+    KIND_TESTIMONIAL, KIND_CASE_STUDY = "testimonial", "case_study"
+    KIND_CHOICES = [(KIND_TESTIMONIAL, "Testimonial"), (KIND_CASE_STUDY, "Case study")]
+
+    kind = models.CharField(max_length=12, choices=KIND_CHOICES, default=KIND_TESTIMONIAL)
+    person_name = models.CharField(max_length=120)
+    person_role = models.CharField(max_length=160, help_text="e.g. 'Founder, NileCode' or 'Student, Cairo University'")
+    title = models.CharField(max_length=160, blank=True, help_text="Case studies only")
+    body = models.TextField(max_length=2000, help_text="Their own words (testimonial) or what happened (case study), unedited in meaning.")
+    source_note = models.CharField(max_length=300, help_text="Where this came from: email date, interview, form… (internal, not shown)")
+    consent_given_at = models.DateTimeField(null=True, blank=True, help_text="When the person agreed to be published.")
+    is_published = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.CheckConstraint(condition=models.Q(is_published=False) | models.Q(consent_given_at__isnull=False),
+                                   name="truststory_published_needs_consent"),
+        ]
+
+    def __str__(self):
+        return f"{self.get_kind_display()} · {self.person_name}"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        if self.is_published and not self.consent_given_at:
+            raise ValidationError("A story can only be published with the person's recorded consent.")

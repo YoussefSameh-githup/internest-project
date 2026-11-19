@@ -485,10 +485,13 @@ def student_skill_report(request, student_id):
             return render(request, "skills/pro_required.html", context, status=403)
         return HttpResponseForbidden(_("You are not authorized to view this student's skill data."))
     context = get_user_context(request)
+    from .evidence import evidence_rows
+
     context.update({
         "student": student,
         "viewer_role": role,
         "skills": student.skills.select_related("skill").order_by("-status", "-percentile", "skill__name"),
+        "evidence": evidence_rows(student),
     })
     return render(request, "skills/report.html", context)
 

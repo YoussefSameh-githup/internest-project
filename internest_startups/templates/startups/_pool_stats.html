@@ -21,5 +21,6 @@
     {% else %}
         <p class="pool-stats__empty">{% trans "No verified candidates yet. We only count students who opted in and passed a verification, so this number starts small and grows as students pass challenges." %}</p>
     {% endif %}
-    <p class="pool-stats__note"><i class="bi bi-info-circle" aria-hidden="true"></i> {% trans "Live count. A high score alone is never counted: only skills that passed a challenge with no weak sub-skill, or reviewed work, certificates and courses." %}</p>
+    <p class="pool-stats__note"><i class="bi bi-info-circle" aria-hidden="true"></i> {% trans "Live count. A high score alone is never counted: only skills that passed a challenge with no weak sub-skill, or reviewed work, certificates and courses." %}
+        <a href="{% url 'trust' %}">{% trans "How we verify skills" %}</a></p>
 </section>

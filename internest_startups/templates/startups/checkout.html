@@ -154,6 +154,8 @@
                     <li><span>{% trans "Renewal" %}</span><span>{% trans "No automatic renewal" %}</span></li>
                 </ul>
                 <div class="co-total"><span>{% trans "Total due" %}</span><strong>{{ quote.final_label }}</strong></div>
+                <p class="co-secure" style="justify-content: flex-start;"><i class="bi bi-shield-check" aria-hidden="true"></i>
+                    <a href="{% url 'trust' %}">{% trans "How we verify skills" %}</a></p>
                 <ul class="co-perks">
                     <li>✅ {% trans "One-time payment, no subscription" %}</li>
                     <li>✅ {% trans "Full Talent Pool search and invitations" %}</li>

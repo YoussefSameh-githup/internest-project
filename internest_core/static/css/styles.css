@@ -1986,3 +1986,43 @@ a.pf-stat:hover { border-color: #c7d2fe; }
   .app-notice { flex-direction: column; }
   .app-notice__actions .btn { width: 100%; justify-content: center; }
 }
+
+/* ---------- Why trust Internest? (trust/trust.html) ---------- */
+.tr-hero { padding: 48px 0 28px; background: linear-gradient(180deg, #eef4ff 0%, #f8fafc 100%); }
+.tr-hero h1 { margin: 0 0 10px; font-size: clamp(1.7rem, 4vw, 2.6rem); color: #0f172a; }
+.tr-hero p { max-width: 760px; margin: 0 0 18px; color: #334155; font-size: 1.05rem; }
+.tr-toc { display: flex; flex-wrap: wrap; gap: 8px; }
+.tr-toc a { display: inline-flex; align-items: center; min-height: 40px; padding: 6px 14px; border-radius: 999px; background: #fff; border: 1px solid #cbd5e1;
+  color: #1e3a8a; font-weight: 600; text-decoration: none; }
+.tr-toc a:hover, .tr-toc a:focus-visible { background: #dbeafe; }
+.tr-body { display: grid; gap: 36px; padding-block: 32px 56px; max-width: 920px; }
+.tr-sec { scroll-margin-top: calc(var(--navbar-height) + 16px); }
+.tr-sec h2 { margin: 0 0 12px; font-size: clamp(1.25rem, 2.6vw, 1.6rem); color: #0f172a; }
+.tr-h3 { margin: 24px 0 10px; font-size: 1.1rem; }
+.tr-sec p { color: #334155; line-height: 1.75; }
+.tr-list { display: grid; gap: 8px; margin: 0 0 12px; padding-inline-start: 22px; color: #1e293b; line-height: 1.7; }
+.tr-list--limits li::marker { color: #b45309; }
+.tr-steps { display: grid; gap: 10px; margin: 0 0 12px; padding-inline-start: 22px; line-height: 1.7; }
+.tr-note { padding: 12px 14px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 14px; }
+.tr-note--ok { display: flex; gap: 8px; align-items: flex-start; background: #f0fdf4; border-color: #bbf7d0; color: #14532d; }
+.tr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
+.tr-card { padding: 18px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; min-width: 0; overflow-wrap: anywhere; }
+.tr-card h3, .tr-card h4 { margin: 0 0 8px; font-size: 1.05rem; }
+.tr-role { margin: 6px 0 0; color: #64748b; font-size: 14px; }
+.tr-quote blockquote { margin: 0; font-size: 1rem; color: #1e293b; }
+.tr-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 12px; margin: 12px 0; }
+.tr-stats div { padding: 14px 16px; border-radius: 14px; background: #fff; border: 1px solid #e2e8f0; }
+.tr-stats dt { color: #475569; font-size: 14px; }
+.tr-stats dd { margin: 4px 0 0; font-size: 1.8rem; font-weight: 800; color: #1d4ed8; font-variant-numeric: tabular-nums; }
+.tr-empty { padding: 14px 16px; border-radius: 12px; border: 1px dashed #cbd5e1; color: #64748b; }
+.tr-cta { display: flex; flex-wrap: wrap; gap: 10px; }
+@media (max-width: 600px) { .tr-cta .btn { width: 100%; } }
+
+/* ---------- Candidate evidence report (skills/report.html) ---------- */
+.ev__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.ev__head h2 { margin: 0; font-size: 1.2rem; }
+@media print {
+  .nav, .footer, .flash-stack, .app-notices, .ev__print, .btn { display: none !important; }
+  .ev, .card { box-shadow: none !important; border: 1px solid #cbd5e1; break-inside: avoid; }
+  body { background: #fff !important; }
+}

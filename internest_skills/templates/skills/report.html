@@ -37,6 +37,7 @@
                             <td>
                                 {% if s.status == 'verified' %}<span class="badge badge--success"><i class="bi bi-patch-check-fill"></i> {% trans "Verified" %}</span>
                                 {% elif s.status == 'lag' %}<span class="badge badge--accent">{{ s.status_label }}</span>
+                                {% elif s.status == 'review' %}<span class="badge badge--info">{% trans "Under review" %}</span>
                                 {% else %}<span class="badge badge--info">{% trans "Claimed" %}</span>{% endif %}
                             </td>
                             <td>{{ s.score|default_if_none:"-" }}{% if s.score is not None %}%{% endif %}</td>
@@ -49,6 +50,39 @@
                 </tbody>
             </table>
         </div>
+
+        <section class="card mt-6 ev" aria-labelledby="ev-title">
+            <div class="ev__head">
+                <h2 id="ev-title">{% trans "Evidence report" %}</h2>
+                <button type="button" class="btn btn--ghost btn--sm ev__print" onclick="window.print()"><i class="bi bi-printer" aria-hidden="true"></i> {% trans "Print or save as PDF" %}</button>
+            </div>
+            <p class="text-muted">{% trans "How each verified skill was verified, from our records. A verified skill shows what the candidate demonstrated on that day; it is not a guarantee of job performance." %}
+                <a href="{% url 'trust' %}">{% trans "How verification works" %}</a></p>
+            {% if evidence %}
+                <div class="table-wrap">
+                    <table class="table ev__table">
+                        <thead><tr>
+                            <th scope="col">{% trans "Skill" %}</th><th scope="col">{% trans "Verified through" %}</th><th scope="col">{% trans "Verified on" %}</th>
+                            <th scope="col">{% trans "Score" %}</th><th scope="col">{% trans "Practical task" %}</th><th scope="col">{% trans "Reviewed by a person" %}</th>
+                        </tr></thead>
+                        <tbody>
+                            {% for e in evidence %}
+                                <tr>
+                                    <td class="fw-bold"><bdi>{{ e.skill }}</bdi></td>
+                                    <td>{{ e.via }}</td>
+                                    <td>{{ e.verified_at|date:"Y/m/d"|default:"-" }}</td>
+                                    <td>{% if e.score is not None %}{{ e.score }}%{% if e.percentile is not None %} · P{{ e.percentile }}{% endif %}{% else %}-{% endif %}</td>
+                                    <td>{% if e.practical %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</td>
+                                    <td>{% if e.human_reviewed %}{% trans "Yes" %}{% if e.reviewed_at %} ({{ e.reviewed_at|date:"Y/m/d" }}){% endif %}{% else %}{% trans "No" %}{% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">{% trans "No verified skills yet." %}</p>
+            {% endif %}
+        </section>
     </div>
 </section>
 {% endblock %}

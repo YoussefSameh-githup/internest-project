@@ -134,3 +134,13 @@ def re_verify_emails_on_login(sender, request, user, **kwargs):
         issue_and_send_verification(user, profile.personal_email, EmailVerification.EMAIL_TYPE_PERSONAL)
     if profile.university_email and not profile.is_university_email_verified:
         issue_and_send_verification(user, profile.university_email, EmailVerification.EMAIL_TYPE_UNIVERSITY)
+
+
+@receiver([post_save, post_delete], sender="internest_core.TrustStory")
+@receiver([post_save, post_delete], sender="internest_core.TeamMember")
+def _refresh_trust_page(sender, **kwargs):
+    """Unpublishing a story or a team member must not stay visible from a cached page."""
+    from .page_cache import bump
+
+    bump("trust")
+    bump("public")

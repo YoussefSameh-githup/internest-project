@@ -11,6 +11,7 @@ urlpatterns = [
     path('healthz/', site_views.healthz, name='healthz'),
     path('contact/', legal_views.contact, name='contact'),
     path('privacy/', legal_views.privacy, name='privacy'),
+    path('trust/', legal_views.trust_page, name='trust'),
     path('notices/<slug:key>/', views.student_notice_view, name='student_notice'),
     path('terms/', legal_views.terms, name='terms'),
     path('refund-policy/', legal_views.refund_policy, name='refund_policy'),

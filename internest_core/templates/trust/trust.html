@@ -1,0 +1,175 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Why trust Internest?" %} — Internest{% endblock %}
+
+{% block content %}
+<article class="tr">
+    <header class="tr-hero">
+        <div class="container">
+            <h1>{% trans "Why trust Internest?" %}</h1>
+            <p>{% trans "This page describes what the platform actually does today, including its limits. Every count on it comes live from our database, and every rule from the code that enforces it. We don't publish testimonials, logos or results we can't show." %}</p>
+            <nav class="tr-toc" aria-label="{% trans 'On this page' %}">
+                <a href="#method">{% trans "Verification" %}</a>
+                <a href="#assessment">{% trans "Assessment" %}</a>
+                <a href="#integrity">{% trans "Cheating prevention" %}</a>
+                <a href="#limits">{% trans "Limits" %}</a>
+                <a href="#privacy">{% trans "Privacy" %}</a>
+                <a href="#numbers">{% trans "Live numbers" %}</a>
+                <a href="#people">{% trans "People" %}</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container tr-body">
+        <section id="method" class="tr-sec" aria-labelledby="h-method">
+            <h2 id="h-method">{% trans "How a skill becomes “verified”" %}</h2>
+            <p>{% trans "Students can list any skill, but it is shown to companies as verified only after one of these:" %}</p>
+            <ul class="tr-list">
+                <li>{% trans "A skill test passed with no weak sub-skill. A person from our team confirms it first when the test included a practical task or a server-side signal (very fast answers, or a written answer nearly identical to another student's)." %}</li>
+                {% if rules.freelance_auto %}
+                    <li>{% trans "Freelance work the student did, checked automatically against the student's own profile." %}</li>
+                {% else %}
+                    <li>{% trans "Freelance work the student did, reviewed by our team." %}</li>
+                {% endif %}
+                <li>{% trans "A certificate, reviewed by our team." %}</li>
+                <li>{% trans "A course from a partner we verified, completed on Internest and confirmed by that partner." %}</li>
+            </ul>
+            <p class="tr-note">{% trans "A high score alone never counts: a student who scores well but is weak in one sub-skill is not verified. Every count of “verified candidates” on Internest uses this one rule. In rare cases our team sets a skill as verified by hand; the evidence report then says so." %}</p>
+        </section>
+
+        <section id="assessment" class="tr-sec" aria-labelledby="h-assess">
+            <h2 id="h-assess">{% trans "The skill test" %}</h2>
+            <ol class="tr-steps">
+                <li><strong>{% trans "Timed questions." %}</strong> {% blocktrans with s=rules.question_seconds %}{{ s }} seconds per question, easy to hard. We prefer questions the student hasn't seen before and reuse older ones only when there aren't enough. The timer and the grading run on our server, not in the browser.{% endblocktrans %}</li>
+                <li><strong>{% trans "Where the questions come from." %}</strong> {% trans "When our AI provider is available, an AI model writes a fresh set of questions for the attempt, with their answer key and sub-skill labels; otherwise we use our saved question bank. Generated questions are added to the bank without a person checking each one first." %}</li>
+                {% if numbers.practical_skills %}
+                    <li><strong>{% trans "A practical task." %}</strong> {% blocktrans with n=numbers.practical_skills m=numbers.skills_with_tests mins=rules.practical_minutes %}{{ n }} of the {{ m }} skills with a test end with a {{ mins }}-minute real task (for example a query, a plan or a clause), scored against a points rubric.{% endblocktrans %}</li>
+                {% endif %}
+                <li><strong>{% trans "Human review." %}</strong> {% blocktrans with d=rules.review_days %}A person from our team sets the final grade of every practical answer and looks at passing attempts that raised a server-side signal. We aim to do this within {{ d }} working days. An AI tool may suggest a grade; it never decides.{% endblocktrans %}</li>
+                <li><strong>{% trans "Retakes." %}</strong> {% blocktrans with h=rules.cooldown_hours %}A failed or ended attempt can be retaken after {{ h }} hours, with different questions where the bank allows.{% endblocktrans %}</li>
+            </ol>
+            <p>{% trans "Companies with a Hiring Pass can add their own screening task to an opportunity and score it themselves, so they can test exactly what the role needs." %}</p>
+        </section>
+
+        <section id="integrity" class="tr-sec" aria-labelledby="h-integrity">
+            <h2 id="h-integrity">{% trans "Cheating prevention, without spying" %}</h2>
+            <ul class="tr-list">
+                <li>{% trans "Copy, paste and right-click are blocked inside the test." %}</li>
+                <li>{% blocktrans with n=rules.focus_limit h=rules.cooldown_hours %}Automatic rules: an answer that was pasted, or typed in a way that looks injected or machine-generated, scores zero; two such answers, or leaving the test window more than {{ n }} times, end the attempt (it can be retaken after {{ h }} hours). No person reviews these automatic decisions.{% endblocktrans %}</li>
+                <li>{% blocktrans with s=rules.fast_seconds p=rules.similarity_percent %}Server-side signals: many correct answers in under {{ s }} seconds (faster than a person can read the question), or a written answer about {{ p }}% identical to another student's (repeating the question's wording doesn't count), send a passing attempt to a reviewer instead of verifying it straight away.{% endblocktrans %}</li>
+            </ul>
+            <p class="tr-note tr-note--ok"><i class="bi bi-camera-video-off" aria-hidden="true"></i> {% trans "Skill tests never turn on the camera or microphone, and we don't fingerprint or track devices. The speed and similarity signals never fail anyone on their own: a person decides." %}</p>
+        </section>
+
+        <section id="limits" class="tr-sec" aria-labelledby="h-limits">
+            <h2 id="h-limits">{% trans "What verification cannot promise" %}</h2>
+            <ul class="tr-list tr-list--limits">
+                <li>{% trans "No online test is cheat-proof. Someone could still get help from another person; our checks make it harder and send doubtful passing attempts to a person." %}</li>
+                <li>{% trans "Not every skill has a practical task yet, and skills that have one have only one, so retakes can see the same task." %}</li>
+                <li>{% trans "AI-written questions and answer keys can contain mistakes." %}</li>
+                <li>{% trans "Automatic rules can be wrong, for example with an unusual keyboard or connection, and they can zero an answer or end an attempt without a person looking." %}</li>
+                <li>{% trans "A verified skill shows what the student demonstrated on that day. It is not a guarantee of job performance, and we don't guarantee hires." %}</li>
+            </ul>
+        </section>
+
+        <section id="privacy" class="tr-sec" aria-labelledby="h-privacy">
+            <h2 id="h-privacy">{% trans "Candidate privacy and data protection" %}</h2>
+            <div class="tr-grid">
+                <div class="tr-card">
+                    <h3>{% trans "Who sees what" %}</h3>
+                    <ul class="tr-list">
+                        <li>{% trans "Students choose whether to appear in the Talent Pool and can turn it off at any time." %}</li>
+                        <li>{% trans "In the Talent Pool, verified companies without a Hiring Pass see summaries without name, university, photo or contact details: major, study year and verified skills with a score range." %}</li>
+                        <li>{% trans "In the Talent Pool, companies with a Hiring Pass see name, university, bio, portfolio link, verified skills with exact scores and percentiles, and verified work experience." %}</li>
+                        <li>{% trans "A company a student applies to sees the student's name, university and verified skills." %}</li>
+                        <li>{% trans "A university the student chooses to share with sees the student's skill report." %}</li>
+                        <li>{% trans "Phone, email and CV are shared only after the student applies and agrees to share them, and the company shortlists or accepts them." %}</li>
+                        <li>{% trans "Answers to a company's screening task are visible only to that company and our team." %}</li>
+                    </ul>
+                </div>
+                <div class="tr-card">
+                    <h3>{% trans "How data is protected" %}</h3>
+                    <ul class="tr-list">
+                        <li>{% trans "Encrypted connections (HTTPS) everywhere; passwords are stored only as salted hashes." %}</li>
+                        <li>{% trans "CVs, certificates, receipts and work samples are served only to the people allowed to see them." %}</li>
+                        <li>{% trans "We never see or store card numbers." %}</li>
+                        <li>{% trans "You can ask us for a copy of your data or to delete your account; we act within 30 days." %}</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="tr-note">{% trans "We are reviewing our obligations under Egypt's Personal Data Protection Law (Law No. 151 of 2020) and, where it applies, the EU GDPR. We don't claim formal compliance until that review is complete." %}
+                <a href="{% url 'privacy' %}">{% trans "Privacy policy" %}</a></p>
+        </section>
+
+        <section id="evidence" class="tr-sec" aria-labelledby="h-evidence">
+            <h2 id="h-evidence">{% trans "Evidence companies can check" %}</h2>
+            <p>{% trans "For every verified skill of a candidate who applied to them, companies with a Hiring Pass for that opportunity see an evidence report: how the skill was verified, when, the test score when a test was the route, whether a practical task was part of it, and whether a person reviewed it." %}</p>
+        </section>
+
+        <section id="numbers" class="tr-sec" aria-labelledby="h-numbers">
+            <h2 id="h-numbers">{% trans "Live numbers" %}</h2>
+            <p class="tr-note">{% trans "Counted from our database and refreshed about every 10 minutes. We are new, so some of these are small; they are real." %}</p>
+            <dl class="tr-stats">
+                <div><dt>{% trans "Verified candidates open to offers" %}</dt><dd>{{ numbers.candidates }}</dd></div>
+                <div><dt>{% trans "Verified skills of candidates in the Talent Pool" %}</dt><dd>{{ numbers.verified_skills }}</dd></div>
+                <div><dt>{% trans "Skills with a test" %}</dt><dd>{{ numbers.skills_with_tests }}</dd></div>
+                <div><dt>{% trans "Practical tasks" %}</dt><dd>{{ numbers.practical_tasks }}</dd></div>
+                <div><dt>{% trans "Verified companies" %}</dt><dd>{{ numbers.verified_companies }}</dd></div>
+                <div><dt>{% trans "Verified partner universities" %}</dt><dd>{{ numbers.verified_universities }}</dd></div>
+                <div><dt>{% trans "Candidates shortlisted by companies" %}</dt><dd>{{ numbers.shortlisted }}</dd></div>
+                <div><dt>{% trans "Candidates accepted" %}</dt><dd>{{ numbers.accepted }}</dd></div>
+                <div><dt>{% trans "Completed gigs with a verified letter" %}</dt><dd>{{ numbers.verified_gigs }}</dd></div>
+            </dl>
+            <p class="tr-note">{% trans "Partner names are shown only with their permission, so this section shows counts." %}</p>
+        </section>
+
+        <section id="people" class="tr-sec" aria-labelledby="h-people">
+            <h2 id="h-people">{% trans "The people behind Internest" %}</h2>
+            {% if team %}
+                <ul class="tr-grid tr-team">
+                    {% for m in team %}
+                        <li class="tr-card">
+                            <h3><bdi>{{ m.name }}</bdi></h3>
+                            <p class="tr-role"><bdi>{{ m.role }}</bdi></p>
+                            {% if m.bio %}<p dir="auto">{{ m.bio }}</p>{% endif %}
+                            {% if m.linkedin_url %}<a href="{{ m.linkedin_url }}" target="_blank" rel="noopener noreferrer">LinkedIn</a>{% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="tr-empty">{% trans "Team profiles will be added here." %}</p>
+            {% endif %}
+
+            <h3 class="tr-h3">{% trans "What users say" %}</h3>
+            {% if stories.testimonials %}
+                <ul class="tr-grid">
+                    {% for s in stories.testimonials %}
+                        <li class="tr-card tr-quote"><blockquote dir="auto">{{ s.body }}</blockquote>
+                            <p class="tr-role">— <bdi>{{ s.person_name }}</bdi>, <bdi>{{ s.person_role }}</bdi></p></li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="tr-empty">{% trans "No testimonials yet. We publish only real ones, with the person's permission." %}</p>
+            {% endif %}
+
+            <h3 class="tr-h3">{% trans "Case studies" %}</h3>
+            {% if stories.case_studies %}
+                <ul class="tr-grid">
+                    {% for s in stories.case_studies %}
+                        <li class="tr-card"><h4 dir="auto">{{ s.title|default:s.person_role }}</h4><p dir="auto">{{ s.body|linebreaksbr }}</p>
+                            <p class="tr-role">— <bdi>{{ s.person_name }}</bdi>, <bdi>{{ s.person_role }}</bdi></p></li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="tr-empty">{% trans "No case studies yet. They will appear after real hires, with the permission of the people involved." %}</p>
+            {% endif %}
+        </section>
+
+        <aside class="tr-cta">
+            <a href="{% url 'startup_upgrade' %}" class="btn btn--primary">{% trans "Plans for companies" %}</a>
+            <a href="{% url 'refund_policy' %}" class="btn btn--ghost">{% trans "Refund and availability policy" %}</a>
+        </aside>
+    </div>
+</article>
+{% endblock %}

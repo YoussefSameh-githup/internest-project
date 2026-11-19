@@ -127,7 +127,8 @@
             <h3 class="mb-2"><span class="skills-step">2</span> {% trans "Claimed skills — verify them" %}</h3>
             <p class="text-muted" style="font-size: var(--text-sm);">
                 <i class="bi bi-info-circle"></i>
-                {% trans "Each challenge is timed (30–60 seconds per question), then most skills end with a 15-minute practical task. Copy/paste is disabled and leaving the tab more than twice ends the session. A reviewer checks practical answers before the badge is confirmed. We never use your camera or microphone." %}
+                {% trans "Each challenge is timed (30–60 seconds per question), then most skills end with a 15-minute practical task. Copy/paste is disabled and leaving the tab more than twice ends the session. A reviewer checks practical answers before the badge is confirmed. Skill tests never turn on your camera or microphone." %}
+                <a href="{% url 'trust' %}">{% trans "How verification works" %}</a>
             </p>
             {% if claimed %}
                 <div class="skills-grid">
