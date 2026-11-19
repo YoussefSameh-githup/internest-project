@@ -10,6 +10,7 @@ from datetime import timedelta
 from unittest import mock
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.db import connection
 from django.http import HttpResponse
@@ -37,6 +38,14 @@ QUERY_CEILINGS = {
     "partner dashboard (startup)": 13,
     "partner dashboard (free startup)": 16,  # measured 14; the journey strip adds up to 2 when no opportunity is open
     "partner dashboard (university)": 10,
+    # Phase 8: pages added in Phases 1-7 (measured 2026-11-19)
+    "talent pool (paid startup)": 11,
+    "applicant page (startup)": 9,
+    "skills hub (student)": 6,
+    "assessment review queue (staff)": 4,
+    "trust page (anonymous)": 0,
+    "plans page (free startup)": 19,
+    "delete account page (student)": 3,
 }
 
 
@@ -71,6 +80,15 @@ class QueryCeilingTests(Base):
             "partner dashboard (startup)": (self.pro_user, reverse("partner_dashboard")),
             "partner dashboard (free startup)": (self.free_user, reverse("partner_dashboard")),
             "partner dashboard (university)": (self.uni_user, reverse("partner_dashboard")),
+            "talent pool (paid startup)": (self.pro_user, reverse("talent_pool")),
+            "applicant page (startup)": (self.pro_user, reverse(
+                "partner_applicant", args=[Application.objects.filter(internship__partner=self.pro).first().pk])),
+            "skills hub (student)": (self.student_user, reverse("skills_hub")),
+            "assessment review queue (staff)": (User.objects.create_user("perf-staff", password="pw", is_staff=True),
+                                                reverse("skills_review_queue")),
+            "trust page (anonymous)": (None, reverse("trust")),
+            "plans page (free startup)": (self.free_user, reverse("startup_upgrade")),
+            "delete account page (student)": (self.student_user, reverse("account_delete")),
         }
         measured = {label: self._queries(user, url) for label, (user, url) in pages.items()}
         if os.getenv("PERF_REPORT"):

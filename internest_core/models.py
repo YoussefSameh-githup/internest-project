@@ -261,7 +261,9 @@ class Internship(models.Model):
     class Meta:
         indexes = [
             # Internship.objects.open() (is_active + deadline >= today) feeds every student list and the dashboards.
-            models.Index(fields=["is_active", "deadline"], name="internship_open_idx"),
+            # Partial index: on SQLite Django writes is_active=True as a bare "is_active" term, which a composite
+            # (is_active, deadline) index cannot use (the feed was a full table scan, Phase 8 query-plan check).
+            models.Index(fields=["deadline"], condition=models.Q(is_active=True), name="internship_open_deadline_idx"),
             models.Index(fields=["partner", "-created_at"], name="internship_partner_idx"),
         ]
 

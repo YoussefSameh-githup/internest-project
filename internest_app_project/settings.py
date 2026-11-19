@@ -304,6 +304,9 @@ RATELIMIT_ENABLED = env.bool("RATELIMIT_ENABLED", default="test" not in sys.argv
 
 # Phase 7 security: audit-trail retention (manage.py purge_security_events, run daily) and optional ClamAV scanning of
 # uploads (internest_core.upload_security; empty host = not configured, PythonAnywhere has no clamd).
+# Phase 8: backups (manage.py backup_data / verify_backup / restore_backup). Outside the project, MEDIA_ROOT and
+# STATIC_ROOT (enforced); default ~/backups/internest.
+BACKUP_DIR = env.str("BACKUP_DIR", default="")
 MAX_REQUEST_BYTES = 20 * 1024 * 1024  # largest legitimate body: a 15 MB Voice-to-CV recording + form fields
 SECURITY_EVENT_RETENTION_DAYS = env.int("SECURITY_EVENT_RETENTION_DAYS", default=365)
 CLAMAV_HOST = env.str("CLAMAV_HOST", default="")
