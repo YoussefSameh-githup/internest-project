@@ -9,7 +9,7 @@ from django.urls import reverse
 
 from .extraction import extract_skills
 from .llm import LLMUnavailable, chat_json
-from .models import Skill
+from .models import ChallengeItem, Skill
 from .quizgen import QUIZ_LENGTH, QuizGenerationError, quiz_item_ids_for
 from .semantic import relate_skill_ai
 from .tests import Base, _docx_upload, _llm_reply
@@ -114,7 +114,9 @@ class TenQuestionQuizTests(Base):
         with mock.patch("openai.resources.chat.completions.Completions.create", return_value=_llm_reply(_quiz(10))) as create:
             resp = self.client.post(reverse("skills_challenge_start", args=[ss.pk]), follow=True)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(ss.attempts.get().item_ids), 10)
+        ids = ss.attempts.get().item_ids
+        self.assertEqual(len(ids), 11)  # 10 generated questions + the practical task at the end
+        self.assertEqual(ChallengeItem.objects.get(pk=ids[-1]).kind, ChallengeItem.KIND_PRACTICAL)
         self.assertIn("exactly 10 NEW, distinct real-world questions", create.call_args.kwargs["messages"][1]["content"])
 
     def test_short_ai_quiz_is_topped_up_from_saved_bank(self):

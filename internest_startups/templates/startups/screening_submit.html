@@ -1,0 +1,54 @@
+{% extends 'internship/base.html' %}
+{% load i18n asset_tags %}
+
+{% block title %}{% trans "Screening task" %} — Internest{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% asset 'startups/startups.css' %}">{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container sc">
+        <a href="{% url 'my_applications' %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short" aria-hidden="true"></i> {% trans "My applications" %}</a>
+        <h1><bdi>{{ task.title }}</bdi></h1>
+        <p class="sc__intro">{% blocktrans with company=app.internship.partner.company_name title=app.internship.title %}Screening task from {{ company }} for "{{ title }}".{% endblocktrans %}</p>
+        <p class="sc__due"><i class="bi bi-calendar-event" aria-hidden="true"></i> {% blocktrans with date=due|date:"Y/m/d H:i" %}Due {{ date }}{% endblocktrans %}{% if task.required %} · {% trans "Required to be shortlisted" %}{% endif %}</p>
+
+        <article class="card sc__task">
+            <div class="sc__instructions" dir="auto">{{ task.instructions|linebreaks }}</div>
+            {% if task.criteria %}
+                <h2>{% trans "How it is scored" %}</h2>
+                <ul class="sc__criteria">{% for c in task.criteria %}<li><bdi>{{ c.criterion }}</bdi> <b>({{ c.points }})</b></li>{% endfor %}</ul>
+            {% endif %}
+        </article>
+
+        {% if submission %}
+            <div class="sc__done card">
+                <p><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% blocktrans with date=submission.submitted_at|date:"Y/m/d H:i" %}Submitted on {{ date }}.{% endblocktrans %}
+                    {% if submission.status == "passed" %}{% trans "The company marked it as passed." %}{% elif submission.status == "failed" %}{% trans "The company reviewed it." %}{% else %}{% trans "Waiting for the company to review it." %}{% endif %}</p>
+                {% if submission.answer_text %}<pre class="sc__answer" dir="auto">{{ submission.answer_text }}</pre>{% endif %}
+                {% if submission.link %}<p><a href="{{ submission.link }}" target="_blank" rel="noopener noreferrer nofollow">{{ submission.link }}</a></p>{% endif %}
+            </div>
+        {% elif not is_open %}
+            <p class="sc__note">{% trans "The due date for this task has passed." %}</p>
+        {% else %}
+            <form method="post" class="card sc__form" novalidate>
+                {% csrf_token %}
+                {% if error %}<p class="sc__error" role="alert">{{ error }}</p>{% endif %}
+                {% if task.deliverable != "link" %}
+                    <div class="sc__field">
+                        <label for="sc-answer">{% trans "Your answer" %}</label>
+                        <textarea id="sc-answer" name="answer_text" rows="10" maxlength="6000" dir="auto">{{ answer_text }}</textarea>
+                    </div>
+                {% endif %}
+                {% if task.deliverable != "text" %}
+                    <div class="sc__field">
+                        <label for="sc-link">{% trans "Link to your work (Google Drive, GitHub, Figma…)" %}</label>
+                        <input id="sc-link" type="url" name="link" maxlength="500" value="{{ link }}" dir="ltr" inputmode="url">
+                    </div>
+                {% endif %}
+                <p class="sc__note">{% trans "Do the task yourself. You can submit once. Answers that are nearly identical to another applicant's are flagged to the company." %}</p>
+                <button type="submit" class="btn btn--primary">{% trans "Submit task" %}</button>
+            </form>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

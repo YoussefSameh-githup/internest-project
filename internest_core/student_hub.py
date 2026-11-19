@@ -111,7 +111,8 @@ def talent_pool_eligible(profile):
 # ---------------------------------------------------------------- applications (shared with "My applications")
 def student_applications(user):
     return (Application.objects.filter(applicant=user)
-            .select_related("internship", "internship__partner", "experience").order_by("-application_date"))
+            .select_related("internship", "internship__partner", "experience", "internship__screening_task", "screening_submission")
+            .order_by("-application_date"))
 
 
 def open_invitations(user, applied_ids, limit=10):

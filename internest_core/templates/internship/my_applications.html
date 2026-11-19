@@ -64,6 +64,7 @@
                             <span><i class="bi bi-send"></i> {% trans "Applied on" %} {{ app.application_date|date:"Y/m/d" }}</span>
                             <span><i class="bi bi-calendar-event"></i> {% trans "Deadline" %} {{ app.internship.deadline|date:"Y/m/d" }}</span>
                             {% if app.source == "invited" %}<span class="sh-pill sh-pill--invited">🎟️ {% trans "Invited" %}</span>{% endif %}
+                            {% if app.internship.screening_task and app.screening_submission or app.internship.screening_task and app.status in "submitted under_review shortlisted" %}<a href="{% url 'screening_submit' app.pk %}" class="btn {% if app.screening_submission %}btn--ghost{% else %}btn--primary{% endif %} btn--sm">📝 {% if app.screening_submission %}{% trans "Screening task: submitted" %}{% else %}{% trans "Screening task: to do" %}{% endif %}</a>{% endif %}
                             {% if app.status == "completed" and app.experience and app.experience.is_verified %}<a href="{% url 'experience_letter' app.experience.verification_uuid %}" class="btn btn--outline btn--sm">📄 {% trans "Recommendation letter" %}</a>{% endif %}
                         </footer>
                     </article>

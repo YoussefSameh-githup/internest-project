@@ -109,11 +109,25 @@
         </div>
         {% endif %}
 
+        {% if in_review %}
+        <div class="card mb-6" role="status">
+            <h3 class="mb-4"><i class="bi bi-hourglass-split" aria-hidden="true"></i> {% trans "Under review" %}</h3>
+            <div class="skills-grid">
+                {% for s in in_review %}
+                    <div class="skill-tile">
+                        <div class="fw-bold"><bdi>{{ s.skill.name }}</bdi></div>
+                        <div class="skill-tile__meta">{% trans "Waiting for a reviewer, usually within 3 working days." %}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         <div class="card" id="claimed">
             <h3 class="mb-2"><span class="skills-step">2</span> {% trans "Claimed skills — verify them" %}</h3>
             <p class="text-muted" style="font-size: var(--text-sm);">
                 <i class="bi bi-info-circle"></i>
-                {% trans "Each challenge is timed (30–60 seconds per question). Copy/paste is disabled and leaving the tab more than twice ends the session." %}
+                {% trans "Each challenge is timed (30–60 seconds per question), then most skills end with a 15-minute practical task. Copy/paste is disabled and leaving the tab more than twice ends the session. A reviewer checks practical answers before the badge is confirmed. We never use your camera or microphone." %}
             </p>
             {% if claimed %}
                 <div class="skills-grid">

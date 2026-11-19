@@ -35,6 +35,15 @@ class Command(BaseCommand):
                 _, created = ChallengeItem.objects.update_or_create(skill=skill, prompt=prompt, defaults=defaults)
                 items_created += created
 
+        from internest_skills.practical_seed import PRACTICALS
+
+        for skill_name, sub_name, prompt, rubric, seconds in PRACTICALS:
+            skill = Skill.objects.get(slug=slugify(skill_name))
+            _, created = ChallengeItem.objects.update_or_create(skill=skill, prompt=prompt, defaults={
+                "kind": ChallengeItem.KIND_PRACTICAL, "rubric": rubric, "time_limit_seconds": seconds, "difficulty": "hard",
+                "sub_skill": SubSkill.objects.get(skill=skill, name=sub_name), "topic": sub_name, "weight": 3})
+            items_created += created
+
         from internest_skills.semantic import seed_relations
         relations = seed_relations()
         self.stdout.write(self.style.SUCCESS(f"Seeded {len(SKILLS)} skills, {items_created} new challenge items, {relations} new skill relations."))

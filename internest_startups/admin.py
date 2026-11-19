@@ -179,3 +179,27 @@ class TalentInvitationAdmin(ModelAdmin):
     status_col = status_badge("status", {TalentInvitation.STATUS_ACCEPTED: OK, TalentInvitation.STATUS_PENDING: INFO})
     search_fields = ("partner__company_name", "student__user__username", "internship__title")
     raw_id_fields = ("partner", "student", "internship")
+
+
+from .models import ScreeningSubmission, ScreeningTask  # noqa: E402
+
+
+@admin.register(ScreeningTask)
+class ScreeningTaskAdmin(ModelAdmin):
+    list_display = ("internship", "title", "required", "pass_mark", "due_days", "created_at")
+    search_fields = ("internship__title", "internship__partner__company_name", "title")
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(ScreeningSubmission)
+class ScreeningSubmissionAdmin(ModelAdmin):
+    """Read-only for staff: the company scores answers on the applicant page."""
+
+    list_display = ("task", "application", "status", "total_pct", "similarity_flag", "submitted_at", "reviewed_at")
+    list_filter = ("status", "similarity_flag")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

@@ -94,6 +94,7 @@ def skills_hub(request):
         "skill_profile": skill_profile,
         "verified": [s for s in skills if s.status == StudentSkill.STATUS_VERIFIED],
         "lagging": [s for s in skills if s.status == StudentSkill.STATUS_LAG],
+        "in_review": [s for s in skills if s.status == StudentSkill.STATUS_REVIEW],
         "claimed": [s for s in skills if s.status == StudentSkill.STATUS_CLAIMED],
         "can_generate_quiz": llm_enabled(),
         "ai_notice": request.session.pop(AI_NOTICE_SESSION_KEY, None),
@@ -280,7 +281,7 @@ def start_challenge(student, student_skill_id):
     ss = get_object_or_404(StudentSkill.objects.select_related("skill"), pk=student_skill_id, student=student)
     item_ids = None
     # Live quiz generation (network) happens outside the row lock; skipped when resuming or not eligible.
-    can_start = ss.status != StudentSkill.STATUS_VERIFIED and not ss.in_cooldown
+    can_start = ss.status not in (StudentSkill.STATUS_VERIFIED, StudentSkill.STATUS_REVIEW) and not ss.in_cooldown
     if can_start and not ss.attempts.filter(state=ChallengeAttempt.STATE_ACTIVE).exists():
         try:
             item_ids = quiz_item_ids_for(ss.skill, ss)  # AI quiz first, else the saved bank; no repeats on retakes

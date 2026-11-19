@@ -86,7 +86,11 @@ class SubSkill(models.Model):
 class ChallengeItem(models.Model):
     KIND_MCQ = "mcq"
     KIND_CASE = "case"
-    KIND_CHOICES = [(KIND_MCQ, "Multiple choice"), (KIND_CASE, "Short case / written answer")]
+    KIND_PRACTICAL = "practical"  # a real task graded by rubric; a human reviewer sets the final credit
+    KIND_CHOICES = [(KIND_MCQ, "Multiple choice"), (KIND_CASE, "Short case / written answer"),
+                    (KIND_PRACTICAL, "Practical scenario (human-reviewed)")]
+    QUICK_SECONDS = (30, 60)          # multiple choice and short case
+    PRACTICAL_SECONDS = (300, 1800)   # practical scenario
 
     skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name="items")
     sub_skill = models.ForeignKey(SubSkill, on_delete=models.CASCADE, related_name="items")
@@ -96,7 +100,8 @@ class ChallengeItem(models.Model):
     correct_index = models.PositiveSmallIntegerField(null=True, blank=True)
     rubric = models.JSONField(
         default=list, blank=True,
-        help_text='Case only: list of concept groups; each group is a list of accepted terms, e.g. [["npv","net present value"],["discount"]].',
+        help_text='Case: list of concept groups, e.g. [["npv","net present value"],["discount"]]. Practical: list of '
+                  '{"criterion": "...", "points": 2, "terms": ["indicative", "words"]}.',
     )
     DIFFICULTY_EASY, DIFFICULTY_MEDIUM, DIFFICULTY_HARD = "easy", "medium", "hard"
     DIFFICULTY_CHOICES = [(DIFFICULTY_EASY, _("Easy")), (DIFFICULTY_MEDIUM, _("Medium")), (DIFFICULTY_HARD, _("Hard"))]
@@ -105,7 +110,8 @@ class ChallengeItem(models.Model):
     difficulty = models.CharField(max_length=6, choices=DIFFICULTY_CHOICES, default=DIFFICULTY_MEDIUM)
     code_snippet = models.TextField(blank=True, help_text="Optional code shown under the question (technical skills).")
     topic = models.CharField(max_length=160, blank=True, help_text="Specific concept tested; used for improvement feedback.")
-    time_limit_seconds = models.PositiveSmallIntegerField(default=45, validators=[MinValueValidator(30), MaxValueValidator(60)])
+    time_limit_seconds = models.PositiveSmallIntegerField(default=45, validators=[MinValueValidator(30), MaxValueValidator(1800)],
+                                                          help_text="30–60 s for multiple choice and case; 300–1800 s for practical.")
     weight = models.PositiveSmallIntegerField(default=1)
     is_active = models.BooleanField(default=True)
 
@@ -116,9 +122,19 @@ class ChallengeItem(models.Model):
         from django.core.exceptions import ValidationError
         if self.sub_skill_id and self.skill_id and self.sub_skill.skill_id != self.skill_id:
             raise ValidationError("Sub-skill must belong to the selected skill.")
+        low, high = self.PRACTICAL_SECONDS if self.kind == self.KIND_PRACTICAL else self.QUICK_SECONDS
+        if not low <= (self.time_limit_seconds or 0) <= high:
+            raise ValidationError(f"Time limit for this kind must be {low}–{high} seconds.")
         if self.kind == self.KIND_MCQ:
             if len(self.choices or []) < 2 or self.correct_index is None or self.correct_index >= len(self.choices):
                 raise ValidationError("MCQ needs ≥2 choices and a valid correct_index.")
+        elif self.kind == self.KIND_PRACTICAL:
+            from .review import criteria
+
+            rows = self.rubric or []
+            if not rows or len(criteria(self)) != len(rows) or not all(isinstance(r.get("terms", []), list) for r in rows):
+                raise ValidationError('Practical items need rubric criteria: [{"criterion": "...", "points": 2, "terms": [...]}] '
+                                      "with whole-number points above 0.")
         elif not self.rubric:
             raise ValidationError("Case items need a rubric.")
 
@@ -163,7 +179,9 @@ class StudentSkill(models.Model):
     STATUS_CLAIMED = "claimed"
     STATUS_VERIFIED = "verified"
     STATUS_LAG = "lag"
-    STATUS_CHOICES = [(STATUS_CLAIMED, _("Claimed")), (STATUS_VERIFIED, _("Verified")), (STATUS_LAG, _("Skill lag detected"))]
+    STATUS_REVIEW = "review"  # passed the automatic checks; a reviewer confirms before it counts as verified
+    STATUS_CHOICES = [(STATUS_CLAIMED, _("Claimed")), (STATUS_VERIFIED, _("Verified")), (STATUS_LAG, _("Skill lag detected")),
+                      (STATUS_REVIEW, _("Under review"))]
 
     VIA_CHALLENGE = "challenge"
     VIA_FREELANCE = "freelance"
@@ -237,6 +255,10 @@ class ChallengeAttempt(models.Model):
     MAX_FOCUS_WARNINGS = 2
     MAX_FLAGGED_RESPONSES = 2
 
+    REVIEW_NONE, REVIEW_PENDING, REVIEW_APPROVED, REVIEW_REJECTED = "", "pending", "approved", "rejected"
+    REVIEW_CHOICES = [(REVIEW_NONE, "Not needed"), (REVIEW_PENDING, "Waiting for review"), (REVIEW_APPROVED, "Approved"),
+                      (REVIEW_REJECTED, "Rejected")]
+
     token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     student_skill = models.ForeignKey(StudentSkill, on_delete=models.CASCADE, related_name="attempts")
     item_ids = models.JSONField(default=list)
@@ -251,6 +273,12 @@ class ChallengeAttempt(models.Model):
     improvement_topics = models.JSONField(default=list, blank=True)
     started_at = models.DateTimeField(auto_now_add=True)
     finished_at = models.DateTimeField(null=True, blank=True)
+    # Human review (internest_skills/review.py): signals that sent the attempt to a reviewer, and the decision.
+    review_status = models.CharField(max_length=10, choices=REVIEW_CHOICES, default=REVIEW_NONE, blank=True, db_index=True)
+    review_reasons = models.JSONField(default=list, blank=True)
+    reviewed_by = models.ForeignKey("auth.User", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    review_note = models.CharField(max_length=500, blank=True)
 
     class Meta:
         ordering = ["-started_at"]
@@ -283,9 +311,15 @@ class ChallengeResponse(models.Model):
     typing_stats = models.JSONField(default=dict, blank=True)
     integrity_flags = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    review_credit = models.FloatField(null=True, blank=True)  # set by a reviewer; replaces `credit` in the final score
+    ai_suggestion = models.JSONField(default=dict, blank=True)  # advisory only (review.ai_suggestion)
 
     class Meta:
         unique_together = ("attempt", "item")
+
+    @property
+    def final_credit(self):
+        return self.credit if self.review_credit is None else self.review_credit
 
 
 class EmployerSubscription(models.Model):

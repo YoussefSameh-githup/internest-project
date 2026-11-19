@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import views, views_screening
 
 urlpatterns = [
     path("startups/register/", views.startup_register, name="startup_register"),
@@ -9,6 +9,9 @@ urlpatterns = [
     path("startups/company-profile/logo/", views.company_logo_update, name="startup_logo_update"),
     path("startups/upgrade/", views.upgrade, name="startup_upgrade"),
     path("checkout/", views.checkout, name="checkout"),
+    path("app/opportunities/<int:internship_id>/screening-task/", views_screening.screening_task_edit, name="screening_task_edit"),
+    path("app/applications/<int:app_id>/screening-task/", views_screening.screening_submit, name="screening_submit"),
+    path("app/applicants/<int:app_id>/screening-score/", views_screening.screening_score, name="screening_score"),
     path("startups/founding/claim/", views.founding_claim, name="founding_claim"),
     path("startups/founding/feedback/", views.founding_feedback, name="founding_feedback"),
     path("checkout/<int:order_id>/<str:outcome>/", views.checkout_return, name="checkout_return"),

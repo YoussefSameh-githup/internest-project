@@ -5,7 +5,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from internest_core.models import Internship, PartnerProfile, StudentProfile, validate_max_file_size
+from internest_core.models import Application, Internship, PartnerProfile, StudentProfile, validate_max_file_size
 
 
 def current_year():
@@ -251,3 +251,48 @@ class FoundingSeat(models.Model):
 
     def __str__(self):
         return f"Founding seat {self.number} · {self.partner}"
+
+
+class ScreeningTask(models.Model):
+    """A short real task a company attaches to one opportunity (internest_startups/screening.py)."""
+
+    DELIVER_TEXT, DELIVER_LINK, DELIVER_BOTH = "text", "link", "both"
+    DELIVERABLE_CHOICES = [(DELIVER_TEXT, _("Written answer")), (DELIVER_LINK, _("Link to the work")),
+                           (DELIVER_BOTH, _("Written answer and a link"))]
+
+    internship = models.OneToOneField(Internship, on_delete=models.CASCADE, related_name="screening_task")
+    title = models.CharField(_("Task title"), max_length=120)
+    instructions = models.TextField(_("Instructions"), max_length=3000)
+    deliverable = models.CharField(_("What applicants hand in"), max_length=4, choices=DELIVERABLE_CHOICES, default=DELIVER_TEXT)
+    criteria = models.JSONField(default=list)  # [{"criterion": str, "points": 1..10}], at most 6
+    pass_mark = models.PositiveSmallIntegerField(_("Pass mark (%)"), default=60, validators=[MinValueValidator(1), MaxValueValidator(100)])
+    due_days = models.PositiveSmallIntegerField(_("Days to submit"), default=5, validators=[MinValueValidator(1), MaxValueValidator(21)])
+    required = models.BooleanField(_("Required before shortlisting"), default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.internship} · {self.title}"
+
+
+class ScreeningSubmission(models.Model):
+    STATUS_SUBMITTED, STATUS_PASSED, STATUS_FAILED = "submitted", "passed", "failed"
+    STATUS_CHOICES = [(STATUS_SUBMITTED, _("Submitted")), (STATUS_PASSED, _("Passed")), (STATUS_FAILED, _("Not passed"))]
+
+    task = models.ForeignKey(ScreeningTask, on_delete=models.CASCADE, related_name="submissions")
+    application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name="screening_submission")
+    answer_text = models.TextField(blank=True, max_length=6000)
+    link = models.URLField(max_length=500, blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_SUBMITTED)
+    scores = models.JSONField(default=dict, blank=True)  # {"criterion index": points}
+    total_pct = models.PositiveSmallIntegerField(null=True, blank=True)
+    reviewer_note = models.CharField(max_length=500, blank=True)
+    similarity_flag = models.BooleanField(default=False)  # nearly identical to another applicant's answer: look closer
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-submitted_at"]
+
+    def __str__(self):
+        return f"{self.task} · {self.application.applicant} ({self.status})"

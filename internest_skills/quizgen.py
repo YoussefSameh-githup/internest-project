@@ -191,7 +191,8 @@ def live_quiz_item_ids(skill, exclude_ids=()) -> list[int]:
         raise QuizGenerationError(f"only {len(items)} usable questions generated")
     missing = skill.challenge_length - len(items)
     if missing > 0:  # the model returned fewer usable items: top up from the saved bank
-        items += list(skill.items.filter(is_active=True).exclude(id__in=[i.id for i in items] + list(exclude_ids)).order_by("?")[:missing])
+        items += list(skill.items.filter(is_active=True).exclude(kind=ChallengeItem.KIND_PRACTICAL)
+                      .exclude(id__in=[i.id for i in items] + list(exclude_ids)).order_by("?")[:missing])
     items.sort(key=lambda i: ChallengeItem.DIFFICULTY_ORDER.get(i.difficulty, 1))
     return [i.id for i in items]
 

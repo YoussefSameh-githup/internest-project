@@ -87,6 +87,8 @@
                 </div>
             {% endif %}
 
+            {% if screening %}{% include "startups/_screening_panel.html" %}{% endif %}
+
             {% if app.status != "accepted" and app.status != "fulfilled" and app.status != "completed" %}
                 <form method="post" action="{% url 'partner_applicant_decide' app.pk %}" class="flex mt-5" style="flex-wrap: wrap; gap: var(--space-3);">
                     {% csrf_token %}

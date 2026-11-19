@@ -1094,6 +1094,10 @@ def partner_applicant_view(request, app_id):
         "contact_email": (student.personal_email if student else "") or app.applicant.email,
         "whatsapp": _whatsapp_number(student.phone_number) if student else None,
     })
+    if not partner.is_academic:
+        from internest_startups.views_screening import panel_context
+
+        context["screening"] = panel_context(partner, app)
     return render(request, "partner/applicant_detail.html", context)
 
 
@@ -1112,6 +1116,13 @@ def partner_applicant_cv(request, app_id):
 def partner_applicant_decide(request, app_id):
     partner, app = _partner_application_or_404(request, app_id)
     decision = request.POST.get("decision")
+    if decision in ("shortlist", "accept"):
+        from internest_startups.screening import shortlist_block_reason
+
+        block = shortlist_block_reason(app)  # a required screening task is the first filter
+        if block:
+            messages.error(request, block)
+            return _back_to(request, app)
     if decision == "shortlist" and app.status in (Application.STATUS_SUBMITTED, Application.STATUS_UNDER_REVIEW):
         app.status, app.shortlisted_at = Application.STATUS_SHORTLISTED, timezone.now()
         app.save(update_fields=["status", "shortlisted_at"])

@@ -110,6 +110,7 @@
                             <span><i class="bi bi-calendar-x"></i> {% trans "Deadline" %}: {{ gig.deadline|date:"Y/m/d" }}</span>
                             <span><i class="bi bi-people"></i> {% blocktrans with n=g.total %}Applicants: {{ n }}{% endblocktrans %}</span>
                             {% if g.active %}<span><i class="bi bi-hourglass-split"></i> {% blocktrans with n=g.active %}{{ n }} awaiting a decision{% endblocktrans %}</span>{% endif %}
+                            {% if not is_university %}<a href="{% url 'screening_task_edit' gig.pk %}"><i class="bi bi-clipboard-check"></i> {% trans "Screening task" %}</a>{% endif %}
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">

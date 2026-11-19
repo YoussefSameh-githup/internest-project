@@ -139,21 +139,16 @@ class IntegrityTests(TestCase):
 
 
 class ChallengeFlowTests(Base):
+    """The timed-question flow on its own. Practical tasks and human review are covered in tests_assessment.py."""
+
+    def setUp(self):
+        super().setUp()
+        ChallengeItem.objects.filter(kind=ChallengeItem.KIND_PRACTICAL).update(is_active=False)
+
     def _answer_all(self, attempt, correct=True):
-        while attempt.is_active:
-            payload = engine.serve_next(attempt)
-            if payload is None:
-                break
-            item = ChallengeItem.objects.get(pk=payload["item_id"])
-            if item.kind == ChallengeItem.KIND_MCQ:
-                choice = item.correct_index if correct else (item.correct_index + 1) % len(item.choices)
-                engine.submit_answer(attempt, item.id, choice_index=choice)
-            else:
-                text = " ".join(g[0] for g in item.rubric) + " padding words" if correct else "no idea at all honestly"
-                engine.submit_answer(attempt, item.id, answer_text=text,
-                                     typing_stats={**HUMAN_STATS, "keystrokes": len(text)})
-            attempt.refresh_from_db()
-        return attempt
+        from .tests_assessment import answer_all  # answers at a human pace (instant answers are an integrity signal)
+
+        return answer_all(attempt, correct=correct)
 
     def test_pass_awards_verified_badge_and_percentile(self):
         ss = self._claim()
@@ -450,8 +445,9 @@ class QuizGenerationTests(Base):
             self.client.post(reverse("skills_challenge_start", args=[ss.pk]))
         self.assertEqual(create.call_count, 1)
         attempt = ss.attempts.get()
-        self.assertEqual(len(attempt.item_ids), 10)
-        self.assertFalse(seeded_ids & set(attempt.item_ids))
+        self.assertEqual(len(attempt.item_ids), 11)  # 10 generated questions + the skill's practical task, always last
+        self.assertEqual(ChallengeItem.objects.get(pk=attempt.item_ids[-1]).kind, ChallengeItem.KIND_PRACTICAL)
+        self.assertFalse(seeded_ids & set(attempt.item_ids[:-1]))
 
     def test_resuming_an_active_attempt_does_not_regenerate(self):
         ss = self._claim()

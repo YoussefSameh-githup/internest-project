@@ -114,7 +114,8 @@
     var deadline = Date.now() + seconds * 1000;
     var update = function () {
       var left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
-      ui.timer.textContent = left;
+      // Practical tasks run for minutes: show m:ss there, plain seconds for the short questions.
+      ui.timer.textContent = left >= 60 ? Math.floor(left / 60) + ":" + ("0" + (left % 60)).slice(-2) : left;
       ui.timer.parentElement.classList.toggle("is-urgent", left <= 10);
       if (left <= 0) {
         clearInterval(tick);
@@ -134,8 +135,8 @@
     post(root.dataset.answerUrl, {
       item_id: current.item_id,
       choice_index: current.kind === "mcq" ? selectedChoice : null,
-      answer_text: current.kind === "case" ? ui.text.value : "",
-      typing_stats: current.kind === "case" ? telemetry : {}
+      answer_text: current.kind !== "mcq" ? ui.text.value : "",
+      typing_stats: current.kind !== "mcq" ? telemetry : {}
     }).then(handle).catch(function () { busy = false; next(); });
   }
 

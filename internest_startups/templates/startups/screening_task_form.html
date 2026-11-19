@@ -1,0 +1,42 @@
+{% extends 'internship/base.html' %}
+{% load i18n asset_tags %}
+
+{% block title %}{% trans "Screening task" %} — Internest{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% asset 'startups/startups.css' %}">{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container sc">
+        <a href="{% url 'partner_dashboard_section' 'applicants' %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short" aria-hidden="true"></i> {% trans "Applicant inbox" %}</a>
+        <h1>{% trans "Screening task" %}</h1>
+        <p class="sc__intro">{% blocktrans with title=internship.title %}A short, real task every applicant to "{{ title }}" completes before you shortlist them. You score it against your own criteria.{% endblocktrans %}</p>
+
+        {% if relax_only %}
+            <p class="sc__note"><i class="bi bi-info-circle" aria-hidden="true"></i> {% trans "Your Hiring Pass for this opportunity has ended. You can still make the task optional or give applicants more time; other changes need a pass." %}</p>
+        {% elif locked %}
+            <p class="sc__note"><i class="bi bi-lock" aria-hidden="true"></i> {% trans "Applicants have already submitted answers, so the criteria and pass mark are locked to keep scoring fair. You can still edit the wording of the instructions." %}</p>
+        {% endif %}
+
+        <form method="post" class="card sc__form" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<p class="sc__error">{{ form.non_field_errors|join:" " }}</p>{% endif %}
+            {% for field in form %}
+                <div class="sc__field{% if field.errors %} has-error{% endif %}">
+                    {% if field.field.widget.input_type == "checkbox" %}
+                        <label class="sc__check">{{ field }} {{ field.label }}</label>
+                    {% else %}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    {% endif %}
+                    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                    {% if field.errors %}<p class="sc__error">{{ field.errors|join:" " }}</p>{% endif %}
+                </div>
+            {% endfor %}
+            <div class="sc__actions">
+                <button type="submit" class="btn btn--primary">{% trans "Save task" %}</button>
+                {% if task and not locked and not relax_only %}<button type="submit" name="delete" value="1" class="btn btn--ghost">{% trans "Remove task" %}</button>{% endif %}
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -6703,3 +6703,361 @@ msgstr ""
 "أول %(limit)s شركة موثَّقة وملفها مكتمل تطلب العرض بتاخد باقة توظيف واحدة "
 "مجاناً. وفي المقابل بنطلب رأيك بصراحة: هو اختياري، والرأي السلبي مرحّب بيه "
 "زي الإيجابي."
+
+msgid "Screening task: submitted"
+msgstr "مهمة الفرز: اتسلّمت"
+
+msgid "Screening task: to do"
+msgstr "مهمة الفرز: مطلوب تسليمها"
+
+msgid "Screening task"
+msgstr "مهمة الفرز"
+
+msgid ""
+"Your last attempt is being reviewed. You'll see the result here within a few"
+" days."
+msgstr "محاولتك الأخيرة بتتراجع دلوقتي. هتشوف النتيجة هنا خلال كام يوم."
+
+msgid "Many correct answers in under 2 seconds"
+msgstr "إجابات صحيحة كتير في أقل من ثانيتين"
+
+msgid "Written answer nearly identical to another student's"
+msgstr "إجابة مكتوبة شبه مطابقة لإجابة طالب تاني"
+
+msgid "Paste or typing-pattern flags"
+msgstr "مؤشرات لصق أو نمط كتابة غير طبيعي"
+
+msgid "Left the test window (within the allowed limit)"
+msgstr "خرج من نافذة الاختبار (في حدود المسموح)"
+
+msgid "Practical task to grade"
+msgstr "مهمة عملية محتاجة تقييم"
+
+msgid "Saved. Final score %(s)s%% · skill status: %(status)s."
+msgstr "اتحفظ. الدرجة النهائية %(s)s%% · حالة المهارة: %(status)s."
+
+msgid "Give every written answer a credit between 0 and 100."
+msgstr "حط درجة من 0 لـ 100 لكل إجابة مكتوبة."
+
+msgid ""
+"You passed the automatic checks. A reviewer confirms the badge, usually "
+"within 3 working days."
+msgstr ""
+"عدّيت الفحوصات التلقائية. مراجع من فريقنا هيأكد الشارة، غالباً خلال 3 أيام "
+"عمل."
+
+msgid ""
+"Each challenge is timed (30–60 seconds per question), then most skills end "
+"with a 15-minute practical task. Copy/paste is disabled and leaving the tab "
+"more than twice ends the session. A reviewer checks practical answers before"
+" the badge is confirmed. We never use your camera or microphone."
+msgstr ""
+"كل تحدي موقوت (30–60 ثانية للسؤال)، ومعظم المهارات بتخلص بمهمة عملية مدتها "
+"15 دقيقة. النسخ واللصق مقفولين، والخروج من الصفحة أكتر من مرتين بينهي "
+"الاختبار. مراجع من فريقنا بيراجع الإجابات العملية قبل تأكيد الشارة. إحنا مش "
+"بنستخدم الكاميرا أو الميكروفون أبداً."
+
+msgid ""
+"You passed the automatic checks. A reviewer now grades your practical answer"
+" and looks at the attempt before the badge is confirmed, usually within 3 "
+"working days. You don't need to do anything."
+msgstr ""
+"عدّيت الفحوصات التلقائية. مراجع من فريقنا هيقيّم إجابتك العملية ويراجع "
+"المحاولة قبل تأكيد الشارة، غالباً خلال 3 أيام عمل. مش محتاج تعمل أي حاجة."
+
+msgid "Review attempt"
+msgstr "مراجعة المحاولة"
+
+msgid "Assessment review"
+msgstr "مراجعة التقييمات"
+
+msgid ""
+"Provisional score %(s)s%% (pass mark %(t)s%%). The final score is "
+"recalculated from the credits you set below."
+msgstr ""
+"الدرجة المبدئية %(s)s%% (درجة النجاح %(t)s%%). الدرجة النهائية بتتحسب من "
+"التقييمات اللي هتحطها تحت."
+
+msgid "Signals"
+msgstr "المؤشرات"
+
+msgid "Browser events (%(n)s)"
+msgstr "أحداث المتصفح (%(n)s)"
+
+msgid "Nearly identical to another student's answer"
+msgstr "شبه مطابقة لإجابة طالب تاني"
+
+msgid "Automatic credit: %(c)s%%"
+msgstr "التقييم التلقائي: %(c)s%%"
+
+msgid "AI suggestion (advisory): %(c)s%%"
+msgstr "اقتراح الذكاء الاصطناعي (استرشادي): %(c)s%%"
+
+msgid "AI notes"
+msgstr "ملاحظات الذكاء الاصطناعي"
+
+msgid "Your credit (0–100%%)"
+msgstr "تقييمك (0–100%%)"
+
+msgid "This attempt has no written answers; review the signals and decide."
+msgstr "المحاولة دي مفيهاش إجابات مكتوبة؛ راجع المؤشرات وقرر."
+
+msgid "Note (kept with the attempt)"
+msgstr "ملاحظة (بتتحفظ مع المحاولة)"
+
+msgid "Approve with these credits"
+msgstr "اعتمد بالتقييمات دي"
+
+msgid "Reject (integrity concern)"
+msgstr "ارفض (شبهة في النزاهة)"
+
+msgid ""
+"Passing attempts with a practical task or an integrity signal wait here. "
+"Signals are reasons to look closer, never proof of cheating."
+msgstr ""
+"المحاولات الناجحة اللي فيها مهمة عملية أو مؤشر نزاهة بتستنى هنا. المؤشرات "
+"سبب للمراجعة، ومش دليل على الغش أبداً."
+
+msgid "Provisional score %(s)s%% · finished %(date)s"
+msgstr "الدرجة المبدئية %(s)s%% · خلص %(date)s"
+
+msgid "Review"
+msgstr "راجع"
+
+msgid "Nothing to review right now."
+msgstr "مفيش حاجة للمراجعة دلوقتي."
+
+msgid "Task title"
+msgstr "عنوان المهمة"
+
+msgid "Instructions"
+msgstr "التعليمات"
+
+msgid "What applicants hand in"
+msgstr "المتقدم هيسلّم إيه"
+
+msgid "Pass mark (%)"
+msgstr "درجة النجاح (%)"
+
+msgid "Days to submit"
+msgstr "أيام التسليم"
+
+msgid "Required before shortlisting"
+msgstr "مطلوبة قبل الاختيار للمقابلة"
+
+msgid "Written answer"
+msgstr "إجابة مكتوبة"
+
+msgid "Link to the work"
+msgstr "لينك للشغل"
+
+msgid "Written answer and a link"
+msgstr "إجابة مكتوبة ولينك"
+
+msgid "Passed"
+msgstr "ناجح"
+
+msgid "Not passed"
+msgstr "لم ينجح"
+
+msgid ""
+"This opportunity requires its screening task. The applicant hasn't submitted"
+" it yet."
+msgstr "الفرصة دي محتاجة مهمة الفرز. المتقدم لسه ماسلّمهاش."
+
+msgid "Score the screening task first."
+msgstr "قيّم مهمة الفرز الأول."
+
+msgid "This applicant did not pass the required screening task."
+msgstr "المتقدم ده ماعدّاش مهمة الفرز المطلوبة."
+
+msgid "The due date for this task has passed."
+msgstr "معاد تسليم المهمة دي عدّى."
+
+msgid "Enter a valid link starting with https://"
+msgstr "اكتب لينك صحيح بيبدأ بـ https://"
+
+msgid "Write your answer before submitting."
+msgstr "اكتب إجابتك قبل التسليم."
+
+msgid "Add the link to your work before submitting."
+msgstr "ضيف لينك شغلك قبل التسليم."
+
+msgid "This task needs both a written answer and a link."
+msgstr "المهمة دي محتاجة إجابة مكتوبة ولينك مع بعض."
+
+msgid "Add at least one criterion."
+msgstr "ضيف معيار واحد على الأقل."
+
+msgid "You already submitted this task."
+msgstr "إنت سلّمت المهمة دي قبل كده."
+
+msgid "Each line needs a criterion, e.g. \"Clear structure | 2\"."
+msgstr "كل سطر محتاج معيار، مثلاً \"Clear structure | 2\"."
+
+msgid "Points must be a whole number from 1 to 10."
+msgstr "النقاط لازم تكون رقم صحيح من 1 لـ 10."
+
+msgid "Use at most %(n)s criteria."
+msgstr "استخدم %(n)s معايير بحد أقصى."
+
+msgid "Screening score saved."
+msgstr "تقييم مهمة الفرز اتحفظ."
+
+msgid "Scoring criteria"
+msgstr "معايير التقييم"
+
+msgid ""
+"One per line as \"criterion | points\" (1–10 points, up to 6 lines), e.g. "
+"\"Correct numbers | 4\"."
+msgstr ""
+"معيار في كل سطر بالشكل \"المعيار | النقاط\" (1–10 نقاط، لحد 6 سطور)، مثلاً "
+"\"أرقام صحيحة | 4\"."
+
+msgid "Screening tasks come with a Hiring Pass for this opportunity."
+msgstr "مهام الفرز متاحة مع باقة توظيف للفرصة دي."
+
+msgid ""
+"Screening task saved. Every applicant to this opportunity now sees it in My "
+"applications."
+msgstr "مهمة الفرز اتحفظت. كل متقدم على الفرصة دي هيشوفها في «طلباتي»."
+
+msgid "Screening task removed."
+msgstr "مهمة الفرز اتشالت."
+
+msgid "Task submitted. The company will review it."
+msgstr "المهمة اتسلّمت. الشركة هتراجعها."
+
+msgid "Screening task from %(company)s for \"%(title)s\"."
+msgstr "مهمة فرز من %(company)s لفرصة «%(title)s»."
+
+msgid "Due %(date)s"
+msgstr "آخر معاد %(date)s"
+
+msgid "Required to be shortlisted"
+msgstr "مطلوبة عشان تتختار للمقابلة"
+
+msgid "How it is scored"
+msgstr "طريقة التقييم"
+
+msgid "Submitted on %(date)s."
+msgstr "اتسلّمت يوم %(date)s."
+
+msgid "The company marked it as passed."
+msgstr "الشركة اعتبرتها ناجحة."
+
+msgid "The company reviewed it."
+msgstr "الشركة راجعتها."
+
+msgid "Waiting for the company to review it."
+msgstr "مستنية مراجعة الشركة."
+
+msgid "Your answer"
+msgstr "إجابتك"
+
+msgid "Link to your work (Google Drive, GitHub, Figma…)"
+msgstr "لينك شغلك (Google Drive أو GitHub أو Figma…)"
+
+msgid ""
+"Do the task yourself. You can submit once. Answers that are nearly identical"
+" to another applicant's are flagged to the company."
+msgstr ""
+"اعمل المهمة بنفسك. تقدر تسلّم مرة واحدة بس. الإجابات اللي شبه مطابقة لإجابة "
+"متقدم تاني بيتعمل عليها علامة للشركة."
+
+msgid "Submit task"
+msgstr "سلّم المهمة"
+
+msgid ""
+"A short, real task every applicant to \"%(title)s\" completes before you "
+"shortlist them. You score it against your own criteria."
+msgstr ""
+"مهمة قصيرة وحقيقية بيعملها كل متقدم على «%(title)s» قبل ما تختاره للمقابلة. "
+"وإنت بتقيّمها بمعاييرك."
+
+msgid ""
+"Applicants have already submitted answers, so the criteria and pass mark are"
+" locked to keep scoring fair. You can still edit the wording of the "
+"instructions."
+msgstr ""
+"فيه متقدمين سلّموا بالفعل، فالمعايير ودرجة النجاح اتقفلوا عشان التقييم يفضل "
+"عادل. تقدر لسه تعدّل صياغة التعليمات."
+
+msgid "Save task"
+msgstr "احفظ المهمة"
+
+msgid "Remove task"
+msgstr "شيل المهمة"
+
+msgid "No screening task for this opportunity."
+msgstr "مفيش مهمة فرز للفرصة دي."
+
+msgid "Add one"
+msgstr "ضيف واحدة"
+
+msgid "Screening tasks come with a Hiring Pass."
+msgstr "مهام الفرز متاحة مع باقة التوظيف."
+
+msgid "Required"
+msgstr "مطلوبة"
+
+msgid "Edit task"
+msgstr "عدّل المهمة"
+
+msgid "Not submitted yet. Due %(date)s."
+msgstr "لسه ماتسلّمتش. آخر معاد %(date)s."
+
+msgid "Submitted %(date)s"
+msgstr "اتسلّمت %(date)s"
+
+msgid "Passed (%(p)s%%)"
+msgstr "ناجح (%(p)s%%)"
+
+msgid "Not passed (%(p)s%%)"
+msgstr "لم ينجح (%(p)s%%)"
+
+msgid "Nearly identical to another applicant's answer"
+msgstr "شبه مطابقة لإجابة متقدم تاني"
+
+msgid "Note for your team (not shown to the applicant)"
+msgstr "ملاحظة لفريقك (مش بتظهر للمتقدم)"
+
+msgid "Update score"
+msgstr "حدّث التقييم"
+
+msgid "Save score"
+msgstr "احفظ التقييم"
+
+msgid "Pass mark: %(m)s%%."
+msgstr "درجة النجاح: %(m)s%%."
+
+msgid "This attempt was already decided by another reviewer."
+msgstr "المحاولة دي اتقرر فيها بالفعل من مراجع تاني."
+
+msgid "Waiting for a reviewer, usually within 3 working days."
+msgstr "مستنية مراجع، غالباً خلال 3 أيام عمل."
+
+msgid ""
+"Your attempt is waiting for a reviewer: a person grades the practical answer"
+" or takes a routine look at the attempt before the result is final, usually "
+"within 3 working days. You don't need to do anything."
+msgstr ""
+"محاولتك مستنية مراجع: شخص من فريقنا هيقيّم الإجابة العملية أو يراجع المحاولة"
+" مراجعة روتينية قبل ما النتيجة تبقى نهائية، غالباً خلال 3 أيام عمل. مش محتاج"
+" تعمل أي حاجة."
+
+msgid ""
+"Applicants may already be working on it: the time to submit can only be "
+"extended."
+msgstr ""
+"ممكن يكون فيه متقدمين شغالين عليها: مدة التسليم ينفع تتمد بس، متتقصرش."
+
+msgid "An optional task can't become required once applicants have it."
+msgstr "المهمة الاختيارية متنفعش تبقى مطلوبة بعد ما المتقدمين استلموها."
+
+msgid ""
+"Your Hiring Pass for this opportunity has ended. You can still make the task"
+" optional or give applicants more time; other changes need a pass."
+msgstr ""
+"باقة التوظيف للفرصة دي انتهت. لسه تقدر تخلّي المهمة اختيارية أو تدّي "
+"المتقدمين وقت أكتر؛ أي تعديل تاني محتاج باقة."

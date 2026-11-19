@@ -1,0 +1,62 @@
+{% extends 'internship/base.html' %}
+{% load i18n asset_tags %}
+
+{% block title %}{% trans "Review attempt" %} — Internest{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% asset 'skills/skills.css' %}">{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container rv">
+        <a href="{% url 'skills_review_queue' %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short" aria-hidden="true"></i> {% trans "Assessment review" %}</a>
+        <h1><bdi>{{ attempt.student_skill.skill.name }}</bdi> · <bdi>{{ attempt.student_skill.student.user.get_full_name|default:attempt.student_skill.student.user.username }}</bdi></h1>
+        <p class="rv__intro">{% blocktrans with s=attempt.score_pct t=attempt.student_skill.skill.pass_threshold %}Provisional score {{ s }}% (pass mark {{ t }}%). The final score is recalculated from the credits you set below.{% endblocktrans %}</p>
+
+        <h2 class="rv__h2">{% trans "Signals" %}</h2>
+        <ul class="rv__chips">{% for s in attempt.review_reasons %}<li class="rv__chip rv__chip--{{ s.type }}">{{ s.label }}</li>{% empty %}<li>{% trans "None" %}</li>{% endfor %}</ul>
+        {% if attempt.integrity_events %}
+            <details class="rv__events"><summary>{% blocktrans with n=attempt.integrity_events|length %}Browser events ({{ n }}){% endblocktrans %}</summary>
+                <ul>{% for e in attempt.integrity_events %}<li><code>{{ e.type }}</code> · {{ e.at }}</li>{% endfor %}</ul>
+            </details>
+        {% endif %}
+
+        <form method="post" class="rv__form">
+            {% csrf_token %}
+            {% for r in written %}
+                <article class="card rv__answer">
+                    <header>
+                        <span class="badge">{{ r.item.get_kind_display }}</span>
+                        <bdi>{{ r.item.sub_skill.name }}</bdi>
+                        {% if r.integrity_flags %}<span class="rv__chip rv__chip--typing_flags">{{ r.integrity_flags|join:", " }}</span>{% endif %}
+                        {% if r.pk in similar_ids %}<span class="rv__chip rv__chip--similar_answer">{% trans "Nearly identical to another student's answer" %}</span>{% endif %}
+                    </header>
+                    <p class="rv__prompt">{{ r.item.prompt }}</p>
+                    <pre class="rv__text" dir="auto">{{ r.answer_text|default:"—" }}</pre>
+                    {% if r.criteria %}
+                        <ul class="rv__criteria">{% for c in r.criteria %}<li>{{ c.criterion }} <b>({{ c.points }})</b></li>{% endfor %}</ul>
+                    {% endif %}
+                    <p class="rv__auto">{% blocktrans with c=r.auto_pct %}Automatic credit: {{ c }}%{% endblocktrans %}
+                        {% if r.ai_suggestion %} · {% blocktrans with c=r.ai_pct %}AI suggestion (advisory): {{ c }}%{% endblocktrans %}{% endif %}</p>
+                    {% if r.ai_suggestion %}
+                        <details><summary>{% trans "AI notes" %}</summary>
+                            <ul>{% for c in r.ai_suggestion.criteria %}<li>{% if c.met %}✅{% else %}❌{% endif %} {{ c.criterion }} — {{ c.note }}</li>{% endfor %}</ul>
+                            <p>{{ r.ai_suggestion.rationale }}</p>
+                        </details>
+                    {% endif %}
+                    <label class="rv__credit">{% trans "Your credit (0–100%)" %}
+                        <input type="number" name="credit_{{ r.pk }}" min="0" max="100" step="5" value="{{ r.default_pct }}" required inputmode="numeric">
+                    </label>
+                </article>
+            {% empty %}
+                <p>{% trans "This attempt has no written answers; review the signals and decide." %}</p>
+            {% endfor %}
+            <label class="rv__note">{% trans "Note (kept with the attempt)" %}
+                <textarea name="note" rows="3" maxlength="500"></textarea>
+            </label>
+            <div class="rv__actions">
+                <button type="submit" name="decision" value="approve" class="btn btn--primary">{% trans "Approve with these credits" %}</button>
+                <button type="submit" name="decision" value="reject" class="btn btn--ghost">{% trans "Reject (integrity concern)" %}</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

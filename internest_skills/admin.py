@@ -56,7 +56,8 @@ class StudentSkillAdmin(ModelAdmin):
     search_fields = ("student__user__username", "student__user__email", "skill__name")
     list_select_related = ("student__user", "skill")
     readonly_fields = ("created_at", "updated_at", "lag_sub_skills", "verified_at")
-    status_col = status_badge("status", {StudentSkill.STATUS_VERIFIED: OK, StudentSkill.STATUS_CLAIMED: INFO, StudentSkill.STATUS_LAG: WAIT})
+    status_col = status_badge("status", {StudentSkill.STATUS_VERIFIED: OK, StudentSkill.STATUS_CLAIMED: INFO, StudentSkill.STATUS_LAG: WAIT,
+                                         StudentSkill.STATUS_REVIEW: WAIT})
     source_col = status_badge("source", {StudentSkill.SOURCE_EXPLICIT: "primary", StudentSkill.SOURCE_IMPLICIT: INFO}, _("Source"))
 
 
@@ -64,16 +65,20 @@ class ChallengeResponseInline(TabularInline):
     model = ChallengeResponse
     extra = 0
     can_delete = False
-    readonly_fields = ("item", "choice_index", "answer_text", "credit", "elapsed_ms", "timed_out", "integrity_flags", "typing_stats")
+    readonly_fields = ("item", "choice_index", "answer_text", "credit", "elapsed_ms", "timed_out", "integrity_flags", "typing_stats",
+                       "review_credit", "ai_suggestion")
 
 
 @admin.register(ChallengeAttempt)
 class ChallengeAttemptAdmin(ModelAdmin):
-    list_display = ("student_skill", "state", "score_pct", "focus_warnings", "termination_reason", "started_at")
-    list_filter = ("state", "termination_reason", "started_at")
+    """Decisions on pending attempts are made on the review page (/staff/assessment-review/), never by editing here."""
+
+    list_display = ("student_skill", "state", "score_pct", "review_status", "focus_warnings", "termination_reason", "started_at")
+    list_filter = ("state", "review_status", "termination_reason", "started_at")
     date_hierarchy = "started_at"
     search_fields = ("student_skill__student__user__username",)
-    readonly_fields = ("token", "item_ids", "integrity_events", "sub_skill_breakdown", "started_at", "finished_at")
+    readonly_fields = ("token", "item_ids", "integrity_events", "sub_skill_breakdown", "started_at", "finished_at", "review_status",
+                       "review_reasons", "reviewed_by", "reviewed_at", "review_note", "score_pct", "state")
     inlines = [ChallengeResponseInline]
 
 

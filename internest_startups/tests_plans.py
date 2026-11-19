@@ -299,8 +299,9 @@ class AIChallengeTests(SkillsBase):
         attempt = ChallengeAttempt.objects.get(student_skill=self.ss)
         self.assertRedirects(resp, reverse("skills_challenge", args=[attempt.token]), fetch_redirect_response=False)
         self.assertEqual(create.call_count, 1)  # the AI was asked first, before the saved bank
-        prompts = set(ChallengeItem.objects.filter(id__in=attempt.item_ids).values_list("prompt", flat=True))
+        prompts = set(ChallengeItem.objects.filter(id__in=attempt.item_ids[:-1]).values_list("prompt", flat=True))
         self.assertTrue(all(p.startswith("round1:") for p in prompts))
+        self.assertEqual(ChallengeItem.objects.get(pk=attempt.item_ids[-1]).kind, ChallengeItem.KIND_PRACTICAL)  # practical task last
         messages = create.call_args.kwargs["messages"]
         self.assertIn("NON-TECHNICAL", messages[0]["content"])        # scenario style adapts to the skill
         self.assertIn("Skill: Financial Analysis", messages[1]["content"])
@@ -337,8 +338,9 @@ class AIChallengeTests(SkillsBase):
         resp, create = self._start(_llm_reply(json.dumps({"q": repeat + fresh})))
         second = ChallengeAttempt.objects.exclude(pk=first.pk).get(student_skill=self.ss)
         self.assertRedirects(resp, reverse("skills_challenge", args=[second.token]), fetch_redirect_response=False)
-        self.assertFalse(set(first.item_ids) & set(second.item_ids))
-        prompts = ChallengeItem.objects.filter(id__in=second.item_ids).values_list("prompt", flat=True)
+        # Fresh timed questions; the skill has a single practical task, so that one repeats (documented limitation).
+        self.assertFalse(set(first.item_ids[:-1]) & set(second.item_ids[:-1]))
+        prompts = ChallengeItem.objects.filter(id__in=second.item_ids[:-1]).values_list("prompt", flat=True)
         self.assertTrue(all(p.startswith("round2:") for p in prompts))
         sent = create.call_args.kwargs["messages"][1]["content"]
         self.assertIn("already answered", sent)
@@ -356,7 +358,7 @@ class AIChallengeTests(SkillsBase):
             StudentSkill.objects.filter(pk=self.ss.pk).update(cooldown_until=timezone.now() - timedelta(minutes=1))
             self.client.post(reverse("skills_challenge_start", args=[self.ss.pk]))
         second = ChallengeAttempt.objects.exclude(pk=first.pk).get(student_skill=self.ss)
-        self.assertFalse(set(first.item_ids) & set(second.item_ids))
+        self.assertFalse(set(first.item_ids[:-1]) & set(second.item_ids[:-1]))  # the single practical task repeats
 
 
 # ---------------------------------------------------------------- opportunity expiry

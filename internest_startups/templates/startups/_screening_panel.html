@@ -1,0 +1,35 @@
+{% load i18n %}
+{# Screening task on the applicant page. Context: screening = {task, submission, due, block, can_manage, edit_url, score_url} #}
+<section class="card sc-panel mt-6" aria-labelledby="sc-panel-title">
+    <h2 id="sc-panel-title">{% trans "Screening task" %}</h2>
+    {% if not screening.task %}
+        <p class="sc__note">{% trans "No screening task for this opportunity." %}
+            {% if screening.can_manage %}<a href="{{ screening.edit_url }}">{% trans "Add one" %}</a>{% else %}{% trans "Screening tasks come with a Hiring Pass." %} <a href="{% url 'startup_upgrade' %}">{% trans "See the Hiring Pass" %}</a>{% endif %}</p>
+    {% else %}
+        <p><bdi>{{ screening.task.title }}</bdi>{% if screening.task.required %} · <span class="badge">{% trans "Required" %}</span>{% endif %}
+            {% if screening.can_manage %} · <a href="{{ screening.edit_url }}">{% trans "Edit task" %}</a>{% endif %}</p>
+        {% with s=screening.submission %}
+            {% if not s %}
+                <p class="sc__note">{% blocktrans with date=screening.due|date:"Y/m/d H:i" %}Not submitted yet. Due {{ date }}.{% endblocktrans %}</p>
+            {% else %}
+                <p class="sc__meta">{% blocktrans with date=s.submitted_at|date:"Y/m/d H:i" %}Submitted {{ date }}{% endblocktrans %}
+                    {% if s.status == "passed" %} · <span class="badge badge--success">{% blocktrans with p=s.total_pct %}Passed ({{ p }}%){% endblocktrans %}</span>
+                    {% elif s.status == "failed" %} · <span class="badge">{% blocktrans with p=s.total_pct %}Not passed ({{ p }}%){% endblocktrans %}</span>{% endif %}
+                    {% if s.similarity_flag %} · <span class="badge badge--warning">{% trans "Nearly identical to another applicant's answer" %}</span>{% endif %}</p>
+                {% if s.answer_text %}<pre class="sc__answer" dir="auto">{{ s.answer_text }}</pre>{% endif %}
+                {% if s.link %}<p><a href="{{ s.link }}" target="_blank" rel="noopener noreferrer nofollow">{{ s.link }}</a></p>{% endif %}
+                <form method="post" action="{{ screening.score_url }}" class="sc__score">
+                    {% csrf_token %}
+                    {% for c in screening.rows %}
+                        <label><bdi>{{ c.criterion }}</bdi>
+                            <input type="number" name="points_{{ forloop.counter0 }}" min="0" max="{{ c.points }}" value="{{ c.given }}" inputmode="numeric"> / {{ c.points }}</label>
+                    {% endfor %}
+                    <label class="sc__wide">{% trans "Note for your team (not shown to the applicant)" %}<textarea name="note" rows="2" maxlength="500">{{ s.reviewer_note }}</textarea></label>
+                    <button type="submit" class="btn btn--primary btn--sm">{% if s.reviewed_at %}{% trans "Update score" %}{% else %}{% trans "Save score" %}{% endif %}</button>
+                    <small>{% blocktrans with m=screening.task.pass_mark %}Pass mark: {{ m }}%.{% endblocktrans %}</small>
+                </form>
+            {% endif %}
+        {% endwith %}
+        {% if screening.block %}<p class="sc__block" role="status"><i class="bi bi-info-circle" aria-hidden="true"></i> {{ screening.block }}</p>{% endif %}
+    {% endif %}
+</section>

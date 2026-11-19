@@ -1,0 +1,30 @@
+{% extends 'internship/base.html' %}
+{% load i18n asset_tags %}
+
+{% block title %}{% trans "Assessment review" %} — Internest{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% asset 'skills/skills.css' %}">{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container rv">
+        <h1>{% trans "Assessment review" %}</h1>
+        <p class="rv__intro">{% trans "Passing attempts with a practical task or an integrity signal wait here. Signals are reasons to look closer, never proof of cheating." %}</p>
+        {% if attempts %}
+            <ul class="rv__list">
+                {% for a in attempts %}
+                    <li class="rv__row">
+                        <div>
+                            <strong><bdi>{{ a.student_skill.skill.name }}</bdi></strong> · <bdi>{{ a.student_skill.student.user.get_full_name|default:a.student_skill.student.user.username }}</bdi>
+                            <small>{% blocktrans with s=a.score_pct date=a.finished_at|date:"Y/m/d H:i" %}Provisional score {{ s }}% · finished {{ date }}{% endblocktrans %}</small>
+                        </div>
+                        <ul class="rv__chips">{% for s in a.review_reasons %}<li class="rv__chip rv__chip--{{ s.type }}">{{ s.label }}</li>{% endfor %}</ul>
+                        <a href="{% url 'skills_review_detail' a.token %}" class="btn btn--primary btn--sm">{% trans "Review" %}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="rv__empty">{% trans "Nothing to review right now." %}</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

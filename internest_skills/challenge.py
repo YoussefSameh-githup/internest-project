@@ -1,4 +1,9 @@
-"""Proctored challenge engine. All timing and scoring decisions are server-side."""
+"""Proctored challenge engine. All timing and scoring decisions are server-side.
+
+A test is: timed questions from an unseen, balanced bank, then (when the skill has one) one practical scenario. Passing
+attempts with a practical task or a blocking integrity signal wait for a human reviewer before the skill is verified
+(see review.py). No layer makes the test cheat-proof.
+"""
 import math
 import random
 from collections import defaultdict
@@ -33,7 +38,8 @@ def _pick_items(skill, exclude=()):
     """Saved-bank quiz, balanced across sub-skills. Unseen questions only when the bank has enough of them;
     a bank too small for a fresh set falls back to reusing questions rather than blocking the student."""
     exclude = set(exclude)
-    bank = list(ChallengeItem.objects.filter(skill=skill, is_active=True).only("id", "sub_skill_id", "difficulty"))
+    bank = list(ChallengeItem.objects.filter(skill=skill, is_active=True).exclude(kind=ChallengeItem.KIND_PRACTICAL)
+                .only("id", "sub_skill_id", "difficulty"))
     fresh = [i for i in bank if i.id not in exclude]
     items = fresh if len(fresh) >= min(skill.challenge_length, 3) else bank
     by_sub = defaultdict(list)
@@ -57,6 +63,14 @@ def _pick_items(skill, exclude=()):
     return picked
 
 
+def _pick_practical(skill, exclude=()):
+    """One practical scenario, unseen if possible, always last (after the timed questions)."""
+    ids = list(ChallengeItem.objects.filter(skill=skill, is_active=True, kind=ChallengeItem.KIND_PRACTICAL).values_list("id", flat=True))
+    fresh = [i for i in ids if i not in set(exclude)]
+    pool = fresh or ids
+    return random.choice(pool) if pool else None
+
+
 def _max_duration(attempt):
     limits = ChallengeItem.objects.filter(id__in=attempt.item_ids).values_list("time_limit_seconds", flat=True)
     return timedelta(seconds=sum(limits) + 60 * 5)
@@ -66,6 +80,8 @@ def start_attempt(student_skill: StudentSkill, item_ids=None) -> ChallengeAttemp
     """`item_ids` is a freshly generated live quiz; without it, questions come from the saved bank."""
     if student_skill.status == StudentSkill.STATUS_VERIFIED:
         raise ChallengeError(_("This skill is already verified."))
+    if student_skill.status == StudentSkill.STATUS_REVIEW:
+        raise ChallengeError(_("Your last attempt is being reviewed. You'll see the result here within a few days."))
     if student_skill.in_cooldown:
         raise ChallengeError(_("You can retake this skill test in %(h)s hours.") % {"h": student_skill.cooldown_hours_remaining})
     active = student_skill.attempts.filter(state=ChallengeAttempt.STATE_ACTIVE).first()
@@ -74,8 +90,17 @@ def start_attempt(student_skill: StudentSkill, item_ids=None) -> ChallengeAttemp
             return active
         terminate(active, "abandoned")
         raise ChallengeError(_("Your previous session was abandoned. Retest is available after the cooldown ends."))
-    item_ids = item_ids or _pick_items(student_skill.skill, exclude=seen_item_ids(student_skill))
-    return ChallengeAttempt.objects.create(student_skill=student_skill, item_ids=item_ids)
+    seen = seen_item_ids(student_skill)
+    item_ids = item_ids or _pick_items(student_skill.skill, exclude=seen)
+    return ChallengeAttempt.objects.create(student_skill=student_skill, item_ids=with_practical(student_skill.skill, item_ids, seen))
+
+
+def with_practical(skill, item_ids, seen=()):
+    """Every quiz (AI-generated or from the saved bank) ends with one practical task when the skill has one."""
+    practical_ids = set(ChallengeItem.objects.filter(id__in=item_ids, kind=ChallengeItem.KIND_PRACTICAL).values_list("id", flat=True))
+    timed = [i for i in item_ids if i not in practical_ids]
+    practical = _pick_practical(skill, seen)
+    return timed + ([practical] if practical else [])
 
 
 def _current_item(attempt):
@@ -143,6 +168,10 @@ def serve_next(attempt):
 def _grade(item, choice_index, answer_text):
     if item.kind == ChallengeItem.KIND_MCQ:
         return 1.0 if choice_index is not None and choice_index == item.correct_index else 0.0
+    if item.kind == ChallengeItem.KIND_PRACTICAL:
+        from .review import provisional_credit
+
+        return provisional_credit(item, answer_text)
     norm = _normalize(answer_text or "")
     groups = [g for g in (item.rubric or []) if g]
     if not groups:
@@ -161,17 +190,18 @@ def submit_answer(attempt, item_id, choice_index=None, answer_text="", typing_st
     now = timezone.now()
     elapsed = now - attempt.current_served_at
     timed_out = now > _deadline(attempt, item) + timedelta(seconds=NETWORK_GRACE_SECONDS)
-    answer_text = (answer_text or "")[:4000]
+    written = item.kind != ChallengeItem.KIND_MCQ
+    answer_text = (answer_text or "")[:6000 if item.kind == ChallengeItem.KIND_PRACTICAL else 4000]
 
     flags = []
-    if item.kind == ChallengeItem.KIND_CASE and not timed_out:
+    if written and not timed_out:
         flags = analyze_typing(answer_text, typing_stats or {})
 
     credit = 0.0 if (timed_out or flags) else _grade(item, choice_index, answer_text)
     ChallengeResponse.objects.create(
         attempt=attempt, item=item,
         choice_index=choice_index if item.kind == ChallengeItem.KIND_MCQ else None,
-        answer_text=answer_text if item.kind == ChallengeItem.KIND_CASE else "",
+        answer_text=answer_text if written else "",
         credit=credit, timed_out=timed_out,
         elapsed_ms=int(elapsed.total_seconds() * 1000),
         typing_stats=typing_stats or {}, integrity_flags=flags,
@@ -229,7 +259,7 @@ def improvement_topics(responses) -> list[dict]:
     topics = {}
     for r in responses:
         item = r.item
-        missed = r.credit < (1.0 if item.kind == ChallengeItem.KIND_MCQ else CASE_PASS_CREDIT)
+        missed = r.final_credit < (1.0 if item.kind == ChallengeItem.KIND_MCQ else CASE_PASS_CREDIT)
         if not missed:
             continue
         topic = item.topic or item.sub_skill.name
@@ -256,46 +286,81 @@ def leaderboard_position(student_skill) -> dict | None:
             "top_percent": max(1, 100 - (student_skill.percentile or 0))}
 
 
-def finalize(attempt):
-    responses = list(attempt.responses.select_related("item__sub_skill"))
+def score_responses(responses, credit_of=None):
+    """(score %, per-sub-skill breakdown). A reviewer's credit replaces the automatic one when set."""
+    credit_of = credit_of or (lambda r: r.final_credit)
     earned = total = 0.0
     per_sub = defaultdict(lambda: {"earned": 0.0, "total": 0.0, "name": ""})
     for r in responses:
         w = r.item.weight
-        earned += r.credit * w
+        earned += credit_of(r) * w
         total += w
         bucket = per_sub[r.item.sub_skill_id]
         bucket["name"] = r.item.sub_skill.name
-        bucket["earned"] += r.credit * w
+        bucket["earned"] += credit_of(r) * w
         bucket["total"] += w
-
     score = round(earned / total * 100) if total else 0
     breakdown = {
         str(sid): {"name": b["name"], "accuracy": round(b["earned"] / b["total"] * 100) if b["total"] else 0}
         for sid, b in per_sub.items()
     }
+    return score, breakdown
+
+
+def _passes(skill, score, breakdown):
+    lag = [{"id": int(sid), "name": b["name"], "accuracy": b["accuracy"]}
+           for sid, b in breakdown.items() if b["accuracy"] < SUB_SKILL_LAG_THRESHOLD]
+    return score >= skill.pass_threshold and not lag, lag
+
+
+def finalize(attempt):
+    from . import review
+
+    responses = list(attempt.responses.select_related("item__sub_skill"))
+    score, breakdown = score_responses(responses)
     attempt.state = ChallengeAttempt.STATE_COMPLETED
     attempt.finished_at = timezone.now()
     attempt.score_pct = score
     attempt.sub_skill_breakdown = breakdown
     attempt.improvement_topics = improvement_topics(responses)
-    attempt.save()
+    signals = review.integrity_signals(attempt, responses)
+    attempt.review_reasons = signals
 
+    skill = attempt.student_skill.skill
+    passed, _lag = _passes(skill, score, breakdown)
+    # Could a reviewer's credit on the practical task make this pass? Then a human looks at it before anything is final.
+    best_case = score_responses(responses, lambda r: 1.0 if r.item.kind == ChallengeItem.KIND_PRACTICAL else r.credit)
+    could_pass = _passes(skill, *best_case)[0]
+    has_practical = any(r.item.kind == ChallengeItem.KIND_PRACTICAL for r in responses)
+    if (passed and review.needs_review(signals)) or (has_practical and could_pass):
+        attempt.review_status = ChallengeAttempt.REVIEW_PENDING
+        attempt.save()
+        ss = attempt.student_skill
+        ss.status = StudentSkill.STATUS_REVIEW  # the provisional score stays on the attempt; it ranks nobody until decided
+        ss.save(update_fields=["status", "updated_at"])
+        return
+    attempt.save()
+    apply_outcome(attempt, score, breakdown)
+
+
+def apply_outcome(attempt, score, breakdown, force_fail=False):
+    """Set the skill's verified / lag status from a final score (after review, or straight away)."""
     ss = attempt.student_skill
-    lag = [
-        {"id": int(sid), "name": b["name"], "accuracy": b["accuracy"]}
-        for sid, b in breakdown.items() if b["accuracy"] < SUB_SKILL_LAG_THRESHOLD
-    ]
-    passed = score >= ss.skill.pass_threshold and not lag
+    ss.refresh_from_db()
+    if ss.status == StudentSkill.STATUS_VERIFIED:
+        return  # verified meanwhile by a reviewed course, certificate or freelance work: this attempt never downgrades it
+    passed, lag = _passes(ss.skill, score, breakdown)
+    passed = passed and not force_fail
     if not passed and not lag and breakdown:
         weakest = min(breakdown.items(), key=lambda kv: kv[1]["accuracy"])
         lag = [{"id": int(weakest[0]), "name": weakest[1]["name"], "accuracy": weakest[1]["accuracy"]}]
 
-    ss.score = score
-    ss.percentile = _percentile(ss.skill, score, ss.pk)
+    ss.score = None if force_fail else score  # a rejected attempt does not count in leaderboards or percentiles
+    ss.percentile = None if force_fail else _percentile(ss.skill, score, ss.pk)
     if passed:
         ss.status = StudentSkill.STATUS_VERIFIED
         ss.verified_at = timezone.now()
+        ss.verified_via = StudentSkill.VIA_CHALLENGE
         ss.lag_sub_skills = []
         ss.cooldown_until = None
     else:

@@ -32,6 +32,8 @@
                             {% if ss.percentile is not None %}<span class="sh-pill">{% blocktrans with p=ss.percentile %}Percentile P{{ p }}{% endblocktrans %}</span>{% endif %}
                             {% if ss.status == "verified" %}
                                 <span class="sh-pill sh-pill--ok"><i class="bi bi-check2-circle"></i> {% trans "Verified" %}</span>
+                            {% elif ss.status == "review" %}
+                                <span class="sh-pill"><i class="bi bi-hourglass-split" aria-hidden="true"></i> {% trans "Under review" %}</span>
                             {% elif ss.in_cooldown %}
                                 <span class="sh-pill"><i class="bi bi-hourglass-split"></i> {% blocktrans with h=ss.cooldown_hours_remaining %}You can retake this skill test in {{ h }} hours{% endblocktrans %}</span>
                             {% else %}
