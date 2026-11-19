@@ -48,6 +48,22 @@
 <section class="section-sm">
     <div class="container">
 
+        {% if journey and section == "overview" %}
+            <section class="journey mb-5" aria-labelledby="journey-title">
+                <h2 id="journey-title" class="journey__title">{% trans "Your path to hiring" %}
+                    <span class="journey__count">{% blocktrans with d=journey.done_count t=journey.total %}{{ d }} of {{ t }} done{% endblocktrans %}</span></h2>
+                <ol class="journey__steps">
+                    {% for s in journey.steps %}
+                        <li class="journey__step{% if s.done %} is-done{% elif s.current %} is-current{% endif %}"{% if s.current %} aria-current="step"{% endif %}>
+                            <span class="journey__dot" aria-hidden="true">{% if s.done %}<i class="bi bi-check-lg"></i>{% else %}{{ forloop.counter }}{% endif %}</span>
+                            <span class="journey__label">{{ s.label }}{% if s.done %}<span class="visually-hidden"> ({% trans "done" %})</span>{% endif %}</span>
+                        </li>
+                    {% endfor %}
+                </ol>
+                <p class="journey__hint">{{ journey.hint }}</p>
+            </section>
+        {% endif %}
+
         {% if partner.profile_completion_score < 100 %}
             <div class="alert alert-warning fade-up mb-5">
                 <strong><i class="bi bi-exclamation-triangle-fill"></i> {% blocktrans with s=partner.profile_completion_score %}Profile is incomplete ({{ s }}%).{% endblocktrans %}</strong>
@@ -136,8 +152,8 @@
                     <a href="{% url 'startup_upgrade' %}" class="dash-card dash-card--gold" data-upsell>
                         <span class="dash-card__icon dash-card__icon--gold"><i class="bi bi-gem"></i></span>
                         <span class="dash-card__text">
-                            <span class="dash-card__title">{% trans "Get a Hiring Pass" %}</span>
-                            <span class="dash-card__sub">{% trans "One opportunity · 30 days · no renewal" %}</span>
+                            <span class="dash-card__title">{% trans "Start your hiring process" %}</span>
+                            <span class="dash-card__sub">{% trans "Hiring Pass · one opportunity · 30 days · no renewal" %}</span>
                         </span>
                         <i class="bi bi-chevron-left dash-card__go" aria-hidden="true"></i>
                     </a>

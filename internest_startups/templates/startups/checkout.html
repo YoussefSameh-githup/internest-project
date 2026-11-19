@@ -90,6 +90,10 @@
             <div class="co-alert co-alert--verifying" role="status">{% trans "Your Internest Pro subscription is still active, so you don't need a Hiring Pass yet." %}</div>
         {% elif not quote %}
             <div class="co-alert" role="status">{% blocktrans with email=sales_email %}The Hiring Pass is priced in EGP. For companies outside Egypt, email {{ email }} and we'll arrange it.{% endblocktrans %}</div>
+        {% elif not has_opportunities and no_open.0 == "review" %}
+            <div class="co-alert" role="status">{% trans "Your opportunity is waiting for our review. You can buy a Hiring Pass for it as soon as it's published." %}</div>
+        {% elif not has_opportunities and no_open.0 == "quota" %}
+            <div class="co-alert" role="status">{% blocktrans with date=no_open.1 %}This month's free post is used. You can post a new opportunity for free on {{ date }}, then buy a Hiring Pass for it.{% endblocktrans %}</div>
         {% elif not has_opportunities %}
             <div class="co-alert" role="status">{% trans "A Hiring Pass is bought for one of your open opportunities. Post your opportunity first (free), then come back." %}
                 <a href="{% url 'partner_submit_choose' %}" class="fw-bold">{% trans "Post an opportunity" %} →</a></div>
@@ -154,6 +158,7 @@
                     <li><span>{% trans "Renewal" %}</span><span>{% trans "No automatic renewal" %}</span></li>
                 </ul>
                 <div class="co-total"><span>{% trans "Total due" %}</span><strong>{{ quote.final_label }}</strong></div>
+                <p class="co-secure" style="justify-content: flex-start;">{% trans "We charge exactly this total. If your bank, wallet or payment method adds a fee of its own, it shows it to you before you confirm." %}</p>
                 <p class="co-secure" style="justify-content: flex-start;"><i class="bi bi-shield-check" aria-hidden="true"></i>
                     <a href="{% url 'trust' %}">{% trans "How we verify skills" %}</a></p>
                 <ul class="co-perks">

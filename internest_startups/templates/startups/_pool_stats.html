@@ -18,6 +18,7 @@
             {% endfor %}
             {% if link_skills and skill_id %}<li><a href="?" class="pool-chip pool-chip--clear">{% trans "All skills" %}</a></li>{% endif %}
         </ul>
+        {% if link_skills %}<p class="pool-stats__note">{% trans "Skills held by fewer than 3 candidates can't be filtered, to protect their anonymity." %}</p>{% endif %}
     {% else %}
         <p class="pool-stats__empty">{% trans "No verified candidates yet. We only count students who opted in and passed a verification, so this number starts small and grows as students pass challenges." %}</p>
     {% endif %}

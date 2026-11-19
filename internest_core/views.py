@@ -19,6 +19,7 @@ from django.utils.translation import gettext as _
 from internest_skills.matching import bulk_match_scores, skill_match
 from internest_startups.gate import posting_block_reason
 from internest_startups.entitlements import current_pass, is_legacy_pro
+from internest_startups.journey import employer_journey
 from internest_startups.tiers import FREE_POSTS_PER_MONTH, is_pro, monthly_quota_reached, posts_this_month
 
 from .email_helpers import issue_and_send_verification as _issue_and_send_verification
@@ -652,22 +653,29 @@ def partner_dashboard_view(request, section="overview"):
     posting_block = posting_block_reason(partner_profile)
     month_posts = posts_this_month(partner_profile)  # counted once, used for the quota too
 
+    active_opportunities = published_internships.open().count()
+    paid = is_pro(partner_profile)
+    quota_reached = monthly_quota_reached(partner_profile, posts=month_posts)
     context = get_user_context(request)
     context.update({
         "partner": partner_profile,
         "section": section,
         "pending_count": pending_count,
         "applicant_count": active_applications(partner_profile).count(),
-        "active_opportunities": published_internships.open().count(),
+        "active_opportunities": active_opportunities,
         "posting_block": posting_block,
-        "is_pro": is_pro(partner_profile),
+        "is_pro": paid,
         "legacy_pro": is_legacy_pro(partner_profile),
         "current_pass": current_pass(partner_profile),  # from the same memo as is_pro: no extra query
-        "quota_reached": monthly_quota_reached(partner_profile, posts=month_posts),
+        # The journey is for free startups only: universities and paying companies don't pay its queries.
+        "journey": None if (paid or partner_profile.is_academic) else employer_journey(
+            partner_profile, active_opportunities=active_opportunities, quota_reached=quota_reached),
+        "quota_reached": quota_reached,
         "posts_this_month": month_posts,
         "free_posts_limit": FREE_POSTS_PER_MONTH,
         "upsell_open": request.GET.get("upsell") == "limit",
-        "upsell_reason": request.GET.get("upsell", ""),
+        # The post card at the monthly limit opens the modal: it must say why (a pass does not add posts).
+        "upsell_reason": request.GET.get("upsell") or ("limit" if quota_reached else ""),
         "profile_url": reverse("partner_profile") if partner_profile.is_academic else reverse("startup_company_profile"),
         "profile_edit_url": reverse("partner_profile") if partner_profile.is_academic else reverse("startup_company_profile_edit"),
         "internship_submissions": internship_submissions,

@@ -134,6 +134,7 @@ def upgrade(request):
 
     from . import entitlements
     from .forms import FoundingClaimForm
+    from .journey import awaiting_publication, no_open_opportunity_message
     from .models import FoundingSeat, PromoCode, ProUpgradeRequest
     from .pricing import FREE_PRICE, currency_for_partner, format_price, pass_quote
     from .talent import INVITES_PER_OPPORTUNITY
@@ -185,6 +186,8 @@ def upgrade(request):
         "founding_block": None if seat else entitlements.founding_block_reason(partner),
         "claim_form": FoundingClaimForm(opportunities=opportunities),
         "has_opportunities": opportunities.exists(),
+        "awaiting_publication": awaiting_publication(partner),
+        "no_open": no_open_opportunity_message(partner),
         "sales_email": settings.SALES_EMAIL,
     })
     return render(request, "startups/upgrade.html", context)
@@ -280,6 +283,7 @@ def talent_pool_preview(request):
 
     from internest_skills.verification import anonymous_previews, parse_id, pool_stats
 
+    from .entitlements import eligible_opportunities
     from .tiers import is_pro
 
     partner = startup_partner(request.user)
@@ -298,6 +302,7 @@ def talent_pool_preview(request):
         "stats": stats,
         "previews": anonymous_previews(skill_id) if can_see_cards else [],
         "can_see_cards": can_see_cards,
+        "has_opportunities": eligible_opportunities(partner).exists(),
         "skill_id": skill_id,
     })
     return render(request, "startups/talent_pool_preview.html", context)
@@ -424,6 +429,7 @@ def checkout(request):
 
     from . import entitlements, fawaterak
     from .forms import CheckoutForm
+    from .journey import no_open_opportunity_message
     from .models import ProUpgradeRequest
     from .pricing import currency_for_partner, gateway_for, pass_quote, pricing_country
 
@@ -505,6 +511,7 @@ def checkout(request):
                     "legacy_pro": entitlements.is_legacy_pro(partner), "availability": availability,
                     "min_available": entitlements.MIN_AVAILABLE, "pass_days": entitlements.PASS_DAYS,
                     "has_opportunities": bool(availability),
+                    "no_open": None if availability else no_open_opportunity_message(partner),
                     "instapay_link": settings.INSTAPAY_LINK, "instapay_ipa": settings.INSTAPAY_IPA,
                     "redotpay_id": settings.REDOTPAY_ID, "sales_email": settings.SALES_EMAIL})
     return render(request, "startups/checkout.html", context)

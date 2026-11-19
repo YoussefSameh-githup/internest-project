@@ -89,7 +89,7 @@ class PriceRulesTests(ApplicationsBase):
         self.assertContains(self.client.get(reverse("terms")), "<strong>500 جنيه مصري</strong>")
         self.assertContains(self.client.get(UPGRADE), "باقة التوظيف")
         dashboard = self.client.get(reverse("partner_dashboard"))
-        self.assertContains(dashboard, "فرصة واحدة · 30 يوم · من غير تجديد")
+        self.assertContains(dashboard, "باقة التوظيف · فرصة واحدة · 30 يوم · من غير تجديد")
 
 
 @override_settings(MEDIA_ROOT=MEDIA)
@@ -232,7 +232,7 @@ class PassScopeTests(ApplicationsBase):
         self.assertContains(self.client.get(reverse("partner_applicant", args=[self.on_gig.pk])), "91% · P87")
         page = self.client.get(reverse("partner_applicant", args=[self.on_role.pk]))
         self.assertNotContains(page, "88% · P70")
-        self.assertContains(page, "Upgrade to see the detailed score report")
+        self.assertContains(page, "Unlock candidate details: full scores and percentiles")
 
     def test_invitations_only_to_the_covered_opportunity(self):
         entitlements.create_pass(self.partner, self.gig, source="admin")
@@ -364,8 +364,8 @@ class ReviewFixTests(ApplicationsBase):
         return ProUpgradeRequest.objects.create(**data)
 
     def test_company_with_a_pass_and_seat_can_still_be_deleted(self):
+        entitlements.claim_founding(self.partner, self.role)  # seat first: pass holders can't take a seat
         entitlements.activate_order(self._pass_order().pk)
-        entitlements.claim_founding(self.partner, self.role)
         self.founder.delete()  # account erasure cascades through orders, passes and seats
         self.assertFalse(HiringPass.objects.exists())
         self.assertFalse(FoundingSeat.objects.exists())
@@ -386,8 +386,8 @@ class ReviewFixTests(ApplicationsBase):
         with self.assertRaisesMessage(ValueError, "already has paid access or an order in progress"):
             entitlements.claim_founding(self.partner, self.gig)
         entitlements.create_pass(self.partner, self.role, source="admin")
-        with self.assertRaisesMessage(ValueError, "already has paid access or an order in progress"):
-            entitlements.claim_founding(self.partner, self.role)
+        with self.assertRaisesMessage(ValueError, "Founding 20 is for companies without paid access."):
+            entitlements.claim_founding(self.partner, self.role)  # any current pass blocks a free seat
         _u, pro = _company("legacyco")
         activate_pro(pro)
         self.assertEqual(entitlements.founding_block_reason(pro), "Founding 20 is for companies without paid access.")

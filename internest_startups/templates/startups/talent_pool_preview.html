@@ -13,7 +13,7 @@
             <p>{% trans "See who is really available before you pay. Every number is live and every candidate below holds at least one verified skill. Names, universities and contact details stay hidden." %}</p>
         </header>
 
-        {% include "startups/_pool_stats.html" with link_skills=True %}
+        {% include "startups/_pool_stats.html" with link_skills=can_see_cards %}
 
         {% if not can_see_cards %}
             <p class="pool-preview__locked"><i class="bi bi-shield-lock" aria-hidden="true"></i> {% trans "Anonymous candidate summaries appear once our team verifies your company (usually within 24 hours). The numbers above are already live." %}</p>
@@ -43,10 +43,10 @@
 
         <aside class="pool-preview__cta">
             <div>
-                <h2>{% trans "Want names, full profiles and invitations?" %}</h2>
+                <h2>{% trans "Unlock candidate details" %}</h2>
                 <p>{% trans "A Hiring Pass shows each candidate's name, university, bio, portfolio and exact scores, and lets you invite them to apply. Phone, email and CV are shared only after they apply and you shortlist them." %}</p>
             </div>
-            <a href="{% url 'startup_upgrade' %}" class="btn btn--primary">{% trans "See plans" %}</a>
+            <a href="{% url 'startup_upgrade' %}" class="btn btn--primary">{% if has_opportunities %}{% trans "Purchase Hiring Pass" %}{% else %}{% trans "See the Hiring Pass" %}{% endif %}</a>
         </aside>
     </div>
 </section>

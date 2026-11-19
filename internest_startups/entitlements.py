@@ -153,10 +153,10 @@ def founding_block_reason(partner):
 
     if not _paid_company(partner):
         return _("Founding 20 is for companies only.")
-    if is_legacy_pro(partner):
-        return _("Founding 20 is for companies without paid access.")
-    if FoundingSeat.objects.filter(partner=partner).exists():
+    if FoundingSeat.objects.filter(partner=partner).exists():  # checked first: a seat's own free pass is paid access too
         return _("Your company already has a Founding 20 seat.")
+    if has_hiring_access(partner):
+        return _("Founding 20 is for companies without paid access.")
     if not partner.is_fully_verified:
         return _("Founding 20 opens once our team verifies your company.")
     if partner.profile_completion_score < 100:

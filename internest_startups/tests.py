@@ -434,7 +434,7 @@ class DashboardGridAndShowcaseDesignTests(OnboardingBase):
         self.assertEqual(html.count('class="dash-card__icon '), len(cards))  # every card has a styled icon badge
         for emoji in ("➕", "📥", "⏳", "💬", "✏️"):
             self.assertNotIn(emoji, html.split('class="dash-grid')[1].split("</nav>")[0])
-        for title in ("Post Opportunity", "Applicants Inbox", "Pending Requests", "Company Profile", "Get a Hiring Pass"):
+        for title in ("Post Opportunity", "Applicants Inbox", "Pending Requests", "Company Profile", "Start your hiring process"):
             self.assertContains(page, title)
         self.approve()
         page = self.client.get(reverse("partner_dashboard"))

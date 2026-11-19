@@ -4,7 +4,7 @@
     <div class="upsell-dialog__crest" aria-hidden="true">🎟️</div>
     <h2 id="upsell-title">{% trans "Hire faster with a Hiring Pass" %}</h2>
     {% if upsell_reason == "limit" %}
-        <p class="upsell-dialog__reason">{% blocktrans with n=free_posts_limit %}Free accounts can publish {{ n }} opportunity per month. You've reached this month's limit; you can post again next month.{% endblocktrans %}</p>
+        <p class="upsell-dialog__reason">{% blocktrans with n=free_posts_limit %}Free accounts can publish {{ n }} opportunity per month. You've reached this month's limit; you can post again next month. A Hiring Pass does not add posts: it unlocks candidate details for an opportunity you have already posted.{% endblocktrans %}</p>
     {% elif upsell_reason == "hourly" %}
         <p class="upsell-dialog__reason">{% blocktrans with n=hourly_limit %}You've reached the free posting limit ({{ n }} posts/hour). Companies with an active Hiring Pass post without this limit.{% endblocktrans %}</p>
     {% endif %}

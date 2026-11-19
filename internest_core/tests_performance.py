@@ -35,6 +35,7 @@ QUERY_CEILINGS = {
     "student market-fit dashboard": 9,
     "my applications (student)": 10,
     "partner dashboard (startup)": 13,
+    "partner dashboard (free startup)": 16,  # measured 14; the journey strip adds up to 2 when no opportunity is open
     "partner dashboard (university)": 10,
 }
 
@@ -68,6 +69,7 @@ class QueryCeilingTests(Base):
             "student market-fit dashboard": (self.student_user, reverse("student_dashboard")),
             "my applications (student)": (self.student_user, reverse("my_applications")),
             "partner dashboard (startup)": (self.pro_user, reverse("partner_dashboard")),
+            "partner dashboard (free startup)": (self.free_user, reverse("partner_dashboard")),
             "partner dashboard (university)": (self.uni_user, reverse("partner_dashboard")),
         }
         measured = {label: self._queries(user, url) for label, (user, url) in pages.items()}

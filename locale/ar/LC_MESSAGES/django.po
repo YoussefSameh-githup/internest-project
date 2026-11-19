@@ -7661,3 +7661,131 @@ msgstr "لسه مفيش دراسات حالة. هتظهر بعد توظيف حق
 
 msgid "Set by our team"
 msgstr "اتحددت يدوياً من فريقنا"
+
+msgid ""
+"Unlock candidate details: full scores and percentiles for applicants to this"
+" opportunity."
+msgstr ""
+"افتح تفاصيل المرشحين: الدرجات الكاملة والترتيب المئوي للمتقدمين على الفرصة "
+"دي."
+
+msgid "Purchase Hiring Pass"
+msgstr "اشتري باقة التوظيف"
+
+msgid "Your path to hiring"
+msgstr "طريقك للتوظيف"
+
+msgid "%(d)s of %(t)s done"
+msgstr "خلّصت %(d)s من %(t)s"
+
+msgid "done"
+msgstr "تم"
+
+msgid "Start your hiring process"
+msgstr "ابدأ عملية التوظيف"
+
+msgid "Hiring Pass · one opportunity · 30 days · no renewal"
+msgstr "باقة التوظيف · فرصة واحدة · 30 يوم · من غير تجديد"
+
+msgid "Next: complete your company profile to 100%."
+msgstr "الخطوة الجاية: كمّل ملف شركتك لـ 100%."
+
+msgid ""
+"Next: our team verifies your company, usually within 24 hours. Meanwhile you"
+" can see live talent numbers."
+msgstr ""
+"الخطوة الجاية: فريقنا هيوثّق شركتك، غالباً خلال 24 ساعة. ولحد ده تقدر تشوف "
+"أرقام المواهب اللحظية."
+
+msgid "Next: post your first opportunity. It's free."
+msgstr "الخطوة الجاية: انشر أول فرصة ليك. مجاناً."
+
+msgid ""
+"Next: our team reviews your opportunity before students see it. Meanwhile, "
+"explore the anonymous candidate summaries."
+msgstr ""
+"الخطوة الجاية: فريقنا بيراجع فرصتك قبل ما الطلاب يشوفوها. ولحد ده، استكشف "
+"ملخصات المرشحين مجهولي الهوية."
+
+msgid ""
+"Next: when you're ready to contact candidates, buy one Hiring Pass for your "
+"opportunity. Check the live numbers and how we verify skills first."
+msgstr ""
+"الخطوة الجاية: لما تكون جاهز تتواصل مع مرشحين، اشتري باقة توظيف واحدة "
+"لفرصتك. شوف الأرقام اللحظية وإزاي بنتحقق من المهارات الأول."
+
+msgid "Account created"
+msgstr "الحساب اتعمل"
+
+msgid "Company profile complete"
+msgstr "ملف الشركة مكتمل"
+
+msgid "Verified by our team"
+msgstr "اتوثّقت من فريقنا"
+
+msgid "Opportunity posted for free"
+msgstr "الفرصة اتقدّمت مجاناً"
+
+msgid "Opportunity published after review"
+msgstr "الفرصة ظهرت بعد المراجعة"
+
+msgid "Hiring Pass: unlock candidate details"
+msgstr "باقة التوظيف: افتح تفاصيل المرشحين"
+
+msgid ""
+"Your opportunity is waiting for our review. You can buy a Hiring Pass for it"
+" as soon as it's published."
+msgstr "فرصتك مستنية مراجعتنا. تقدر تشتري لها باقة توظيف أول ما تظهر."
+
+msgid "Unlock candidate details"
+msgstr "افتح تفاصيل المرشحين"
+
+msgid ""
+"Detailed scores are part of a Hiring Pass, which can be bought only for an "
+"open opportunity."
+msgstr "الدرجات التفصيلية جزء من باقة التوظيف، ودي بتتشترى لفرصة مفتوحة بس."
+
+msgid ""
+"Your opportunity is closed and this month's free post is used. You can post "
+"a new one for free on %(date)s."
+msgstr ""
+"فرصتك اتقفلت، والنشر المجاني للشهر ده اتستخدم. تقدر تنشر فرصة جديدة مجاناً "
+"يوم %(date)s."
+
+msgid "Your opportunity is closed. Post a new one for free to continue."
+msgstr "فرصتك اتقفلت. انشر فرصة جديدة مجاناً عشان تكمّل."
+
+msgid ""
+"This month's free post is used. You can post a new opportunity for free on "
+"%(date)s, then buy a Hiring Pass for it."
+msgstr ""
+"النشر المجاني للشهر ده اتستخدم. تقدر تنشر فرصة جديدة مجاناً يوم %(date)s، "
+"وبعدها تشتري لها باقة توظيف."
+
+msgid ""
+"We charge exactly this total. If your bank, wallet or payment method adds a "
+"fee of its own, it shows it to you before you confirm."
+msgstr ""
+"إحنا بنحصّل الإجمالي ده بالظبط. لو البنك أو المحفظة أو وسيلة الدفع ضافت رسوم"
+" من عندها، هتظهرلك قبل ما تأكد."
+
+msgid ""
+"Your opportunity is waiting for our review. You can claim your seat for it "
+"as soon as it's published."
+msgstr "فرصتك مستنية مراجعتنا. تقدر تحجز مقعدك ليها أول ما تظهر."
+
+msgid ""
+"Skills held by fewer than 3 candidates can't be filtered, to protect their "
+"anonymity."
+msgstr ""
+"المهارات اللي عند أقل من 3 مرشحين مينفعش تتفلتر، عشان نحمي إخفاء هويتهم."
+
+msgid ""
+"Free accounts can publish %(n)s opportunity per month. You've reached this "
+"month's limit; you can post again next month. A Hiring Pass does not add "
+"posts: it unlocks candidate details for an opportunity you have already "
+"posted."
+msgstr ""
+"الحسابات المجانية تقدر تنشر %(n)s فرصة في الشهر. وصلت لحد الشهر ده، وتقدر "
+"تنشر تاني الشهر الجاي. باقة التوظيف مش بتزوّد عدد النشر: هي بتفتح تفاصيل "
+"المرشحين لفرصة إنت نشرتها بالفعل."

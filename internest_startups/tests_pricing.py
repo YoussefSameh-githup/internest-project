@@ -90,17 +90,17 @@ class PaywallGateTests(ApplicationsBase):
     def test_free_sees_locked_score_report(self):
         page = self.client.get(reverse("partner_applicant", args=[self.app.pk]))
         self.assertContains(page, "Python")
-        self.assertContains(page, "Upgrade to see the detailed score report")
+        self.assertContains(page, "Unlock candidate details: full scores and percentiles")
         self.assertNotContains(page, "93%")
         self.assertNotContains(page, "P81")
         self.client.cookies["internest_lang"] = "ar"
-        self.assertContains(self.client.get(reverse("partner_applicant", args=[self.app.pk])), "ترقية لرؤية تقرير الدرجات التفصيلي")
+        self.assertContains(self.client.get(reverse("partner_applicant", args=[self.app.pk])), "افتح تفاصيل المرشحين")
 
     def test_pro_sees_scores(self):
         activate_pro(self.partner)
         page = self.client.get(reverse("partner_applicant", args=[self.app.pk]))
         self.assertContains(page, "93% · P81")
-        self.assertNotContains(page, "Upgrade to see the detailed score report")
+        self.assertNotContains(page, "Unlock candidate details: full scores and percentiles")
 
     def test_pro_opportunities_listed_first(self):
         other_user = type(self.founder).objects.create_user("pro_founder")

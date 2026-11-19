@@ -61,7 +61,7 @@ class PlanMatrixTests(ApplicationsBase):
         page = self.client.get(url)
         self.assertContains(page, "Python")
         self.assertNotContains(page, "91% · P87")
-        self.assertContains(page, "Upgrade to see the detailed score report")
+        self.assertContains(page, "Unlock candidate details: full scores and percentiles")
         self.assertNotContains(page, reverse("skills_student_report", args=[self.student.pk]))
         self.assertEqual(self.client.get(reverse("skills_student_report", args=[self.student.pk])).status_code, 403)
         self._go_pro()

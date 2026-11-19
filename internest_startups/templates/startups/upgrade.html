@@ -78,7 +78,11 @@
                 <p class="plan-card__fine">{% trans "Contact details are shared only with the student's consent, after they apply and you shortlist them. We do not guarantee a hire." %}</p>
                 {% if list_quote and not legacy_pro %}
                     {% if has_opportunities %}
-                        <a href="{% url 'checkout' %}" class="btn btn--primary btn--lg btn--block" data-checkout-cta>{% trans "Buy a Hiring Pass" %}</a>
+                        <a href="{% url 'checkout' %}" class="btn btn--primary btn--lg btn--block" data-checkout-cta>{% trans "Purchase Hiring Pass" %}</a>
+                    {% elif no_open.0 == "review" %}
+                        <p class="plan-card__fine" role="status">{% trans "Your opportunity is waiting for our review. You can buy a Hiring Pass for it as soon as it's published." %}</p>
+                    {% elif no_open.0 == "quota" %}
+                        <p class="plan-card__fine" role="status">{% blocktrans with date=no_open.1 %}This month's free post is used. You can post a new opportunity for free on {{ date }}, then buy a Hiring Pass for it.{% endblocktrans %}</p>
                     {% else %}
                         <a href="{% url 'partner_submit_choose' %}" class="btn btn--outline btn--lg btn--block">{% trans "Post your opportunity first (free)" %}</a>
                     {% endif %}
@@ -97,6 +101,10 @@
                 <p class="founding__left">{% blocktrans with left=seats_left limit=seat_limit %}{{ left }} of {{ limit }} seats left{% endblocktrans %}</p>
                 {% if founding_block %}
                     <p class="founding__block"><i class="bi bi-info-circle" aria-hidden="true"></i> {{ founding_block }}</p>
+                {% elif not has_opportunities and no_open.0 == "review" %}
+                    <p class="founding__block"><i class="bi bi-info-circle" aria-hidden="true"></i> {% trans "Your opportunity is waiting for our review. You can claim your seat for it as soon as it's published." %}</p>
+                {% elif not has_opportunities and no_open.0 == "quota" %}
+                    <p class="founding__block"><i class="bi bi-info-circle" aria-hidden="true"></i> {% blocktrans with date=no_open.1 %}This month's free post is used. You can post a new opportunity for free on {{ date }}, then buy a Hiring Pass for it.{% endblocktrans %}</p>
                 {% elif not has_opportunities %}
                     <p class="founding__block"><i class="bi bi-info-circle" aria-hidden="true"></i> {% trans "Post an opportunity first (free), then claim your seat for it." %}</p>
                 {% else %}
