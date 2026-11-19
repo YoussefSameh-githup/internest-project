@@ -82,20 +82,21 @@
     </style>
 </head>
 <body>
+    <a class="skip-link" href="#main">{% trans "Skip to main content" %}</a>
 
     {% block top_nav %}
     <header class="nav" id="siteNav">
         <div class="container nav__inner">
             {% if user.is_authenticated %}
-                <a href="{% url 'home_redirect' %}" class="nav__brand">
+                <a href="{% url 'home_redirect' %}" class="nav__brand" aria-label="Internest">
             {% else %}
-                <a href="{% url 'landing' %}" class="nav__brand">
+                <a href="{% url 'landing' %}" class="nav__brand" aria-label="Internest">
             {% endif %}
-                <img src="{% static 'img/internest_logo.jpg' %}" alt="Internest">
+                <img src="{% static 'img/internest_logo.jpg' %}" alt="" width="38" height="38">
                 <span>INTERNEST</span>
             </a>
 
-            <ul class="nav__links">
+            <ul class="nav__links" id="siteNavLinks">
                 {% if user.is_authenticated %}
                     {% if has_partner_profile %}
                         <li><a href="{% url 'partner_dashboard' %}" class="nav__link"><i class="bi bi-grid-1x2"></i> {% trans "Dashboard" %}</a></li>
@@ -160,7 +161,7 @@
                     </a>
                 {% endif %}
 
-                <button class="nav__toggle" id="navToggle" aria-label="{% trans 'Open menu' %}">
+                <button type="button" class="nav__toggle" id="navToggle" aria-label="{% trans 'Open menu' %}" aria-expanded="false" aria-controls="siteNavLinks">
                     <i class="bi bi-list" style="font-size: 24px;"></i>
                 </button>
             </div>
@@ -174,7 +175,7 @@
         </div>
     {% endif %}
 
-    <main>
+    <main id="main" tabindex="-1">
         {% if user.is_authenticated %}{% student_notices user as notice_templates %}{% if notice_templates %}
             <div class="app-notices container">{% for t in notice_templates %}{% include t %}{% endfor %}</div>
         {% endif %}{% endif %}
@@ -258,8 +259,17 @@
             var nav = document.getElementById('siteNav');
             var toggle = document.getElementById('navToggle');
             if (!nav || !toggle) return;
-            toggle.addEventListener('click', function() {
-                nav.classList.toggle('is-open');
+            function setOpen(open) {
+                nav.classList.toggle('is-open', open);
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            }
+            toggle.addEventListener('click', function() { setOpen(!nav.classList.contains('is-open')); });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && nav.classList.contains('is-open')) { setOpen(false); toggle.focus(); }
+            });
+            document.addEventListener('click', function(e) {  // a tap outside the menu, or on one of its links, closes it
+                if (!nav.classList.contains('is-open')) return;
+                if (!nav.contains(e.target) || e.target.closest('.nav__links a')) setOpen(false);
             });
         })();
 

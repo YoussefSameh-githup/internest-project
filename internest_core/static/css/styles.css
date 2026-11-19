@@ -45,7 +45,7 @@
     --color-primary:   var(--brand-700);
     --color-primary-hover: var(--brand-800);
     --color-accent:    var(--accent-500);
-    --color-success:   #16a34a;
+    --color-success:   #15803d;  /* AA: 5.0:1 as text on white and behind white text (was #16a34a, 3.3:1) */
     --color-danger:    #dc2626;
     --color-warning:   var(--accent-500);
     --color-info:      var(--brand-500);
@@ -398,7 +398,7 @@ hr  { border: 0; border-top: 1px solid var(--color-border); margin: var(--space-
 }
 
 .btn--success { background-color: var(--color-success); color: var(--white); }
-.btn--success:hover { background-color: #15803d; color: var(--white); }
+.btn--success:hover { background-color: #166534; color: var(--white); }
 
 .btn--danger { background-color: var(--color-danger); color: var(--white); }
 .btn--danger:hover { background-color: #b91c1c; color: var(--white); }
@@ -1873,7 +1873,7 @@ a.pf-stat:hover { border-color: #c7d2fe; }
 .sh-stats div { min-width: 96px; padding: 10px 14px; border-radius: 14px; background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .18); }
 .sh-stats dt { font-size: var(--text-xs); color: rgba(255, 255, 255, .75); font-weight: 600; }
 .sh-stats dd { margin: 2px 0 0; font-size: 1.35rem; font-weight: 800; }
-.sh-tabs { display: flex; gap: 4px; margin-top: 26px; overflow-x: auto; scrollbar-width: none; }
+.sh-tabs { display: flex; gap: 4px; margin-top: 26px; overflow-x: auto; scrollbar-width: none; padding: 5px; }
 .sh-tab { flex-shrink: 0; padding: 12px 18px; border-radius: 14px 14px 0 0; color: rgba(255, 255, 255, .85); font-weight: 700; text-decoration: none; white-space: nowrap; transition: background .15s; }
 .sh-tab:hover { background: rgba(255, 255, 255, .1); color: #fff; }
 .sh-tab.is-active { background: #f8fafc; color: #0f172a; }
@@ -1909,7 +1909,7 @@ a.pf-stat:hover { border-color: #c7d2fe; }
 
 /* Application stepper */
 .sh-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 0; padding: 0; list-style: none; counter-reset: step; }
-.sh-steps li { position: relative; padding-top: 14px; color: #94a3b8; font-size: 11px; font-weight: 700; text-align: center; }
+.sh-steps li { position: relative; padding-top: 14px; color: #64748b; font-size: 11px; font-weight: 700; text-align: center; }
 .sh-steps li::before { content: ""; position: absolute; top: 0; inset-inline: 0; height: 6px; border-radius: 999px; background: #e2e8f0; }
 .sh-steps li.is-done { color: #3730a3; }
 .sh-steps li.is-done::before { background: linear-gradient(90deg, #6366f1, #3b6fe0); }
@@ -2026,3 +2026,28 @@ a.pf-stat:hover { border-color: #c7d2fe; }
   .ev, .card { box-shadow: none !important; border: 1px solid #cbd5e1; break-inside: avoid; }
   body { background: #fff !important; }
 }
+
+/* ---------- Accessibility baseline (Phase 6, WCAG 2.2 AA) ---------- */
+.skip-link { position: absolute; inset-inline-start: 12px; top: -60px; z-index: 1000; padding: 10px 16px; border-radius: 10px;
+  background: var(--brand-700); color: #fff; font-weight: 700; text-decoration: none; }
+.skip-link:focus { top: 12px; color: #fff; }
+main:focus { outline: none; }
+:where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 3px solid var(--brand-500); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; animation-delay: 0s !important;
+    transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  /* Progress indicators still show that something is working, just slower. */
+  .ia-spinner, .sx-spin, .cvb-spin, .fl-spin, .cvb-rec__dot { animation-duration: 1.6s !important; animation-iteration-count: infinite !important; }
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid var(--brand-500); outline-offset: 1px; }
+
+/* Small phones: brand, language switch, CTA and the menu button must all fit (no clipped menu icon). */
+@media (max-width: 480px) {
+  .nav__inner { gap: var(--space-2); }
+  .nav__cta { gap: var(--space-2); }
+  .nav__brand { gap: var(--space-2); font-size: var(--text-base); letter-spacing: .02em; }
+  .nav__brand img { width: 32px; height: 32px; }
+  .nav__cta .btn { padding-inline: 10px; }
+}
+@media (max-width: 380px) { .nav__brand span { display: none; } }  /* the link keeps aria-label="Internest" */
