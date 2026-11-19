@@ -7907,3 +7907,15 @@ msgstr "تم البت في الطلب ده بالفعل."
 
 msgid "A new verification code was sent to %(email)s."
 msgstr "اتبعت كود تحقق جديد على %(email)s."
+
+msgid "First year"
+msgstr "سنة أولى"
+
+msgid "Second year"
+msgstr "سنة ثانية"
+
+msgid "Third year"
+msgstr "سنة ثالثة"
+
+msgid "Fourth year / graduate"
+msgstr "سنة رابعة/خريج"

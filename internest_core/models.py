@@ -69,7 +69,10 @@ class StudentProfile(models.Model):
     # ... (بقية حقول StudentProfile) ...
     university = models.CharField(max_length=100, blank=True, null=True, verbose_name="الجامعة")
     major = models.CharField(max_length=100, blank=True, null=True, verbose_name="التخصص")
-    study_level = models.CharField(max_length=50, choices=[('1', 'سنة أولى'), ('2', 'سنة ثانية'), ('3', 'سنة ثالثة'), ('4', 'سنة رابعة/خريج')], blank=True, null=True, verbose_name="المستوى الدراسي")
+    STUDY_LEVEL_CHOICES = [('1', _('First year')), ('2', _('Second year')), ('3', _('Third year')),
+                           ('4', _('Fourth year / graduate'))]  # translated: English pages used to show Arabic labels
+    study_level = models.CharField(max_length=50, choices=STUDY_LEVEL_CHOICES, blank=True, null=True,
+                                   verbose_name=_("Study level"))
     phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="رقم الهاتف")
     # Shown to startups before the CV/contacts unlock (skills-first review).
     bio = models.TextField(max_length=600, blank=True, default="", verbose_name=_("About me & projects"))

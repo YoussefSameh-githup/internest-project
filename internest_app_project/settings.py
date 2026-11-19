@@ -221,6 +221,9 @@ WHITENOISE_USE_FINDERS = True
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+if TESTING:  # audit L-2: test uploads used to land in the real media/ folder
+    import tempfile
+    MEDIA_ROOT = Path(tempfile.gettempdir()) / "internest-test-media"
 
 # Upload limits (5 MB)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
