@@ -1,0 +1,52 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Delete my account" %} — Internest{% endblock %}
+
+{% block content %}
+{% include "registration/_pw_shell.html" %}
+<style>
+.da-list { margin: 0 0 18px; padding-inline-start: 20px; color: #334155; font-size: 14.5px; line-height: 1.7; }
+.da-check { display: flex; gap: 10px; align-items: flex-start; margin: 4px 0 14px; font-size: 14.5px; color: #0f172a; }
+.da-check input { width: 18px; height: 18px; margin-top: 3px; flex-shrink: 0; }
+.da-danger { background: linear-gradient(135deg, #b91c1c, #991b1b) !important; }
+</style>
+<section class="pw">
+    <div class="pw-card">
+        <div class="pw-icon" aria-hidden="true"><i class="bi bi-trash3-fill"></i></div>
+        <h1>{% trans "Delete my account" %}</h1>
+        <p class="pw-lead">{% trans "This can't be undone. Download your data first if you want a copy." %}</p>
+        <ul class="da-list">
+            <li>{% trans "Your profile, CV, photo, verified skills, assessment attempts, certificates and freelance proof are deleted." %}</li>
+            <li>{% trans "Your applications are withdrawn and deleted, so companies no longer see them." %}</li>
+            <li>{% trans "Experience letters issued to you stop verifying." %}</li>
+        </ul>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="pw-alert" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+            {% if uses_password %}
+                <div class="pw-field{% if form.password.errors %} has-error{% endif %}">
+                    <label for="id_password">{% trans "Current password" %}</label>
+                    <div class="pw-input"><input type="password" name="password" id="id_password" required autocomplete="current-password"
+                        {% if form.password.errors %}aria-invalid="true" aria-describedby="id_password-error"{% endif %}></div>
+                    {% if form.password.errors %}<div class="pw-error" id="id_password-error" role="alert"><i class="bi bi-exclamation-circle-fill"></i>{{ form.password.errors }}</div>{% endif %}
+                </div>
+            {% else %}
+                <div class="pw-field{% if form.email.errors %} has-error{% endif %}">
+                    <label for="id_email">{% trans "Type your account email to confirm" %}</label>
+                    <div class="pw-input"><input type="email" name="email" id="id_email" required autocomplete="email" dir="ltr"
+                        {% if form.email.errors %}aria-invalid="true" aria-describedby="id_email-error"{% endif %}></div>
+                    {% if form.email.errors %}<div class="pw-error" id="id_email-error" role="alert"><i class="bi bi-exclamation-circle-fill"></i>{{ form.email.errors }}</div>{% endif %}
+                </div>
+            {% endif %}
+            <label class="da-check"><input type="checkbox" name="confirm" {% if form.confirm.errors %}aria-invalid="true"{% endif %}>
+                <span>{% trans "I understand my account and data will be permanently deleted." %}</span></label>
+            {% if form.confirm.errors %}<div class="pw-error" role="alert"><i class="bi bi-exclamation-circle-fill"></i>{{ form.confirm.errors }}</div>{% endif %}
+            <button type="submit" class="pw-primary da-danger"><i class="bi bi-trash3"></i> {% trans "Delete my account permanently" %}</button>
+        </form>
+
+        {% include "registration/_pw_back.html" with cls="pw-back" %}
+    </div>
+</section>
+{% endblock %}

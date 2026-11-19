@@ -16,7 +16,7 @@ from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core import mail
 from django.core.files.base import ContentFile
-from django.test import RequestFactory, TestCase, override_settings
+from django.test import Client, RequestFactory, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone, translation
 from PIL import Image
@@ -41,7 +41,9 @@ class ButtonTests(TestCase):
         for url in (reverse("login_or_signup"), reverse("login"), reverse("signup")):
             html = self.client.get(url).content.decode()
             for provider, label in (("google", "Google"), ("linkedin_oauth2", "LinkedIn"), ("github", "GitHub"), ("microsoft", "Microsoft")):
-                self.assertIn(f'href="{reverse("social_start", args=["student", provider])}"', html, (url, provider))
+                self.assertIn(f'action="{reverse("social_start", args=["student", provider])}"', html, (url, provider))
+            self.assertNotIn('href="/oauth-start/', html)  # never a GET link: starting OAuth is a CSRF-checked POST
+            self.assertIn("csrfmiddlewaretoken", html.split("social-auth", 1)[1])
             self.assertNotIn("coming soon", html)
         html = self.client.get(reverse("login_or_signup")).content.decode()
         self.assertLess(html.index('data-provider="google"'), html.index('data-provider="linkedin_oauth2"'))  # Google first
@@ -50,14 +52,14 @@ class ButtonTests(TestCase):
     @with_providers
     def test_startup_registration_uses_the_partner_flow(self):
         html = self.client.get(reverse("startup_register")).content.decode()
-        self.assertIn(f'href="{reverse("social_start", args=["partner", "google"])}"', html)
+        self.assertIn(f'action="{reverse("social_start", args=["partner", "google"])}"', html)
         self.assertNotIn("/oauth-start/student/", html)
 
     def test_no_keys_means_no_buttons_and_no_placeholder(self):
         html = self.client.get(reverse("login_or_signup")).content.decode()
         self.assertNotIn("social-auth", html)
         self.assertNotIn("coming soon", html)
-        self.assertEqual(self.client.get(reverse("social_start", args=["student", "google"])).status_code, 404)
+        self.assertEqual(self.client.post(reverse("social_start", args=["student", "google"])).status_code, 404)
 
     @with_providers
     def test_only_providers_with_keys_are_shown(self):
@@ -76,14 +78,22 @@ class ButtonTests(TestCase):
 @with_providers
 class StartViewTests(TestCase):
     def _start(self, role="student", provider="google", **params):
-        return self.client.get(reverse("social_start", args=[role, provider]), params)
+        return self.client.post(reverse("social_start", args=[role, provider]), params)
 
-    def test_remembers_the_role_and_goes_to_allauth(self):
+    def _stashed(self):
+        return [state for state, _ts in self.client.session.get("socialaccount_states", {}).values()]
+
+    def test_remembers_the_role_and_goes_to_the_provider(self):
         response = self._start("partner")
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(response.url.startswith("/oauth/google/login/?"))
-        self.assertEqual(parse_qs(urlparse(response.url).query)["process"], ["login"])
+        self.assertTrue(response.url.startswith("https://accounts.google.com/"))
+        self.assertEqual([s["process"] for s in self._stashed()], ["login"])
         self.assertEqual(self.client.session[adapters.ROLE_SESSION_KEY]["role"], "partner")
+
+    def test_start_requires_a_csrf_token(self):
+        client = Client(enforce_csrf_checks=True)
+        self.assertEqual(client.post(reverse("social_start", args=["student", "google"])).status_code, 403)
+        self.assertNotIn(adapters.ROLE_SESSION_KEY, client.session)
 
     def test_unknown_role_or_provider_is_404(self):
         self.assertEqual(self._start("admin").status_code, 404)
@@ -92,19 +102,21 @@ class StartViewTests(TestCase):
 
     def test_open_redirect_targets_are_dropped(self):
         for evil in ("https://evil.example/x", "//evil.example/x", "javascript:alert(1)", "http://testserver.evil.example/"):
-            query = parse_qs(urlparse(self._start(next=evil).url).query)
-            self.assertNotIn("next", query, evil)
+            self._start(next=evil)
+            self.assertFalse(any("next" in s for s in self._stashed()), evil)
 
     def test_safe_next_is_kept(self):
-        self.assertEqual(parse_qs(urlparse(self._start(next="/list/").url).query)["next"], ["/list/"])
+        self._start(next="/list/")
+        self.assertEqual([s.get("next") for s in self._stashed()], ["/list/"])
 
-    def test_post_is_not_allowed_and_signed_in_users_skip_it(self):
-        self.assertEqual(self.client.post(reverse("social_start", args=["student", "google"])).status_code, 405)
+    def test_get_is_not_allowed_and_signed_in_users_skip_it(self):
+        self.assertEqual(self.client.get(reverse("social_start", args=["student", "google"])).status_code, 405)
+        self.assertEqual(self.client.get("/oauth/google/login/").status_code, 200)  # allauth's own URL only shows a confirm form
         self.client.force_login(User.objects.create_user("already", password="x"))
         self.assertRedirects(self._start(), reverse("home_redirect"), fetch_redirect_response=False)
 
     def test_provider_redirect_carries_an_oauth_state(self):
-        response = self.client.get(self._start().url)
+        response = self._start()
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response.url.startswith("https://accounts.google.com/"))
         query = parse_qs(urlparse(response.url).query)
@@ -114,7 +126,7 @@ class StartViewTests(TestCase):
         self.assertTrue(self.client.session["socialaccount_states"])
 
     def test_a_forged_state_is_rejected(self):
-        self.client.get(self._start().url)
+        self._start()
         response = self.client.get("/oauth/google/login/callback/", {"code": "abc", "state": "forged"})
         self.assertRedirects(response, reverse("login_or_signup"), fetch_redirect_response=False)
         self.assertNotIn("_auth_user_id", self.client.session)
@@ -457,7 +469,7 @@ class AvatarHardeningTests(TestCase):
 
 class ConfigurationTests(TestCase):
     def test_one_click_and_email_link_settings(self):
-        self.assertTrue(settings.SOCIALACCOUNT_LOGIN_ON_GET)
+        self.assertFalse(settings.SOCIALACCOUNT_LOGIN_ON_GET)  # login CSRF: providers start only from a POST
         self.assertTrue(settings.SOCIALACCOUNT_EMAIL_AUTHENTICATION)
         self.assertTrue(settings.SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT)
         self.assertFalse(settings.SOCIALACCOUNT_STORE_TOKENS)

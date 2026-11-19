@@ -17,6 +17,19 @@ RULES = {
     "certificate_submit": (10, 60 * 60),
     "checkout": (10, 60 * 60),  # payment receipt uploads
     "social_start": (20, 15 * 60),  # "Continue with Google / LinkedIn / GitHub / Microsoft" clicks
+    # Phase 7: every other public or abuse-prone form
+    "verify_email": (15, 15 * 60),  # 6-digit codes: 5 tries per code is enforced in the view, this caps code cycling
+    "startup_register": (5, 60 * 60),
+    "contact": (5, 60 * 60),
+    "university_inquiry": (5, 60 * 60),
+    "contact_partner": (10, 60 * 60),
+    "apply": (30, 60 * 60),
+    "skills_challenge_start": (20, 60 * 60),
+    "skills_challenge_start_for_skill": (20, 60 * 60),
+    "screening_submit": (20, 60 * 60),
+    "founding_claim": (5, 60 * 60),
+    "account_export": (5, 60 * 60),
+    "account_delete": (5, 60 * 60),
 }
 
 

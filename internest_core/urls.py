@@ -1,5 +1,5 @@
 from django.urls import path
-from . import legal_views, site_views, task_views, university_views, views
+from . import legal_views, site_views, task_views, university_views, views, views_privacy
 
 urlpatterns = [
     path('api/tasks/<uuid:task_id>/status/', task_views.task_status, name='async_task_status'),
@@ -24,6 +24,10 @@ urlpatterns = [
 
     # Email verification
     path('accounts/verify-email/', views.verify_email_view, name='verify_email'),
+
+    # Privacy self-service (students): a copy of my data, delete my account
+    path('accounts/my-data/', views_privacy.account_export, name='account_export'),
+    path('accounts/delete/', views_privacy.account_delete, name='account_delete'),
     path('accounts/verify-email/resend/<str:email_type>/', views.resend_verification_view, name='resend_verification'),
 
     # 3. صفحات الطلاب

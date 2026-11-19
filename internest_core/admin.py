@@ -551,3 +551,26 @@ class TrustStoryAdmin(ModelAdmin):
     list_display = ("person_name", "kind", "person_role", "consent_given_at", "is_published", "created_at")
     list_filter = ("kind", "is_published")
     search_fields = ("person_name", "person_role", "body")
+
+
+from .models import SecurityEvent  # noqa: E402
+
+
+@admin.register(SecurityEvent)
+class SecurityEventAdmin(ModelAdmin):
+    """Read-only: an audit trail nobody can edit from the admin (old rows are purged by purge_security_events)."""
+
+    list_display = ("created_at", "action", "actor", "target", "ip")
+    list_filter = ("action",)
+    search_fields = ("target", "actor__username", "actor__email", "ip")
+    date_hierarchy = "created_at"
+    list_select_related = ("actor",)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

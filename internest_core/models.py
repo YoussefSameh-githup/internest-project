@@ -11,6 +11,8 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from .upload_security import UPLOAD_VALIDATORS, RandomName
+
 
 MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5 MB
 OTP_EXPIRY_MINUTES = 30
@@ -87,18 +89,20 @@ class StudentProfile(models.Model):
             models.Index(fields=["major"], condition=Q(talent_pool_visible=True), name="student_pool_major_idx"),
         ]
     cv_file = models.FileField(
-        upload_to='cvs/', blank=True, null=True,
+        upload_to=RandomName('cvs'), blank=True, null=True,
         validators=[
             FileExtensionValidator(['pdf', 'doc', 'docx']),
             validate_max_file_size,
+            *UPLOAD_VALIDATORS,
         ],
         verbose_name="ملف السيرة الذاتية (CV)",
     )
     profile_picture = models.ImageField(
-        upload_to='profile_pics/', blank=True, null=True,
+        upload_to=RandomName('profile_pics'), blank=True, null=True,
         validators=[
             FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),
             validate_max_file_size,
+            *UPLOAD_VALIDATORS,
         ],
         verbose_name="صورة الملف الشخصي",
     )
@@ -147,6 +151,7 @@ class PartnerProfile(models.Model):
         validators=[
             FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp']),  # no SVG: it can carry script
             validate_max_file_size,
+            *UPLOAD_VALIDATORS,
         ],
         verbose_name="شعار الشركة/الجهة",
     )
@@ -853,3 +858,38 @@ class TrustStory(models.Model):
 
         if self.is_published and not self.consent_given_at:
             raise ValidationError("A story can only be published with the person's recorded consent.")
+
+
+class SecurityEvent(models.Model):
+    """Append-only audit trail of sensitive actions (internest_core.audit). Ids and paths only, never contents or secrets.
+    Purged after SECURITY_EVENT_RETENTION_DAYS by `manage.py purge_security_events`."""
+
+    PRIVATE_FILE_VIEW = "private_file_view"
+    ORDER_ACTIVATED = "order_activated"
+    ASSESSMENT_REVIEWED = "assessment_reviewed"
+    SCREENING_SCORED = "screening_scored"
+    DATA_EXPORT = "data_export"
+    ACCOUNT_DELETED = "account_deleted"
+    ACTION_CHOICES = [
+        (PRIVATE_FILE_VIEW, _("Private file opened")),
+        (ORDER_ACTIVATED, _("Order activated")),
+        (ASSESSMENT_REVIEWED, _("Assessment reviewed")),
+        (SCREENING_SCORED, _("Screening task scored")),
+        (DATA_EXPORT, _("Data exported")),
+        (ACCOUNT_DELETED, _("Account deleted")),
+    ]
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    actor = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    action = models.CharField(max_length=40, choices=ACTION_CHOICES, db_index=True)
+    target = models.CharField(max_length=200, blank=True)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    detail = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = _("Security event")
+        verbose_name_plural = _("Security events")
+
+    def __str__(self):
+        return f"{self.created_at:%Y-%m-%d %H:%M} {self.action} {self.target}"

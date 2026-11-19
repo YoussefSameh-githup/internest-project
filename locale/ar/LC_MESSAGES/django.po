@@ -7799,3 +7799,105 @@ msgid ""
 msgstr ""
 "قفلت فرصة قبل ما حد يقدّم عليها؟ النشر المجاني للشهر ده بيرجعلك (مرة واحدة "
 "في الشهر)."
+
+msgid "Delete my account"
+msgstr "احذف حسابي"
+
+msgid "This can't be undone. Download your data first if you want a copy."
+msgstr "الخطوة دي مالهاش رجوع. نزّل نسخة من بياناتك الأول لو عايز تحتفظ بيها."
+
+msgid ""
+"Your profile, CV, photo, verified skills, assessment attempts, certificates "
+"and freelance proof are deleted."
+msgstr ""
+"هيتحذف ملفك الشخصي والسيرة الذاتية والصورة والمهارات الموثّقة ومحاولات "
+"التقييم والشهادات وإثباتات الفريلانس."
+
+msgid ""
+"Your applications are withdrawn and deleted, so companies no longer see "
+"them."
+msgstr "طلبات التقديم بتاعتك هتتسحب وتتحذف، والشركات مش هتشوفها تاني."
+
+msgid "Experience letters issued to you stop verifying."
+msgstr "خطابات الخبرة اللي اتصدرت لك مش هيبقى ممكن التحقق منها."
+
+msgid "Type your account email to confirm"
+msgstr "اكتب إيميل حسابك للتأكيد"
+
+msgid "I understand my account and data will be permanently deleted."
+msgstr "فاهم إن حسابي وبياناتي هيتحذفوا نهائياً."
+
+msgid "Delete my account permanently"
+msgstr "احذف حسابي نهائياً"
+
+msgid "Tick the box to confirm."
+msgstr "علّم على المربع للتأكيد."
+
+msgid "That password isn't right."
+msgstr "كلمة المرور دي مش صحيحة."
+
+msgid "Type the email address of this account exactly."
+msgstr "اكتب إيميل الحساب ده بالظبط."
+
+msgid "Your account and its data were deleted."
+msgstr "حسابك وبياناته اتحذفوا."
+
+msgid "Your data"
+msgstr "بياناتك"
+
+msgid "Download a copy of everything your account holds (JSON file)."
+msgstr "نزّل نسخة من كل البيانات اللي في حسابك (ملف JSON)."
+
+msgid "Download my data"
+msgstr "نزّل بياناتي"
+
+msgid "Delete account"
+msgstr "حذف الحساب"
+
+msgid "Permanently delete your account, applications and files."
+msgstr "احذف حسابك وطلباتك وملفاتك نهائياً."
+
+msgid ""
+"Students can download their data or delete their account from their profile "
+"at any time; companies ask us and we act within 30 days."
+msgstr ""
+"الطالب يقدر ينزّل بياناته أو يحذف حسابه من ملفه الشخصي في أي وقت؛ الشركات "
+"تطلب مننا وبننفذ خلال 30 يوم."
+
+msgid "Private file opened"
+msgstr "فتح ملف خاص"
+
+msgid "Order activated"
+msgstr "تفعيل طلب"
+
+msgid "Assessment reviewed"
+msgstr "مراجعة تقييم"
+
+msgid "Screening task scored"
+msgstr "تقييم مهمة الفرز"
+
+msgid "Data exported"
+msgstr "تصدير البيانات"
+
+msgid "Account deleted"
+msgstr "حذف الحساب"
+
+msgid "Security event"
+msgstr "حدث أمني"
+
+msgid "Security events"
+msgstr "الأحداث الأمنية"
+
+msgid ""
+"This file's content doesn't match its type. Upload a real %(ext)s file."
+msgstr "محتوى الملف ده مش مطابق لنوعه. ارفع ملف %(ext)s حقيقي."
+
+msgid ""
+"We couldn't scan this file right now. Please try again in a few minutes."
+msgstr "مقدرناش نفحص الملف ده دلوقتي. جرّب تاني بعد دقايق."
+
+msgid "This file was rejected by our malware scanner."
+msgstr "الملف ده اترفض من فاحص البرامج الضارة."
+
+msgid "Password, sign out, your data"
+msgstr "كلمة المرور، تسجيل الخروج، بياناتك"

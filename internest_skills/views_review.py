@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 
+from internest_core import audit
 from internest_core.views import get_user_context
 
 from . import review
@@ -53,6 +54,8 @@ def review_detail(request, token):
             except ChallengeAttempt.DoesNotExist:  # another reviewer decided it a moment ago
                 messages.info(request, _("This attempt was already decided by another reviewer."))
                 return redirect("skills_review_queue")
+            audit.record(request, "assessment_reviewed", target=f"attempt:{done.pk}",
+                         decision=decision, score=done.score_pct)
             ss = done.student_skill
             ss.refresh_from_db()
             messages.success(request, _("Saved. Final score %(s)s%% · skill status: %(status)s.") % {

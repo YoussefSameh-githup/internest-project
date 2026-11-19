@@ -100,7 +100,7 @@
     </details>
 
     <details class="px-acc">
-        <summary><span class="px-ico"><i class="bi bi-key"></i></span> <span>{% trans "Account & security" %}<br><small>{% trans "Password and sign out" %}</small></span></summary>
+        <summary><span class="px-ico"><i class="bi bi-key"></i></span> <span>{% trans "Account & security" %}<br><small>{% trans "Password, sign out, your data" %}</small></span></summary>
         <div class="px-acc__body">
             <div class="px-setting">
                 <div><strong>{% trans "Personal email" %}</strong><p dir="ltr" style="text-align: start;">{{ profile.personal_email|default:"—" }}</p></div>
@@ -113,6 +113,15 @@
             <div class="px-setting">
                 <div><strong>{% trans "Sign out" %}</strong><p>{% trans "Sign out of Internest on this device." %}</p></div>
                 <button type="submit" form="logout-form" class="px-ghost"><i class="bi bi-box-arrow-right"></i> {% trans "Logout" %}</button>
+            </div>
+            <div class="px-setting">
+                <div><strong>{% trans "Your data" %}</strong><p>{% trans "Download a copy of everything your account holds (JSON file)." %}</p></div>
+                <form method="post" action="{% url 'account_export' %}">{% csrf_token %}
+                    <button type="submit" class="px-ghost"><i class="bi bi-download"></i> {% trans "Download my data" %}</button></form>
+            </div>
+            <div class="px-setting">
+                <div><strong>{% trans "Delete account" %}</strong><p>{% trans "Permanently delete your account, applications and files." %}</p></div>
+                <a href="{% url 'account_delete' %}" class="px-ghost px-ghost--danger"><i class="bi bi-trash3"></i> {% trans "Delete my account" %}</a>
             </div>
         </div>
     </details>

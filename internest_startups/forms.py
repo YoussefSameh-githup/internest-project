@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from internest_core.models import PartnerProfile, validate_max_file_size
+from internest_core.upload_security import UPLOAD_VALIDATORS
 
 from .completion import PLACEHOLDER_PREFIX
 from .models import CompanyProfile, FoundingSeat
@@ -204,7 +205,8 @@ class CheckoutForm(forms.Form):
     accept_terms = forms.BooleanField(error_messages={"required": _("Please accept the terms and the refund policy to continue.")})
     # Manual transfer (InstaPay in Egypt, RedotPay abroad): the receipt is required, the reference is optional.
     payment_proof = forms.FileField(label=_("Payment receipt (screenshot or PDF)"), required=False,
-                                    validators=[FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size])
+                                    validators=[FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size,
+                                                *UPLOAD_VALIDATORS])
     payment_reference = forms.CharField(label=_("Transfer reference (optional)"), max_length=64, required=False)
     # The one opportunity the Hiring Pass is for: only the company's own open opportunities are accepted (server-side).
     internship = forms.ModelChoiceField(label=_("Opportunity this pass is for"), queryset=None, empty_label=None,

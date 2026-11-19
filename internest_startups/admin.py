@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
+from internest_core import audit
 from internest_core.admin_base import BAD, INFO, OK, WAIT, ModelAdmin, flag_badge, status_badge
 
 from .models import CompanyProfile, PendingCompanyProfile
@@ -98,7 +99,9 @@ def activate_requests(modeladmin, request, queryset):
     count = 0
     for req in queryset.only("pk"):
         try:
-            count += activate_paid_order(req.pk)
+            if activate_paid_order(req.pk):
+                count += 1
+                audit.record(request, "order_activated", target=f"order:{req.pk}")
         except (ValueError, IntegrityError) as exc:  # wrong amount/opportunity or a pass already exists: nothing changed
             modeladmin.message_user(request, f"Order {req.pk} not activated: {exc}", messages.ERROR)
     modeladmin.message_user(request, f"{count} order(s) activated.", messages.SUCCESS)

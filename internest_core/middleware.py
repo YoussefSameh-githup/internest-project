@@ -1,6 +1,25 @@
-"""Middleware that locks unverified students on the verify-email page."""
+"""Middleware: request size cap, and the lock that keeps unverified students on the verify-email page."""
+from django.conf import settings
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import resolve, Resolver404
+
+
+class RequestSizeLimitMiddleware:
+    """413 for request bodies over MAX_REQUEST_BYTES, before anything reads them. Django's own limits do not count
+    uploaded file parts, so without this a multi-gigabyte upload would be written to disk and then validated."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        try:
+            length = int(request.META.get("CONTENT_LENGTH") or 0)
+        except ValueError:
+            length = 0
+        if length > settings.MAX_REQUEST_BYTES:
+            return HttpResponse("Request too large.", status=413, content_type="text/plain")
+        return self.get_response(request)
 
 
 class EmailVerificationGateMiddleware:
@@ -14,6 +33,8 @@ class EmailVerificationGateMiddleware:
         "verify_email",
         "resend_verification",
         "logout",
+        "account_export",  # a student can always take their data and leave
+        "account_delete",
         "set_language",
         "serve_media",
         "verify_experience",  # public letter authenticity check

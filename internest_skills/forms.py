@@ -5,10 +5,11 @@ from django.core.validators import FileExtensionValidator
 from django.utils.translation import gettext_lazy as _
 
 from internest_core.models import PartnerProfile, validate_max_file_size
+from internest_core.upload_security import UPLOAD_VALIDATORS
 
 from .models import Skill, StudentFreelanceGig
 
-_doc_validators = [FileExtensionValidator(["pdf", "docx"]), validate_max_file_size]
+_doc_validators = [FileExtensionValidator(["pdf", "docx"]), validate_max_file_size, *UPLOAD_VALIDATORS]
 MIN_PASTED_CHARS = 80
 
 
@@ -58,7 +59,7 @@ class FreelanceImportForm(forms.Form):
     raw_text = forms.CharField(min_length=40, max_length=6000, widget=forms.Textarea(attrs={"rows": 7, "dir": "auto"}),
                                label=_("Work description / client review"))
     proof = forms.FileField(required=False, label=_("Proof (screenshot or PDF, optional)"),
-                            validators=[FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size])
+                            validators=[FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size, *UPLOAD_VALIDATORS])
 
     def __init__(self, *args, student=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -86,7 +87,7 @@ class UniversityShareForm(forms.Form):
 
 class GigProofForm(forms.Form):
     proof = forms.FileField(label=_("Proof (screenshot or PDF, optional)"),
-                            validators=[FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size])
+                            validators=[FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size, *UPLOAD_VALIDATORS])
 
 
 class CertificateForm(forms.Form):
@@ -95,7 +96,7 @@ class CertificateForm(forms.Form):
     issuer = forms.CharField(max_length=120, required=False, label=_("Issuer"))
     url = forms.URLField(max_length=500, required=False, label=_("Verification link"), assume_scheme="https")
     file = forms.FileField(required=False, label=_("Certificate file"),
-                           validators=[FileExtensionValidator(["pdf", "png", "jpg", "jpeg", "webp"]), validate_max_file_size])
+                           validators=[FileExtensionValidator(["pdf", "png", "jpg", "jpeg", "webp"]), validate_max_file_size, *UPLOAD_VALIDATORS])
 
     def clean(self):
         data = super().clean()

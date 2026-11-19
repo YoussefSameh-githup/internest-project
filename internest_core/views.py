@@ -1,3 +1,4 @@
+import hmac
 import logging
 import os
 from decimal import Decimal, InvalidOperation
@@ -33,7 +34,7 @@ from .models import (
     DiscountCode, StudentEnrollment,
     EmailVerification, GigExperience, RATING_CHOICES,
 )
-from . import identity
+from . import audit, identity
 from .page_cache import cache_public_page
 from .student_hub import cv_primary_education, hub_header, open_invitations, profile_context, skill_quizzes, student_applications
 from .forms import (
@@ -80,6 +81,8 @@ def serve_protected_media(request, filepath: str):
         raise Http404()
     if not os.path.isfile(absolute):
         raise Http404()
+    if folder.startswith(PRIVATE_MEDIA_PREFIXES):
+        audit.record(request, "private_file_view", target=path)
     response = FileResponse(open(absolute, "rb"))
     # Uploaded files are untrusted: never let one run script or be sniffed as HTML (e.g. an SVG or a renamed .html),
     # and keep private documents out of shared caches.
@@ -288,7 +291,7 @@ def verify_email_view(request):
                 messages.error(request, _("This code has expired. Please request a new one."))
             elif otp.attempts >= 5:
                 messages.error(request, _("Too many incorrect attempts. Please request a new code."))
-            elif otp.code != code:
+            elif not hmac.compare_digest(otp.code.encode(), code.encode()):  # constant time
                 otp.attempts = F("attempts") + 1
                 otp.save(update_fields=["attempts"])
                 messages.error(request, _("Incorrect code. Please try again."))

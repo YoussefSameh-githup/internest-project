@@ -9,6 +9,7 @@ from django.utils.translation import gettext, gettext_lazy as _
 from internest_core.models import (
     Internship, PartnerInternshipSubmission, PartnerProfile, StudentProfile, validate_max_file_size,
 )
+from internest_core.upload_security import UPLOAD_VALIDATORS, RandomName
 
 RETEST_COOLDOWN = timedelta(hours=48)  # after a failed or terminated challenge
 
@@ -382,8 +383,8 @@ class StudentFreelanceGig(models.Model):
     platform_username = models.CharField(max_length=100, blank=True)
     owner_matched = models.BooleanField(default=False)
     raw_text = models.TextField(max_length=6000)
-    proof = models.FileField(upload_to="freelance_proofs/", blank=True, validators=[
-        FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size])
+    proof = models.FileField(upload_to=RandomName("freelance_proofs"), blank=True, validators=[
+        FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size, *UPLOAD_VALIDATORS])
     project_title = models.CharField(max_length=160, blank=True)
     client_feedback = models.TextField(max_length=1000, blank=True)
     rating = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
@@ -436,8 +437,8 @@ class SkillCertificate(models.Model):
     title = models.CharField(_("Certificate title"), max_length=160)
     issuer = models.CharField(_("Issuer"), max_length=120, blank=True)
     url = models.URLField(_("Verification link"), max_length=500, blank=True)
-    file = models.FileField(_("Certificate file"), upload_to="skill_certificates/", blank=True, validators=[
-        FileExtensionValidator(["pdf", "png", "jpg", "jpeg", "webp"]), validate_max_file_size])
+    file = models.FileField(_("Certificate file"), upload_to=RandomName("skill_certificates"), blank=True, validators=[
+        FileExtensionValidator(["pdf", "png", "jpg", "jpeg", "webp"]), validate_max_file_size, *UPLOAD_VALIDATORS])
     trusted_issuer = models.BooleanField(default=False, help_text="The link is on a known certificate-verification site.")
     status = models.CharField(max_length=14, choices=STATUS_CHOICES, default=STATUS_UNDER_REVIEW, db_index=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)

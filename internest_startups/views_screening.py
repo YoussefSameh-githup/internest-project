@@ -9,7 +9,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.views.decorators.http import require_POST
 
-from internest_core import identity
+from internest_core import audit, identity
 from internest_core.models import Application, Internship
 from internest_core.views import get_user_context
 
@@ -154,6 +154,7 @@ def screening_score(request, app_id):
         raise Http404
     points = {k.removeprefix("points_"): v for k, v in request.POST.items() if k.startswith("points_")}
     screening.score(submission, points, request.POST.get("note", ""))
+    audit.record(request, "screening_scored", target=f"application:{app.pk}")
     messages.success(request, _("Screening score saved."))
     return redirect("partner_applicant", app_id=app.pk)
 

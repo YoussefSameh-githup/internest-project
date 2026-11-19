@@ -93,6 +93,8 @@ INSTALLED_APPS = [
 SITE_ID = 1
 
 MIDDLEWARE = [
+    # Internest: refuse oversized request bodies (uploads included) before they are read.
+    "internest_core.middleware.RequestSizeLimitMiddleware",
     "django.middleware.security.SecurityMiddleware",
     # Internest: site-wide Content-Security-Policy (keeps inline scripts working; see internest_core/csp.py).
     "internest_core.csp.ContentSecurityPolicyMiddleware",
@@ -238,7 +240,7 @@ SOCIALACCOUNT_ADAPTER = "internest_core.adapters.SocialAccountAdapter"
 ACCOUNT_ADAPTER = "internest_core.adapters.AccountAdapter"
 ACCOUNT_EMAIL_VERIFICATION = "none"          # Internest verifies student emails itself (OTP); allauth's flow is unused
 ACCOUNT_LOGIN_METHODS = {"username"}
-SOCIALACCOUNT_LOGIN_ON_GET = True            # one click: straight to the provider, no confirmation page
+SOCIALACCOUNT_LOGIN_ON_GET = False           # our buttons POST (CSRF-checked) to social_start; a bare GET gets allauth's confirm page
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_EMAIL_REQUIRED = True
@@ -299,6 +301,13 @@ EMAIL_TIMEOUT = 20
 # Rate limits on login / signup / password reset / uploads (internest_core.ratelimit). Off in the test runner so
 # hundreds of test logins from 127.0.0.1 don't trip it; the rate-limit tests switch it back on.
 RATELIMIT_ENABLED = env.bool("RATELIMIT_ENABLED", default="test" not in sys.argv[1:2])
+
+# Phase 7 security: audit-trail retention (manage.py purge_security_events, run daily) and optional ClamAV scanning of
+# uploads (internest_core.upload_security; empty host = not configured, PythonAnywhere has no clamd).
+MAX_REQUEST_BYTES = 20 * 1024 * 1024  # largest legitimate body: a 15 MB Voice-to-CV recording + form fields
+SECURITY_EVENT_RETENTION_DAYS = env.int("SECURITY_EVENT_RETENTION_DAYS", default=365)
+CLAMAV_HOST = env.str("CLAMAV_HOST", default="")
+CLAMAV_PORT = env.int("CLAMAV_PORT", default=3310)
 
 # --- (7) Production hardening (only when DEBUG=False) ---
 if not DEBUG:

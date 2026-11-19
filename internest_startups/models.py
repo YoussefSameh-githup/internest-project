@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from internest_core.models import Application, Internship, PartnerProfile, StudentProfile, validate_max_file_size
+from internest_core.upload_security import UPLOAD_VALIDATORS, RandomName
 
 
 def current_year():
@@ -125,8 +126,8 @@ class ProUpgradeRequest(models.Model):
     terms_accepted_at = models.DateTimeField(null=True, blank=True)
     gateway_reference = models.CharField(max_length=64, blank=True)  # Fawaterak invoice id
     payment_url = models.URLField(max_length=500, blank=True)
-    payment_proof = models.FileField(_("Payment receipt"), upload_to="payment_proofs/", blank=True, validators=[
-        FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size])
+    payment_proof = models.FileField(_("Payment receipt"), upload_to=RandomName("payment_proofs"), blank=True, validators=[
+        FileExtensionValidator(["png", "jpg", "jpeg", "webp", "pdf"]), validate_max_file_size, *UPLOAD_VALIDATORS])
     payment_reference = models.CharField(_("Transfer reference"), max_length=64, blank=True)
     proof_submitted_at = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)

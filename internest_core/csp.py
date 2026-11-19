@@ -31,6 +31,13 @@ def build_policy(path: str) -> str:
     return "; ".join(f"{k} {v}" for k, v in rules.items())
 
 
+# Browser features the site may use. Only the microphone (Voice-to-CV, after the student presses record) is allowed,
+# and only for our own pages; camera, location and the rest are switched off for us and anything we embed.
+PERMISSIONS_POLICY = ", ".join([
+    "camera=()", "microphone=(self)", "geolocation=()", "payment=()", "usb=()", "serial=()", "bluetooth=()",
+    "magnetometer=()", "gyroscope=()", "accelerometer=()", "display-capture=()", "browsing-topics=()",
+])
+
 POLICY = build_policy("/")
 ADMIN_POLICY = build_policy("/admin/")
 
@@ -43,4 +50,6 @@ class ContentSecurityPolicyMiddleware:
         response = self.get_response(request)
         if getattr(settings, "CSP_ENABLED", True) and "Content-Security-Policy" not in response:
             response["Content-Security-Policy"] = ADMIN_POLICY if request.path.startswith("/admin/") else POLICY
+        if "Permissions-Policy" not in response:
+            response["Permissions-Policy"] = PERMISSIONS_POLICY
         return response
