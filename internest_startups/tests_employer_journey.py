@@ -1,5 +1,6 @@
 """Phase 4: the free employer journey end to end, backend-enforced paid features, honest conversion copy."""
 import re
+from datetime import timedelta
 import shutil
 import tempfile
 
@@ -175,6 +176,8 @@ class JourneyReviewFixTests(ApplicationsBase):
 
         PartnerInternshipSubmission.objects.create(partner=self.partner, title="Used post", description="d", location="Cairo",
                                                    required_majors="any", deadline=self.gig.deadline, status="Approved")
+        for job in Internship.objects.filter(partner=self.partner):  # someone applied, so the free post is not returned
+            Application.objects.create(internship=job, applicant=_student(f"app{job.pk}")[0])
         self._close_all()
         journey = self.client.get(reverse("partner_dashboard")).context["journey"]
         self.assertIn("Your opportunity is closed and this month's free post is used.", str(journey["hint"]))
@@ -222,3 +225,45 @@ class JourneyReviewFixTests(ApplicationsBase):
 
     def test_checkout_states_fees_plainly(self):
         self.assertContains(self.client.get(reverse("checkout")), "We charge exactly this total.")
+
+
+class FreePostRestoreTests(ApplicationsBase):
+    """Owner decision 2026-11-19: closing an opportunity with 0 applicants returns the month's free post, once a month."""
+
+    def setUp(self):
+        super().setUp()
+        Internship.objects.filter(partner=self.partner).delete()  # fixtures: start the month clean
+
+    def _post_and_publish(self, title):
+        PartnerInternshipSubmission.objects.create(partner=self.partner, title=title, description="d", location="Cairo",
+                                                   required_majors="any", deadline=timezone.localdate() + timedelta(days=10),
+                                                   status="Approved")
+        return Internship.objects.create(partner=self.partner, title=title, description="d", location="Cairo", required_majors="any",
+                                         deadline=timezone.localdate() + timedelta(days=10))
+
+    def test_closing_with_no_applicants_returns_the_post_once(self):
+        from .tiers import monthly_quota_reached, posts_this_month
+
+        first = self._post_and_publish("First")
+        self.assertTrue(monthly_quota_reached(self.partner))
+        Internship.objects.filter(pk=first.pk).update(is_active=False)
+        self.assertEqual(posts_this_month(self.partner), 0)
+        self.assertFalse(monthly_quota_reached(self.partner))
+        second = self._post_and_publish("Second")
+        Internship.objects.filter(pk=second.pk).update(is_active=False)  # closed with no applicants again
+        self.assertEqual(posts_this_month(self.partner), 1)  # only one restore a month
+        self.assertTrue(monthly_quota_reached(self.partner))
+
+    def test_no_restore_when_someone_applied_or_still_open(self):
+        from .tiers import monthly_quota_reached
+
+        job = self._post_and_publish("Real")
+        self.assertTrue(monthly_quota_reached(self.partner))  # open: no restore
+        user, _st = _student("amr")
+        Application.objects.create(internship=job, applicant=user)
+        Internship.objects.filter(pk=job.pk).update(is_active=False)
+        self.assertTrue(monthly_quota_reached(self.partner))  # closed, but someone applied
+
+    def test_rule_is_stated_on_the_plans_page(self):
+        self.client.force_login(self.founder)
+        self.assertContains(self.client.get(reverse("startup_upgrade")), "free post comes back (once a month)")

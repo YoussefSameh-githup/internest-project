@@ -19,13 +19,26 @@ def is_pro(partner) -> bool:
     return has_hiring_access(partner)
 
 
+MAX_RESTORED_POSTS_PER_MONTH = 1  # owner decision 2026-11-19: a post closed with no applicants comes back, once a month
+
+
 def posts_this_month(partner) -> int:
+    """Free posts used this calendar month (rejected submissions don't count).
+
+    If the company closed an opportunity it published this month before anyone applied, that post comes back, at most
+    MAX_RESTORED_POSTS_PER_MONTH times a month (so post → close → repost cannot be repeated to get unlimited posts).
+    """
     start = timezone.localtime().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    return (
-        PartnerInternshipSubmission.objects.filter(partner=partner, submission_date__gte=start)
-        .exclude(status="Rejected")
-        .count()
-    )
+    used = PartnerInternshipSubmission.objects.filter(partner=partner, submission_date__gte=start).exclude(status="Rejected").count()
+    if not used:
+        return 0
+    from django.db.models import Count
+
+    from internest_core.models import Internship
+
+    unused_closed = (Internship.objects.closed().filter(partner=partner, created_at__gte=start)
+                     .annotate(applicants=Count("application")).filter(applicants=0).count())
+    return max(used - min(unused_closed, MAX_RESTORED_POSTS_PER_MONTH), 0)
 
 
 def monthly_quota_reached(partner, posts: int | None = None) -> bool:

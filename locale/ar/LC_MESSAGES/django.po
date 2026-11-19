@@ -7792,3 +7792,10 @@ msgstr ""
 
 msgid "Skip to main content"
 msgstr "انتقل للمحتوى الرئيسي"
+
+msgid ""
+"Closed an opportunity before anyone applied? That month's free post comes "
+"back (once a month)."
+msgstr ""
+"قفلت فرصة قبل ما حد يقدّم عليها؟ النشر المجاني للشهر ده بيرجعلك (مرة واحدة "
+"في الشهر)."
