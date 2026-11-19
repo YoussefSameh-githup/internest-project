@@ -223,8 +223,8 @@ button.is-busy { opacity: .7; pointer-events: none; }
 <template data-tpl="education">
     <div class="cvb-item"><button type="button" class="cvb-item__remove" data-remove aria-label="{% trans 'Remove' %}"><i class="bi bi-x-lg"></i></button>
         <div class="cvb-grid">
-            <div class="cvb-field full"><label>{% trans "University" %}</label><input data-key="university" maxlength="120" dir="auto"></div>
-            <div class="cvb-field full"><label>{% trans "Major" %}</label><input data-key="major" maxlength="120" dir="auto"></div>
+            <div class="cvb-field full"><label>{% trans "University" %}</label><input aria-label="{% trans 'University' %}" data-key="university" maxlength="120" dir="auto"></div>
+            <div class="cvb-field full"><label>{% trans "Major" %}</label><input aria-label="{% trans 'Major' %}" data-key="major" maxlength="120" dir="auto"></div>
             <div class="cvb-field"><label>{% trans "Start date" %}</label>
                 <div class="cvb-date" data-date="start_date">
                     <select data-part="month" aria-label="{% trans 'Start month' %}"></select><select data-part="year" aria-label="{% trans 'Start year' %}"></select>
@@ -242,19 +242,19 @@ button.is-busy { opacity: .7; pointer-events: none; }
 <template data-tpl="experiences">
     <div class="cvb-item"><button type="button" class="cvb-item__remove" data-remove aria-label="{% trans 'Remove' %}"><i class="bi bi-x-lg"></i></button>
         <div class="cvb-grid">
-            <div class="cvb-field"><label>{% trans "Title / role" %}</label><input data-key="title" maxlength="120" dir="auto"></div>
-            <div class="cvb-field"><label>{% trans "Company / organization" %}</label><input data-key="organization" maxlength="120" dir="auto"></div>
-            <div class="cvb-field full"><label>{% trans "Key achievements (one per line)" %}</label><textarea data-key="achievements" data-lines dir="auto"></textarea></div>
+            <div class="cvb-field"><label>{% trans "Title / role" %}</label><input aria-label="{% trans 'Title / role' %}" data-key="title" maxlength="120" dir="auto"></div>
+            <div class="cvb-field"><label>{% trans "Company / organization" %}</label><input aria-label="{% trans 'Company / organization' %}" data-key="organization" maxlength="120" dir="auto"></div>
+            <div class="cvb-field full"><label>{% trans "Key achievements (one per line)" %}</label><textarea aria-label="{% trans 'Key achievements (one per line)' %}" data-key="achievements" data-lines dir="auto"></textarea></div>
         </div>
     </div>
 </template>
 <template data-tpl="projects">
     <div class="cvb-item"><button type="button" class="cvb-item__remove" data-remove aria-label="{% trans 'Remove' %}"><i class="bi bi-x-lg"></i></button>
         <div class="cvb-grid">
-            <div class="cvb-field"><label>{% trans "Title" %}</label><input data-key="title" maxlength="120" dir="auto"></div>
-            <div class="cvb-field"><label>{% trans "Tech stack / tools" %}</label><input data-key="tech_stack" maxlength="200" dir="auto"></div>
-            <div class="cvb-field full"><label>{% trans "Description" %}</label><textarea data-key="description" maxlength="600" dir="auto"></textarea></div>
-            <div class="cvb-field full"><label>{% trans "Link" %}</label><input data-key="link" type="url" maxlength="200" dir="ltr" placeholder="https://"></div>
+            <div class="cvb-field"><label>{% trans "Title" %}</label><input aria-label="{% trans 'Title' %}" data-key="title" maxlength="120" dir="auto"></div>
+            <div class="cvb-field"><label>{% trans "Tech stack / tools" %}</label><input aria-label="{% trans 'Tech stack / tools' %}" data-key="tech_stack" maxlength="200" dir="auto"></div>
+            <div class="cvb-field full"><label>{% trans "Description" %}</label><textarea aria-label="{% trans 'Description' %}" data-key="description" maxlength="600" dir="auto"></textarea></div>
+            <div class="cvb-field full"><label>{% trans "Link" %}</label><input aria-label="{% trans 'Link' %}" data-key="link" type="url" maxlength="200" dir="ltr" placeholder="https://"></div>
         </div>
     </div>
 </template>

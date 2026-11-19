@@ -110,7 +110,8 @@ class AccessibilityTests(ApplicationsBase):
 
     def test_student_pages(self):
         self.login_student(self.user)
-        self._check([reverse(n) for n in ("list", "profile", "my_applications", "skills_hub", "student_dashboard")])
+        self._check([reverse(n) for n in ("list", "profile", "my_applications", "skills_hub", "student_dashboard",
+                                          "account_delete", "cv_builder")] + [reverse("profile") + "?tab=edit"])
 
     def test_company_pages(self):
         self.client.force_login(self.founder)

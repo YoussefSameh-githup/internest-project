@@ -315,6 +315,7 @@ def verify_email_view(request):
 
 
 @login_required
+@require_POST
 def resend_verification_view(request, email_type: str):
     if email_type not in (EmailVerification.EMAIL_TYPE_PERSONAL, EmailVerification.EMAIL_TYPE_UNIVERSITY):
         return HttpResponseForbidden()
@@ -326,7 +327,7 @@ def resend_verification_view(request, email_type: str):
         messages.error(request, _("Add the email to your profile first."))
         return redirect("profile")
     _issue_and_send_verification(request.user, email, email_type)
-    messages.success(request, f"A new verification code was sent to {email}.")
+    messages.success(request, _("A new verification code was sent to %(email)s.") % {"email": email})
     return redirect("verify_email")
 
 
@@ -438,7 +439,10 @@ def profile_view(request):
         return redirect("partner_dashboard")
 
     # The verification gate already loaded the profile this request; create it only for a brand-new account.
-    profile = _get_student_profile(request.user) or StudentProfile.objects.get_or_create(user=request.user)[0]
+    profile = _get_student_profile(request.user)
+    if profile is None and (request.user.is_staff or request.user.is_superuser):
+        return redirect("admin:index")  # a staff account is not a student
+    profile = profile or StudentProfile.objects.get_or_create(user=request.user)[0]
     education_locked = cv_primary_education(profile) is not None
     if request.method == "POST":
         old_personal = profile.personal_email
@@ -1127,6 +1131,10 @@ def partner_applicant_cv(request, app_id):
 def partner_applicant_decide(request, app_id):
     partner, app = _partner_application_or_404(request, app_id)
     decision = request.POST.get("decision")
+    if app.status not in Application.ACTIVE_STATUSES or not app.internship.is_active:
+        # Accepted, completed, filled or closed: the decision is final (a replayed or stale form changes nothing).
+        messages.info(request, _("This application has already been decided."))
+        return _back_to(request, app)
     if decision in ("shortlist", "accept"):
         from internest_startups.screening import shortlist_block_reason
 
@@ -1141,6 +1149,10 @@ def partner_applicant_decide(request, app_id):
         messages.success(request, _("Shortlisted for interview. The CV and contact details are now unlocked, and the student was notified."))
         return _back_to(request, app)
     if decision == "accept":
+        if app.shortlisted_at is None:  # accepted straight away: contact details unlock now, so tell the student
+            app.shortlisted_at = timezone.now()
+            app.save(update_fields=["shortlisted_at"])
+            notify_shortlisted(app)
         app.status = Application.STATUS_ACCEPTED
         messages.success(request, _("Applicant accepted. Their contact details are now visible to you."))
     elif decision == "fulfilled":
@@ -1171,9 +1183,8 @@ def partner_close_opportunity(request, internship_id):
     internship.is_active = False
     internship.save(update_fields=["is_active"])
     closed = (
-        Application.objects.filter(internship=internship)
-        .exclude(status=Application.STATUS_ACCEPTED)
-        .update(status=Application.STATUS_FULFILLED, decided_at=timezone.now())
+        Application.objects.filter(internship=internship, status__in=Application.ACTIVE_STATUSES)  # never rewrite
+        .update(status=Application.STATUS_FULFILLED, decided_at=timezone.now())  # accepted/completed/rejected rows
     )
     messages.success(request, _("Opportunity closed. %(n)s pending applicants will see “Position filled”.") % {"n": closed})
     return redirect("partner_dashboard")

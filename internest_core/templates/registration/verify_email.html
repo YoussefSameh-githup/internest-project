@@ -51,9 +51,11 @@
 
             <div style="display: flex; flex-direction: column; gap: var(--space-2);">
                 {% for code, email, label in pending %}
-                    <a href="{% url 'resend_verification' code %}" class="btn btn--ghost btn--block">
-                        <i class="bi bi-arrow-clockwise"></i> {% blocktrans with label=label email=email %}Resend code to {{ label }} ({{ email }}){% endblocktrans %}
-                    </a>
+                    <form method="post" action="{% url 'resend_verification' code %}">{% csrf_token %}
+                        <button type="submit" class="btn btn--ghost btn--block">
+                            <i class="bi bi-arrow-clockwise"></i> {% blocktrans with label=label email=email %}Resend code to {{ label }} ({{ email }}){% endblocktrans %}
+                        </button>
+                    </form>
                 {% endfor %}
             </div>
 

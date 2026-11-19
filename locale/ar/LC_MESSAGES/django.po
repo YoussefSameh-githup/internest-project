@@ -7901,3 +7901,9 @@ msgstr "الملف ده اترفض من فاحص البرامج الضارة."
 
 msgid "Password, sign out, your data"
 msgstr "كلمة المرور، تسجيل الخروج، بياناتك"
+
+msgid "This application has already been decided."
+msgstr "تم البت في الطلب ده بالفعل."
+
+msgid "A new verification code was sent to %(email)s."
+msgstr "اتبعت كود تحقق جديد على %(email)s."
