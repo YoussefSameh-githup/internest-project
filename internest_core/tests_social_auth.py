@@ -133,8 +133,10 @@ class StartViewTests(TestCase):
         self.assertEqual(SocialAccount.objects.count(), 0)
 
     def test_allauth_own_account_pages_are_not_exposed(self):
-        for path in ("/oauth/login/", "/oauth/signup/", "/oauth/password/reset/", "/oauth/email/", "/oauth/logout/"):
+        for path in ("/oauth/login/", "/oauth/signup/", "/oauth/email/", "/oauth/logout/"):
             self.assertRedirects(self.client.get(path), reverse("login_or_signup"), fetch_redirect_response=False, msg_prefix=path)
+        # allauth's own password pages lead into Internest's email-code reset instead
+        self.assertRedirects(self.client.get("/oauth/password/reset/"), reverse("password_reset"), fetch_redirect_response=False)
 
 
 @with_providers

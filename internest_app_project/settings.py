@@ -310,6 +310,8 @@ RATELIMIT_ENABLED = env.bool("RATELIMIT_ENABLED", default="test" not in sys.argv
 # Phase 8: backups (manage.py backup_data / verify_backup / restore_backup). Outside the project, MEDIA_ROOT and
 # STATIC_ROOT (enforced); default ~/backups/internest.
 BACKUP_DIR = env.str("BACKUP_DIR", default="")
+# Forgot password: minimum response time for "send me a code", so a sent email doesn't reveal that an account exists.
+PASSWORD_RESET_MIN_SECONDS = 0 if TESTING else 1.0
 MAX_REQUEST_BYTES = 20 * 1024 * 1024  # largest legitimate body: a 15 MB Voice-to-CV recording + form fields
 SECURITY_EVENT_RETENTION_DAYS = env.int("SECURITY_EVENT_RETENTION_DAYS", default=365)
 CLAMAV_HOST = env.str("CLAMAV_HOST", default="")

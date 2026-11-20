@@ -33,6 +33,7 @@ class EmailVerificationGateMiddleware:
         "verify_email",
         "resend_verification",
         "logout",
+        "password_reset", "password_reset_verify", "password_reset_resend", "password_reset_new",
         "account_export",  # a student can always take their data and leave
         "account_delete",
         "set_language",

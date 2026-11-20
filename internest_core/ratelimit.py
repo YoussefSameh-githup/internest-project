@@ -3,6 +3,8 @@
 Fixed window per client IP (and per user when signed in). Uses Django's cache, so no extra dependency;
 on PythonAnywhere's single web worker the default local-memory cache is enough.
 """
+import time
+
 from django.conf import settings
 from django.core.cache import cache
 from django.shortcuts import render
@@ -12,7 +14,10 @@ from django.urls import Resolver404, resolve
 RULES = {
     "login": (10, 15 * 60),
     "signup": (5, 60 * 60),
-    "password_reset": (5, 60 * 60),
+    "password_reset": (5, 60 * 60),  # ask for a code (per IP; the service also limits per email: 5/hour, 60 s apart)
+    "password_reset_resend": (5, 60 * 60),
+    "password_reset_verify": (20, 15 * 60),  # 5 tries per code are enforced in the service; this caps code cycling
+    "password_reset_new": (10, 60 * 60),
     "resend_verification": (5, 60 * 60),
     "certificate_submit": (10, 60 * 60),
     "checkout": (10, 60 * 60),  # payment receipt uploads
@@ -39,13 +44,25 @@ def client_ip(request):
 
 
 def hit(key, limit, window):
-    """Count one request against `key`; False when the limit for this window is already used up."""
-    cache.add(key, 0, window)
+    """Count one request against `key`; False when the limit for this window is already used up.
+
+    The value carries its own window end and every write keeps the remaining time: Django's file and database caches
+    implement incr() as get + set with the *default* timeout (300 s), which silently turned hourly limits into
+    "5 minutes since the last request" (password-reset review)."""
+    now = time.time()
+    end_key = key + ":end"
+    end = cache.get(end_key)
+    if end is None or end <= now:  # a new window
+        end = now + window
+        cache.set(end_key, end, window)
+        cache.set(key, 0, window)
+    remaining = max(1, int(end - now) + 1)
     try:
-        count = cache.incr(key)
-    except ValueError:  # expired between add and incr
-        cache.set(key, 1, window)
+        count = cache.incr(key)  # atomic on Redis and local memory
+    except ValueError:  # expired between the reads
+        cache.set(key, 1, remaining)
         count = 1
+    cache.touch(key, remaining)  # file/db caches' incr() rewrites the default timeout: put the window back
     return count <= limit
 
 

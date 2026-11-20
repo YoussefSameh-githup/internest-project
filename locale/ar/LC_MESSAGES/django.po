@@ -7919,3 +7919,204 @@ msgstr "سنة ثالثة"
 
 msgid "Fourth year / graduate"
 msgstr "سنة رابعة/خريج"
+
+msgid "Password reset code"
+msgstr "رمز إعادة تعيين كلمة المرور"
+
+msgid "Password reset codes"
+msgstr "رموز إعادة تعيين كلمة المرور"
+
+msgid "Password reset by email code"
+msgstr "إعادة تعيين كلمة المرور برمز البريد"
+
+msgid "Your Internest password reset code"
+msgstr "رمز إعادة تعيين كلمة المرور في Internest"
+
+msgid "Please wait a minute before asking for another code."
+msgstr "انتظر دقيقة قبل طلب رمز جديد."
+
+msgid ""
+"That code is incorrect or has expired. Check your latest email or ask for a "
+"new code."
+msgstr ""
+"الرمز غير صحيح أو انتهت صلاحيته. راجع آخر رسالة وصلتك أو اطلب رمزاً جديداً."
+
+msgid "This reset link has expired. Ask for a new code."
+msgstr "انتهت صلاحية خطوة إعادة التعيين. اطلب رمزاً جديداً."
+
+msgid "Enter the 6 digits from the email."
+msgstr "أدخل الأرقام الستة الموجودة في الرسالة."
+
+msgid "Too many codes were requested for this email. Try again in an hour."
+msgstr "تم طلب رموز كثيرة لهذا البريد. حاول مرة أخرى بعد ساعة."
+
+msgid ""
+"If this email is registered with us, we've sent a 6-digit code to it. It "
+"expires in 10 minutes."
+msgstr ""
+"إذا كان البريد الإلكتروني مسجلاً لدينا، فقد أرسلنا رمز تحقق مكوناً من 6 "
+"أرقام. تنتهي صلاحيته خلال 10 دقائق."
+
+msgid ""
+"Your password was changed. Sign in with your username %(username)s and the "
+"new password."
+msgstr ""
+"تم تغيير كلمة المرور. سجّل الدخول باسم المستخدم %(username)s وكلمة المرور "
+"الجديدة."
+
+msgid "Reset your password"
+msgstr "أعد تعيين كلمة المرور"
+
+msgid ""
+"Someone asked to reset the password of the Internest account that uses this "
+"email. Enter the code above on the reset page to choose a new password."
+msgstr ""
+"طلب أحدهم إعادة تعيين كلمة مرور حساب Internest المرتبط بهذا البريد. أدخل "
+"الرمز الموضح أعلاه في صفحة إعادة التعيين لاختيار كلمة مرور جديدة."
+
+msgid "The code expires in %(n)s minutes and works once."
+msgstr "تنتهي صلاحية الرمز خلال %(n)s دقائق ويُستخدم مرة واحدة فقط."
+
+msgid "Your username: %(u)s"
+msgstr "اسم المستخدم الخاص بك: %(u)s"
+
+msgid ""
+"Didn't ask for this? Ignore this email: your password stays the same. Never "
+"share this code with anyone, including people who say they are from "
+"Internest."
+msgstr ""
+"لم تطلب ذلك؟ تجاهل هذه الرسالة وستبقى كلمة مرورك كما هي. لا تشارك هذا الرمز "
+"مع أي شخص، حتى لو قال إنه من Internest."
+
+msgid "Forgot password?"
+msgstr "نسيت كلمة المرور؟"
+
+msgid "Forgot your current password?"
+msgstr "نسيت كلمة المرور الحالية؟"
+
+msgid "Choose a new password"
+msgstr "اختر كلمة مرور جديدة"
+
+msgid "Set a password for your account"
+msgstr "عيّن كلمة مرور لحسابك"
+
+msgid ""
+"Code verified. Your new password replaces the old one and signs you out "
+"everywhere."
+msgstr ""
+"تم التحقق من الرمز. كلمة المرور الجديدة ستحل محل القديمة وسيتم تسجيل خروجك "
+"من كل الأجهزة."
+
+msgid ""
+"Code verified. You signed up with a social account; this password lets you "
+"sign in with your username too."
+msgstr ""
+"تم التحقق من الرمز. سجّلت بحساب اجتماعي، وكلمة المرور هذه ستتيح لك الدخول "
+"باسم المستخدم أيضاً."
+
+msgid "Steps"
+msgstr "الخطوات"
+
+msgid "Code"
+msgstr "الرمز"
+
+msgid "Forgot your password?"
+msgstr "نسيت كلمة المرور؟"
+
+msgid ""
+"Enter the email of your Internest account. We'll send you a 6-digit code to "
+"set a new password."
+msgstr ""
+"أدخل البريد الإلكتروني لحسابك في Internest، وسنرسل لك رمزاً من 6 أرقام "
+"لتعيين كلمة مرور جديدة."
+
+msgid "Send the code"
+msgstr "أرسل الرمز"
+
+msgid ""
+"Signed up with Google, LinkedIn, GitHub or Microsoft? Use the same email: "
+"the code lets you set a password for your account too."
+msgstr ""
+"سجّلت باستخدام Google أو LinkedIn أو GitHub أو Microsoft؟ استخدم نفس البريد،"
+" وسيتيح لك الرمز تعيين كلمة مرور لحسابك أيضاً."
+
+msgid "Enter the code"
+msgstr "أدخل الرمز"
+
+msgid ""
+"If <bdi dir=\"ltr\">%(email)s</bdi> is registered with us, a 6-digit code is"
+" on its way. It expires in 10 minutes."
+msgstr ""
+"إذا كان البريد <bdi dir=\"ltr\">%(email)s</bdi> مسجلاً لدينا، فرمز التحقق "
+"المكون من 6 أرقام في طريقه إليك. تنتهي صلاحيته خلال 10 دقائق."
+
+msgid "Verify the code"
+msgstr "تحقق من الرمز"
+
+msgid "Send a new code"
+msgstr "أرسل رمزاً جديداً"
+
+msgid "You can ask again in %(s)s seconds."
+msgstr "يمكنك الطلب مرة أخرى بعد %(s)s ثانية."
+
+msgid "Wrong email?"
+msgstr "بريد خاطئ؟"
+
+msgid "Start again"
+msgstr "ابدأ من جديد"
+
+msgid ""
+"If the email <bdi dir=\"ltr\">%(email)s</bdi> is registered with us, we've "
+"sent a 6-digit verification code to it. It expires in 10 minutes."
+msgstr ""
+"إذا كان البريد الإلكتروني <bdi dir=\"ltr\">%(email)s</bdi> مسجلاً لدينا، فقد"
+" أرسلنا رمز تحقق مكوناً من 6 أرقام. تنتهي صلاحيته خلال 10 دقائق."
+
+msgid "Password reset limit"
+msgstr "حد إعادة تعيين كلمة المرور"
+
+msgid "Password reset limits"
+msgstr "حدود إعادة تعيين كلمة المرور"
+
+msgid "This reset step has expired. Ask for a new code."
+msgstr "انتهت صلاحية خطوة إعادة التعيين. اطلب رمزاً جديداً."
+
+msgid "Your password was changed"
+msgstr "تم تغيير كلمة المرور"
+
+msgid "Your Internest password was changed"
+msgstr "تم تغيير كلمة مرورك في Internest"
+
+msgid ""
+"The password of the Internest account %(u)s was just changed with an email "
+"code, and every device was signed out."
+msgstr ""
+"تم للتو تغيير كلمة مرور حساب Internest %(u)s باستخدام رمز البريد، وتم تسجيل "
+"الخروج من كل الأجهزة."
+
+msgid "This account can also sign in with:"
+msgstr "يمكن لهذا الحساب تسجيل الدخول أيضاً عبر:"
+
+msgid ""
+"If this wasn't you, reset your password again right away and contact us."
+msgstr "إذا لم تكن أنت، فأعد تعيين كلمة المرور فوراً وتواصل معنا."
+
+msgid "Many wrong codes were entered"
+msgstr "تم إدخال رموز خاطئة كثيرة"
+
+msgid "Many wrong codes were entered for your Internest account"
+msgstr "تم إدخال رموز خاطئة كثيرة لحسابك في Internest"
+
+msgid ""
+"Someone entered many wrong password-reset codes for the Internest account "
+"%(u)s. Resetting the password by email is paused for 24 hours. Your password"
+" has not changed."
+msgstr ""
+"أدخل شخص ما رموز إعادة تعيين خاطئة كثيرة لحساب Internest %(u)s. تم إيقاف "
+"إعادة تعيين كلمة المرور عبر البريد لمدة 24 ساعة، ولم تتغير كلمة مرورك."
+
+msgid ""
+"If this wasn't you, you don't need to do anything. Never share a code from "
+"our emails with anyone."
+msgstr ""
+"إذا لم تكن أنت، فلا تحتاج لفعل أي شيء. لا تشارك أي رمز من رسائلنا مع أي شخص."

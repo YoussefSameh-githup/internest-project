@@ -574,3 +574,22 @@ class SecurityEventAdmin(ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+from .models import PasswordResetCode  # noqa: E402
+
+
+@admin.register(PasswordResetCode)
+class PasswordResetCodeAdmin(ModelAdmin):
+    """Read-only. Shows when codes were issued and used; the code itself is stored only as a hash."""
+
+    list_display = ("user", "email", "created_at", "expires_at", "attempts", "verified_at", "used_at")
+    search_fields = ("user__username", "email")
+    list_select_related = ("user",)
+    exclude = ("salt", "code_hash")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

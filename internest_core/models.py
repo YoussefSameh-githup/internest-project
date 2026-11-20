@@ -881,6 +881,7 @@ class SecurityEvent(models.Model):
     SCREENING_SCORED = "screening_scored"
     DATA_EXPORT = "data_export"
     ACCOUNT_DELETED = "account_deleted"
+    PASSWORD_RESET = "password_reset"
     ACTION_CHOICES = [
         (PRIVATE_FILE_VIEW, _("Private file opened")),
         (ORDER_ACTIVATED, _("Order activated")),
@@ -888,6 +889,7 @@ class SecurityEvent(models.Model):
         (SCREENING_SCORED, _("Screening task scored")),
         (DATA_EXPORT, _("Data exported")),
         (ACCOUNT_DELETED, _("Account deleted")),
+        (PASSWORD_RESET, _("Password reset by email code")),
     ]
 
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -904,3 +906,48 @@ class SecurityEvent(models.Model):
 
     def __str__(self):
         return f"{self.created_at:%Y-%m-%d %H:%M} {self.action} {self.target}"
+
+
+class PasswordResetThrottle(models.Model):
+    """Per-address counters for "Forgot password", kept in the database for atomic, correctly-expiring limits.
+
+    One row per address hash (sha256, never the address itself), registered or not, so the limits behave the same
+    for every address and reveal nothing. Rejected requests are not counted, so nobody can keep an address locked
+    by asking repeatedly."""
+
+    email_key = models.CharField(max_length=64, unique=True)
+    window_start = models.DateTimeField(default=timezone.now)   # hourly window for sent codes
+    sends = models.PositiveSmallIntegerField(default=0)
+    last_sent_at = models.DateTimeField(null=True, blank=True)  # 60 s cooldown
+    fail_window_start = models.DateTimeField(default=timezone.now)  # daily window for wrong codes
+    failures = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = _("Password reset limit")
+        verbose_name_plural = _("Password reset limits")
+
+
+class PasswordResetCode(models.Model):
+    """One-time 6-digit code for "Forgot password" (internest_core.password_reset).
+
+    Only an HMAC of the code is stored (keyed with SECRET_KEY + a per-row salt), so a database leak does not reveal
+    live codes. A code is usable for 10 minutes and 5 wrong tries; it is spent the moment a new password is saved.
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="password_reset_codes")
+    email = models.EmailField()  # the address the code was sent to (normalised)
+    salt = models.CharField(max_length=32)
+    code_hash = models.CharField(max_length=64)
+    created_at = models.DateTimeField(default=timezone.now)
+    expires_at = models.DateTimeField()
+    attempts = models.PositiveSmallIntegerField(default=0)
+    verified_at = models.DateTimeField(null=True, blank=True)  # the right code was entered
+    used_at = models.DateTimeField(null=True, blank=True)      # spent: password set, replaced, or locked after 5 tries
+
+    class Meta:
+        indexes = [models.Index(fields=["email", "-created_at"], name="pwreset_email_idx")]
+        verbose_name = _("Password reset code")
+        verbose_name_plural = _("Password reset codes")
+
+    def __str__(self):
+        return f"reset code for {self.user_id} ({self.created_at:%Y-%m-%d %H:%M})"
