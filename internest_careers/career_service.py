@@ -145,10 +145,13 @@ def _gap(item, role, statuses, courses_cache) -> dict:
         skill = Skill(id=skill_id, name=name)  # the cached role data already holds id + name: no extra query
         skill._state.adding = False
         courses_cache[skill_id] = courses_for_skill(skill, limit=COURSES_PER_GAP)
-    claimed = bool(statuses.get(skill_id))
+    status = statuses.get(skill_id)
+    claimed = bool(status)
     why = _("Open %(title)s internships that require it: %(n)s of %(total)s.") % {
         "n": item["demand"], "total": role["openings"], "title": role["title"]}
-    if claimed:
+    if status == StudentSkill.STATUS_LAG:
+        why += " " + _("Your test flagged areas to improve: passing the retest counts right away.")
+    elif claimed:
         why += " " + _("You listed it, but it is not verified yet: verifying it counts right away.")
     return {"skill": name, "skill_id": skill_id, "claimed": claimed, "why": why,
             "courses": [{k: c.get(k) for k in ("title", "provider", "url", "price", "is_partner", "opens_externally")}

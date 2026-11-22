@@ -151,6 +151,7 @@ class AccessTests(KitFixtures):
         page = self.client.get(reverse("interview_kit", args=[self.kit.pk]))
         self.assertContains(page, "Scoring criteria")
         self.assertContains(page, "Mona Adel")
+        self.assertContains(page, reverse("partner_profile"))  # company navigation, not the student one
         printed = self.client.get(reverse("interview_kit_print", args=[self.kit.pk]))
         self.assertContains(printed, "window.print()")
         self.assertContains(printed, "☐ 5")

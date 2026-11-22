@@ -22,8 +22,8 @@
                             <div class="cr-role__who">
                                 <h3 class="cr-role__title" dir="auto">{{ role.title }}</h3>
                                 <span class="cr-role__sub">{{ role.discipline_label }}</span>
+                                <span class="cr-pill cr-pill--{{ role.readiness }}">{% if role.readiness == "ready" %}<i class="bi bi-check-circle-fill"></i>{% elif role.readiness == "almost" %}<i class="bi bi-hourglass-split"></i>{% else %}<i class="bi bi-bricks"></i>{% endif %} {{ role.readiness_label }}</span>
                             </div>
-                            <span class="cr-pill cr-pill--{{ role.readiness }}">{% if role.readiness == "ready" %}<i class="bi bi-check-circle-fill"></i>{% elif role.readiness == "almost" %}<i class="bi bi-hourglass-split"></i>{% else %}<i class="bi bi-bricks"></i>{% endif %} {{ role.readiness_label }}</span>
                             <span class="cr-meter" role="img" aria-label="{% blocktrans with n=role.coverage %}{{ n }}% skill coverage{% endblocktrans %}"><b>{{ role.coverage }}%</b><small>{% trans "coverage" %}</small></span>
                         </div>
                         <p class="cr-why">{{ role.why }}</p>

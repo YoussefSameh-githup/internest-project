@@ -9291,3 +9291,8 @@ msgstr "الإجابة القوية تُظهر"
 
 msgid "Follow-up questions"
 msgstr "أسئلة متابعة"
+
+msgid ""
+"Your test flagged areas to improve: passing the retest counts right away."
+msgstr ""
+"أظهر اختبارك نقاطاً تحتاج تحسيناً: اجتياز إعادة الاختبار يُحتسب فوراً."

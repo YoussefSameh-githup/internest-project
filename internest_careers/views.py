@@ -11,6 +11,7 @@ from django.utils.translation import gettext as _
 
 from internest_core import async_tasks, identity
 from internest_core.models import Application, Internship
+from internest_core.views import get_user_context
 from internest_skills.views import student_gate
 
 from . import ai_tasks, career_service
@@ -80,6 +81,11 @@ def _create(request, fallback: str):
     return _classic_create(request, job, fallback)
 
 
+def _page(request, template, context):
+    """Render with the site's account context (company vs student navigation), like every other page."""
+    return render(request, template, {**get_user_context(request), **context})
+
+
 def _partner_or_404(request):
     partner = identity.partner_profile(request.user)
     if partner is None:
@@ -99,7 +105,7 @@ def interview_kits(request):
         "internships": Internship.objects.filter(partner=partner).order_by("-created_at").only("id", "title")[:50],
         "seniorities": InterviewKit.SENIORITY_CHOICES, "ai_available": ai_tasks.available(ai_tasks.INTERVIEW_TASK),
     }
-    return render(request, "careers/interview_kits.html", context)
+    return _page(request, "careers/interview_kits.html", context)
 
 
 @login_required
@@ -125,7 +131,7 @@ def interview_kit_new(request):
 
     context = {"app": app, "internship": internship, "covered": covers(partner, internship),
                "seniorities": InterviewKit.SENIORITY_CHOICES, "ai_available": ai_tasks.available(ai_tasks.INTERVIEW_TASK)}
-    return render(request, "careers/interview_kit_new.html", context)
+    return _page(request, "careers/interview_kit_new.html", context)
 
 
 # ---------------------------------------------------------------- students
@@ -155,14 +161,14 @@ def interview_practice(request):
         "kits": kits.kits_for(request.user, PRACTICE_KITS_SHOWN),
         "seniorities": InterviewKit.SENIORITY_CHOICES, "ai_available": ai_tasks.available(ai_tasks.INTERVIEW_TASK),
     }
-    return render(request, "careers/interview_practice.html", context)
+    return _page(request, "careers/interview_practice.html", context)
 
 
 @student_gate()
 def career_paths(request):
     context = {"hub_tab": "careers", "recs": career_service.recommendations(request.student),
                "ai_available": ai_tasks.available(ai_tasks.CAREER_TASK)}
-    return render(request, "careers/career_paths.html", context)
+    return _page(request, "careers/career_paths.html", context)
 
 
 # ---------------------------------------------------------------- one kit
@@ -188,7 +194,7 @@ def interview_kit(request, kit_id):
     context = _kit_context(request, kit)
     if kit.is_practice:
         context["hub_tab"] = "interview"
-    return render(request, "careers/interview_kit.html", context)
+    return _page(request, "careers/interview_kit.html", context)
 
 
 @login_required
