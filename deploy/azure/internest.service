@@ -1,0 +1,30 @@
+[Unit]
+Description=Internest (gunicorn)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=internest
+Group=internest
+WorkingDirectory=/srv/internest/app
+Environment=PYTHONUNBUFFERED=1
+# 2 workers x 4 threads fits a 1 GB VM; the socket is group-readable so nginx (in the internest group) can reach it.
+ExecStart=/srv/internest/venv/bin/gunicorn internest_app_project.wsgi:application \
+    --bind unix:/run/internest/gunicorn.sock --umask 007 \
+    --workers 2 --worker-class gthread --threads 4 --timeout 120 --graceful-timeout 30 \
+    --max-requests 1000 --max-requests-jitter 100 --access-logfile - --error-logfile -
+RuntimeDirectory=internest
+RuntimeDirectoryMode=0750
+Restart=always
+RestartSec=3
+# Hardening: the app can write only to its own folder.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/internest
+ProtectKernelTunables=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target

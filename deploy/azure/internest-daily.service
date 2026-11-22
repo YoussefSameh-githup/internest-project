@@ -1,0 +1,9 @@
+[Unit]
+Description=Internest daily jobs (backup, security-log purge, API health check)
+
+[Service]
+Type=oneshot
+User=internest
+Group=internest
+WorkingDirectory=/srv/internest/app
+ExecStart=/usr/bin/bash /srv/internest/app/deploy/azure/daily.sh

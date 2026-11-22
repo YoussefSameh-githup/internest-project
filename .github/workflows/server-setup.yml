@@ -1,0 +1,86 @@
+# Installs Internest with deploy/azure/setup.sh on a fresh Ubuntu 24.04 machine, exactly as on the Azure VM
+# (without HTTPS: there is no public domain here), then checks the result from the outside.
+name: Server setup (Azure VM scripts)
+
+on:
+  push:
+    paths:
+      - "deploy/azure/**"
+      - "requirements.txt"
+      - ".github/workflows/server-setup.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      DOMAIN: ci.internest.test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: First run (installs everything, stops for the .env)
+        run: |
+          sudo bash deploy/azure/setup.sh --domain "$DOMAIN" --no-tls \
+            --repo "https://github.com/${{ github.repository }}.git" --branch "${{ github.ref_name }}" | tee first.log
+          grep -q "Upload your .env" first.log
+
+      - name: Upload a .env (test values only)
+        run: |
+          printf 'DJANGO_SECRET_KEY=%s\nDJANGO_DEBUG=False\nDJANGO_ALLOWED_HOSTS=old.example.test\n' "$(openssl rand -hex 32)" \
+            | sudo tee /srv/internest/app/.env >/dev/null
+
+      - name: Second run (configures, migrates, starts)
+        run: |
+          sudo bash deploy/azure/setup.sh --domain "$DOMAIN" --no-tls \
+            --repo "https://github.com/${{ github.repository }}.git" --branch "${{ github.ref_name }}"
+
+      - name: The site answers through nginx
+        run: |
+          curl -fsS -H "Host: $DOMAIN" http://127.0.0.1/healthz/ | tee health.json
+          grep -q '"status": "ok"' health.json
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: $DOMAIN" http://127.0.0.1/)
+          echo "landing page: $code"; [ "$code" = "200" ]
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: $DOMAIN" http://127.0.0.1/static/css/styles.css)
+          echo "static file: $code"; [ "$code" = "200" ]
+
+      - name: Security checks
+        run: |
+          # a private upload is never served directly by nginx
+          sudo -u internest mkdir -p /srv/internest/app/media/cvs
+          echo private | sudo -u internest tee /srv/internest/app/media/cvs/someone.pdf >/dev/null
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: $DOMAIN" http://127.0.0.1/media/cvs/someone.pdf)
+          echo "private CV, anonymous: $code"; [ "$code" = "404" ]
+          # requests for other host names get no answer
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: evil.example" http://127.0.0.1/healthz/ || true)
+          echo "unknown host: $code"; [ "$code" = "000" ]
+          # .env is private to the app user; the firewall is on; the app runs as its own user
+          [ "$(sudo stat -c '%a %U' /srv/internest/app/.env)" = "600 internest" ]
+          sudo ufw status | grep -q "Status: active"
+          [ "$(ps -o user= -C gunicorn | sort -u)" = "internest" ]
+          grep -q "ci.internest.test" /srv/internest/app/.env
+
+      - name: Daily jobs (backup, purge, API health) and a restore from the backup
+        run: |
+          sudo systemctl list-timers --all | grep -q internest-daily
+          sudo systemctl start internest-daily.service || true
+          sudo journalctl -u internest-daily -n 40 --no-pager
+          bundle=$(sudo -u internest bash -c 'ls -1t /srv/internest/backups/internest/internest-full-*.tar.gz | head -1')
+          echo "bundle: $bundle"; [ -n "$bundle" ]
+          sudo systemctl stop internest
+          sudo -u internest -H bash -c "cd /srv/internest/app && /srv/internest/venv/bin/python manage.py restore_backup '$bundle' --yes"
+          sudo systemctl start internest
+
+      - name: Update script (the server's "git pull + Reload")
+        run: |
+          sudo bash /srv/internest/app/deploy/azure/update.sh
+          curl -fsS -H "Host: $DOMAIN" http://127.0.0.1/healthz/
+
+      - name: Logs on failure
+        if: failure()
+        run: |
+          sudo journalctl -u internest -n 120 --no-pager || true
+          sudo tail -n 50 /var/log/nginx/error.log || true

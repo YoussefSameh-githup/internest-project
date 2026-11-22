@@ -1,0 +1,10 @@
+[Unit]
+Description=Run the Internest daily jobs at 02:00 UTC
+
+[Timer]
+OnCalendar=*-*-* 02:00:00 UTC
+Persistent=true
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target

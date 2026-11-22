@@ -1,0 +1,3 @@
+# What a Linux server (Azure VM / any VPS) installs: the app's requirements plus the WSGI server.
+-r ../../requirements.txt
+gunicorn==23.0.0
