@@ -86,7 +86,8 @@ sed "s/__DOMAIN__/$DOMAIN/g" "$HERE/nginx.conf" > /etc/nginx/sites-available/int
 ln -sf /etc/nginx/sites-available/internest /etc/nginx/sites-enabled/internest
 rm -f /etc/nginx/sites-enabled/default
 nginx -t -q
-systemctl reload nginx
+systemctl enable nginx >/dev/null
+systemctl restart nginx
 
 echo "== 6/7 Firewall: SSH, HTTP and HTTPS only"
 ufw allow OpenSSH >/dev/null
