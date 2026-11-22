@@ -25,6 +25,12 @@ def can_confirm_completion(user, enrollment) -> bool:
     return partner is not None and enrollment.course.partner_id == partner.pk
 
 
+def confirm_payment(enrollment) -> bool:
+    """Staff confirmed the payment of a reserved seat: the course content unlocks. True when it changed."""
+    return bool(StudentEnrollment.objects.filter(pk=enrollment.pk, status=StudentEnrollment.STATUS_PENDING_PAYMENT)
+                .update(status=StudentEnrollment.STATUS_ENROLLED))
+
+
 @transaction.atomic
 def complete_enrollment(enrollment) -> bool:
     """Mark completed, issue the certificate and (accredited course + skill) verify the skill.
@@ -34,8 +40,8 @@ def complete_enrollment(enrollment) -> bool:
     from internest_skills.models import StudentSkill
 
     enrollment = StudentEnrollment.objects.select_for_update().select_related("course__partner", "course__skill").get(pk=enrollment.pk)
-    if enrollment.is_completed:
-        return False
+    if enrollment.is_completed or not enrollment.is_paid:
+        return False  # an unpaid seat can never earn a certificate or a verified skill
     enrollment.status, enrollment.completed_at = StudentEnrollment.STATUS_COMPLETED, timezone.now()
     enrollment.save(update_fields=["status", "completed_at"])
 

@@ -84,6 +84,8 @@
                     {{ e.course.title }}{% if e.course.skill %} · {{ e.course.skill.name }}{% endif %}
                     {% if e.is_completed %}
                         <a class="sh-pill sh-pill--ok" href="{% url 'course_certificate' e.certificate_id %}">{% trans "Certificate" %}</a>
+                    {% elif not e.is_paid %}
+                        <span class="sh-pill">{% trans "Awaiting payment" %}</span>
                     {% else %}
                         <span class="sh-pill">{% trans "In progress" %}</span>
                     {% endif %}
@@ -113,8 +115,10 @@
                         </div>
                         <footer class="sh-card__foot">
                             <span class="sh-price">{{ course.price }} <small>{% trans "EGP" %}</small></span>
-                            {% if course.id in enrolled_course_ids %}
+                            {% if course.id in paid_course_ids %}
                                 <a href="{{ course.video_link }}" target="_blank" rel="noopener" class="btn btn--success btn--sm"><i class="bi bi-play-circle-fill"></i> {% trans "Watch" %}</a>
+                            {% elif course.id in enrolled_course_ids %}
+                                <span class="sh-pill"><i class="bi bi-hourglass-split"></i> {% trans "Awaiting payment" %}</span>
                             {% else %}
                                 <a href="{% url 'course_checkout' course.id %}" class="btn btn--primary btn--sm">{% trans "Enroll" %} <i class="bi bi-arrow-left-short"></i></a>
                             {% endif %}
@@ -122,6 +126,7 @@
                     </article>
                 {% endfor %}
             </div>
+            {% include "components/pager.html" with page=courses_page querystring=courses_querystring %}
         {% else %}
             <div class="sh-empty sh-empty--compact">
                 <i class="bi bi-mortarboard"></i>

@@ -1829,6 +1829,10 @@ a.pf-stat:hover { border-color: #c7d2fe; }
 .ol-tag:hover { background: #e0e7ff; }
 .ol-tag--clear { background: transparent; color: #64748b; }
 
+/* components/pager.html: previous / next links under any paginated list (RTL-safe: flex order follows dir). */
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+.pager__count { color: #64748b; font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+
 .ol-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
 .ol-card { display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 20px; background: #fff; border: 1px solid #e8edf5;
   box-shadow: 0 1px 3px rgba(15, 23, 42, .04); transition: transform .2s, box-shadow .2s, border-color .2s; }

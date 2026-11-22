@@ -537,8 +537,8 @@ UNFOLD = {
     "SITE_HEADER": "Internest",
     "SITE_SUBHEADER": _("Control center"),
     "SITE_URL": "/",
-    "SITE_ICON": lambda request: static("img/internest_logo.jpg"),
-    "SITE_FAVICONS": [{"rel": "icon", "type": "image/jpeg", "href": lambda request: static("img/internest_logo.jpg")}],
+    "SITE_ICON": lambda request: static("img/internest_logo_192.jpg"),  # small copy; the original is 1024 px / 106 KB
+    "SITE_FAVICONS": [{"rel": "icon", "type": "image/jpeg", "href": lambda request: static("img/internest_logo_192.jpg")}],
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
     "SHOW_LANGUAGES": True,  # AR / EN switch; the layout flips to RTL in Arabic

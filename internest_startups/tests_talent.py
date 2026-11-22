@@ -85,7 +85,8 @@ class TalentPoolTests(PoolBase):
         self.assertEqual(self._names(self.client.get(URL, {"min_score": "90"})), {"amr"})
         self.assertEqual(self._names(self.client.get(URL, {"university": "Ain Shams"})), {"sara"})
         self.assertEqual(self._names(self.client.get(URL, {"major": "Computer Science"})), {"amr"})
-        self.assertEqual(self._names(self.client.get(URL, {"q": "dashboard"})), {"amr"})
+        self.assertEqual(self._names(self.client.get(URL, {"q": "computer"})), {"amr"})  # major
+        self.assertEqual(self._names(self.client.get(URL, {"q": "dashboard"})), set())  # free-text bio is not scanned
         self.assertEqual(self._names(self.client.get(URL, {"q": "financial"})), {"sara"})
         self.assertEqual(self._names(self.client.get(URL, {"skill": python, "min_score": "99"})), set())
         resp = self.client.get(URL)

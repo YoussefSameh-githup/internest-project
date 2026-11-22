@@ -18,7 +18,9 @@ def _env_int(name, default):
         return default
 
 
-bind = os.getenv("GUNICORN_BIND", "0.0.0.0:8000")
+# Loopback by default: the reverse proxy (nginx/Caddy) is the only public listener. GUNICORN_BIND=0.0.0.0:8000 (or a unix
+# socket) when the proxy runs on another host or in another container (audit L8).
+bind = os.getenv("GUNICORN_BIND", "127.0.0.1:8000")
 worker_class = os.getenv("GUNICORN_WORKER_CLASS", "uvicorn.workers.UvicornWorker")
 # (2 x cores) + 1 is the classic sizing for I/O-bound Django; heavy AI work runs in the async task runner instead.
 workers = _env_int("GUNICORN_WORKERS", multiprocessing.cpu_count() * 2 + 1)

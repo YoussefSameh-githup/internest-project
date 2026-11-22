@@ -20,7 +20,7 @@
             <div style="text-align: center;">
                 <div class="profile-avatar" style="border-radius: var(--radius-2xl);">
                     {% if partner_profile.logo %}
-                        <img src="{{ partner_profile.logo.url }}" alt="" style="object-fit: contain; background: var(--white);">
+                        <img src="{{ partner_profile.logo.url }}" alt="" width="160" height="160" decoding="async" style="object-fit: contain; background: var(--white);">
                     {% else %}
                         <i class="bi bi-building"></i>
                     {% endif %}

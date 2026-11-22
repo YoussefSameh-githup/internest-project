@@ -51,9 +51,11 @@ def pool_queryset(params):
 
     q = params.get("q", "").strip()[:80]
     if q:
+        # Name, major, university and verified-skill names. Free-text `bio` is not searched: a LIKE over every
+        # candidate's long text was the costliest part of the scan, and skills/major already describe the candidate.
         students = students.filter(
             Q(user__first_name__icontains=q) | Q(user__last_name__icontains=q) | Q(major__icontains=q)
-            | Q(university__icontains=q) | Q(bio__icontains=q)
+            | Q(university__icontains=q)
             | Q(pk__in=qualifying_skills().filter(skill__name__icontains=q).values("student_id"))
         )
     if params.get("university"):
@@ -77,7 +79,18 @@ def pool_queryset(params):
     )
 
 
+POOL_CACHE_GROUP = "talent_pool"  # bumped by internest_startups/signals.py when a candidate, skill or account changes
+FILTER_OPTIONS_TTL = 300
+
+
 def filter_options():
+    """The search dropdowns (pool-wide distinct values): cached, shared by every company, invalidated on change."""
+    from internest_core.page_cache import cached_value
+
+    return cached_value(POOL_CACHE_GROUP, "filter_options", FILTER_OPTIONS_TTL, _compute_filter_options)
+
+
+def _compute_filter_options():
     pool = pool_candidates()
 
     def distinct(field):  # stored values as-is, so the exact-match filter finds them
@@ -85,7 +98,8 @@ def filter_options():
                       key=str.lower)
 
     return {
-        "skills": Skill.objects.filter(student_skills__in=qualifying_skills(), student_skills__student__in=pool).distinct().order_by("name"),
+        "skills": list(Skill.objects.filter(student_skills__in=qualifying_skills(), student_skills__student__in=pool)
+                       .distinct().order_by("name")),
         "universities": distinct("university"),
         "majors": distinct("major"),
     }

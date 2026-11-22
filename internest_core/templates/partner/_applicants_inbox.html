@@ -99,9 +99,10 @@
             {% endfor %}
         </nav>
 
-        {% for g in shown_gigs %}
+        {% comment %}Only the selected opportunity's panel is rendered (its applicants are paginated); the tabs are plain links.{% endcomment %}
+        {% with g=selected_group %}{% if g %}
             {% with gig=g.internship %}
-            <section class="ix-card ix-gig" data-gig-panel="{{ gig.pk }}" role="tabpanel" {% if selected_gig != gig.pk|stringformat:'s' %}hidden{% endif %}>
+            <section class="ix-card ix-gig" data-gig-panel="{{ gig.pk }}" role="tabpanel" >
                 <header class="ix-summary">
                     <div>
                         <h4 dir="auto">{{ gig.title }}</h4>
@@ -183,9 +184,10 @@
                     <div class="ix-empty"><i class="bi bi-inbox"></i><strong>{% trans "No applicants for this opportunity yet" %}</strong>
                         <small>{% trans "Share the opportunity link or invite verified students from the Talent Pool." %}</small></div>
                 {% endif %}
+                {% include "components/pager.html" with page=applicants_page querystring=inbox_querystring %}
             </section>
             {% endwith %}
-        {% endfor %}
+        {% endif %}{% endwith %}
     {% else %}
         <div class="ix-card ix-empty">
             <i class="bi {% if inbox_view == 'archive' %}bi-archive{% else %}bi-inbox{% endif %}"></i>
@@ -201,15 +203,6 @@
 </div>
 <script>
 (function () {
-  var tabs = document.querySelectorAll("[data-gig]");
-  tabs.forEach(function (tab) {
-    tab.addEventListener("click", function (e) {
-      e.preventDefault();
-      tabs.forEach(function (t) { t.setAttribute("aria-selected", t === tab ? "true" : "false"); });
-      document.querySelectorAll("[data-gig-panel]").forEach(function (p) { p.hidden = p.dataset.gigPanel !== tab.dataset.gig; });
-      history.replaceState(null, "", tab.getAttribute("href"));
-    });
-  });
   document.addEventListener("click", function (e) {  // close open status menus when clicking elsewhere
     document.querySelectorAll(".ix-menu[open]").forEach(function (m) { if (!m.contains(e.target)) m.removeAttribute("open"); });
   });

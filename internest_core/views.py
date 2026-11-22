@@ -8,7 +8,8 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
-from django.db.models import Case, F, IntegerField, Prefetch, Q, Value, When
+from django.db.models import Case, Count, F, IntegerField, Q, Value, When
+from django.core.paginator import Paginator
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -346,6 +347,17 @@ def logout_view(request):
     return redirect("landing")
 
 
+INTERNSHIPS_PER_PAGE = 20
+
+
+def _querystring_without(request, *keys) -> str:
+    """The current filters as a query string (minus `keys`), for page links that keep the filters."""
+    params = request.GET.copy()
+    for key in keys:
+        params.pop(key, None)
+    return params.urlencode()
+
+
 @login_required
 def internship_list(request):
     from internest_skills.matching import MATCH_THRESHOLD
@@ -370,20 +382,16 @@ def internship_list(request):
         internships = internships.filter(Q(title__icontains=query) | Q(partner__company_name__icontains=query))
     if major:
         internships = internships.filter(required_majors__icontains=major)
-
-    verified_partner_names = set(
-        PartnerProfile.objects
-        .filter(is_fully_verified=True)
-        .values_list("company_name", flat=True)
-    )
+    if mode in ("online", "onsite"):  # the same keywords as Internship.is_online, matched in SQL so the page can be sliced
+        online = Internship.online_q()
+        internships = internships.filter(online) if mode == "online" else internships.exclude(online)
 
     student = _get_student_profile(request.user)
     applied_ids = set(
         Application.objects.filter(applicant=request.user).values_list("internship_id", flat=True)
     ) if student is not None else set()
-    internships = list(internships)
-    if mode in ("online", "onsite"):  # location keywords live in free text, so filter in Python
-        internships = [i for i in internships if i.is_online == (mode == "online")]
+    page = Paginator(internships, INTERNSHIPS_PER_PAGE).get_page(request.GET.get("page"))
+    internships = list(page.object_list)  # only this page is scored
     scores = bulk_match_scores(internships, student)  # semantic coverage, same rule as the apply gate
     for internship in internships:
         internship.match_score = scores[internship.id]
@@ -392,10 +400,9 @@ def internship_list(request):
             "ok" if internship.match_score >= MATCH_THRESHOLD else "near" if internship.match_score >= MATCH_THRESHOLD - 20 else "low"
         )
 
-    def without(key):
-        params = request.GET.copy()
-        params.pop(key, None)
-        return f"?{params.urlencode()}" if params else "?"
+    def without(key):  # removing a filter starts again from page 1
+        params = _querystring_without(request, key, "page")
+        return f"?{params}" if params else "?"
 
     active_filters = [
         (label, without(key)) for key, label in (
@@ -408,8 +415,8 @@ def internship_list(request):
     context.update({
         "applied_ids": applied_ids,
         "internships": internships,
+        "page": page, "querystring": _querystring_without(request, "page"),
         "available_majors": ["CS", "Engineering", "Finance", "Marketing"],
-        "verified_partner_names": verified_partner_names,
         "is_student": student is not None, "mode": mode, "active_filters": active_filters,
     })
     return render(request, "internship/list.html", context)
@@ -581,11 +588,17 @@ def partner_profile_view(request):
         return redirect("startup_company_profile")  # startups have a single profile page
 
     if request.method == "POST":
+        old_name, old_email = partner_profile.company_name, partner_profile.official_email
         form = PartnerProfileEditForm(request.POST, request.FILES, instance=partner_profile)
         if form.is_valid():
             partner_profile = form.save()
+            revoked = partner_profile.revoke_verification_if_identity_changed(old_name, old_email)
             partner_profile.calculate_completion()
-            messages.success(request, _("Partner details updated."))
+            if revoked:
+                messages.warning(request, _("Your organization name or official email changed, so the verified badge is "
+                                            "paused until our team re-checks it."))
+            else:
+                messages.success(request, _("Partner details updated."))
             return redirect("partner_profile")
     else:
         form = PartnerProfileEditForm(instance=partner_profile)
@@ -606,15 +619,14 @@ def active_applications(partner):
     )
 
 
+APPLICANTS_PER_PAGE = 25
+
+
 def _gig_groups(internships):
-    """One entry per opportunity with its own applicants, open opportunities first (newest first)."""
-    groups = []
-    for internship in internships:
-        apps = sorted(internship.application_set.all(), key=lambda a: a.application_date, reverse=True)
-        groups.append({
-            "internship": internship, "applications": apps, "total": len(apps),
-            "active": sum(1 for a in apps if a.status in Application.ACTIVE_STATUSES),
-        })
+    """One entry per opportunity, open first (newest first). Counts come from annotations (see partner_dashboard_view);
+    applications are loaded later for the selected opportunity only."""
+    groups = [{"internship": internship, "applications": [], "total": internship.applicant_total,
+               "active": internship.active_applicant_total} for internship in internships]
     groups.sort(key=lambda g: g["internship"].created_at, reverse=True)
     return [g for g in groups if g["internship"].is_open], [g for g in groups if not g["internship"].is_open]
 
@@ -633,12 +645,12 @@ def partner_dashboard_view(request, section="overview"):
         .filter(partner=partner_profile)
         .order_by("-submission_date")
     )
-    published_internships = (
+    published_internships = (  # counts only: applicant rows are loaded for the selected opportunity in the inbox
         Internship.objects
         .filter(partner=partner_profile)
         .order_by("-deadline")
-        .prefetch_related(Prefetch("application_set", queryset=Application.objects.select_related(
-            "applicant", "applicant__studentprofile")))
+        .annotate(applicant_total=Count("application"),
+                  active_applicant_total=Count("application", filter=Q(application__status__in=Application.ACTIVE_STATUSES)))
     )
     course_submissions = (
         PartnerCourseSubmission.objects
@@ -697,12 +709,22 @@ def partner_dashboard_view(request, section="overview"):
         view = "archive" if request.GET.get("view") == "archive" and archived_gigs else "open"
         shown = archived_gigs if view == "archive" else open_gigs
         selected = request.GET.get("gig", "")
-        if not any(str(g["internship"].pk) == selected for g in shown):
+        group = next((g for g in shown if str(g["internship"].pk) == selected), None)
+        if group is None:
             # Default: the first opportunity with applicants waiting for a decision, else the newest one.
-            first = next((g for g in shown if g["active"]), shown[0] if shown else None)
-            selected = str(first["internship"].pk) if first else ""
+            group = next((g for g in shown if g["active"]), shown[0] if shown else None)
+        selected = str(group["internship"].pk) if group else ""
+        applicants_page = None
+        if group:
+            paginator = Paginator(
+                group["internship"].application_set.select_related("applicant", "applicant__studentprofile")
+                .order_by("-application_date", "-pk"), APPLICANTS_PER_PAGE)
+            paginator.count = group["total"]  # already annotated: skip the paginator's COUNT query
+            applicants_page = paginator.get_page(request.GET.get("page"))
+            group["applications"] = list(applicants_page.object_list)
         context.update({"open_gigs": open_gigs, "archived_gigs": archived_gigs, "inbox_view": view,
-                        "shown_gigs": shown, "selected_gig": selected})
+                        "shown_gigs": shown, "selected_gig": selected, "selected_group": group,
+                        "applicants_page": applicants_page, "inbox_querystring": _querystring_without(request, "page")})
     return render(request, "partner/dashboard.html", context)
 
 
@@ -823,6 +845,7 @@ def task_list_view(request):
         GamificationTask.objects
         .filter(is_active=True)
         .exclude(id__in=completed_task_ids)
+        .annotate(question_count=Count("questions"))  # one query for every card's "Questions: n"
     )
     context = get_user_context(request)
     context["tasks"] = available_tasks
@@ -888,6 +911,10 @@ def task_result_view(request, task_id):
     return render(request, "internship/task_result.html", context)
 
 
+COURSES_PER_PAGE = 12
+MAX_TRACKS = 6
+
+
 @login_required
 def course_list_view(request):
     student_profile = _get_student_profile(request.user)
@@ -898,28 +925,29 @@ def course_list_view(request):
     courses = (
         PartnerCourseSubmission.objects
         .filter(status="Approved")
-        .select_related("partner")
-        .order_by("-submission_date")
+        .select_related("partner", "skill")
+        .order_by("-submission_date", "-pk")
     )
-    enrolled_course_ids = set(
-        StudentEnrollment.objects
-        .filter(student=student_profile)
-        .values_list("course_id", flat=True)
-    )
+    courses_page = Paginator(courses, COURSES_PER_PAGE).get_page(request.GET.get("page"))
+    seats = dict(StudentEnrollment.objects.filter(student=student_profile).values_list("course_id", "status"))
+    enrolled_course_ids = set(seats)
+    paid_course_ids = {cid for cid, status in seats.items() if status != StudentEnrollment.STATUS_PENDING_PAYMENT}
     from internest_skills.recommendations import recommendations_for_student
 
     from internest_skills.recommendations import track_recommendations
 
     recommended = recommendations_for_student(student_profile)
-    # Learning paths: one track per tested skill (gaps first) with its score and its own courses.
-    tracks = [
-        {"record": ss, "recs": track_recommendations(ss)}
-        for ss in skill_quizzes(student_profile) if ss.status in ("lag", "verified")
-    ][:6]
+    # Learning paths: one track per tested skill (gaps first) with its score and its own courses. Only the tracks
+    # shown are computed (each track_recommendations call runs its own queries; it used to run for every skill).
+    tested = [ss for ss in skill_quizzes(student_profile) if ss.status in ("lag", "verified")][:MAX_TRACKS]
+    tracks = [{"record": ss, "recs": track_recommendations(ss)} for ss in tested]
 
     context = get_user_context(request)
-    context["courses"] = courses
+    context["courses"] = courses_page.object_list
+    context["courses_page"] = courses_page
+    context["courses_querystring"] = _querystring_without(request, "page")
     context["enrolled_course_ids"] = enrolled_course_ids
+    context["paid_course_ids"] = paid_course_ids
     context["my_enrollments"] = (StudentEnrollment.objects.filter(student=student_profile)
                                  .select_related("course__partner", "course__skill").order_by("-enrolled_on"))
     context["recommended"] = recommended
@@ -1002,11 +1030,14 @@ def course_checkout_view(request, course_id):
                         discount_for_purchase = None
 
                 final_price, _amount, _code = _compute_final_price(course, discount_for_purchase)
-
+                # No online course payment exists yet: a paid seat is reserved, and its content (video link) and
+                # skill verification stay locked until staff confirm the payment. Free seats open right away.
+                paid_seat = final_price > Decimal("0.00")
                 enrollment, created = StudentEnrollment.objects.get_or_create(
                     student=student_profile,
                     course=course,
-                    defaults={"final_price": final_price},
+                    defaults={"final_price": final_price, "status": (StudentEnrollment.STATUS_PENDING_PAYMENT if paid_seat
+                                                                     else StudentEnrollment.STATUS_ENROLLED)},
                 )
                 if created:
                     if discount_for_purchase is not None:
@@ -1015,7 +1046,10 @@ def course_checkout_view(request, course_id):
                         )
 
             request.session.pop(session_key, None)
-            messages.success(request, _("You're enrolled! Finish the course to get your certificate."))
+            if enrollment.is_paid:
+                messages.success(request, _("You're enrolled! Finish the course to get your certificate."))
+            else:
+                messages.info(request, _("Your seat is reserved. The course opens as soon as your payment is confirmed."))
             return redirect("purchase_success", enrollment_id=enrollment.id)
 
     final_price, discount_amount, discount_code_str = _compute_final_price(course, discount_code_obj)
@@ -1056,6 +1090,9 @@ def partner_course_complete(request, enrollment_id):
                                    pk=enrollment_id)
     if not can_confirm_completion(request.user, enrollment):
         raise Http404
+    if not enrollment.is_paid:
+        messages.error(request, _("This seat is still awaiting payment confirmation."))
+        return redirect(reverse("partner_dashboard_section", args=["courses"]) if not request.user.is_staff else "partner_dashboard")
     verified = complete_enrollment(enrollment)
     name = enrollment.student.user.get_full_name() or enrollment.student.user.username
     if verified:

@@ -153,10 +153,17 @@ class CourseVerificationTests(ApplicationsBase):
                                                              instructor_name="Dr X", status="Approved", skill=self.python)
         self.student_user, self.student = _student("mona")
 
-    def _enroll(self):
+    def _enroll(self, paid=True):
+        """Check out the paid course; `paid` = staff then confirm the payment (the seat is reserved until then)."""
+        from internest_core.courses import confirm_payment
+
         self.login_student(self.student_user)
         self.client.post(reverse("course_checkout", args=[self.course.pk]), {"confirm_purchase": "1"})
-        return StudentEnrollment.objects.get(student=self.student, course=self.course)
+        enrollment = StudentEnrollment.objects.get(student=self.student, course=self.course)
+        if paid:
+            confirm_payment(enrollment)
+            enrollment.refresh_from_db()
+        return enrollment
 
     def _complete_as_partner(self, enrollment):
         self.client.force_login(self.founder)

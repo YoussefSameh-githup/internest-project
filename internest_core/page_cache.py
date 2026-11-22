@@ -97,13 +97,29 @@ def _personalise(request, content: bytes) -> bytes:
     return content.replace(CSRF_PLACEHOLDER, get_token(request).encode("ascii"))  # also schedules the CSRF cookie
 
 
-def cache_public_page(ttl: int = 600, group: str = "public"):
+def _cache_path(request, vary_on):
+    """(path + the query params the page really uses, sorted; True when other params were sent).
+
+    The key never holds the raw query string: `/?utm=1`, `/?x=<random>` ... would otherwise each store a copy of the
+    page, so anyone could flood the cache. Unknown params (tracking tags, junk) are served the canonical copy."""
+    from urllib.parse import urlencode
+
+    kept = sorted((name, value) for name in vary_on for value in request.GET.getlist(name))
+    extra = any(name not in vary_on for name in request.GET)
+    return (f"{request.path}?{urlencode(kept)}" if kept else request.path), extra
+
+
+def cache_public_page(ttl: int = 600, group: str = "public", vary_on=()):
+    """`vary_on`: the GET params the view reads (each value gets its own copy); every other param is ignored."""
+    vary_on = tuple(vary_on)
+
     def decorator(view):
         @functools.wraps(view)
         def wrapper(request, *args, **kwargs):
             if not _cacheable_request(request):
                 return view(request, *args, **kwargs)
-            key = f"page:{group}:{_version(group)}:{_deploy_version()}:{translation.get_language()}:{request.get_full_path()}"
+            path, extra_params = _cache_path(request, vary_on)
+            key = f"page:{group}:{_version(group)}:{_deploy_version()}:{translation.get_language()}:{path}"
             hit = cache.get(key)
             if hit is not None:
                 content, content_type = hit
@@ -111,7 +127,9 @@ def cache_public_page(ttl: int = 600, group: str = "public"):
                 response["X-Page-Cache"] = "HIT"
                 return response
             response = view(request, *args, **kwargs)
-            if _cacheable_response(request, response):
+            # A render for an unknown query string may echo it (the language switcher's `next`): never store it as
+            # the canonical copy. The next plain request stores it; until then such requests just render.
+            if not extra_params and _cacheable_response(request, response):
                 if hasattr(response, "render") and callable(response.render) and not response.is_rendered:
                     response.render()
                 stored = _template_for_cache(request, response.content)

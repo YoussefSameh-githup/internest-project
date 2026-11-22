@@ -18,6 +18,10 @@
                     {% if s.similarity_flag %} · <span class="badge badge--warning">{% trans "Nearly identical to another applicant's answer" %}</span>{% endif %}</p>
                 {% if s.answer_text %}<pre class="sc__answer" dir="auto">{{ s.answer_text }}</pre>{% endif %}
                 {% if s.link %}<p><a href="{{ s.link }}" target="_blank" rel="noopener noreferrer nofollow">{{ s.link }}</a></p>{% endif %}
+                {% if not screening.can_manage %}
+                <p class="sc__note">{% trans "Scoring screening answers comes with a Hiring Pass for this opportunity." %}
+                    <a href="{{ screening.edit_url }}">{% trans "Make the task optional" %}</a> · <a href="{% url 'startup_upgrade' %}">{% trans "See the Hiring Pass" %}</a></p>
+                {% else %}
                 <form method="post" action="{{ screening.score_url }}" class="sc__score">
                     {% csrf_token %}
                     {% for c in screening.rows %}
@@ -28,6 +32,7 @@
                     <button type="submit" class="btn btn--primary btn--sm">{% if s.reviewed_at %}{% trans "Update score" %}{% else %}{% trans "Save score" %}{% endif %}</button>
                     <small>{% blocktrans with m=screening.task.pass_mark %}Pass mark: {{ m }}%.{% endblocktrans %}</small>
                 </form>
+                {% endif %}
             {% endif %}
         {% endwith %}
         {% if screening.block %}<p class="sc__block" role="status"><i class="bi bi-info-circle" aria-hidden="true"></i> {{ screening.block }}</p>{% endif %}

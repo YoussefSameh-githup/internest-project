@@ -28,7 +28,7 @@
                     <div class="flex items-center gap-4" style="padding: var(--space-4); background: var(--slate-50); border-radius: var(--radius-md);">
                         <div class="listing-card__avatar" style="width: 60px; height: 60px;">
                             {% if course.partner.logo %}
-                                <img src="{{ course.partner.logo.url }}" alt="">
+                                <img src="{{ course.partner.logo.url }}" alt="" width="60" height="60" decoding="async">
                             {% else %}
                                 <i class="bi bi-mortarboard"></i>
                             {% endif %}

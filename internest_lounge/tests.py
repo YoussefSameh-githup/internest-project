@@ -298,3 +298,47 @@ class PostEditingRulesTests(LoungeTestBase):
         self.assertEqual(self.client.post(reverse("lounge_delete", args=[post.pk])).status_code, 404)
         self.assertNotContains(self.client.get(LOUNGE), reverse("lounge_edit", args=[post.pk]))
         self.assertTrue(LoungePost.objects.filter(pk=post.pk).exists())
+
+
+class FeedQueryTests(LoungeTestBase):
+    """The feed loads every post's comments in ONE query (was one per post) and caps how many each card shows."""
+
+    FEED_QUERY_CEILING = 12  # measured 12 (was 11 + one comments query per post before the Prefetch)
+
+    def _seed(self, posts, comments_each):
+        authors = [self.founder.partnerprofile] + [p.partnerprofile for p in self.peers]
+        for i in range(posts):
+            post = LoungePost.objects.create(author=authors[i % len(authors)], body=f"Post body {i}", category="advice")
+            parent = None
+            for j in range(comments_each):
+                parent = LoungeComment.objects.create(post=post, author=authors[j % len(authors)], body=f"c{i}-{j}",
+                                                      parent=parent if j % 2 else None)
+
+    def _count(self):
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        self.client.force_login(self.founder)
+        self.client.get(reverse("lounge_feed"))  # warm-up
+        with CaptureQueriesContext(connection) as ctx:
+            self.assertEqual(self.client.get(reverse("lounge_feed")).status_code, 200)
+        return len(ctx.captured_queries)
+
+    def test_feed_query_ceiling_does_not_grow_with_posts(self):
+        self._seed(posts=3, comments_each=2)
+        few = self._count()
+        self.assertLessEqual(few, self.FEED_QUERY_CEILING)
+        self._seed(posts=12, comments_each=3)
+        self.assertEqual(self._count(), few)  # no per-post comments query
+
+    def test_feed_caps_comments_per_post_and_links_to_the_post(self):
+        from .views import FEED_COMMENTS_PER_POST
+
+        self._seed(posts=1, comments_each=FEED_COMMENTS_PER_POST + 5)
+        post = LoungePost.objects.get()
+        self.client.force_login(self.founder)
+        html = self.client.get(reverse("lounge_feed")).content.decode()
+        self.assertEqual(html.count('class="nw-comment '), FEED_COMMENTS_PER_POST)
+        self.assertIn(f'href="{reverse("lounge_post", args=[post.pk])}#comments-{post.pk}"', html)
+        detail = self.client.get(reverse("lounge_post", args=[post.pk])).content.decode()
+        self.assertEqual(detail.count('class="nw-comment '), FEED_COMMENTS_PER_POST + 5)  # the post page shows all

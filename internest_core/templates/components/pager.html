@@ -1,0 +1,9 @@
+{% load i18n %}{% comment %}Previous / next page links that keep the current filters.
+Usage: {% include "components/pager.html" with page=page querystring=querystring %}  (querystring: the GET params minus "page").{% endcomment %}
+{% if page.has_other_pages %}
+<nav class="pager" aria-label="{% trans 'Pages' %}">
+    {% if page.has_previous %}<a class="btn btn--ghost btn--sm" rel="prev" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page.previous_page_number }}">{% trans "Previous" %}</a>{% else %}<span></span>{% endif %}
+    <span class="pager__count">{{ page.number }} / {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}<a class="btn btn--ghost btn--sm" rel="next" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page.next_page_number }}">{% trans "Next" %}</a>{% else %}<span></span>{% endif %}
+</nav>
+{% endif %}

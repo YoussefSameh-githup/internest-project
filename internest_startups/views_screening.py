@@ -152,6 +152,10 @@ def screening_score(request, app_id):
     submission = screening.submission_for(app)
     if submission is None:
         raise Http404
+    if not screening.can_manage(partner, app.internship):  # audit L5: scoring is a paid feature of THIS opportunity
+        messages.error(request, _("Scoring screening answers comes with a Hiring Pass for this opportunity. "
+                                  "You can still make the task optional."))
+        return redirect("partner_applicant", app_id=app.pk)
     points = {k.removeprefix("points_"): v for k, v in request.POST.items() if k.startswith("points_")}
     screening.score(submission, points, request.POST.get("note", ""))
     audit.record(request, "screening_scored", target=f"application:{app.pk}")

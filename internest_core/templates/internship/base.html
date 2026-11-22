@@ -28,14 +28,21 @@
 
     <title>{% block title %}Internest — {% trans "Verified student talent marketplace" %}{% endblock title %}</title>
 
-    <link rel="icon" type="image/jpeg" href="{% static 'img/internest_logo.jpg' %}">
-    <link rel="apple-touch-icon" href="{% static 'img/internest_logo.jpg' %}">
+    {# 192 px copy (5 KB) for every small placement; the 1024 px original stays for og:image and PDF letters. #}
+    <link rel="icon" type="image/jpeg" href="{% static 'img/internest_logo_192.jpg' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/internest_logo_192.jpg' %}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
+    {# Only the families this direction's stylesheet uses (styles.css: RTL = Cairo body + Tajawal display, LTR = Inter), #}
+    {# at the weights it uses (400-800; nothing asks for 900). #}
+    {% if LANGUAGE_BIDI %}
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
+    {% else %}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    {% endif %}
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     {% if LANGUAGE_BIDI %}
@@ -92,7 +99,7 @@
             {% else %}
                 <a href="{% url 'landing' %}" class="nav__brand" aria-label="Internest">
             {% endif %}
-                <img src="{% static 'img/internest_logo.jpg' %}" alt="" width="38" height="38">
+                <img src="{% static 'img/internest_logo_192.jpg' %}" alt="" width="38" height="38">
                 <span>INTERNEST</span>
             </a>
 
@@ -187,7 +194,7 @@
             <div class="footer__grid">
                 <div>
                     <a href="{% url 'landing' %}" class="footer__brand">
-                        <img src="{% static 'img/internest_logo.jpg' %}" alt="Internest" loading="lazy" decoding="async">
+                        <img src="{% static 'img/internest_logo_192.jpg' %}" alt="Internest" width="36" height="36" loading="lazy" decoding="async">
                         <span>INTERNEST</span>
                     </a>
                     <p class="footer__tagline">

@@ -80,6 +80,8 @@
 .nw-comment__head { display: flex; gap: var(--space-2); align-items: baseline; flex-wrap: wrap; }
 .nw-comment__body { margin: 4px 0 0; color: #1f2937; line-height: 1.6; }
 .nw-empty { color: #94a3b8; font-size: .9rem; }
+.nw-more { display: inline-block; margin-block: 6px 10px; font-size: .85rem; font-weight: 700; color: #4f46e5; text-decoration: none; }
+.nw-more:hover { text-decoration: underline; }
 .nw-reply > summary { list-style: none; cursor: pointer; display: inline-block; margin: 4px 6px 0; font-size: .82rem; font-weight: 700; color: #475569; }
 .nw-reply > summary::-webkit-details-marker { display: none; }
 .nw-reply > summary:hover { color: #1d4ed8; }

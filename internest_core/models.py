@@ -177,6 +177,19 @@ class PartnerProfile(models.Model):
             models.Index(fields=["company_name"], condition=models.Q(is_fully_verified=True), name="partner_verified_name_idx"),
         ]
 
+    def revoke_verification_if_identity_changed(self, old_name, old_email) -> bool:
+        """The verified badge vouches for a name and an official email (audit M3): changing either on a verified
+        account clears the verification until staff re-check it. Call after saving; True when it was revoked."""
+        def norm(value):
+            return (value or "").strip().casefold()
+
+        changed = norm(old_name) != norm(self.company_name) or norm(old_email) != norm(self.official_email)
+        if not (self.is_fully_verified and changed):
+            return False
+        self.is_fully_verified = False
+        type(self).objects.filter(pk=self.pk).update(is_fully_verified=False)
+        return True
+
     def calculate_completion(self):
         if not self.is_academic:
             # Startups: self-service completion from their own fields, independent of admin verification.
@@ -250,6 +263,14 @@ class Internship(models.Model):
         loc = (self.location or "").strip().lower()
         return not loc or any(k in loc for k in ONLINE_LOCATION_KEYWORDS)
 
+    @staticmethod
+    def online_q():
+        """SQL twin of is_online (blank location or an online keyword), so the feed filters before paginating."""
+        q = models.Q(location__regex=r"^\s*$")
+        for keyword in ONLINE_LOCATION_KEYWORDS:
+            q |= models.Q(location__icontains=keyword)
+        return q
+
     @property
     def is_expired(self):
         """The deadline day is over (computed live: nothing to run for a post to expire)."""
@@ -264,8 +285,9 @@ class Internship(models.Model):
         
     @property
     def applicants_count(self):
-        """حساب عدد المتقدمين للفرصة."""
-        return self.application_set.count()
+        """حساب عدد المتقدمين للفرصة (the dashboard's annotation when present: no query per row)."""
+        annotated = getattr(self, "applicant_total", None)
+        return annotated if annotated is not None else self.application_set.count()
 
     class Meta:
         indexes = [
@@ -585,8 +607,10 @@ class StudentEnrollment(models.Model):
     enrolled_on = models.DateTimeField(auto_now_add=True, verbose_name="تاريخ التسجيل")
     final_price = models.DecimalField(max_digits=6, decimal_places=2, verbose_name="السعر المدفوع")
     # Completion is confirmed by the course's partner (or an admin), never by the student.
-    STATUS_ENROLLED, STATUS_COMPLETED = "enrolled", "completed"
-    STATUS_CHOICES = [(STATUS_ENROLLED, _("Enrolled")), (STATUS_COMPLETED, _("Completed"))]
+    # A paid seat waits in STATUS_PENDING_PAYMENT until staff confirm the payment (no online course payment yet):
+    # until then the course content (video_link) stays hidden and the course skill cannot be verified (audit L2).
+    STATUS_PENDING_PAYMENT, STATUS_ENROLLED, STATUS_COMPLETED = "pending", "enrolled", "completed"
+    STATUS_CHOICES = [(STATUS_PENDING_PAYMENT, _("Awaiting payment")), (STATUS_ENROLLED, _("Enrolled")), (STATUS_COMPLETED, _("Completed"))]
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_ENROLLED, db_index=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     certificate_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)  # public verification link
@@ -594,6 +618,11 @@ class StudentEnrollment(models.Model):
     @property
     def is_completed(self):
         return self.status == self.STATUS_COMPLETED
+
+    @property
+    def is_paid(self):
+        """Content unlocked: free (or fully discounted) seats, or a paid seat whose payment staff confirmed."""
+        return self.status != self.STATUS_PENDING_PAYMENT
 
     class Meta:
         verbose_name = "تسجيل (كورس)"

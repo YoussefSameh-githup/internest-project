@@ -574,13 +574,26 @@ class SelfServiceProfileUpdateTests(OnboardingBase):
         self.assertEqual(partner.company_profile.description, "Updated description of what we do.")
         self.assertIsNone(partner.company_profile.identity_changed_at)
 
-    def test_company_name_change_keeps_access_but_flags_for_admin(self):
+    def test_company_name_change_clears_verification_and_flags_for_admin(self):
         self.submit_profile(company_name="StartupX Labs")
         partner = self.partner()
-        self.assertTrue(partner.is_fully_verified)
+        self.assertFalse(partner.is_fully_verified)  # audit M3: a verified badge cannot be carried to a new name
         self.assertEqual(partner.company_name, "StartupX Labs")
         self.assertIsNotNone(partner.company_profile.identity_changed_at)
+        self.assertIsNone(partner.company_profile.verified_at)
         self.assertEqual(partner.company_profile.previous_company_name, "StartupX")
+
+    def test_official_email_change_clears_verification(self):
+        self.submit_profile(official_email="ceo@other-domain.io")
+        partner = self.partner()
+        self.assertFalse(partner.is_fully_verified)
+        self.assertIsNotNone(partner.company_profile.identity_changed_at)
+        self.assertEqual(partner.company_profile.previous_company_name, "")  # the name itself did not change
+
+    def test_same_identity_with_different_case_keeps_verification(self):
+        partner = self.partner()
+        self.submit_profile(company_name=partner.company_name, official_email=(partner.official_email or "").upper())
+        self.assertTrue(self.partner().is_fully_verified)
 
 
 class LandingAndNavCleanupTests(OnboardingBase):

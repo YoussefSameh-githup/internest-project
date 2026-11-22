@@ -3,7 +3,7 @@ from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
 from datetime import timedelta
 
-from django.db.models import Case, Count, IntegerField, Q, Value, When
+from django.db.models import Case, Count, IntegerField, Prefetch, Q, Value, When
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -22,6 +22,7 @@ from .models import FLAGS_TO_HIDE, HiddenReason, LoungeComment, LoungeFlag, Loun
 from .permissions import founders_only
 
 MAX_DEPTH = 4
+FEED_COMMENTS_PER_POST = 20  # the feed shows the first comments of each post; the post page shows them all
 PRO_PRIORITY_WINDOW = timedelta(hours=72)
 
 
@@ -81,10 +82,14 @@ def lounge_feed(request):
     )
     if tag in dict(LoungePost.CATEGORY_CHOICES):
         posts = posts.filter(category=tag)
+    # One comments query for the whole page (a window-function slice caps each post), not one per post.
+    posts = posts.prefetch_related(Prefetch(
+        "comments", queryset=_comments_for(founder)[:FEED_COMMENTS_PER_POST], to_attr="feed_comments"))
     page = Paginator(posts, 20).get_page(request.GET.get("page"))
     upvoted = set(founder.upvoted_lounge_posts.filter(pk__in=[p.pk for p in page]).values_list("pk", flat=True))
     for post in page:
-        post.comment_tree = _comment_tree(post, founder)
+        post.comment_tree = _build_tree(post.feed_comments)
+        post.comments_truncated = len(post.feed_comments) >= FEED_COMMENTS_PER_POST
         post.is_upvoted = post.pk in upvoted
 
     context = get_user_context(request)
@@ -100,11 +105,20 @@ def lounge_feed(request):
     return render(request, "lounge/feed.html", context)
 
 
+def _comments_for(founder):
+    """Comments a founder may see: visible ones plus their own held for review, oldest first."""
+    return (LoungeComment.objects
+            .filter(Q(visibility=Visibility.VISIBLE) | Q(author=founder, visibility=Visibility.HIDDEN))
+            .select_related("author", "author__user", "author__subscription")
+            .order_by("created_at", "pk"))
+
+
 def _comment_tree(post, founder):
-    comments = list(
-        post.comments.filter(Q(visibility=Visibility.VISIBLE) | Q(author=founder, visibility=Visibility.HIDDEN))
-        .select_related("author", "author__user", "author__subscription")
-    )
+    return _build_tree(list(_comments_for(founder).filter(post=post)))
+
+
+def _build_tree(comments):
+    """Nest replies under their parents in Python; a reply whose parent is not in the list is left out."""
     by_parent = {}
     for c in comments:
         c.children = []

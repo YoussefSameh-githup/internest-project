@@ -10,7 +10,8 @@ from django.core.cache import cache
 from django.shortcuts import render
 from django.urls import Resolver404, resolve
 
-# url name → (max POSTs, window in seconds)
+# url name → (max POSTs, window in seconds[, (POST field, value)]). The optional third item limits only the POSTs that
+# carry that field (value None: any value), so a page's other buttons (e.g. "Confirm purchase") are not counted.
 RULES = {
     "login": (10, 15 * 60),
     "signup": (5, 60 * 60),
@@ -35,7 +36,17 @@ RULES = {
     "founding_claim": (5, 60 * 60),
     "account_export": (5, 60 * 60),
     "account_delete": (5, 60 * 60),
+    # Audit L1: promo / discount codes must not be guessable by brute force.
+    "course_checkout": (10, 60 * 60, ("apply_discount", None)),
+    "startup_upgrade": (10, 60 * 60, ("action", "apply")),
 }
+
+
+def _counted(request, only) -> bool:
+    if not only:
+        return True
+    field, value = only[0]
+    return field in request.POST if value is None else request.POST.get(field) == value
 
 
 def client_ip(request):
@@ -76,8 +87,8 @@ class RateLimitMiddleware:
                 name = resolve(request.path_info).url_name
             except Resolver404:
                 name = None
-            if name in RULES:
-                limit, window = RULES[name]
+            if name in RULES and _counted(request, RULES[name][2:]):
+                limit, window = RULES[name][:2]
                 who = f"u{request.user.pk}" if getattr(request, "user", None) and request.user.is_authenticated else client_ip(request)
                 if not hit(f"rl:{name}:{who}", limit, window):
                     return render(request, "429.html", {"minutes": max(1, window // 60)}, status=429)
