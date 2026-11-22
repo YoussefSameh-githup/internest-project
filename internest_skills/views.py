@@ -16,6 +16,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _, gettext_lazy as _lazy
 from django.views.decorators.http import require_GET, require_POST
 
+from internest_core.api_responses import json_error
 from internest_core import async_tasks
 from internest_core.models import Internship, StudentProfile
 from internest_core.views import _get_partner_profile, get_user_context
@@ -54,11 +55,12 @@ def student_gate(api=False):
             student = student_for(request.user, create=True)
             if student is None:
                 if api:
-                    return JsonResponse({"error": "students_only"}, status=403)
+                    return json_error(_("This is available to student accounts only."), "students_only", 403)
                 raise Http404
             if missing_profile_fields(student):
                 if api:
-                    return JsonResponse({"error": "profile_incomplete", "profile_url": reverse("profile")}, status=403)
+                    return json_error(_("Please complete your basic profile first."), "profile_incomplete", 403,
+                                      profile_url=reverse("profile"))
                 messages.warning(request, _("Please complete your basic profile first (university, major and study level) to analyze and verify your skills."))
                 return redirect("profile")
             request.student = student

@@ -350,7 +350,7 @@ class GateAndNavTests(Base):
         self.assertRedirects(self.client.get(reverse("skills_hub")), reverse("profile"), fetch_redirect_response=False)
         ss = self._claim()
         resp = self.client.get(reverse("skills_api_recommendations", args=[ss.pk]))
-        self.assertEqual(resp.json()["error"], "profile_incomplete")
+        self.assertEqual(resp.json()["code"], "profile_incomplete")
 
     def test_partners_and_universities_blocked_and_no_nav_button(self):
         for user in (self.pro_user, self.uni_user):

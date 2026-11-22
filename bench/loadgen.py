@@ -72,7 +72,7 @@ class Metrics:
 
 async def one_user(client, session, feature, metrics, poll, timeout):
     spec = FEATURES[feature]
-    cookies = {"internest_sessionid": session["sessionid"], "csrftoken": session["csrftoken"]}
+    cookies = {} if spec.get("anonymous") else {"internest_sessionid": session["sessionid"], "csrftoken": session["csrftoken"]}
     headers = {"X-CSRFToken": session["csrftoken"], "Prefer": "respond-async", "Accept": "application/json",
                "Referer": client.base_url.__str__(), "X-Real-IP": session.get("ip", "127.0.0.1")}
     method, path, kwargs = spec["request"](session)

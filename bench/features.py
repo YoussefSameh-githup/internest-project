@@ -56,6 +56,6 @@ FEATURES = {
     "sync_resume_ats": {"request": lambda s: ("GET", "/api/ai/resume/ats/", {})},
     "sync_resume_pdf": {"request": lambda s: ("GET", "/api/ai/resume/export.pdf", {})},
     "sync_feed": {"request": lambda s: ("GET", "/list/", {})},
-    "sync_landing": {"request": lambda s: ("GET", "/", {})},
+    "sync_landing": {"anonymous": True, "request": lambda s: ("GET", "/", {})},  # a visitor, not a signed-in student
     "sync_healthz": {"request": lambda s: ("GET", "/healthz/", {})},
 }

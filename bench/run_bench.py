@@ -23,6 +23,9 @@ OUT = ROOT / "bench" / "out"
 
 PLANS = {
     "smoke": [("cv_analysis", "burst", 5), ("sync_healthz", "burst", 20)],
+    "probe": [(f, "burst", 2) for f in ("cv_analysis", "skills_extraction", "assessment_generation", "answer_evaluation",
+                                        "interview_questions", "career_recommendations", "resume_builder", "sync_careers",
+                                        "sync_resume_ats", "sync_resume_pdf", "sync_feed", "sync_landing")],
     # Same-feature contention: every AI feature on its own, growing same-second bursts.
     "features": [(f, "burst", n) for f in ("cv_analysis", "skills_extraction", "assessment_generation",
                                            "interview_questions", "career_recommendations", "resume_builder")
@@ -98,6 +101,7 @@ def main():
     if not (OUT / "bench.sqlite3").exists():
         sys.exit("Seed first: SQLITE_PATH=bench/out/bench.sqlite3 python bench/seed.py")
     env = bench_env(args)
+    subprocess.run([PY, "manage.py", "collectstatic", "--noinput", "-v", "0"], cwd=ROOT, env=env, check=True)  # as in production
     folder = OUT / "results" / (args.plan + (f"-{args.tag}" if args.tag else ""))
     folder.mkdir(parents=True, exist_ok=True)
     server, workers = start(args, env)
