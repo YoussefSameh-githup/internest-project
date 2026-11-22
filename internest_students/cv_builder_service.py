@@ -231,16 +231,43 @@ def placeholders(cv) -> list[str]:
 
 
 def initial_cv(student) -> dict:
-    """Starting point for a student who has not saved a CV yet: whatever the profile already knows."""
+    """Starting point for a student who has not saved a CV yet: whatever the profile already knows, with the empty
+    sections filled from their latest analysed CV (the profile always wins)."""
     user = student.user
     skills = list(student.skills.select_related("skill").order_by("-status", "skill__name").values_list("skill__name", flat=True))
-    return clean_cv({
+    cv = {
         "name": user.get_full_name() or user.username, "email": student.personal_email or user.email,
         "phone": student.phone_number, "linkedin": student.linkedin_url, "summary": student.bio,
         "education": [{"university": student.university, "major": student.major}] if student.university else [],
         "projects": list(student.projects.values("title", "description", "tech_stack", "link")),
         "skills": skills,
-    })
+    }
+    from internest_skills.models import CVAnalysis
+
+    latest = (CVAnalysis.objects.filter(user=user, status=CVAnalysis.STATUS_DONE).order_by("-created_at")
+              .values_list("facts", flat=True).first())
+    for key, value in cv_from_facts(latest or {}).items():
+        if not cv.get(key):
+            cv[key] = value
+    return clean_cv(cv)
+
+
+def cv_from_facts(facts) -> dict:
+    """Builder sections from the rule-based CV analysis (internest_skills.cv_facts.parse): only what the document
+    itself says. Experience bullets are not copied (the parser keeps no text for them), so nothing is invented."""
+    facts = facts if isinstance(facts, dict) else {}
+    contacts = facts.get("contacts") or {}
+    education = [{"university": e.get("institution", ""), "major": e.get("degree", ""), "start_date": e.get("start", ""),
+                  "end_date": "" if e.get("end") == "present" else e.get("end", ""), "is_current": e.get("end") == "present"}
+                 for e in facts.get("education") or [] if isinstance(e, dict)]
+    experiences = [{"title": e.get("title", ""), "organization": e.get("organization", "")}
+                   for e in facts.get("experience") or [] if isinstance(e, dict)]
+    return {
+        "email": (contacts.get("email") or [""])[0], "phone": (contacts.get("phone") or [""])[0],
+        "education": education, "experiences": experiences,
+        "projects": [{"title": line} for line in facts.get("projects") or [] if isinstance(line, str)],
+        "skills": [s.get("name") for s in facts.get("skills") or [] if isinstance(s, dict) and s.get("name")],
+    }
 
 
 # ---------------------------------------------------------------- taxonomy

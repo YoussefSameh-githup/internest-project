@@ -226,3 +226,52 @@ class ResumeAPITests(Base):
         self.assertEqual(self.client.get(reverse("api_resume_pdf") + "?template=modern")["Content-Type"], "application/pdf")
         Document(io.BytesIO(self.client.get(reverse("api_resume_docx")).content))
         self.assertEqual(self.client.post(reverse("api_resume_ats")).status_code, 405)
+
+
+class ImportFromCVAnalysisTests(Base):
+    """A student without a saved CV starts the builder from what their analysed CV said; the profile always wins."""
+
+    FACTS = {
+        "contacts": {"email": ["sara@example.com"], "phone": ["01012345678"]},
+        "education": [{"degree": "BSc Computer Science", "institution": "Cairo University", "start": "2021-09", "end": "present"}],
+        "experience": [{"title": "Backend Intern", "organization": "Acme", "start": "2024-06", "end": "2024-09", "months": 3}],
+        "projects": ["Library system in Django"],
+        "skills": [{"skill_id": 1, "name": "Django"}, {"skill_id": 2, "name": "SQL"}],
+    }
+
+    def _analysis(self, status="done", facts=None):
+        from internest_skills.models import CVAnalysis
+        return CVAnalysis.objects.create(user=self.student.user, file_sha256="a" * 64, status=status,
+                                         facts=facts if facts is not None else self.FACTS)
+
+    def test_empty_sections_come_from_the_latest_finished_analysis(self):
+        self.student.university = ""
+        self.student.projects.all().delete()
+        self.student.skills.all().delete()
+        self._analysis()
+        cv = svc.initial_cv(self.student)
+        self.assertEqual(cv["education"][0]["university"], "Cairo University")
+        self.assertTrue(cv["education"][0]["is_current"])
+        self.assertEqual((cv["experiences"][0]["title"], cv["experiences"][0]["organization"]), ("Backend Intern", "Acme"))
+        self.assertEqual(cv["experiences"][0]["achievements"], [])  # nothing invented
+        self.assertEqual(cv["projects"][0]["title"], "Library system in Django")
+        self.assertEqual(cv["skills"], ["Django", "SQL"])
+
+    def test_profile_data_wins_and_unfinished_analyses_are_ignored(self):
+        self.student.university, self.student.major = "Ain Shams University", "Information Systems"
+        self.student.user.email, self.student.personal_email = "owner@uni.edu.eg", ""
+        self._analysis()
+        cv = svc.initial_cv(self.student)
+        self.assertEqual(cv["education"][0]["university"], "Ain Shams University")
+        self.assertEqual(cv["email"], "owner@uni.edu.eg")  # the account's own address beats the one in the file
+
+    def test_queued_analysis_or_none_changes_nothing(self):
+        self.student.university = ""
+        self.student.projects.all().delete()
+        before = svc.initial_cv(self.student)
+        self._analysis(status="queued")
+        self.assertEqual(svc.initial_cv(self.student), before)
+
+    def test_garbage_facts_are_safe(self):
+        self.assertEqual(svc.cv_from_facts({"education": ["x"], "experience": None, "skills": [{"no": 1}]})["education"], [])
+        self.assertEqual(svc.cv_from_facts(None)["skills"], [])

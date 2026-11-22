@@ -15,6 +15,8 @@ from functools import wraps
 
 from django.conf import settings
 from django.http import JsonResponse
+
+from internest_core.api_responses import json_error
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.translation import gettext as _
@@ -39,11 +41,7 @@ MAX_EXTRACT_CHARS = 20_000
 
 
 def error(code: str, message: str, status: int, retry_after: int | None = None, **extra) -> JsonResponse:
-    response = JsonResponse({"error": code, "message": str(message), **extra}, status=status)
-    response["Cache-Control"] = "no-store"
-    if retry_after:
-        response["Retry-After"] = str(int(retry_after))
-    return response
+    return json_error(message, code, status, retry_after=retry_after, **extra)
 
 
 def api_view(name: str):

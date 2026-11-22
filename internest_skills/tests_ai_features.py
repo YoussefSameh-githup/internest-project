@@ -419,7 +419,7 @@ class ApiTests(Base):
         anonymous = Client()
         for name in ("skills_api_cv_analysis", "skills_api_skills_extract", "skills_api_assessments"):
             resp = anonymous.post(reverse(name))
-            self.assertEqual((resp.status_code, resp.json()["error"]), (401, "login_required"))
+            self.assertEqual((resp.status_code, resp.json()["code"]), (401, "login_required"))
         self.client.force_login(self.pro_user)
         self.assertEqual(self.client.post(reverse("skills_api_cv_analysis")).status_code, 403)
 
@@ -440,13 +440,13 @@ class ApiTests(Base):
 
     def test_cv_analysis_errors_are_json(self):
         resp = self.client.post(reverse("skills_api_cv_analysis"), {"cv_file": _zip_bomb()})
-        self.assertEqual((resp.status_code, resp.json()["error"]), (400, "unreadable_file"))
+        self.assertEqual((resp.status_code, resp.json()["code"]), (400, "unreadable_file"))
         resp = self.client.post(reverse("skills_api_cv_analysis"), {"pasted_text": "too short"})
-        self.assertEqual((resp.status_code, resp.json()["error"]), (400, "invalid"))
+        self.assertEqual((resp.status_code, resp.json()["code"]), (400, "invalid"))
         SkillProfile.objects.update_or_create(student=self.student, defaults={"extraction_day": timezone.localdate(),
                                                                                "extraction_count_today": 5})
         resp = self.client.post(reverse("skills_api_cv_analysis"), {"pasted_text": EN_CV})
-        self.assertEqual((resp.status_code, resp.json()["error"]), (429, "daily_limit"))
+        self.assertEqual((resp.status_code, resp.json()["code"]), (429, "daily_limit"))
         self.assertTrue(int(resp["Retry-After"]) > 0)
 
     def test_skills_extract_returns_a_task_and_saves_nothing(self):
@@ -469,13 +469,13 @@ class ApiTests(Base):
         with mock.patch.dict(api.API_RULES, {"skills_api_skills_extract": (1, 3600)}):
             self.client.post(reverse("skills_api_skills_extract"), {"text": EN_CV})
             resp = self.client.post(reverse("skills_api_skills_extract"), {"text": EN_CV})
-        self.assertEqual((resp.status_code, resp.json()["error"]), (429, "rate_limited"))
+        self.assertEqual((resp.status_code, resp.json()["code"]), (429, "rate_limited"))
         self.assertEqual(resp["Retry-After"], "3600")
 
     def test_assessments_only_for_claimed_or_required_skills(self):
         python = Skill.objects.get(slug="python")
         resp = self.client.post(reverse("skills_api_assessments"), {"skill_id": python.pk})
-        self.assertEqual((resp.status_code, resp.json()["error"]), (403, "not_testable"))
+        self.assertEqual((resp.status_code, resp.json()["code"]), (403, "not_testable"))
         self.assertFalse(StudentSkill.objects.filter(student=self.student, skill=python).exists())
         self._claim(skill=python)
         resp = self.client.post(reverse("skills_api_assessments"), {"skill_id": python.pk})

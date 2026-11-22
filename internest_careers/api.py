@@ -22,10 +22,7 @@ from . import interview_service as kits
 from .views import enqueue_kit, kit_request
 
 
-def json_error(message, code: str, status: int, **extra) -> JsonResponse:
-    response = JsonResponse({"error": str(message), "code": code, **extra}, status=status)
-    response["Cache-Control"] = "no-store"
-    return response
+from internest_core.api_responses import json_error  # noqa: E402  (re-exported for internest_students.api)
 
 
 def api_view(*methods, student=False):
