@@ -68,7 +68,7 @@ jobs:
       - name: Daily jobs (backup, purge, API health) and a restore from the backup
         run: |
           sudo systemctl list-timers --all | grep -q internest-daily
-          sudo systemctl start internest-daily.service || true
+          sudo systemctl start internest-daily.service  # fails the job if any daily step fails
           sudo journalctl -u internest-daily -n 40 --no-pager
           bundle=$(sudo -u internest bash -c 'ls -1t /srv/internest/backups/internest/internest-full-*.tar.gz | head -1')
           echo "bundle: $bundle"; [ -n "$bundle" ]
