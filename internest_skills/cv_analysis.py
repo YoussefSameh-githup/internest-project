@@ -22,13 +22,14 @@ import re
 from dataclasses import dataclass, field
 from datetime import timedelta
 
-from django.db import transaction
+from django.db import OperationalError, transaction
 from django.db.models import F
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from internest_core.api_monitor import api_feature
+from internest_core.async_tasks import RetryTask
 
 from . import cv_facts
 from .extraction import (
@@ -340,6 +341,9 @@ def run(analysis_id: int, text: str) -> tuple[int, dict]:
     try:
         student = StudentProfile.objects.get(user_id=analysis.user_id)
         _analyse(analysis, student, text)
+    except OperationalError as exc:  # a busy database is transient: the queue retries with backoff
+        CVAnalysis.objects.filter(pk=analysis.pk).update(status=CVAnalysis.STATUS_QUEUED)
+        raise RetryTask(f"database busy: {exc}") from exc
     except Exception:
         logger.exception("CV analysis %s failed", analysis_id)
         give_back_use(analysis)

@@ -697,3 +697,21 @@ class SkillsPerformanceTests(Base):
         source = inspect.getsource(core_views.partner_submit_internship)
         self.assertNotIn("relate_skill_ai(", source)
         self.assertIn("relate_new_skills(", source)
+
+
+class BusyDatabaseRetryTests(Base):
+    """A locked database during the CV analysis job is transient: the queue retries it instead of failing the user."""
+
+    def test_operational_error_becomes_a_retry_and_requeues_the_analysis(self):
+        from django.db import OperationalError
+
+        from internest_core.async_tasks import RetryTask
+        from internest_skills import cv_analysis
+        from internest_skills.models import CVAnalysis
+
+        analysis = CVAnalysis.objects.create(user=self.student.user, file_sha256="b" * 64)
+        with mock.patch.object(cv_analysis, "_analyse", side_effect=OperationalError("database is locked")):
+            with self.assertRaises(RetryTask):
+                cv_analysis.run(analysis.pk, "Python developer")
+        analysis.refresh_from_db()
+        self.assertEqual(analysis.status, CVAnalysis.STATUS_QUEUED)

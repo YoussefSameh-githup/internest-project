@@ -41,3 +41,4 @@ INTERNEST_CONTEXT.pdf
 logs/
 
 .wt/
+bench/out/

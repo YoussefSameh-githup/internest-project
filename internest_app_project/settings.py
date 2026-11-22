@@ -159,7 +159,8 @@ else:
     from internest_core.db_tuning import sqlite_options
 
     SQLITE_WAL = env.bool("SQLITE_WAL", default=not ON_PYTHONANYWHERE)
-    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3",
+    # SQLITE_PATH points a run at another file with the same tuning (benchmarks use a disposable copy).
+    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": env.str("SQLITE_PATH", default=str(BASE_DIR / "db.sqlite3")),
                              "OPTIONS": sqlite_options(SQLITE_WAL)}}
 
 # --- (2b) Cache: Redis when REDIS_URL is set (shared by every worker/server), else a file cache shared by the

@@ -191,6 +191,12 @@ class SQLiteTuningTests(SimpleTestCase):
     def test_settings_choose_wal_by_platform(self):
         self.assertEqual(settings.DATABASES["default"]["OPTIONS"]["init_command"].count("journal_mode=WAL"), int(settings.SQLITE_WAL))
 
+    def test_transactions_take_the_write_lock_up_front(self):
+        # DEFERRED transactions fail at once with "database is locked" when they upgrade to a writer after another
+        # process committed (WAL); IMMEDIATE waits on busy_timeout instead (found by the load benchmark).
+        self.assertEqual(db_tuning.sqlite_options(True)["transaction_mode"], "IMMEDIATE")
+        self.assertEqual(db_tuning.sqlite_options(False)["transaction_mode"], "IMMEDIATE")
+
 
 @override_settings(CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache", "LOCATION": "page-tests"}})
 class PageCacheTests(Base):
