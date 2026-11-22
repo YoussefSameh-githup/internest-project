@@ -39,7 +39,7 @@ APP_USER=internest
 BASE=/srv/internest
 APP=$BASE/app
 VENV=$BASE/venv
-HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+KIT=$APP/deploy/azure  # after step 3, everything comes from the checkout the server runs (readable by the app user)
 export DEBIAN_FRONTEND=noninteractive
 as_app() { sudo -u "$APP_USER" -H "$@"; }
 
@@ -74,15 +74,15 @@ as_app "$VENV/bin/pip" install --quiet -r "$APP/deploy/azure/requirements-server
 
 echo "== 4/7 gunicorn service and the daily job"
 usermod -aG "$APP_USER" www-data  # nginx reaches the socket through the group
-install -m 644 "$HERE/internest.service" /etc/systemd/system/internest.service
-install -m 644 "$HERE/internest-daily.service" /etc/systemd/system/internest-daily.service
-install -m 644 "$HERE/internest-daily.timer" /etc/systemd/system/internest-daily.timer
+install -m 644 "$KIT/internest.service" /etc/systemd/system/internest.service
+install -m 644 "$KIT/internest-daily.service" /etc/systemd/system/internest-daily.service
+install -m 644 "$KIT/internest-daily.timer" /etc/systemd/system/internest-daily.timer
 systemctl daemon-reload
 systemctl enable internest.service >/dev/null
 systemctl enable --now internest-daily.timer >/dev/null
 
 echo "== 5/7 nginx"
-sed "s/__DOMAIN__/$DOMAIN/g" "$HERE/nginx.conf" > /etc/nginx/sites-available/internest
+sed "s/__DOMAIN__/$DOMAIN/g" "$KIT/nginx.conf" > /etc/nginx/sites-available/internest
 ln -sf /etc/nginx/sites-available/internest /etc/nginx/sites-enabled/internest
 rm -f /etc/nginx/sites-enabled/default
 nginx -t -q
@@ -107,8 +107,8 @@ fi
 echo "== 7/7 Settings for this server, deploy, HTTPS"
 chown "$APP_USER:$APP_USER" "$APP/.env"
 chmod 600 "$APP/.env"
-as_app "$VENV/bin/python" "$HERE/configure_env.py" "$APP/.env" --domain "$DOMAIN" --tls "$TLS" --backup-dir "$BASE/backups/internest"
-bash "$HERE/update.sh" --no-pull
+as_app "$VENV/bin/python" "$KIT/configure_env.py" "$APP/.env" --domain "$DOMAIN" --tls "$TLS" --backup-dir "$BASE/backups/internest"
+bash "$KIT/update.sh" --no-pull
 if [ "$TLS" -eq 1 ]; then
     # Re-runs rewrite the nginx file from the template; --keep-until-expiring re-installs the existing certificate.
     certbot --nginx --non-interactive --agree-tos --redirect --keep-until-expiring -m "$EMAIL" -d "$DOMAIN"
