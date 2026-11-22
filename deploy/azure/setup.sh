@@ -64,6 +64,7 @@ fi
 echo "== 3/7 App user, code and virtualenv"
 id "$APP_USER" >/dev/null 2>&1 || adduser --system --group --home "$BASE" --shell /bin/bash "$APP_USER"
 install -d -o "$APP_USER" -g "$APP_USER" -m 750 "$BASE" "$BASE/backups"
+cd "$BASE"  # commands run as the app user must not start in a folder it cannot read (e.g. /home/azureuser)
 if [ ! -d "$APP/.git" ]; then
     as_app git clone --quiet --branch "$BRANCH" "$REPO" "$APP"
 fi
