@@ -60,6 +60,7 @@
                     <li class="nw-empty">{% trans "No comments yet." %}</li>
                 {% endfor %}
             </ul>
+            {% if post.comments_truncated and not detail %}<a class="nw-more" href="{% url 'lounge_post' post.pk %}#comments-{{ post.pk }}">{% trans "View all" %} ({{ post.comment_count }})</a>{% endif %}
             {% if post.is_visible %}
                 <form method="post" action="{% url 'lounge_comment' post.pk %}" class="nw-reply-form">
                     {% csrf_token %}

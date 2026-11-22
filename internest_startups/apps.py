@@ -5,3 +5,6 @@ class InternestStartupsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "internest_startups"
     verbose_name = "Startup onboarding"
+
+    def ready(self):
+        from . import signals  # noqa: F401  (Talent Pool cache invalidation)

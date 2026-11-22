@@ -157,8 +157,9 @@ class StudentHubTests(Base):
     def test_new_opportunity_emails_respect_the_preference(self):
         type(self.student).objects.filter(pk=self.student.pk).update(email_new_opportunities=False)
         type(self.other_student).objects.filter(pk=self.other_student.pk).update(personal_email="o@x.com")
-        Internship.objects.create(partner=self.pro, title="Analyst", description="d", location="Cairo", required_majors="any",
-                                  deadline=timezone.now().date())
+        with self.captureOnCommitCallbacks(execute=True):  # the announcement is enqueued after commit
+            Internship.objects.create(partner=self.pro, title="Analyst", description="d", location="Cairo", required_majors="any",
+                                      deadline=timezone.now().date())
         self.assertEqual(mail.outbox[-1].bcc, ["o@x.com"])
 
     def test_arabic_labels(self):

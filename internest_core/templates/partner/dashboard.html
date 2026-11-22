@@ -254,6 +254,8 @@
                             </div>
                             {% if e.is_completed %}
                                 <a href="{% url 'course_certificate' e.certificate_id %}" class="status-pill status-pill--approved" target="_blank" rel="noopener">{% trans "Completed · certificate" %}</a>
+                            {% elif not e.is_paid %}
+                                <span class="status-pill status-pill--pending"><i class="bi bi-hourglass-split"></i> {% trans "Awaiting payment" %}</span>
                             {% else %}
                                 <form method="post" action="{% url 'partner_course_complete' e.pk %}" style="margin: 0;">{% csrf_token %}
                                     <button type="submit" class="btn btn--primary btn--sm"><i class="bi bi-patch-check"></i> {% trans "Confirm completion" %}</button>

@@ -68,7 +68,7 @@
                             <span class="sh-quiz__icon sh-quiz__icon--gold"><i class="bi bi-puzzle-fill"></i></span>
                             <div class="sh-card__who">
                                 <h3 class="sh-card__title">{{ task.title }}</h3>
-                                <span class="sh-card__sub"><i class="bi bi-list-check"></i> {% blocktrans with n=task.questions.count %}Questions: {{ n }}{% endblocktrans %}</span>
+                                <span class="sh-card__sub"><i class="bi bi-list-check"></i> {% blocktrans with n=task.question_count %}Questions: {{ n }}{% endblocktrans %}</span>
                             </div>
                         </header>
                         <p class="sh-card__desc">{{ task.description|truncatewords:20 }}</p>

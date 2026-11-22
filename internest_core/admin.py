@@ -434,13 +434,20 @@ class StudentEnrollmentAdmin(ModelAdmin):
     list_display = ("student", "course", "status_col", "enrolled_on", "completed_at", "final_price")
     list_filter = ("status", "enrolled_on", "course__title")
     search_fields = ("student__user__username", "course__title")
-    status_col = status_badge("status", {StudentEnrollment.STATUS_COMPLETED: OK, StudentEnrollment.STATUS_ENROLLED: INFO})
-    actions = ["mark_completed"]
+    status_col = status_badge("status", {StudentEnrollment.STATUS_COMPLETED: OK, StudentEnrollment.STATUS_ENROLLED: INFO,
+                                         StudentEnrollment.STATUS_PENDING_PAYMENT: WAIT})
+    actions = ["confirm_payment", "mark_completed"]
+
+    @admin.action(description=_("Confirm payment: open the course to the student"))
+    def confirm_payment(self, request, queryset):
+        from .courses import confirm_payment
+        n = sum(confirm_payment(e) for e in queryset.filter(status=StudentEnrollment.STATUS_PENDING_PAYMENT))
+        self.message_user(request, _("%(n)s payments confirmed.") % {"n": n}, messages.SUCCESS)
 
     @admin.action(description=_("Mark completed: issue certificate and verify the skill"))
     def mark_completed(self, request, queryset):
         from .courses import complete_enrollment
-        done = queryset.exclude(status=StudentEnrollment.STATUS_COMPLETED)
+        done = queryset.filter(status=StudentEnrollment.STATUS_ENROLLED)  # unpaid seats cannot be completed
         n = done.count()
         verified = sum(complete_enrollment(e) for e in done)
         self.message_user(request, _("%(n)s completed, %(v)s skills verified.") % {"n": n, "v": verified}, messages.SUCCESS)

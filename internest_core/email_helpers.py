@@ -32,10 +32,10 @@ def send_verification_email(user, otp: EmailVerification) -> bool:
     msg.attach_alternative(html_body, "text/html")
     try:
         sent = msg.send(fail_silently=False)
-        logger.info("Verification email sent to %s (result=%s)", otp.email, sent)
+        logger.info("Verification email (%s) sent to user %s (result=%s)", otp.email_type, user.pk, sent)  # no addresses in logs
         return bool(sent)
     except Exception:
-        logger.exception("Failed to send verification email to %s", otp.email)
+        logger.exception("Failed to send the %s verification email to user %s", otp.email_type, user.pk)
         return False
 
 

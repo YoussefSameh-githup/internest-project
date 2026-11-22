@@ -78,6 +78,8 @@ class LoungeComment(models.Model):
 
     class Meta:
         ordering = ["created_at"]
+        # The feed loads every post's first comments in one windowed query (PARTITION BY post ORDER BY created_at).
+        indexes = [models.Index(fields=["post", "created_at"], name="lounge_comment_post_time_idx")]
 
     def __str__(self):
         return f"{self.author} on {self.post}"

@@ -25,7 +25,7 @@ class UniversityLandingTests(TestCase):
         self.assertTemplateUsed(page, "landing/universities.html")
         for marker in ('lang="ar" dir="rtl"', "احجز عرض تعريفي", "تيرم Pilot مجاني", 'email: "engineerthe973@gmail.com"',
                        'whatsapp: "201113999387"', 'phoneDisplay: "0111 399 9387"', 'phoneTel: "+201113999387"',
-                       f'inquiryUrl: "{INQUIRY}"', "/static/img/internest_logo.jpg", 'href="/privacy/"', 'name="website"'):
+                       f'inquiryUrl: "{INQUIRY}"', "/static/img/internest_logo_192.jpg", 'href="/privacy/"', 'name="website"'):
             self.assertContains(page, marker)
         self.assertNotContains(page, "data:image/webp;base64")  # the 52 KB inline logo is replaced by the static file
         self.assertNotContains(page, "/checkout/")

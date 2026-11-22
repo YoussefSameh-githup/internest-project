@@ -61,7 +61,7 @@ class AdminPanelTests(TestCase):
         self.assertEqual(page.status_code, 200)
         for marker in ("Platform at a glance", "Review queues", "Freelance work needing proof", "🎓 Students &amp; skills",
                        "🏢 Companies &amp; opportunities", "💼 Freelance import", "📊 Analytics &amp; system", "Audit log",
-                       "?status__exact=needs_proof", "img/internest_logo.jpg"):
+                       "?status__exact=needs_proof", "img/internest_logo_192.jpg"):
             self.assertContains(page, marker)
         kpis = {k["title"]: k["value"] for k in page.context["kpis"]}
         self.assertEqual((kpis["Students"], kpis["Open opportunities"]), (1, 1))

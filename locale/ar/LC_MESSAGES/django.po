@@ -8120,3 +8120,41 @@ msgid ""
 "our emails with anyone."
 msgstr ""
 "إذا لم تكن أنت، فلا تحتاج لفعل أي شيء. لا تشارك أي رمز من رسائلنا مع أي شخص."
+
+msgid "Confirm payment: open the course to the student"
+msgstr "تأكيد الدفع: فتح الكورس للطالب"
+
+msgid "%(n)s payments confirmed."
+msgstr "تم تأكيد %(n)s عملية دفع."
+
+msgid "This seat is still awaiting payment confirmation."
+msgstr "هذا المقعد ما زال في انتظار تأكيد الدفع."
+
+msgid ""
+"Your organization name or official email changed, so the verified badge is "
+"paused until our team re-checks it."
+msgstr ""
+"تم تغيير اسم الجهة أو البريد الرسمي، لذلك تم إيقاف علامة التوثيق مؤقتًا حتى "
+"يراجعها فريقنا من جديد."
+
+msgid ""
+"Your seat is reserved. The course opens as soon as your payment is "
+"confirmed."
+msgstr "تم حجز مقعدك. سيُفتح الكورس فور تأكيد الدفع."
+
+msgid "Seat reserved"
+msgstr "تم حجز المقعد"
+
+msgid ""
+"Scoring screening answers comes with a Hiring Pass for this opportunity. You"
+" can still make the task optional."
+msgstr ""
+"تقييم إجابات مهمة الفرز متاح مع باقة التوظيف لهذه الفرصة. ويمكنك دائمًا جعل "
+"المهمة اختيارية."
+
+msgid ""
+"Scoring screening answers comes with a Hiring Pass for this opportunity."
+msgstr "تقييم إجابات مهمة الفرز متاح مع باقة التوظيف لهذه الفرصة."
+
+msgid "Make the task optional"
+msgstr "اجعل المهمة اختيارية"

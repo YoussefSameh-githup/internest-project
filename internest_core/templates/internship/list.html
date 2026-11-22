@@ -34,7 +34,7 @@
 <section class="section-sm">
     <div class="container">
         <div class="ol-toolbar">
-            <p class="mb-0"><strong>{{ internships|length }}</strong> {% trans "opportunities available" %}</p>
+            <p class="mb-0"><strong>{{ page.paginator.count }}</strong> {% trans "opportunities available" %}</p>
             {% if active_filters %}
                 <div class="ol-tags">
                     {% for label, remove_url in active_filters %}
@@ -54,7 +54,7 @@
                         <div class="ol-card__company">
                             <span class="ol-card__company-name">
                                 {{ internship.partner.company_name }}
-                                {% if internship.partner.company_name in verified_partner_names %}<i class="bi bi-patch-check-fill" title="{% trans 'Verified account' %}"></i>{% endif %}
+                                {% if internship.partner.is_fully_verified %}<i class="bi bi-patch-check-fill" title="{% trans 'Verified account' %}"></i>{% endif %}
                             </span>
                             <span class="ol-loc ol-loc--{% if internship.is_online %}online{% else %}onsite{% endif %}">
                                 {% if internship.is_online %}💻 {% trans "Online" %}{% else %}<i class="bi bi-geo-alt-fill"></i> {{ internship.location }}{% endif %}
@@ -109,6 +109,7 @@
                 </div>
             {% endfor %}
         </div>
+        {% include "components/pager.html" with page=page querystring=querystring %}
     </div>
 </section>
 

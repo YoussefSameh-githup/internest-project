@@ -35,8 +35,8 @@ QUERY_CEILINGS = {
     "student profile hub": 28,
     "student market-fit dashboard": 9,
     "my applications (student)": 10,
-    "partner dashboard (startup)": 13,
-    "partner dashboard (free startup)": 16,  # measured 14; the journey strip adds up to 2 when no opportunity is open
+    "partner dashboard (startup)": 12,  # was 13: applicant counts are annotated, no applications prefetch
+    "partner dashboard (free startup)": 15,  # measured 13; the journey strip adds up to 2 when no opportunity is open
     "partner dashboard (university)": 10,
     # Phase 8: pages added in Phases 1-7 (measured 2026-11-19)
     "talent pool (paid startup)": 11,
@@ -289,6 +289,8 @@ class HTTPTuningTests(SimpleTestCase):
         self.assertGreaterEqual(config["workers"], 3)
         self.assertEqual((config["max_requests"], config["max_requests_jitter"]), (2000, 200))
         self.assertTrue(callable(config["post_fork"]))
+        if "GUNICORN_BIND" not in os.environ:
+            self.assertEqual(config["bind"], "127.0.0.1:8000")  # loopback by default: only the proxy is public (L8)
 
 
 class ConditionalGetTests(Base):

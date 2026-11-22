@@ -149,6 +149,7 @@ class ScoringAndGateTests(ScreeningBase):
     def setUp(self):
         super().setUp()
         self.task = self._task()
+        self._cover()  # scoring is a Hiring Pass feature of this opportunity (audit L5)
         self.decide = reverse("partner_applicant_decide", args=[self.app.pk])
         self.client.force_login(self.founder)
 
@@ -184,7 +185,7 @@ class ScoringAndGateTests(ScreeningBase):
         self.app.refresh_from_db()
         self.assertEqual(self.app.status, Application.STATUS_SHORTLISTED)
 
-    def test_applicant_page_shows_submission_and_score_form_and_still_works_after_the_pass_ends(self):
+    def test_applicant_page_shows_submission_and_score_form(self):
         screening.submit(self.task, self.app, ANSWER)
         page = self.client.get(reverse("partner_applicant", args=[self.app.pk]))
         self.assertContains(page, "Screening task")
@@ -192,7 +193,24 @@ class ScoringAndGateTests(ScreeningBase):
         self.assertContains(page, 'name="points_0"')
         self.assertContains(page, "Pass mark: 60%.")
         self.client.post(reverse("screening_score", args=[self.app.pk]), {"points_0": "4", "points_1": "3", "points_2": "3"})
-        self.assertEqual(ScreeningSubmission.objects.get().status, "passed")  # no pass needed to score existing answers
+        self.assertEqual(ScreeningSubmission.objects.get().status, "passed")
+
+    def test_scoring_needs_paid_access_to_the_opportunity(self):
+        from .models import HiringPass
+
+        screening.submit(self.task, self.app, ANSWER)
+        from datetime import timedelta
+
+        from django.utils import timezone
+        ended = timezone.now() - timedelta(minutes=1)
+        HiringPass.objects.filter(partner=self.partner).update(starts_at=ended - timedelta(days=30), expires_at=ended)  # pass ended
+        page = self.client.get(reverse("partner_applicant", args=[self.app.pk]))
+        self.assertNotContains(page, 'name="points_0"')
+        self.assertContains(page, "Make the task optional")  # never stuck: the task can still be relaxed
+        resp = self.client.post(reverse("screening_score", args=[self.app.pk]), {"points_0": "4", "points_1": "3", "points_2": "3"},
+                                follow=True)
+        self.assertContains(resp, "Scoring screening answers comes with a Hiring Pass for this opportunity.")
+        self.assertEqual(ScreeningSubmission.objects.get().status, "submitted")
 
     def test_other_company_cannot_score(self):
         from .tests_hiring_pass import _company

@@ -42,10 +42,15 @@ class InboxTests(ApplicationsBase):
         open_titles = [g["internship"].title for g in page.context["open_gigs"]]
         self.assertEqual(set(open_titles), {"Design gig", "Data role", "Empty gig"})
         self.assertEqual({g["internship"].title for g in page.context["archived_gigs"]}, {"Closed gig", "Expired gig"})
+        self.assertIn(page.context["selected_gig"], {str(self.gig.pk), str(self.role.pk)})  # one with undecided applicants
+        page = self.client.get(INBOX, {"gig": self.gig.pk})
         design = next(g for g in page.context["open_gigs"] if g["internship"] == self.gig)
         self.assertEqual(({a.applicant.username for a in design["applications"]}, design["total"], design["active"]),
                          ({"amr", "sara", "hana"}, 3, 2))
-        self.assertIn(page.context["selected_gig"], {str(self.gig.pk), str(self.role.pk)})  # one with undecided applicants
+        role = next(g for g in page.context["open_gigs"] if g["internship"] == self.role)
+        self.assertEqual((role["applications"], role["total"], role["active"]), ([], 3, 1))  # counts only: not selected
+        self.assertNotContains(page, f'data-gig-panel="{self.role.pk}"')  # only the selected panel is rendered
+        page = self.client.get(INBOX, {"gig": self.empty.pk})
         self.assertContains(page, f'data-gig-panel="{self.empty.pk}"')
         self.assertContains(page, "No applicants for this opportunity yet")
         self.assertNotContains(page, "Closed gig")  # archived opportunities live in their own tab
@@ -81,5 +86,19 @@ class InboxTests(ApplicationsBase):
     def test_arabic_labels(self):
         self.client.cookies["internest_lang"] = "ar"
         page = self.client.get(INBOX)
-        for text in ("الأرشيف / الفرص المغلقة", "لا يوجد متقدمون لهذه الفرصة حتى الآن", "عرض الملف والـ CV", "تغيير الحالة", "إرسال رسالة"):
+        for text in ("الأرشيف / الفرص المغلقة", "عرض الملف والـ CV", "تغيير الحالة", "إرسال رسالة"):
             self.assertContains(page, text)
+        self.assertContains(self.client.get(INBOX, {"gig": self.empty.pk}), "لا يوجد متقدمون لهذه الفرصة حتى الآن")
+
+    def test_selected_gig_applicants_are_paginated(self):
+        from . import views
+
+        for i in range(views.APPLICANTS_PER_PAGE + 2):
+            user, _ = _student(f"bulk{i}")
+            Application.objects.create(internship=self.empty, applicant=user)
+        first = self.client.get(INBOX, {"gig": self.empty.pk})
+        self.assertEqual(len(first.context["selected_group"]["applications"]), views.APPLICANTS_PER_PAGE)
+        self.assertEqual(first.context["applicants_page"].paginator.num_pages, 2)
+        self.assertContains(first, f'href="?gig={self.empty.pk}&amp;page=2"')  # the page link keeps the selected gig
+        second = self.client.get(INBOX, {"gig": self.empty.pk, "page": 2})
+        self.assertEqual(len(second.context["selected_group"]["applications"]), 2)

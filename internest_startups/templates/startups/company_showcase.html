@@ -15,7 +15,7 @@
                     {% csrf_token %}
                     <div class="co-hero__avatar">
                         {% if partner.logo %}
-                            <img src="{{ partner.logo.url }}" alt="{{ partner.company_name }}">
+                            <img src="{{ partner.logo.url }}" alt="{{ partner.company_name }}" width="132" height="132" decoding="async">
                         {% else %}
                             <span aria-hidden="true">{{ partner.company_name|slice:":1"|upper }}</span>
                         {% endif %}
