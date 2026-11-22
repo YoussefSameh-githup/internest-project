@@ -66,6 +66,11 @@ class TaxonomyIndex:
     def add(self, skill):
         self.by_key.setdefault(normalize_key(skill.name), skill)
 
+    def match_exact(self, name: str):
+        """Like match() without the fuzzy step: a name, alias, abbreviation or version / role variant only."""
+        key = normalize_key(name)
+        return next((self.by_key[v] for v in _variants(key) if v in self.by_key), None) if key else None
+
     def match(self, name: str):
         """The Skill this name means, or None when nothing in the taxonomy is close enough."""
         key = normalize_key(name)

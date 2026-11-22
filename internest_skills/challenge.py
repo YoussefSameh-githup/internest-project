@@ -9,7 +9,7 @@ import random
 from collections import defaultdict
 from datetime import timedelta
 
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
@@ -245,19 +245,24 @@ def terminate(attempt, reason):
 
 
 def _percentile(skill, score, exclude_pk):
-    others = list(
-        StudentSkill.objects.filter(skill=skill, score__isnull=False).exclude(pk=exclude_pk).values_list("score", flat=True)
-    )
-    n = len(others) + 1
-    below = sum(1 for s in others if s < score)
-    equal = sum(1 for s in others if s == score) + 1
-    return round((below + 0.5 * equal) / n * 100)
+    """One COUNT query on the (skill, score) index instead of loading every peer's score."""
+    counts = (StudentSkill.objects.filter(skill=skill, score__isnull=False).exclude(pk=exclude_pk)
+              .aggregate(n=Count("id"), below=Count("id", filter=Q(score__lt=score)), equal=Count("id", filter=Q(score=score))))
+    n = counts["n"] + 1
+    return round((counts["below"] + 0.5 * (counts["equal"] + 1)) / n * 100)
+
+
+def counts_in_score(response) -> bool:
+    """An MCQ whose answer key the verifier disputed (quizgen.verify_items) counts neither for nor against the student."""
+    return not (response.item.kind == ChallengeItem.KIND_MCQ and response.item.key_verified is False)
 
 
 def improvement_topics(responses) -> list[dict]:
     """Actionable study topics from missed answers, fundamentals (easy misses) first."""
     topics = {}
     for r in responses:
+        if not counts_in_score(r):
+            continue
         item = r.item
         missed = r.final_credit < (1.0 if item.kind == ChallengeItem.KIND_MCQ else CASE_PASS_CREDIT)
         if not missed:
@@ -280,9 +285,9 @@ def leaderboard_position(student_skill) -> dict | None:
     """Rank among peers who completed the same skill's challenge (by best current score)."""
     if student_skill.score is None:
         return None
-    scores = list(StudentSkill.objects.filter(skill=student_skill.skill, score__isnull=False).values_list("score", flat=True))
-    rank = 1 + sum(1 for s in scores if s > student_skill.score)
-    return {"rank": rank, "peers": len(scores), "percentile": student_skill.percentile,
+    counts = (StudentSkill.objects.filter(skill_id=student_skill.skill_id, score__isnull=False)
+              .aggregate(peers=Count("id"), higher=Count("id", filter=Q(score__gt=student_skill.score))))
+    return {"rank": 1 + counts["higher"], "peers": counts["peers"], "percentile": student_skill.percentile,
             "top_percent": max(1, 100 - (student_skill.percentile or 0))}
 
 
@@ -292,6 +297,8 @@ def score_responses(responses, credit_of=None):
     earned = total = 0.0
     per_sub = defaultdict(lambda: {"earned": 0.0, "total": 0.0, "name": ""})
     for r in responses:
+        if not counts_in_score(r):
+            continue
         w = r.item.weight
         earned += credit_of(r) * w
         total += w

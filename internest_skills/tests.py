@@ -61,6 +61,9 @@ class Base(TestCase):
         cls.skill = Skill.objects.get(slug="financial-analysis")
 
     def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()  # shared aggregates (market fit) are cached across requests; the test database is not
         # Assertions below use the English source strings; the site default is Arabic.
         translation.activate("en")
         self.client.cookies["internest_lang"] = "en"
@@ -291,31 +294,46 @@ def _llm_reply(content):
 
 @override_settings(AGENTROUTER_API_KEY="k", AGENTROUTER_BASE_URL="https://llm.test/v1")
 class LLMExtractionTests(Base):
-    def test_llm_maps_known_skills_and_creates_new_ones(self):
-        reply = _llm_reply('{"extracted_skills":["python","Supply Chain Planning","Excel","","x"],'
-                           '"implied_skills":["python"],"top_domains":["business"]}')
+    def test_llm_maps_known_skills_and_never_creates_skills(self):
+        reply = _llm_reply(json.dumps({"skills": [
+            {"name": "python", "evidence": "Automated reports for the finance team", "implied": True},
+            {"name": "Supply Chain Planning", "evidence": "Automated reports for the finance team"},
+            {"name": "Excel", "evidence": "pivot tables in Excel"}, {"name": "", "evidence": "x"}],
+            "top_domains": ["business"]}))
+        before = Skill.objects.count()
         with mock.patch("openai.resources.chat.completions.Completions.create", return_value=reply) as create:
-            found = {e.skill.name: e.source for e in extract_skills("Automated reports for the finance team.")}
-        self.assertEqual(found, {"Python": "implicit", "Supply Chain Planning": "explicit", "Excel": "explicit"})
-        self.assertEqual(Skill.objects.get(name="Supply Chain Planning").discipline, "business")
+            found = {e.skill.name: e.source for e in extract_skills("Automated reports for the finance team.\nBuilt pivot tables in Excel.")}
+        self.assertEqual(found, {"Excel": "explicit"})  # Python is only implied: it waits for the student's confirmation
+        self.assertEqual(Skill.objects.count(), before)  # audit M1: an AI name never creates a Skill row
+        self.assertFalse(Skill.objects.filter(name="Supply Chain Planning").exists())
+        from .models import SkillSuggestion
+
+        self.assertEqual(SkillSuggestion.objects.get().name, "Supply Chain Planning")
         kwargs = create.call_args.kwargs
         self.assertEqual(kwargs["model"], "gpt-4o-mini")
-        self.assertEqual(kwargs["max_tokens"], 700)
         self.assertEqual(kwargs["response_format"], {"type": "json_object"})
         self.assertIn("ESCO / O*NET", kwargs["messages"][0]["content"])
 
-    def test_api_result_is_authoritative_no_local_merge(self):
-        reply = _llm_reply('{"extracted_skills":["Data Analysis"],"top_domains":["computing"]}')
+    def test_local_matches_stay_when_the_ai_adds_nothing(self):
+        reply = _llm_reply('{"skills":[{"name":"Data Analysis","evidence":"invented sentence"}],"top_domains":["computing"]}')
         with mock.patch("openai.resources.chat.completions.Completions.create", return_value=reply):
             found = {e.skill.name for e in extract_skills("Skills: SQL and pivot tables")}
-        self.assertEqual(found, {"Data Analysis"})
+        self.assertEqual(found, {"SQL", "Excel"})  # deterministic first; the ungrounded AI skill is dropped
 
-    def test_cv_upload_attaches_api_skills_to_student(self):
-        reply = _llm_reply('{"extracted_skills":["Supply Chain Management","SQL"],"implied_skills":["SQL"],"top_domains":["business"]}')
+    def test_cv_upload_attaches_grounded_api_skills_to_student(self):
+        reply = _llm_reply(json.dumps({"skills": [
+            {"name": "Supply Chain Management", "evidence": "Led procurement and logistics"},
+            {"name": "SQL", "evidence": "SQL queries for stock levels"}], "top_domains": ["business"]}))
         self.client.force_login(self.student_user)
         with mock.patch("openai.resources.chat.completions.Completions.create", return_value=reply):
-            self.client.post(reverse("skills_hub"), {"cv_file": _docx_upload("Led procurement and logistics at a retail firm.")})
-        self.assertEqual(set(self.student.skills.values_list("skill__name", flat=True)), {"Supply Chain Management", "SQL"})
+            self.client.post(reverse("skills_hub"), {"cv_file": _docx_upload(
+                "Led procurement and logistics at a retail firm.\nWrote SQL queries for stock levels every week.")})
+        names = set(self.student.skills.values_list("skill__name", flat=True))
+        self.assertIn("SQL", names)
+        analysis = self.student.skill_profile.last_analysis
+        self.assertEqual(analysis.status, "done")
+        offered = {s["name"] for s in analysis.ai["skills_to_confirm"]}
+        self.assertEqual(offered & names, set())  # inferred skills are offered, not saved
 
     def test_falls_back_to_regex_on_error_or_bad_json(self):
         for effect in (TimeoutError("slow"), None):

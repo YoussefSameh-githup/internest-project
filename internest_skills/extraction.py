@@ -1,29 +1,24 @@
-"""Universal (all-faculty) skill extractor: document text → explicit + implicit skills.
+"""Document text and the local skill matcher: upload → clean text → explicit (declared) + implicit (evidenced) skills.
 
-Primary: LLM (OpenAI-compatible, two keys with failover) returning a strict JSON profile whose skill
-names are normalized onto the Skill taxonomy. Fallback: local regex matcher.
+Also the grounding helpers every AI skill reader uses: `relevant_known` (top-N taxonomy names for a prompt),
+`locate_evidence` (an AI quote must be found in the text) and `record_suggestion` (unknown AI names become
+SkillSuggestion rows for staff, never Skill rows: audit M1). The AI reading itself lives in cv_analysis (internest_ai).
 """
 import io
 import logging
 import re
 import unicodedata
-from dataclasses import dataclass, field
+import zipfile
+from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 
 from django.db import IntegrityError, transaction
-from django.utils.text import slugify
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 
-from internest_core.api_monitor import api_feature
-
-from .llm import LLM_ERRORS, chat_json, llm_enabled
 from .models import Discipline, Skill, StudentSkill
-from .taxonomy import TaxonomyIndex
 
 MAX_TEXT_CHARS = 200_000
-LLM_INPUT_CHARS = 10_000  # long CVs made calls time out; contacts and repeated lines are stripped first
-LLM_TIMEOUT = 45.0
-LLM_MAX_SKILLS = 20
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +45,36 @@ def sanitize_text(text: str) -> str:
     return "\n".join(lines)
 
 
+# DOCX files are zip archives: python-docx inflates the parts it opens, so a tiny "zip bomb" could expand to gigabytes
+# in memory. The central directory (read without inflating anything) must look like a real Word file first.
+DOCX_MAX_UNCOMPRESSED = 20 * 1024 * 1024
+DOCX_MAX_RATIO = 100         # whole archive (Word files are typically 3-10x)
+DOCX_MAX_ENTRY_RATIO = 1000  # one part
+DOCX_MAX_ENTRIES = 2000
+_UNREADABLE = _lazy("Could not read this file. Make sure it is a valid, non-encrypted PDF or DOCX.")
+NO_TEXT_PDF = _lazy("This PDF has no selectable text: it looks like a scanned image. We don't read images (no OCR): "
+                    "export your CV from Word or Google Docs as PDF or DOCX, or paste its text instead.")
+NO_TEXT = _lazy("No readable text found in this file. Upload a PDF or DOCX made from a text document, or paste the text.")
+
+
+def check_docx_archive(data: bytes) -> None:
+    """Raise ExtractionError for an archive that would inflate past 20 MB or with an absurd compression ratio.
+    zipfile never inflates an entry past its declared size, so checking the declared sizes bounds the real work."""
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            entries = archive.infolist()
+    except (zipfile.BadZipFile, OSError, ValueError) as exc:
+        raise ExtractionError(str(_UNREADABLE)) from exc
+    total = sum(e.file_size for e in entries)
+    packed = sum(e.compress_size for e in entries) or 1
+    bomb = (len(entries) > DOCX_MAX_ENTRIES or total > DOCX_MAX_UNCOMPRESSED
+            or (total > 1024 * 1024 and total / packed > DOCX_MAX_RATIO)
+            or any(e.file_size > 1024 * 1024 and e.file_size / max(e.compress_size, 1) > DOCX_MAX_ENTRY_RATIO for e in entries))
+    if bomb:
+        logger.warning("Refused a DOCX upload: %s entries, %s bytes unpacked from %s", len(entries), total, packed)
+        raise ExtractionError(_("This DOCX file is unusually large once unpacked. Save it again from Word or upload a PDF."))
+
+
 def read_document_text(uploaded_file) -> str:
     name = (uploaded_file.name or "").lower()
     data = uploaded_file.read()
@@ -59,6 +84,7 @@ def read_document_text(uploaded_file) -> str:
             reader = PdfReader(io.BytesIO(data))
             text = "\n".join((page.extract_text() or "") for page in reader.pages[:15])
         elif name.endswith(".docx"):
+            check_docx_archive(data)
             import docx
             document = docx.Document(io.BytesIO(data))
             parts = [p.text for p in document.paragraphs]
@@ -71,10 +97,10 @@ def read_document_text(uploaded_file) -> str:
     except ExtractionError:
         raise
     except Exception as exc:
-        raise ExtractionError(_("Could not read this file. Make sure it is a valid, non-encrypted PDF or DOCX.")) from exc
+        raise ExtractionError(str(_UNREADABLE)) from exc
     text = sanitize_text(text)[:MAX_TEXT_CHARS]
     if len(text.strip()) < 40:
-        raise ExtractionError(_("No readable text found (scanned image PDFs are not supported)."))
+        raise ExtractionError(str(NO_TEXT_PDF if name.endswith(".pdf") else NO_TEXT))
     return text
 
 
@@ -110,71 +136,20 @@ class ExtractedSkill:
     skill: Skill
     source: str
     evidence: str
+    provenance: str = ""          # StudentSkill.PROVENANCE_*; derived from `source` when left empty
+    confidence: int | None = None  # 0-100
 
-
-@dataclass
-class CVAnalysis:
-    skills: list
-    candidate_name: str = ""
-    summary: str = ""
-    years_by_skill: dict = field(default_factory=dict)  # Skill pk → Decimal years
-    top_domains: list = field(default_factory=list)
-    ai_used: bool = False
-    ai_failed: bool = False  # the LLM is configured but every key failed: results come from the local matcher
-
-
-def analyze_cv(text: str, skills=None) -> CVAnalysis:
-    """LLM analysis when configured; if every key fails, the local matcher (flagged with ai_failed)."""
-    skills = list(skills if skills is not None else Skill.objects.filter(is_active=True))
-    if llm_enabled():
-        try:
-            with transaction.atomic():  # savepoint: a failed write never poisons the request's transaction
-                return analyze_cv_llm(text, skills)
-        except LLM_ERRORS as exc:
-            logger.warning("LLM skill extraction failed (%s); using local matcher", type(exc).__name__)
-            return CVAnalysis(extract_skills_local(text, skills), ai_failed=True)
-    return CVAnalysis(extract_skills_local(text, skills))
+    def __post_init__(self):
+        if not self.provenance:
+            self.provenance = (StudentSkill.PROVENANCE_EVIDENCED if self.source == StudentSkill.SOURCE_IMPLICIT
+                               else StudentSkill.PROVENANCE_DECLARED)
 
 
 def extract_skills(text: str, skills=None) -> list[ExtractedSkill]:
+    """Skills a student can save straight away (declared / evidenced; AI-inferred ones need a confirmation)."""
+    from .cv_analysis import analyze_cv
+
     return analyze_cv(text, skills).skills
-
-
-_DOMAINS = [d.value for d in Discipline]
-_SYSTEM_PROMPT = (
-    "You are a CV parser. Read the WHOLE CV (summary, experience, projects, education, courses, activities; "
-    "English/Arabic, any discipline) and list ALL professional skills, max 20, most relevant first, including "
-    "implicit ones shown by projects/work. "
-    "Every skill name MUST be a standard taxonomy name: if it is the same skill as a name in Known, return that "
-    "Known name EXACTLY (e.g. Python3, py, python developer -> Python); otherwise use the global ESCO / O*NET "
-    "preferred label (1-4 words, English, no versions or job titles). "
-    "Keep it short: compact JSON only, skills first (a cut-off reply still keeps them), exactly this schema: "
-    '{"extracted_skills":["Skill"],"implied_skills":["the extracted_skills that are only implied, not written"],'
-    '"candidate_name":"","summary":"one sentence, max 25 words",'
-    '"years_experience_by_skill":{"Skill":1.5, only skills with years stated in the CV},'
-    f'"top_domains":["1-3 of: {", ".join(_DOMAINS)}"]}}'
-)
-
-
-def _get_or_create_skill(name: str, discipline: str, index: TaxonomyIndex):
-    skill = index.match(name)
-    if skill is None:
-        name = index.canonical_name(name)
-        if not (2 <= len(name) <= 60) or len(name.split()) > 5:
-            return None
-        skill = Skill.objects.filter(name__iexact=name).first()  # e.g. an inactive skill
-    if skill is None:
-        base = slugify(name, allow_unicode=True)[:90] or "skill"
-        slug, n = base, 2
-        while Skill.objects.filter(slug=slug).exists():
-            slug, n = f"{base}-{n}", n + 1
-        try:
-            skill = Skill.objects.create(name=name, slug=slug, discipline=discipline, aliases=name)
-        except IntegrityError:
-            skill = Skill.objects.filter(name__iexact=name).first()
-    if skill is not None:
-        index.add(skill)
-    return skill if skill is not None and skill.is_active else None
 
 
 def _clean_str(value, limit):
@@ -205,44 +180,6 @@ def compact_cv_text(text: str) -> str:
     return "\n".join(lines)
 
 
-def analyze_cv_llm(text: str, skills) -> CVAnalysis:
-    cv = compact_cv_text(text)[:LLM_INPUT_CHARS]
-    known = ", ".join(s.name for s in skills)
-    with api_feature("CV Analysis"):
-        data = chat_json(_SYSTEM_PROMPT, f"Known: {known}\nCV:\n{cv}", max_tokens=700, timeout=LLM_TIMEOUT)
-    names = data.get("extracted_skills")
-    if not isinstance(names, list):
-        raise ValueError("LLM response missing 'extracted_skills' list")
-
-    def as_list(key):
-        value = data.get(key)
-        return [v for v in value if isinstance(v, str)] if isinstance(value, list) else []
-
-    domains = [d for d in as_list("top_domains") if d in _DOMAINS][:3]
-    implied = {n.strip().lower() for n in as_list("implied_skills")}
-    raw_years = data.get("years_experience_by_skill")
-    years_by_name = {str(k).strip().lower(): v for k, v in raw_years.items()} if isinstance(raw_years, dict) else {}
-
-    index = TaxonomyIndex(skills)
-    local = {e.skill.pk: e for e in extract_skills_local(text, skills)}
-    analysis = CVAnalysis([], _clean_str(data.get("candidate_name"), 120), _clean_str(data.get("summary"), 400),
-                          top_domains=domains, ai_used=True)
-    seen = set()
-    for raw in names[:LLM_MAX_SKILLS]:
-        name = _clean_str(raw, 100)
-        skill = _get_or_create_skill(name, domains[0] if domains else Discipline.GENERAL, index) if name else None
-        if skill is None or skill.pk in seen:
-            continue
-        seen.add(skill.pk)
-        source = StudentSkill.SOURCE_IMPLICIT if name.lower() in implied else StudentSkill.SOURCE_EXPLICIT
-        evidence = local[skill.pk].evidence if skill.pk in local else ""
-        analysis.skills.append(ExtractedSkill(skill, source, evidence))
-        years = _years(years_by_name.get(name.lower()))
-        if years is not None:
-            analysis.years_by_skill[skill.pk] = years
-    return analysis
-
-
 def extract_skills_local(text: str, skills=None) -> list[ExtractedSkill]:
     skills = list(skills if skills is not None else Skill.objects.filter(is_active=True))
     norm = _normalize(text)
@@ -253,39 +190,122 @@ def extract_skills_local(text: str, skills=None) -> list[ExtractedSkill]:
         for term in skill.alias_list:
             m = _term_pattern(term).search(norm)
             if m:
-                found = ExtractedSkill(skill, StudentSkill.SOURCE_EXPLICIT, _evidence(source_text, m.start(), m.end()))
+                found = ExtractedSkill(skill, StudentSkill.SOURCE_EXPLICIT, _evidence(source_text, m.start(), m.end()),
+                                       StudentSkill.PROVENANCE_DECLARED, 95)
                 break
         if found is None:
             for phrase in skill.implicit_signal_list:
                 m = _term_pattern(phrase).search(norm)
                 if m:
-                    found = ExtractedSkill(skill, StudentSkill.SOURCE_IMPLICIT, _evidence(source_text, m.start(), m.end()))
+                    found = ExtractedSkill(skill, StudentSkill.SOURCE_IMPLICIT, _evidence(source_text, m.start(), m.end()),
+                                           StudentSkill.PROVENANCE_EVIDENCED, 70)
                     break
         if found:
             results.append(found)
     return results
 
 
+# ---------------------------------------------------------------- grounding of AI output (every AI skill reader)
+KNOWN_LIMIT = 60  # taxonomy names sent to a model: the most relevant ones for this text, never the whole table
+
+
+def relevant_known(text: str, skills, found_ids=(), limit: int = KNOWN_LIMIT) -> list:
+    """Top-N taxonomy skills for this text: local matches first, then skills whose name words appear in it, then
+    skills of the same fields as the matches; ties by name. Keeps prompts small whatever the taxonomy size."""
+    words = set(re.findall(r"[\w+#.]{2,}", _normalize(text or "")))
+    found_ids = set(found_ids)
+    fields = {s.discipline for s in skills if s.pk in found_ids}
+
+    def rank(skill):
+        if skill.pk in found_ids:
+            return 0
+        if any(w in words for w in _normalize(skill.name).split() if len(w) >= 3):
+            return 1
+        return 2 if skill.discipline in fields else 3
+
+    return sorted(skills, key=lambda s: (rank(s), s.name.lower()))[:limit]
+
+
+def _flat(text: str) -> str:
+    return re.sub(r"\s+", " ", _normalize(text or "")).strip(" .,;:\"'“”«»()")
+
+
+def locate_evidence(quote: str, text: str) -> str:
+    """The CV line(s) holding `quote` (an AI's verbatim evidence), or "" when the quote is not in the text.
+    "…" / "..." splits a quote into parts that must all be found."""
+    parts = [p for p in (_flat(x) for x in re.split(r"\.\.\.|…", quote or "")) if len(p) >= 4]
+    if not parts:
+        return ""
+    lines = (text or "").splitlines()
+    flat_lines = [_flat(line) for line in lines]
+    whole = _flat(text)
+    found = []
+    for part in parts:
+        index = next((i for i, line in enumerate(flat_lines) if part in line), None)
+        if index is None and part not in whole:
+            return ""
+        if index is not None:
+            found.append(lines[index].strip())
+    snippet = " … ".join(dict.fromkeys(found)) if found else quote
+    return _clean_str(snippet, 280)
+
+
+def record_suggestion(name: str, discipline: str = "", example: str = ""):
+    """An unknown skill name from an AI reply becomes a SkillSuggestion for staff (never an active Skill)."""
+    from django.db.models import F
+
+    from .models import SkillSuggestion
+    from .taxonomy import TaxonomyIndex, normalize_key
+
+    name = TaxonomyIndex(()).canonical_name(_clean_str(name, 100))  # "Rust developer skills" → "Rust"
+    key = normalize_key(name)[:100]
+    if not (2 <= len(name) <= 60) or len(name.split()) > 5 or not key:
+        return None
+    defaults = {"name": name, "discipline": discipline if discipline in Discipline.values else Discipline.GENERAL,
+                "example": (example or "")[:300]}
+    try:
+        with transaction.atomic():
+            suggestion, created = SkillSuggestion.objects.get_or_create(key=key, defaults=defaults)
+    except IntegrityError:  # created by a concurrent request a moment ago
+        suggestion, created = SkillSuggestion.objects.get(key=key), False
+    if not created:
+        SkillSuggestion.objects.filter(pk=suggestion.pk).update(seen_count=F("seen_count") + 1)
+    return suggestion
+
+
+# ---------------------------------------------------------------- saving
+_PROVENANCE_RANK = {StudentSkill.PROVENANCE_INFERRED: 0, StudentSkill.PROVENANCE_EVIDENCED: 1, StudentSkill.PROVENANCE_DECLARED: 2}
+
+
 @transaction.atomic
 def save_claimed_skills(student_profile, extracted: list[ExtractedSkill], years_by_skill=None) -> tuple[int, int]:
-    """Upsert as Claimed. Never downgrades a Verified/Lag skill. Returns (created, updated)."""
+    """Upsert as Claimed. Never touches the status of an existing row (a Verified/Lag skill is never downgraded); a
+    stronger provenance (inferred < evidenced < declared) replaces a weaker one with its evidence. Returns (created, updated)."""
     created = updated = 0
     years_by_skill = years_by_skill or {}
     for item in extracted:
         years = years_by_skill.get(item.skill.pk)
         obj, was_created = StudentSkill.objects.get_or_create(
             student=student_profile, skill=item.skill,
-            defaults={"source": item.source, "evidence": item.evidence, "years_experience": years},
+            defaults={"source": item.source, "evidence": item.evidence[:300], "years_experience": years,
+                      "provenance": item.provenance, "confidence": item.confidence},
         )
         if was_created:
             created += 1
             continue
+        fields = []
         if years is not None and obj.years_experience != years:
             obj.years_experience = years
-            obj.save(update_fields=["years_experience", "updated_at"])
-        if obj.source == StudentSkill.SOURCE_IMPLICIT and item.source == StudentSkill.SOURCE_EXPLICIT:
-            obj.source = item.source
-            obj.evidence = item.evidence
-            obj.save(update_fields=["source", "evidence", "updated_at"])
+            fields.append("years_experience")
+        if _PROVENANCE_RANK.get(item.provenance, 0) > _PROVENANCE_RANK.get(obj.provenance, 0):
+            obj.provenance, obj.confidence, obj.source = item.provenance, item.confidence, item.source
+            obj.evidence = item.evidence[:300] or obj.evidence
+            fields += ["provenance", "confidence", "source", "evidence"]
             updated += 1
+        elif obj.source == StudentSkill.SOURCE_IMPLICIT and item.source == StudentSkill.SOURCE_EXPLICIT:
+            obj.source, obj.evidence = item.source, item.evidence[:300]
+            fields += ["source", "evidence"]
+            updated += 1
+        if fields:
+            obj.save(update_fields=fields + ["updated_at"])
     return created, updated

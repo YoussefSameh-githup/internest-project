@@ -5,9 +5,10 @@ from unfold.decorators import display
 from internest_core.admin_base import BAD, INFO, OK, WAIT, ModelAdmin, TabularInline, flag_badge, status_badge
 
 from .models import (
-    ChallengeAttempt, ChallengeItem, ChallengeResponse, Course, EmployerSubscription,
-    ExternalCourse, Skill, SkillCertificate, SkillProfile, StudentFreelanceGig, StudentSkill, SubSkill,
+    ChallengeAttempt, ChallengeItem, ChallengeResponse, Course, CVAnalysis, EmployerSubscription,
+    ExternalCourse, Skill, SkillCertificate, SkillProfile, SkillSuggestion, StudentFreelanceGig, StudentSkill, SubSkill,
 )
+from .suggestions import approve_suggestion, merge_suggestion
 from .certificates import reject_certificate, verify_certificate
 from .freelance_service import reject_gig, verify_gig
 
@@ -35,10 +36,17 @@ class SubSkillAdmin(ModelAdmin):
 
 @admin.register(ChallengeItem)
 class ChallengeItemAdmin(ModelAdmin):
-    list_display = ("__str__", "kind", "time_limit_seconds", "weight", "is_active")
-    list_filter = ("skill", "kind", "is_active")
+    """AI-generated questions arrive unreviewed; key_verified shows the second-model check (No = disputed, deactivated)."""
+
+    list_display = ("__str__", "kind", "time_limit_seconds", "weight", "is_active", "reviewed", "key_verified")
+    list_filter = ("reviewed", "key_verified", "is_active", "kind", "skill")
     search_fields = ("prompt",)
     autocomplete_fields = ("sub_skill",)
+    actions = ["mark_reviewed"]
+
+    @admin.action(description=_("Mark the selected questions as reviewed"))
+    def mark_reviewed(self, request, queryset):
+        self.message_user(request, _("%(n)s questions marked as reviewed.") % {"n": queryset.update(reviewed=True)})
 
 
 @admin.register(ExternalCourse)
@@ -51,8 +59,9 @@ class ExternalCourseAdmin(ModelAdmin):
 
 @admin.register(StudentSkill)
 class StudentSkillAdmin(ModelAdmin):
-    list_display = ("student", "skill", "source_col", "status_col", "verified_via", "score", "percentile", "years_experience", "updated_at")
-    list_filter = ("status", "verified_via", "source", "skill__discipline", "updated_at")
+    list_display = ("student", "skill", "source_col", "provenance", "confidence", "status_col", "verified_via", "score", "percentile",
+                    "years_experience", "updated_at")
+    list_filter = ("status", "provenance", "verified_via", "source", "skill__discipline", "updated_at")
     search_fields = ("student__user__username", "student__user__email", "skill__name")
     list_select_related = ("student__user", "skill")
     readonly_fields = ("created_at", "updated_at", "lag_sub_skills", "verified_at")
@@ -207,3 +216,53 @@ class CourseAdmin(ModelAdmin):
     @admin.action(description=_("Mark as open (non-partner) courses"))
     def mark_open(self, request, queryset):
         queryset.update(is_partner=False, discount_note="")
+
+
+@admin.register(SkillSuggestion)
+class SkillSuggestionAdmin(ModelAdmin):
+    """Skill names an AI used that are not in the taxonomy (audit M1: AI output never creates skills by itself).
+    Approve one as a new skill, or set "Merge into" to an existing skill and run Merge (the name becomes an alias)."""
+
+    list_display = ("name", "discipline", "seen_count", "status_col", "merge_into", "skill", "last_seen_at")
+    list_filter = ("status", "discipline")
+    list_editable = ("merge_into",)
+    search_fields = ("name", "example")
+    autocomplete_fields = ("merge_into",)
+    readonly_fields = ("key", "seen_count", "example", "skill", "created_at", "last_seen_at")
+    actions = ["approve", "merge", "reject"]
+    status_col = status_badge("status", {SkillSuggestion.STATUS_PENDING: WAIT, SkillSuggestion.STATUS_APPROVED: OK,
+                                         SkillSuggestion.STATUS_MERGED: INFO, SkillSuggestion.STATUS_REJECTED: BAD})
+
+    @admin.action(description=_("Approve as new skills"))
+    def approve(self, request, queryset):
+        done = [approve_suggestion(s) for s in queryset.filter(status=SkillSuggestion.STATUS_PENDING)]
+        self.message_user(request, _("%(n)s skills added to the taxonomy.") % {"n": len(done)})
+
+    @admin.action(description=_("Merge into the chosen existing skill"))
+    def merge(self, request, queryset):
+        rows = list(queryset.filter(status=SkillSuggestion.STATUS_PENDING, merge_into__isnull=False).select_related("merge_into"))
+        for suggestion in rows:
+            merge_suggestion(suggestion, suggestion.merge_into)
+        self.message_user(request, _("%(n)s suggestions merged. Pick “Merge into” first for the others.") % {"n": len(rows)})
+
+    @admin.action(description=_("Reject the selected suggestions"))
+    def reject(self, request, queryset):
+        queryset.filter(status=SkillSuggestion.STATUS_PENDING).update(status=SkillSuggestion.STATUS_REJECTED)
+        self.message_user(request, _("Rejected."))
+
+
+@admin.register(CVAnalysis)
+class CVAnalysisAdmin(ModelAdmin):
+    """Read-only: facts (deterministic parser) and AI suggestions are kept apart; the CV text itself is never stored."""
+
+    list_display = ("pk", "user", "source", "status", "quality_score", "created_at", "finished_at")
+    list_filter = ("status", "source", "created_at")
+    search_fields = ("user__username", "user__email", "file_sha256")
+    readonly_fields = [f.name for f in CVAnalysis._meta.fields]
+    date_hierarchy = "created_at"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

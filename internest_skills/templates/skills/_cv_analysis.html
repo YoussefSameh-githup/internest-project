@@ -1,0 +1,145 @@
+{% load i18n %}{# The latest CV analysis on the skills hub. Context: analysis (internest_skills.cv_analysis.view_context). Shown once, under the upload form. #}
+<style>
+/* Embedded so it ships with the page even when an old skills.css is cached. Logical properties: RTL mirrors. */
+.cva { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: grid; gap: 16px; }
+.cva__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.cva__head h4 { margin: 0; font-size: 1.05rem; }
+.cva__pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;
+  background: #eff6ff; color: #1d4ed8; }
+.cva__pill--done { background: #dcfce7; color: #166534; }
+.cva__pill--failed { background: #fee2e2; color: #991b1b; }
+.cva__progress { display: flex; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 14px; background: #f8fafc; border: 1px solid #e2e8f0; }
+.cva__spin { flex-shrink: 0; width: 22px; height: 22px; border: 3px solid #bfdbfe; border-top-color: #1d4ed8; border-radius: 50%; animation: cva-spin .9s linear infinite; }
+@keyframes cva-spin { to { transform: rotate(360deg); } }
+.cva__progress p { margin: 0; font-size: var(--text-sm); color: #334155; }
+.cva__grid { display: grid; gap: 12px; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); }
+.cva__score { padding: 16px; border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0; display: grid; gap: 8px; align-content: start; }
+.cva__score b { font-size: 2.2rem; line-height: 1; color: #0f172a; font-variant-numeric: tabular-nums; }
+.cva__score b small { font-size: 1rem; color: #64748b; font-weight: 600; }
+.cva__meter { height: 8px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }
+.cva__meter span { display: block; height: 100%; border-radius: inherit; background: #16a34a; }
+.cva__meter--fair span { background: #d97706; }
+.cva__meter--low span { background: #dc2626; }
+.cva__score p, .cva__note { margin: 0; font-size: 12px; color: #64748b; }
+.cva__facts { margin: 0; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.cva__facts div { padding: 10px 12px; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; min-width: 0; }
+.cva__facts dt { font-size: 12px; color: #64748b; }
+.cva__facts dd { margin: 2px 0 0; font-weight: 800; color: #0f172a; overflow-wrap: anywhere; }
+.cva h5 { margin: 0 0 8px; font-size: .95rem; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.cva__list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.cva__list li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: #f8fafc; font-size: var(--text-sm); }
+.cva__list li > i { flex-shrink: 0; margin-top: 2px; color: #d97706; }
+.cva__list--ai li > i { color: #7c3aed; }
+.cva__list strong { display: block; color: #0f172a; }
+.cva__tag { padding: 2px 8px; border-radius: 999px; background: #f3e8ff; color: #6b21a8; font-size: 11px; font-weight: 700; }
+.cva__confirm { padding: 14px; border-radius: 16px; border: 1px dashed #c4b5fd; background: #faf5ff; display: grid; gap: 10px; }
+.cva__confirm p { margin: 0; font-size: 13px; color: #4c1d95; }
+.cva__pick { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: #fff; border: 1px solid #e9d5ff; cursor: pointer; min-height: 44px; }
+.cva__pick input { margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; }
+.cva__pick span { min-width: 0; }
+.cva__pick small { display: block; color: #6b7280; font-style: italic; overflow-wrap: anywhere; }
+.cva__confirm .btn { justify-self: start; min-height: 44px; }
+@media (max-width: 767px) { .cva__grid { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .cva__spin { animation: none; } }
+</style>
+<section class="cva" id="cv-analysis" aria-labelledby="cva-title"{% if analysis.active %} data-cva-poll="{{ analysis.status_url }}" aria-busy="true"{% endif %}>
+    <div class="cva__head">
+        <h4 id="cva-title"><i class="bi bi-file-earmark-person" aria-hidden="true"></i> {% trans "Your CV analysis" %}</h4>
+        {% if analysis.active %}<span class="cva__pill"><i class="bi bi-hourglass-split" aria-hidden="true"></i> {% trans "Analyzing…" %}</span>
+        {% elif analysis.failed %}<span class="cva__pill cva__pill--failed"><i class="bi bi-x-circle" aria-hidden="true"></i> {% trans "Failed" %}</span>
+        {% else %}<span class="cva__pill cva__pill--done"><i class="bi bi-check2-circle" aria-hidden="true"></i> {{ analysis.obj.finished_at|date:"Y/m/d H:i" }}</span>{% endif %}
+    </div>
+
+    {% if analysis.active %}
+        <div class="cva__progress" role="status">
+            <span class="cva__spin" aria-hidden="true"></span>
+            <p>{% trans "Reading your CV: facts first, then AI suggestions and your skills. This takes a few seconds; the page updates by itself." %}
+                <noscript>{% trans "Refresh the page in a few seconds to see the results." %}</noscript></p>
+        </div>
+    {% elif analysis.failed %}
+        <p class="sx-error" role="alert">{% trans "The analysis failed. Please try again." %}</p>
+    {% else %}
+        {% if analysis.notice %}
+            <div class="ai-notice{% if analysis.notice == 'empty' %} ai-notice--empty{% endif %}" role="alert">
+                <i class="bi bi-cloud-slash" aria-hidden="true"></i>
+                <div>
+                    <strong>{% trans "Our AI analysis is temporarily unavailable." %}</strong>
+                    {% if analysis.quota_message %}<p>{{ analysis.quota_message }}</p>
+                    {% elif analysis.notice == 'empty' %}
+                        <p>{% trans "Your file was read correctly, but our backup scanner found no skills in it. This try did not count toward your daily limit — please analyze it again in a few minutes." %}</p>
+                    {% else %}
+                        <p>{% trans "We used our backup scanner, so some skills may be missing. This try did not count toward your daily limit — analyze your CV again in a few minutes for the full AI analysis." %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="cva__grid">
+            <div class="cva__score">
+                <span class="cva__note">{% trans "CV completeness" %}</span>
+                <b>{{ analysis.score|default:0 }}<small>/100</small></b>
+                <div class="cva__meter cva__meter--{{ analysis.level }}" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ analysis.score|default:0 }}" aria-label="{% trans 'CV completeness' %}"><span style="width: {{ analysis.score|default:0 }}%"></span></div>
+                <p>{% trans "Counted from what your CV contains (sections, dates, contacts, results), not by AI." %}</p>
+            </div>
+            <dl class="cva__facts">
+                <div><dt>{% trans "Education" %}</dt><dd>{{ analysis.facts.education|length }}</dd></div>
+                <div><dt>{% trans "Experience" %}</dt><dd>{{ analysis.facts.experience|length }}</dd></div>
+                <div><dt>{% trans "Projects" %}</dt><dd>{{ analysis.facts.projects|length }}</dd></div>
+                <div><dt>{% trans "Certificates & courses" %}</dt><dd>{{ analysis.facts.certifications|length }}</dd></div>
+                <div><dt>{% trans "Languages" %}</dt><dd>{% for l in analysis.facts.languages %}<bdi>{{ l.language }}</bdi>{% if not forloop.last %}, {% endif %}{% empty %}0{% endfor %}</dd></div>
+                <div><dt>{% trans "Skills recognised" %}</dt><dd>{{ analysis.facts.skills|length }}</dd></div>
+            </dl>
+        </div>
+
+        {% if analysis.missing %}
+            <div>
+                <h5>{% trans "Make your CV stronger" %}</h5>
+                <ul class="cva__list">
+                    {% for row in analysis.missing %}<li><i class="bi bi-plus-circle" aria-hidden="true"></i><span><strong>{{ row.label }}</strong>{{ row.suggestion }}</span></li>{% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% if analysis.ai.suggestions %}
+            <div>
+                <h5>{% trans "AI suggestions" %} <span class="cva__tag">{% trans "AI · check before you use them" %}</span></h5>
+                <ul class="cva__list cva__list--ai">
+                    {% for tip in analysis.ai.suggestions %}<li><i class="bi bi-stars" aria-hidden="true"></i><span dir="auto">{{ tip }}</span></li>{% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% if analysis.to_confirm %}
+            <form method="post" action="{% url 'skills_cv_confirm' analysis.obj.pk %}" class="cva__confirm">{% csrf_token %}
+                <h5>{% trans "Skills to confirm" %} <span class="cva__tag">{% trans "Suggested by AI" %}</span></h5>
+                <p>{% trans "Your CV shows these skills without naming them. Tick only the ones you really have: they are added as claimed (not verified) until you pass their challenge." %}</p>
+                {% for s in analysis.to_confirm %}
+                    <label class="cva__pick"><input type="checkbox" name="skill_ids" value="{{ s.skill_id }}">
+                        <span><bdi class="fw-bold">{{ s.name }}</bdi><small dir="auto">“{{ s.evidence|truncatechars:140 }}”</small></span></label>
+                {% endfor %}
+                <button type="submit" class="btn btn--ghost btn--sm"><i class="bi bi-plus-lg" aria-hidden="true"></i> {% trans "Add selected skills" %}</button>
+            </form>
+        {% endif %}
+    {% endif %}
+</section>
+{% if analysis.active %}
+<script>
+(function () {
+  var box = document.querySelector("[data-cva-poll]");
+  if (!box || !window.fetch) return;
+  var delay = 800, started = Date.now();
+  function check() {
+    if (Date.now() - started > 180000) return;  // give up quietly after 3 minutes; a refresh shows the state
+    fetch(box.getAttribute("data-cva-poll"), {credentials: "same-origin", headers: {"Accept": "application/json"}})
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (d && d.status !== "queued" && d.status !== "running") { window.location.reload(); return; }
+        delay = Math.min(3000, Math.round(delay * 1.4));
+        setTimeout(check, delay);
+      })
+      .catch(function () { setTimeout(check, 3000); });
+  }
+  setTimeout(check, delay);
+})();
+</script>
+{% endif %}

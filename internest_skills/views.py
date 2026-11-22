@@ -5,6 +5,7 @@ from functools import wraps
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Avg, Count, Q
 from django.http import Http404, HttpResponseForbidden, JsonResponse
@@ -16,27 +17,32 @@ from django.utils.translation import gettext as _, gettext_lazy as _lazy
 from django.views.decorators.http import require_GET, require_POST
 
 from internest_core import async_tasks
-from internest_core.models import StudentProfile
+from internest_core.models import Internship, StudentProfile
 from internest_core.views import _get_partner_profile, get_user_context
 
 from . import challenge as engine
-from .extraction import ExtractionError, analyze_cv, read_document_text, sanitize_text, save_claimed_skills
+from . import cv_analysis
+from .extraction import ExtractionError
 from . import freelance_service
 from .forms import CertificateForm, FreelanceImportForm, GigProofForm, SkillSourceForm, UniversityShareForm
 from .llm import llm_enabled
-from .models import ChallengeAttempt, ChallengeItem, Discipline, Skill, SkillProfile, StudentFreelanceGig, StudentSkill
+from .models import (
+    ChallengeAttempt, ChallengeItem, CVAnalysis, Discipline, Skill, SkillProfile, StudentFreelanceGig, StudentSkill,
+)
 from .permissions import is_verified_university, missing_profile_fields, skill_view_role, student_for
-from .quizgen import quiz_item_ids_for
+from .quizgen import quiz_item_ids_for, schedule_verification
 from .recommendations import recommendations_for
 
 logger = logging.getLogger(__name__)
 
-MAX_EXTRACTIONS_PER_DAY = 5
+MAX_EXTRACTIONS_PER_DAY = cv_analysis.MAX_ANALYSES_PER_DAY
 MAX_FREELANCE_IMPORTS_PER_DAY = 5
+UNIVERSITY_STUDENTS_PER_PAGE = 25
+NOT_TESTABLE = _lazy("You can take a test for skills in your profile, or for skills an open opportunity requires. "
+                     "Analyze your CV first to add this skill.")
 OWNERSHIP_WARNING = _lazy(
     "Note: the username in the platform link doesn't directly match the account owner's name. Please upload a "
     "screenshot that shows you own the account to speed up verification.")
-AI_NOTICE_SESSION_KEY = "skills_ai_notice"  # shown inline on the hub after an analysis where every AI key failed
 
 
 def student_gate(api=False):
@@ -71,7 +77,7 @@ def _skills_with_challenge_flag(qs):
 @student_gate()
 def skills_hub(request):
     student = request.student
-    skill_profile, _created = SkillProfile.objects.get_or_create(student=student)
+    skill_profile, _created = SkillProfile.objects.select_related("last_analysis").get_or_create(student=student)
 
     if request.method == "POST":
         form = SkillSourceForm(request.POST, request.FILES)
@@ -92,70 +98,67 @@ def skills_hub(request):
     context.update({
         "form": form,
         "skill_profile": skill_profile,
+        "analysis": cv_analysis.view_context(skill_profile.last_analysis),
         "verified": [s for s in skills if s.status == StudentSkill.STATUS_VERIFIED],
         "lagging": [s for s in skills if s.status == StudentSkill.STATUS_LAG],
         "in_review": [s for s in skills if s.status == StudentSkill.STATUS_REVIEW],
         "claimed": [s for s in skills if s.status == StudentSkill.STATUS_CLAIMED],
         "can_generate_quiz": llm_enabled(),
-        "ai_notice": request.session.pop(AI_NOTICE_SESSION_KEY, None),
         "top_domains": [Discipline(d).label for d in skill_profile.top_domains if d in Discipline.values],
     })
     return render(request, "skills/hub.html", context)
 
 
-def _handle_extraction(request, student, skill_profile, data):
-    today = timezone.localdate()
-    if skill_profile.extraction_day != today:
-        skill_profile.extraction_day = today
-        skill_profile.extraction_count_today = 0
-
-    if data.get("linkedin_url"):
-        skill_profile.linkedin_url = data["linkedin_url"]
-
-    files = [f for f in (data.get("cv_file"), data.get("linkedin_pdf")) if f]
+def start_cv_analysis(request, student, data):
+    """Shared by the hub form and POST /api/ai/cv-analysis/: read the text locally, then queue the analysis.
+    Returns cv_analysis.Started; raises ExtractionError for an unreadable file (zip bomb, scanned PDF, ...)."""
     pasted = data.get("pasted_text") or ""
-    if (files or pasted) and skill_profile.extraction_count_today >= MAX_EXTRACTIONS_PER_DAY:
-        skill_profile.save()
-        messages.error(request, _("Daily analysis limit reached. Try again tomorrow."))
-        return
+    files = [f for f in (data.get("cv_file"), data.get("linkedin_pdf")) if f]
+    sha = cv_analysis.fingerprint(files, pasted)
+    text, source = cv_analysis.read_sources(data.get("cv_file"), data.get("linkedin_pdf"), pasted)
+    return cv_analysis.start(request.user, student, text, sha=sha, source=source)
 
-    if files or pasted:
-        try:
-            parts = [read_document_text(f) for f in files] + ([sanitize_text(pasted)] if pasted else [])
-        except ExtractionError as exc:
-            skill_profile.save()
-            messages.error(request, str(exc))
-            return
-        text = "\n\n".join(parts)
-        analysis = analyze_cv(text)
-        extracted = analysis.skills
-        if analysis.ai_failed:
-            # Every AI key failed: keep what the local matcher found, say so inline, and don't use up a daily try.
-            request.session[AI_NOTICE_SESSION_KEY] = "partial" if extracted else "empty"
-            if not extracted:
-                skill_profile.save()
-                return
-        else:
-            skill_profile.extraction_count_today += 1
-        if analysis.ai_used:
-            skill_profile.cv_summary = analysis.summary
-            skill_profile.top_domains = analysis.top_domains
-        created, updated = save_claimed_skills(student, extracted, analysis.years_by_skill)
-        skill_profile.last_extracted_at = timezone.now()
-        explicit = sum(1 for e in extracted if e.source == StudentSkill.SOURCE_EXPLICIT)
-        messages.success(
-            request,
-            _("Analysis complete: %(explicit)s explicit and %(inferred)s inferred skills found (%(new)s new). "
-              "They are marked as Claimed until you verify them.")
-            % {"explicit": explicit, "inferred": len(extracted) - explicit, "new": created},
-        )
-    else:
+
+def _handle_extraction(request, student, skill_profile, data):
+    if data.get("linkedin_url") and data["linkedin_url"] != skill_profile.linkedin_url:
+        SkillProfile.objects.filter(pk=skill_profile.pk).update(linkedin_url=data["linkedin_url"])
+    if not (data.get("cv_file") or data.get("linkedin_pdf") or data.get("pasted_text")):
         messages.info(
             request,
             _("LinkedIn URL saved. To analyze your skills, upload your CV or LinkedIn PDF, or paste your "
               "About, Experience and Skills text."),
         )
-    skill_profile.save()
+        return None
+    try:
+        started = start_cv_analysis(request, student, data)
+    except ExtractionError as exc:
+        messages.error(request, str(exc))
+        return None
+    if started.outcome == "limit":
+        messages.error(request, _("Daily analysis limit reached. Try again tomorrow."))
+    elif started.outcome == "throttled":
+        messages.error(request, started.error.message)
+    elif started.analysis is not None and started.analysis.is_active:
+        messages.info(request, _("We're analyzing your CV. Your results appear below in a few seconds."))
+    else:
+        message = cv_analysis.hub_message(started.analysis)
+        if message:
+            getattr(messages, message[0])(request, message[1])
+    return started.analysis
+
+
+@student_gate()
+@require_POST
+def cv_confirm_skills(request, analysis_id):
+    """Add the AI-suggested skills the student ticked (only ones this analysis offered) as Claimed, provenance inferred."""
+    analysis = get_object_or_404(CVAnalysis, pk=analysis_id, user=request.user, status=CVAnalysis.STATUS_DONE)
+    ids = [int(v) for v in request.POST.getlist("skill_ids") if v.isdigit()]
+    added = cv_analysis.confirm_skills(analysis, request.student, ids)
+    if added:
+        messages.success(request, _("%(n)s skills added to your claimed skills. Verify them with a challenge.") % {"n": added})
+    else:
+        messages.info(request, _("Tick the skills you really have, then add them."))
+    return redirect(reverse("skills_hub") + "#claimed")
 
 
 # ---------------------------------------------------------------- freelance importer
@@ -284,7 +287,7 @@ def start_challenge(student, student_skill_id):
     can_start = ss.status not in (StudentSkill.STATUS_VERIFIED, StudentSkill.STATUS_REVIEW) and not ss.in_cooldown
     if can_start and not ss.attempts.filter(state=ChallengeAttempt.STATE_ACTIVE).exists():
         try:
-            item_ids = quiz_item_ids_for(ss.skill, ss)  # AI quiz first, else the saved bank; no repeats on retakes
+            item_ids = quiz_item_ids_for(ss.skill, ss, user=student.user_id)  # AI first (daily quota), else the bank
         except Exception:
             logger.exception("Preparing a quiz failed for skill %s", ss.skill_id)
             item_ids = []
@@ -294,6 +297,8 @@ def start_challenge(student, student_skill_id):
         with transaction.atomic():
             ss = get_object_or_404(StudentSkill.objects.select_for_update().select_related("skill"), pk=student_skill_id, student=student)
             attempt = engine.start_attempt(ss, item_ids=item_ids)
+            if item_ids:  # a fresh AI quiz: a second model re-checks its answer keys once this is committed
+                schedule_verification(attempt, student.user_id)
     except engine.ChallengeError as exc:  # cooldown, already verified, abandoned session
         return CHALLENGE_REFUSED, str(exc)
     except Http404:
@@ -339,15 +344,31 @@ def _quiz_unavailable(request, student_skill):
     return render(request, "skills/challenge_unavailable.html", context)
 
 
+def student_skill_for_test(student, skill):
+    """The StudentSkill a test of `skill` runs on, or None when the student may not test it (audit M2): only skills
+    they already claimed, or skills an open opportunity requires (claimed on the fly), so nobody can make the AI
+    write quizzes for every skill in the taxonomy."""
+    ss = StudentSkill.objects.filter(student=student, skill=skill).first()
+    if ss is not None:
+        return ss
+    if not Internship.objects.open().filter(required_skills=skill).exists():
+        return None
+    ss, _created = StudentSkill.objects.get_or_create(
+        student=student, skill=skill, defaults={"source": StudentSkill.SOURCE_EXPLICIT, "evidence": ""})
+    return ss
+
+
 @student_gate()
 @require_POST
 def challenge_start_for_skill(request, skill_id):
     """Entry point from an opportunity's skill gap: claim the required skill if needed, then test it."""
     skill = get_object_or_404(Skill, pk=skill_id, is_active=True)
-    ss, _created = StudentSkill.objects.get_or_create(
-        student=request.student, skill=skill,
-        defaults={"source": StudentSkill.SOURCE_EXPLICIT, "evidence": ""},
-    )
+    ss = student_skill_for_test(request.student, skill)
+    if ss is None:
+        if async_tasks.wants_async(request):
+            return JsonResponse({"error": "not_testable", "message": str(NOT_TESTABLE)}, status=403)
+        messages.warning(request, NOT_TESTABLE)
+        return redirect("skills_hub")
     return challenge_start(request, ss.pk)
 
 
@@ -516,10 +537,12 @@ def university_dashboard(request):
         )
         .order_by("-verified", "skill__name")
     )
-    per_student = students.annotate(
+    per_student = Paginator(students.annotate(
         verified_count=Count("skills", filter=Q(skills__status=StudentSkill.STATUS_VERIFIED)),
         lag_count=Count("skills", filter=Q(skills__status=StudentSkill.STATUS_LAG)),
-    ).order_by("-verified_count", "user__first_name")
+    ).order_by("-verified_count", "user__first_name", "pk"), UNIVERSITY_STUDENTS_PER_PAGE)
+    per_student.count = total_students  # already counted above: skip the paginator's COUNT query
+    students_page = per_student.get_page(request.GET.get("page"))
     context = get_user_context(request)
     context.update({
         "partner": partner,
@@ -527,6 +550,6 @@ def university_dashboard(request):
         "employable": employable,
         "employability_rate": round(employable / total_students * 100) if total_students else 0,
         "by_skill": by_skill,
-        "per_student": per_student,
+        "students_page": students_page,
     })
     return render(request, "skills/university.html", context)

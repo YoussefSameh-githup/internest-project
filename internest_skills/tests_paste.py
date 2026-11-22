@@ -39,13 +39,14 @@ class PasteTextTests(Base):
 
     @override_settings(AGENTROUTER_API_KEY="key-1", AGENTROUTER_BASE_URL="https://llm.test/v1", LLM_BACKUP_API_KEY="")
     def test_pasted_text_and_file_go_to_the_ai_together(self):
-        reply = _llm_reply(json.dumps({"extracted_skills": ["Financial Analysis", "SQL"], "top_domains": ["business"]}))
+        reply = _llm_reply(json.dumps({"skills": [{"name": "Financial Analysis", "evidence": "Financial Analysis"},
+                                                  {"name": "SQL", "evidence": "built monthly SQL reports"}], "top_domains": ["business"]}))
         with mock.patch(CHAT, return_value=reply) as create:
             self.client.post(reverse("skills_hub"), {"pasted_text": LINKEDIN_TEXT, "cv_file": _docx_upload("Graduation project: Python stock dashboard.")})
         cv = create.call_args.kwargs["messages"][1]["content"]
         self.assertIn("Banque Misr", cv)
         self.assertIn("stock dashboard", cv)
-        self.assertEqual(set(StudentSkill.objects.filter(student=self.student).values_list("skill__name", flat=True)), {"Financial Analysis", "SQL"})
+        self.assertTrue({"Financial Analysis", "SQL"} <= set(StudentSkill.objects.filter(student=self.student).values_list("skill__name", flat=True)))
 
     def test_validation(self):
         resp = self.client.post(reverse("skills_hub"), {"pasted_text": "SQL, Excel"})
