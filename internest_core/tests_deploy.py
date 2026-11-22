@@ -49,3 +49,22 @@ class ConfigureEnvTests(SimpleTestCase):
         self.assertEqual(values["DJANGO_ALLOWED_HOSTS"], "ci.internest.test,127.0.0.1,localhost")
         self.assertEqual(values["DJANGO_SECURE_SSL_REDIRECT"], "False")
         self.assertEqual(values["DJANGO_SECRET_KEY"], "x")
+
+    def test_async_tasks_use_the_db_queue_drained_by_the_worker_service(self):
+        self.assertEqual(self.values["ASYNC_TASK_BACKEND"], "db")
+        self.assertEqual(self.out.count("ASYNC_TASK_BACKEND="), 1)
+        replaced = configure_env.configure("ASYNC_TASK_BACKEND=sync\nASYNC_TASK_BACKEND=thread\n", "internest.app", True, "/b")
+        self.assertEqual([line for line in replaced.splitlines() if line.startswith("ASYNC_TASK_BACKEND")], ["ASYNC_TASK_BACKEND=db"])
+        self.assertEqual(configure_env.configure(replaced, "internest.app", True, "/b"), replaced)  # idempotent
+
+    def test_worker_service_is_installed_hardened_and_restarted_on_deploy(self):
+        kit = settings.BASE_DIR / "deploy" / "azure"
+        unit = (kit / "internest-worker.service").read_text(encoding="utf-8")
+        self.assertIn("manage.py run_async_tasks", unit)
+        for line in ("User=internest", "NoNewPrivileges=true", "ProtectSystem=strict", "ProtectHome=true",
+                     "ReadWritePaths=/srv/internest", "PrivateTmp=true", "Restart=always"):
+            self.assertIn(line, unit.splitlines())
+        setup = (kit / "setup.sh").read_text(encoding="utf-8")
+        self.assertIn('install -m 644 "$KIT/internest-worker.service" /etc/systemd/system/internest-worker.service', setup)
+        self.assertIn("systemctl enable internest-worker.service", setup)
+        self.assertIn("systemctl restart internest-worker", (kit / "update.sh").read_text(encoding="utf-8"))

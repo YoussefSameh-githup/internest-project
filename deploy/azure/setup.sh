@@ -13,7 +13,8 @@
 #   --repo URL / --branch NAME   where to get the code (default: the GitHub repo, main)
 #
 # Layout: code /srv/internest/app, virtualenv /srv/internest/venv, backups /srv/internest/backups/internest,
-# service "internest" (gunicorn on a unix socket) behind nginx, daily timer "internest-daily".
+# service "internest" (gunicorn on a unix socket) behind nginx, async task worker "internest-worker",
+# daily timer "internest-daily".
 set -euo pipefail
 
 DOMAIN=""
@@ -72,13 +73,15 @@ fi
 as_app "$VENV/bin/pip" install --quiet --upgrade pip
 as_app "$VENV/bin/pip" install --quiet -r "$APP/deploy/azure/requirements-server.txt"
 
-echo "== 4/7 gunicorn service and the daily job"
+echo "== 4/7 gunicorn service, the async task worker and the daily job"
 usermod -aG "$APP_USER" www-data  # nginx reaches the socket through the group
 install -m 644 "$KIT/internest.service" /etc/systemd/system/internest.service
+install -m 644 "$KIT/internest-worker.service" /etc/systemd/system/internest-worker.service
 install -m 644 "$KIT/internest-daily.service" /etc/systemd/system/internest-daily.service
 install -m 644 "$KIT/internest-daily.timer" /etc/systemd/system/internest-daily.timer
 systemctl daemon-reload
 systemctl enable internest.service >/dev/null
+systemctl enable internest-worker.service >/dev/null  # started by update.sh once .env and the migrations are in place
 systemctl enable --now internest-daily.timer >/dev/null
 
 echo "== 5/7 nginx"

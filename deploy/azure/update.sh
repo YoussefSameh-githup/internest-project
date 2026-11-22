@@ -3,7 +3,8 @@
 #
 #   sudo bash /srv/internest/app/deploy/azure/update.sh
 #
-# Pulls main, installs requirements, migrates, collects static files, restarts gunicorn and checks /healthz/ answers.
+# Pulls main, installs requirements, migrates, collects static files, restarts gunicorn and the async task worker and
+# checks /healthz/ answers.
 # (Translations are compiled before commit: the .mo files live in git, so compilemessages here would dirty the
 # checkout and break the next pull.) Stops at the first failing step; the site keeps running the previous code until the restart.
 set -euo pipefail
@@ -23,6 +24,10 @@ as_app "$VENV/bin/pip" install --quiet -r deploy/azure/requirements-server.txt
 as_app "$VENV/bin/python" manage.py migrate --noinput
 as_app "$VENV/bin/python" manage.py collectstatic --noinput --verbosity 0
 systemctl restart internest
+# The async task worker runs the same code: restart it too (installed by setup.sh; skipped on older servers).
+if [ -f /etc/systemd/system/internest-worker.service ]; then
+    systemctl restart internest-worker
+fi
 
 HOST="$(grep -E '^DJANGO_ALLOWED_HOSTS=' .env | head -1 | cut -d= -f2 | cut -d, -f1)"
 for _ in $(seq 1 30); do

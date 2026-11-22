@@ -68,6 +68,10 @@ jobs:
           sudo ufw status | grep -q "Status: active"
           [ "$(ps -o user= -C gunicorn | sort -u)" = "internest" ]
           sudo grep -q "ci.internest.test" /srv/internest/app/.env
+          # the async task worker drains the db queue, as the app user
+          sudo grep -qx "ASYNC_TASK_BACKEND=db" /srv/internest/app/.env
+          sudo systemctl is-active --quiet internest-worker
+          [ "$(systemctl show -p User --value internest-worker)" = "internest" ]
 
       - name: Daily jobs (backup, purge, API health) and a restore from the backup
         run: |
@@ -76,9 +80,9 @@ jobs:
           sudo journalctl -u internest-daily -n 40 --no-pager
           bundle=$(sudo -u internest bash -c 'ls -1t /srv/internest/backups/internest/internest-full-*.tar.gz | head -1')
           echo "bundle: $bundle"; [ -n "$bundle" ]
-          sudo systemctl stop internest
+          sudo systemctl stop internest internest-worker
           sudo -u internest -H bash -c "cd /srv/internest/app && /srv/internest/venv/bin/python manage.py restore_backup '$bundle' --yes"
-          sudo systemctl start internest
+          sudo systemctl start internest internest-worker
 
       - name: Update script (the server's "git pull + Reload")
         run: |

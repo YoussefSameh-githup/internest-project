@@ -1,0 +1,27 @@
+[Unit]
+Description=Internest async task worker (AI polish, voice CV, quiz preparation)
+After=network-online.target internest.service
+Wants=network-online.target
+
+[Service]
+User=internest
+Group=internest
+WorkingDirectory=/srv/internest/app
+Environment=PYTHONUNBUFFERED=1
+# Drains the ASYNC_TASK_BACKEND=db queue (configure_env.py sets it). SIGTERM lets the current task finish first.
+ExecStart=/srv/internest/venv/bin/python manage.py run_async_tasks --idle 0.5
+Restart=always
+RestartSec=3
+TimeoutStopSec=90
+KillSignal=SIGTERM
+# Hardening: the worker can write only to the app folder, like the web service.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/internest
+ProtectKernelTunables=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target
