@@ -90,6 +90,8 @@ class StudentProfile(models.Model):
             # Talent Pool filters; partial indexes only cover opted-in students (small and exact).
             models.Index(fields=["university"], condition=Q(talent_pool_visible=True), name="student_pool_university_idx"),
             models.Index(fields=["major"], condition=Q(talent_pool_visible=True), name="student_pool_major_idx"),
+            # New-opportunity announcement: only opted-in addresses are streamed (notifications.py).
+            models.Index(fields=["personal_email"], condition=Q(email_new_opportunities=True), name="student_optin_email_idx"),
         ]
     cv_file = models.FileField(
         upload_to=RandomName('cvs'), blank=True, null=True,
@@ -344,6 +346,7 @@ class Application(models.Model):
         indexes = [
             models.Index(fields=["applicant", "-application_date"], name="application_student_idx"),  # My applications
             models.Index(fields=["internship", "status"], name="application_intern_status_idx"),  # applicant inbox
+            models.Index(fields=["internship", "-application_date"], name="application_intern_date_idx"),  # paginated inbox
         ]
 
     @property
@@ -418,7 +421,8 @@ class PartnerCourseSubmission(models.Model):
     submission_date = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        indexes = [models.Index(fields=["partner", "status"], name="coursesub_partner_status_idx")]
+        indexes = [models.Index(fields=["partner", "status"], name="coursesub_partner_status_idx"),
+                   models.Index(fields=["status", "-submission_date"], name="coursesub_status_date_idx")]  # course list
 
     def __str__(self):
         return f"كورس {self.title} من {self.partner.company_name} ({self.status})"
@@ -628,6 +632,7 @@ class StudentEnrollment(models.Model):
         verbose_name = "تسجيل (كورس)"
         verbose_name_plural = "🧑‍🎓 تسجيلات الطلاب في الكورسات"
         unique_together = ('student', 'course') # (يمنع الطالب من شراء نفس الكورس مرتين)
+        indexes = [models.Index(fields=["course", "status"], name="enrollment_course_status_idx")]  # seats per course
         
     def __str__(self):
         return f"{self.student.user.username} مسجل في {self.course.title}"
