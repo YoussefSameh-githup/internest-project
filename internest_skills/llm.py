@@ -1,8 +1,10 @@
-"""Shared OpenAI-compatible client (AgentRouter / Gemini / OpenAI / Groq) for skill extraction and quizzes.
+"""Legacy entry point of the AI layer: the original provider keys, the SDK client factory and `chat_json`.
 
-Two keys: API_KEY_1 is tried first; on any quota, rate-limit, timeout, HTTP or parsing error the call
-fails over to API_KEY_2. If every key fails, LLMUnavailable is raised so callers fall back to local
-logic; nothing here may turn into an HTTP 500.
+`chat_json` keeps its signature for every existing caller but delegates to the AI engine (internest_ai.engine): circuit
+breaker, quotas, usage log and the extra providers (Groq, OpenRouter, Cloudflare, a local model) apply to it too.
+On any quota, rate-limit, timeout, HTTP or parsing error the call fails over to the next provider. If every provider
+fails, LLMUnavailable is raised so callers fall back to local logic; nothing here may turn into an HTTP 500.
+New feature code should call `internest_ai.engine.run` directly, with untrusted text in `data=`.
 """
 import json
 import logging
@@ -13,9 +15,9 @@ import httpx
 import openai
 from django.conf import settings
 
-from internest_core import ai_cache
-
-from internest_core.api_monitor import current_feature, failover_scope, mask_secrets, monitored_api_call
+from internest_ai.errors import AIUnavailable
+from internest_core.api_monitor import current_feature, mask_secrets
+from internest_core.api_registry import slugify_key
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +30,7 @@ GEMINI_THINKING_HEADROOM = 2048  # extra max_tokens for Gemini's hidden reasonin
 LLM_ERRORS = (httpx.ProxyError, openai.APIConnectionError, RuntimeError, Exception)
 
 
-class LLMUnavailable(RuntimeError):
-    """The LLM could not produce a usable answer; use the local fallback."""
+LLMUnavailable = AIUnavailable  # the LLM could not produce a usable answer; use the local fallback
 
 
 def describe_error(exc) -> str:
@@ -175,60 +176,33 @@ def parse_json_object(text: str) -> dict:
 
 
 def _ask(provider: Provider, system: str, user: str, max_tokens: int, timeout: float, max_retries: int) -> dict:
-    if "googleapis.com" in provider.base_url:
-        # Gemini 2.5 "thinking" tokens count against max_tokens and used to cut the JSON short; leave headroom.
-        max_tokens += GEMINI_THINKING_HEADROOM
-    resp = monitored_api_call(
-        provider_name(provider), current_feature() or "LLM request", _client(timeout, provider, max_retries).chat.completions.create,
-        model=provider.model,
-        response_format={"type": "json_object"},
-        max_tokens=max_tokens,
-        temperature=0,
-        messages=[{"role": "system", "content": system + " Reply with one JSON object only, no markdown."},
-                  {"role": "user", "content": user}],
-    )
-    choice = resp.choices[0]
-    if getattr(choice, "finish_reason", None) == "length":
+    """One direct call to one key, no failover / breaker / quota (diagnostics: `manage.py test_ai_connection`)."""
+    from internest_ai.prompts import build_messages
+    from internest_ai.providers import OpenAICompatibleProvider
+
+    adapter = OpenAICompatibleProvider(key=provider_name(provider), label=provider.label, model=provider.model,
+                                       base_url=provider.base_url, api_key=provider.api_key)
+    result = adapter.chat(build_messages(system, user), max_tokens=max_tokens, timeout=timeout, max_retries=max_retries)
+    if result.finish_reason == "length":
         logger.warning("LLM reply hit max_tokens (%s) via %s; repairing the JSON", max_tokens, provider.label)
-    return parse_json_object(choice.message.content or "")
+    return parse_json_object(result.text)
+
+
+def legacy_task() -> str:
+    """AI-engine task name for a chat_json call: the api_feature label in effect ("CV Analysis" -> "cv_analysis")."""
+    feature = current_feature()
+    return slugify_key(feature) if feature else "chat_json"
 
 
 def chat_json(system: str, user: str, max_tokens: int = 1000, timeout: float | None = None, validate=None) -> dict:
-    """JSON-mode completion with key failover. Raises LLMUnavailable only when every configured key fails.
+    """JSON-mode completion with provider failover. Raises LLMUnavailable only when every configured provider fails.
 
     `validate(data)` may raise to reject a 200 reply (e.g. too few usable questions): that provider then
-    counts as failed and the next one in the chain is tried.
+    counts as failed and the next one in the chain is tried. Identical temperature-0 prompts are answered from the
+    cache (internest_core.ai_cache); failures raise and are never cached. `user` is sent as written (trusted prompt);
+    new code should pass untrusted text to internest_ai.engine.run(data=...) instead.
     """
-    chain = providers()
-    if not chain:
-        raise LLMUnavailable("LLM not configured")
-    # Temperature-0 replies are deterministic: an identical prompt for the same models is answered from the cache
-    # (internest_core.ai_cache). Failures raise and are never cached.
-    payload = {"system": system, "user": user, "max_tokens": max_tokens, "validate": getattr(validate, "__qualname__", None),
-               "models": [(p.label, p.base_url, p.model) for p in chain]}
-    return ai_cache.cached("chat_json", payload, lambda: _chat_json_uncached(chain, system, user, max_tokens, timeout, validate))
+    from internest_ai import engine
 
-
-def _chat_json_uncached(chain, system, user, max_tokens, timeout, validate) -> dict:
-    errors = []
-    with failover_scope() as scope:
-        for i, provider in enumerate(chain):
-            has_backup = i + 1 < len(chain)
-            try:
-                # No SDK retries when a backup key exists: failing over is faster than retrying a rate-limited key.
-                data = _ask(provider, system, user, max_tokens, timeout or settings.SKILLS_LLM_TIMEOUT, 0 if has_backup else 1)
-                if validate is not None:
-                    validate(data)
-                if i:
-                    logger.info("LLM answered via %s after %s failed", provider.label, ", ".join(p.label for p in chain[:i]))
-                scope.served_by = provider_display_name(provider)
-                return data
-            except LLM_ERRORS as exc:
-                detail = describe_error(exc)
-                errors.append(f"{provider.label}: {detail}")
-                where = f"{provider.label} [{provider.base_url} · model {provider.model}]"
-                if has_backup:
-                    logger.warning("LLM failover: %s failed: %s; switching to %s", where, detail, chain[i + 1].label)
-                else:
-                    logger.warning("LLM call failed: %s: %s", where, detail)
-    raise LLMUnavailable("; ".join(errors))
+    return engine.run(legacy_task(), system=system, prompt=user, max_tokens=max_tokens, timeout=timeout, validate=validate,
+                      log=logger)

@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     "internest_campus.apps.InternestCampusConfig",
     "internest_startups.apps.InternestStartupsConfig",
     "internest_students.apps.InternestStudentsConfig",
+    "internest_ai.apps.InternestAIConfig",
 ]
 
 SITE_ID = 1
@@ -376,6 +377,11 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
+        "internest_ai": {
+            "handlers": ["console", "ai_file"],  # circuit breaker, quota and routing decisions
+            "level": "INFO",
+            "propagate": False,
+        },
         "django.request": {
             "handlers": ["console"],
             "level": "WARNING",
@@ -406,6 +412,45 @@ SKILLS_LLM_MODEL = env.str("SKILLS_LLM_MODEL", default="")
 # Off by default: PythonAnywhere free accounts must reach external APIs through the platform proxy.
 ENABLE_PROXY_BYPASS = env.bool("ENABLE_PROXY_BYPASS", default=False)
 
+# --- internest_ai: the AI orchestration layer (providers, router, circuit breaker, quotas, redaction) ---
+# Extra OpenAI-compatible providers, enabled only when their env vars are set (all registered in api_registry.py).
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GROQ_BASE_URL = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "")  # empty = a free ":free" model
+CLOUDFLARE_ACCOUNT_ID = os.getenv("CLOUDFLARE_ACCOUNT_ID", "")
+CLOUDFLARE_API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN", "")
+CLOUDFLARE_AI_MODEL = os.getenv("CLOUDFLARE_AI_MODEL", "")
+# Local model server (Ollama / llama.cpp, OpenAI-compatible): private data never leaves the machine. No key needed.
+AI_LOCAL_BASE_URL = os.getenv("AI_LOCAL_BASE_URL", "")  # e.g. http://127.0.0.1:11434/v1
+AI_LOCAL_MODEL = os.getenv("AI_LOCAL_MODEL", "")
+AI_LOCAL_API_KEY = os.getenv("AI_LOCAL_API_KEY", "")
+AI_LOCAL_LONG_CONTEXT = env.bool("AI_LOCAL_LONG_CONTEXT", default=False)
+# Comma-separated registry keys (e.g. "local_llm,gemini,groq,agentrouter"). Empty = local first, then free, then paid.
+AI_PROVIDER_ORDER = env_list("AI_PROVIDER_ORDER")
+# Deterministic mock provider for tests and load benchmarks. Refused when DEBUG=False unless AI_MOCK_ALLOW_PRODUCTION=1.
+AI_MOCK_PROVIDER = env.bool("AI_MOCK_PROVIDER", default=False)
+AI_MOCK_ALLOW_PRODUCTION = env.bool("AI_MOCK_ALLOW_PRODUCTION", default=False)
+AI_MOCK_LATENCY_MS = env.int("AI_MOCK_LATENCY_MS", default=0)
+# Circuit breaker (Django cache): open after N consecutive failures within the window, then one half-open probe.
+# Off in tests by default (the suite shares one cache); breaker tests switch it on.
+AI_BREAKER_ENABLED = env.bool("AI_BREAKER_ENABLED", default=not TESTING)
+AI_BREAKER_FAILURES = env.int("AI_BREAKER_FAILURES", default=3)
+AI_BREAKER_WINDOW_SECONDS = env.int("AI_BREAKER_WINDOW_SECONDS", default=60)
+AI_BREAKER_OPEN_SECONDS = env.int("AI_BREAKER_OPEN_SECONDS", default=60)
+AI_BREAKER_MAX_RETRY_AFTER = env.int("AI_BREAKER_MAX_RETRY_AFTER", default=900)  # cap on a provider's 429 Retry-After
+# Quotas (0 = unlimited). Per-task overrides of the per-user daily cap: AI_QUOTA_TASK_LIMITS=cv_polish=20,cv_voice=10
+AI_QUOTAS_ENABLED = env.bool("AI_QUOTAS_ENABLED", default=True)
+AI_QUOTA_USER_DAILY = env.int("AI_QUOTA_USER_DAILY", default=200)
+AI_QUOTA_TASK_LIMITS = {task.strip(): int(limit) for task, _sep, limit in
+                        (item.partition("=") for item in env_list("AI_QUOTA_TASK_LIMITS")) if limit.strip().isdigit()}
+AI_QUOTA_PARTNER_DAILY = env.int("AI_QUOTA_PARTNER_DAILY", default=2000)
+AI_QUOTA_GLOBAL_PER_MINUTE = env.int("AI_QUOTA_GLOBAL_PER_MINUTE", default=300)
+AI_QUOTA_GLOBAL_PER_DAY = env.int("AI_QUOTA_GLOBAL_PER_DAY", default=20000)
+AI_USAGE_RETENTION_DAYS = env.int("AI_USAGE_RETENTION_DAYS", default=90)  # AIUsage rows older than this are purged
+
 # =========================================================================
 # Performance: pooled outbound HTTP, AI response cache, async AI tasks
 # =========================================================================
@@ -425,6 +470,17 @@ ASYNC_TASK_BACKEND = env.str("ASYNC_TASK_BACKEND", default="sync" if (TESTING or
 ASYNC_TASK_WORKERS = env.int("ASYNC_TASK_WORKERS", default=4)
 ASYNC_TASK_QUEUE_TIMEOUT = env.int("ASYNC_TASK_QUEUE_TIMEOUT", default=120)  # queued this long = no worker: fail it
 ASYNC_TASK_RUN_TIMEOUT = env.int("ASYNC_TASK_RUN_TIMEOUT", default=300)
+# Reliability (db worker): a running task whose lease expired (worker killed) is re-claimed; retryable errors are retried
+# with exponential backoff up to ASYNC_TASK_MAX_ATTEMPTS, then the task is "dead".
+ASYNC_TASK_LEASE_SECONDS = env.int("ASYNC_TASK_LEASE_SECONDS", default=ASYNC_TASK_RUN_TIMEOUT)
+ASYNC_TASK_MAX_ATTEMPTS = env.int("ASYNC_TASK_MAX_ATTEMPTS", default=3)
+ASYNC_TASK_RETRY_BASE_SECONDS = env.int("ASYNC_TASK_RETRY_BASE_SECONDS", default=5)
+ASYNC_TASK_RETRY_MAX_SECONDS = env.int("ASYNC_TASK_RETRY_MAX_SECONDS", default=300)
+# Admission control: per-user active tasks (429 + Retry-After) and a global queue cap (503 + Retry-After).
+ASYNC_TASK_USER_MAX_ACTIVE = env.int("ASYNC_TASK_USER_MAX_ACTIVE", default=2)
+ASYNC_TASK_USER_RETRY_AFTER = env.int("ASYNC_TASK_USER_RETRY_AFTER", default=10)
+ASYNC_TASK_MAX_QUEUED = env.int("ASYNC_TASK_MAX_QUEUED", default=500)
+ASYNC_TASK_BACKPRESSURE_RETRY_AFTER = env.int("ASYNC_TASK_BACKPRESSURE_RETRY_AFTER", default=30)
 SKILLS_LLM_TIMEOUT = env.float("SKILLS_LLM_TIMEOUT", default=30.0)
 # Voice-to-CV transcription (OpenAI-compatible Whisper). Without it, a Groq/OpenAI key above is reused.
 WHISPER_API_KEY = os.getenv("WHISPER_API_KEY", "")

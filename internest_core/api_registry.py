@@ -112,6 +112,31 @@ register(ProviderSpec(
     dashboard_url="https://portal.azure.com/#view/Microsoft_Azure_CostManagement/Menu/~/overview",
     is_paid=True, tracking=TRACKING_LEDGER, cost_per_1k_tokens=0.0004,
 ))
+_ENGINE = "internest_ai/providers.py: OpenAICompatibleProvider (called by internest_ai/engine.py; order in internest_ai/router.py)"
+register(ProviderSpec(
+    key="groq", name="Groq", category="ai", role=_LLM_ROLE + " (free tier, very fast Llama models)", impact=_LLM_IMPACT,
+    degraded_behavior=_LLM_DEGRADED, env_var="GROQ_API_KEY", key_setting="GROQ_API_KEY", base_url_setting="GROQ_BASE_URL",
+    validate_path="models", code_location=_ENGINE, dashboard_url="https://console.groq.com/settings/limits",
+))
+register(ProviderSpec(
+    key="openrouter", name="OpenRouter", category="ai", role=_LLM_ROLE + " (free \":free\" models)", impact=_LLM_IMPACT,
+    degraded_behavior=_LLM_DEGRADED, env_var="OPENROUTER_API_KEY", key_setting="OPENROUTER_API_KEY",
+    validate_path="https://openrouter.ai/api/v1/key", code_location=_ENGINE, dashboard_url="https://openrouter.ai/settings/credits",
+))
+register(ProviderSpec(
+    key="cloudflare_ai", name="Cloudflare Workers AI", category="ai", role=_LLM_ROLE + " (free daily allowance)",
+    impact=_LLM_IMPACT, degraded_behavior=_LLM_DEGRADED, env_var="CLOUDFLARE_API_TOKEN", key_setting="CLOUDFLARE_API_TOKEN",
+    validate_path="https://api.cloudflare.com/client/v4/user/tokens/verify", code_location=_ENGINE + "; needs CLOUDFLARE_ACCOUNT_ID too",
+    dashboard_url="https://dash.cloudflare.com/?to=/:account/ai/workers-ai",
+))
+register(ProviderSpec(
+    key="local_llm", name="Local model server", category="ai",
+    role=_LLM_ROLE + " on this server (Ollama / llama.cpp): private data never leaves the machine",
+    impact=_LLM_IMPACT + " Private tasks then use external providers with redacted data only.",
+    degraded_behavior=_LLM_DEGRADED, env_var="AI_LOCAL_BASE_URL", key_setting="AI_LOCAL_API_KEY", base_url_setting="AI_LOCAL_BASE_URL",
+    validate_path="models", code_location=_ENGINE + "; model AI_LOCAL_MODEL",
+    dashboard_url="https://github.com/ollama/ollama/blob/main/docs/openai.md",
+))
 register(ProviderSpec(
     key="whisper", name="Whisper transcription", category="ai", role="Speech-to-text for the CV Builder's voice mode (Arabic/English)",
     impact="Voice-to-CV stops working; typing the CV still works.", degraded_behavior="The voice button reports that transcription is unavailable.",
