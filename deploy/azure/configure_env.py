@@ -1,5 +1,6 @@
-"""Point an existing .env at this server: add the domain to the allowed hosts and CSRF origins, set the backup folder
-and the HTTPS redirect. Every other line (secret key, API keys, comments) is kept exactly as it was.
+"""Point an existing .env at this server: add the domain to the allowed hosts and CSRF origins, set the backup folder,
+the HTTPS redirect and the db async task backend (drained by internest-worker.service). Every other line (secret key,
+API keys, comments) is kept exactly as it was, and running it again changes nothing.
 
     python configure_env.py /srv/internest/app/.env --domain internest.app --tls 1 --backup-dir /srv/internest/backups/internest
 """
@@ -32,6 +33,8 @@ def configure(text: str, domain: str, tls: bool, backup_dir: str) -> str:
         "DJANGO_CSRF_TRUSTED_ORIGINS": ",".join(origins),
         "DJANGO_SECURE_SSL_REDIRECT": "True" if tls else "False",
         "BACKUP_DIR": backup_dir,
+        # Heavy AI jobs go to the persisted queue drained by internest-worker.service (manage.py run_async_tasks).
+        "ASYNC_TASK_BACKEND": "db",
     }
     out, done = [], set()
     for line in lines:
@@ -59,7 +62,7 @@ def main():
     args = parser.parse_args()
     path = Path(args.env_file)
     path.write_text(configure(path.read_text(encoding="utf-8"), args.domain, bool(args.tls), args.backup_dir), encoding="utf-8")
-    print(f"{path}: hosts, CSRF origins, HTTPS redirect and backup folder set for {args.domain}.")
+    print(f"{path}: hosts, CSRF origins, HTTPS redirect, backup folder and async task backend set for {args.domain}.")
 
 
 if __name__ == "__main__":

@@ -48,9 +48,9 @@ It installs everything and stops, asking for the `.env`.
    ```bash
    sudo mv /tmp/.env /srv/internest/app/.env
    sudo bash /srv/internest/app/deploy/azure/setup.sh --domain internest.app --email you@example.com --no-tls
-   sudo systemctl stop internest
+   sudo systemctl stop internest internest-worker
    sudo -u internest -H bash -c "cd /srv/internest/app && /srv/internest/venv/bin/python manage.py restore_backup /tmp/internest-full-XXXX.tar.gz --yes"
-   sudo systemctl start internest
+   sudo systemctl start internest internest-worker
    ```
 
 ## 5. HTTPS and go live
@@ -83,6 +83,7 @@ compile translations, so its checkout never gets local changes.
 | What | Command |
 | --- | --- |
 | App status / logs | `sudo systemctl status internest` · `sudo journalctl -u internest -n 100` |
+| Async AI task worker | `sudo systemctl status internest-worker` · `sudo journalctl -u internest-worker -n 100` (queue: `ASYNC_TASK_BACKEND=db`) |
 | Daily jobs (02:00 UTC) | `systemctl list-timers internest-daily` · `sudo journalctl -u internest-daily -n 50` |
 | Run them now | `sudo systemctl start internest-daily` |
 | Backups | `/srv/internest/backups/internest/` (14 kept). Copy one off the VM now and then: `scp -i key.pem azureuser@<IP>:/srv/internest/backups/internest/<bundle> .` |

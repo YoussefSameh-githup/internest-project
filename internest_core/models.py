@@ -789,25 +789,43 @@ class AsyncTask(models.Model):
     See internest_core/async_tasks.py for the backends (sync, thread, db worker, celery)."""
 
     STATUS_QUEUED, STATUS_RUNNING, STATUS_DONE, STATUS_FAILED, STATUS_CANCELLED = "queued", "running", "done", "failed", "cancelled"
+    STATUS_DEAD = "dead"  # a retryable job that failed max_attempts times (dead letter: kept for inspection)
     STATUS_CHOICES = [(STATUS_QUEUED, "Queued"), (STATUS_RUNNING, "Running"), (STATUS_DONE, "Done"),
-                      (STATUS_FAILED, "Failed"), (STATUS_CANCELLED, "Cancelled")]
-    FINISHED = (STATUS_DONE, STATUS_FAILED, STATUS_CANCELLED)
+                      (STATUS_FAILED, "Failed"), (STATUS_CANCELLED, "Cancelled"), (STATUS_DEAD, "Dead")]
+    ACTIVE = (STATUS_QUEUED, STATUS_RUNNING)
+    FINISHED = (STATUS_DONE, STATUS_FAILED, STATUS_CANCELLED, STATUS_DEAD)
+    PRIORITY_LOW, PRIORITY_NORMAL, PRIORITY_HIGH = -10, 0, 10
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="async_tasks")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="async_tasks", null=True, blank=True)  # None = system job
     kind = models.CharField(max_length=60)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_QUEUED)
     payload = models.JSONField(default=dict, blank=True)    # arguments, only kept for out-of-process backends
     result = models.JSONField(null=True, blank=True)        # the JSON body the synchronous endpoint would have returned
     http_status = models.PositiveSmallIntegerField(default=200)
     error = models.CharField(max_length=300, blank=True)
+    idempotency_key = models.CharField(max_length=64, blank=True, default="")  # same user+kind+key while active = same task
+    priority = models.SmallIntegerField(default=PRIORITY_NORMAL)               # higher runs first (db worker)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    max_attempts = models.PositiveSmallIntegerField(default=1)
+    next_run_at = models.DateTimeField(null=True, blank=True)                  # retry backoff: not before this time
+    lease_expires_at = models.DateTimeField(null=True, blank=True)             # running past this = worker died: re-claim
     created_at = models.DateTimeField(default=timezone.now)
     started_at = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["-created_at"]
-        indexes = [models.Index(fields=["status", "created_at"], name="asynctask_status_created_idx")]
+        indexes = [
+            models.Index(fields=["status", "created_at"], name="asynctask_status_created_idx"),
+            models.Index(fields=["status", "-priority", "created_at"], name="asynctask_claim_idx"),
+            models.Index(fields=["user", "status"], name="asynctask_user_status_idx"),
+            models.Index(fields=["status", "lease_expires_at"], name="asynctask_lease_idx"),
+        ]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "kind", "idempotency_key"], name="asynctask_active_idempotency_uniq",
+                                    condition=models.Q(status__in=["queued", "running"]) & ~models.Q(idempotency_key="")),
+        ]
 
     @property
     def is_finished(self):
