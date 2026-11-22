@@ -1,10 +1,12 @@
 from django.contrib import admin
 
+from internest_core.admin_base import ModelAdmin
+
 from .models import InterviewKit
 
 
 @admin.register(InterviewKit)
-class InterviewKitAdmin(admin.ModelAdmin):
+class InterviewKitAdmin(ModelAdmin):
     list_display = ("role", "seniority", "owner", "partner", "source", "ai_status", "created_at")
     list_filter = ("seniority", "source", "ai_status")
     search_fields = ("role", "owner__username", "partner__company_name")
