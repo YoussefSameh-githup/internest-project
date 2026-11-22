@@ -9296,3 +9296,296 @@ msgid ""
 "Your test flagged areas to improve: passing the retest counts right away."
 msgstr ""
 "أظهر اختبارك نقاطاً تحتاج تحسيناً: اجتياز إعادة الاختبار يُحتسب فوراً."
+
+msgid "Mark the selected questions as reviewed"
+msgstr "تعليم الأسئلة المختارة كمُراجَعة"
+
+msgid "Approve as new skills"
+msgstr "اعتمادها كمهارات جديدة"
+
+msgid "Merge into the chosen existing skill"
+msgstr "دمجها في المهارة الموجودة المختارة"
+
+msgid "Reject the selected suggestions"
+msgstr "رفض الاقتراحات المختارة"
+
+msgid "%(n)s questions marked as reviewed."
+msgstr "تم تعليم %(n)s سؤال كمُراجَع."
+
+msgid "%(n)s skills added to the taxonomy."
+msgstr "اتضافت %(n)s مهارة لقائمة المهارات."
+
+msgid "%(n)s suggestions merged. Pick “Merge into” first for the others."
+msgstr "تم دمج %(n)s اقتراح. اختار “دمج في” الأول للباقي."
+
+msgid "Please correct the errors."
+msgstr "من فضلك صحّح الأخطاء."
+
+msgid "Unknown skill."
+msgstr "مهارة غير معروفة."
+
+msgid "Reviewers only."
+msgstr "للمراجعين فقط."
+
+msgid "Only written answers can be graded."
+msgstr "الإجابات المكتوبة بس هي اللي ينفع تتقيّم."
+
+msgid "Send between %(min)s and %(max)s characters of text."
+msgstr "ابعت نص بين %(min)s و%(max)s حرف."
+
+msgid "skill_id is required."
+msgstr "لازم تبعت skill_id."
+
+msgid "Too many requests. Please try again later."
+msgstr "طلبات كتير جداً. حاول تاني بعد شوية."
+
+msgid "The analysis failed. Please try again."
+msgstr "التحليل فشل. حاول تاني من فضلك."
+
+msgid "An email address"
+msgstr "بريد إلكتروني"
+
+msgid "A phone number"
+msgstr "رقم موبايل"
+
+msgid "A LinkedIn, GitHub or portfolio link"
+msgstr "لينك LinkedIn أو GitHub أو معرض أعمال"
+
+msgid "A short profile summary"
+msgstr "نبذة قصيرة عنك"
+
+msgid "Your education (degree and university)"
+msgstr "تعليمك (الدرجة والجامعة)"
+
+msgid "Dates for your education"
+msgstr "تواريخ دراستك"
+
+msgid "Experience, internships or volunteering"
+msgstr "خبرة أو تدريب أو تطوع"
+
+msgid "Start and end dates for each experience"
+msgstr "تاريخ بداية ونهاية لكل خبرة"
+
+msgid "A skills section"
+msgstr "قسم للمهارات"
+
+msgid "At least 3 skills we can recognise"
+msgstr "3 مهارات على الأقل نقدر نتعرّف عليها"
+
+msgid "Courses or certificates"
+msgstr "كورسات أو شهادات"
+
+msgid "Languages and your level"
+msgstr "اللغات ومستواك فيها"
+
+msgid "Numbers that show results"
+msgstr "أرقام بتوضّح نتايج شغلك"
+
+msgid "More detail (the CV is very short)"
+msgstr "تفاصيل أكتر (السيرة الذاتية قصيرة جداً)"
+
+msgid "A tighter CV (it is very long)"
+msgstr "سيرة ذاتية أقصر (طويلة جداً)"
+
+msgid "Add a professional email address at the top."
+msgstr "حط بريد إلكتروني احترافي في أول السيرة الذاتية."
+
+msgid "Add a phone number employers can call."
+msgstr "ضيف رقم موبايل تقدر الشركات تكلمك عليه."
+
+msgid "Add your LinkedIn profile, and GitHub or a portfolio if you have one."
+msgstr "ضيف لينك LinkedIn، وGitHub أو معرض أعمالك لو عندك."
+
+msgid "Open with 2-3 lines on who you are, your field and the role you want."
+msgstr "ابدأ بسطرين أو تلاتة: إنت مين، مجالك إيه، والوظيفة اللي عايزها."
+
+msgid "Add your degree, university and expected graduation year."
+msgstr "ضيف درجتك العلمية والجامعة وسنة التخرج المتوقعة."
+
+msgid "Add the start and graduation (or expected) year of your studies."
+msgstr "ضيف سنة بداية الدراسة وسنة التخرج (أو المتوقعة)."
+
+msgid ""
+"List internships, part-time work, student activities or volunteering with "
+"what you did."
+msgstr ""
+"اكتب التدريبات أو الشغل الجزئي أو الأنشطة الطلابية أو التطوع، واللي عملته في"
+" كل واحدة."
+
+msgid "Give every experience a start and end month, e.g. Jun 2024 – Aug 2024."
+msgstr "حط لكل خبرة شهر بداية ونهاية، مثلاً يونيو 2024 – أغسطس 2024."
+
+msgid "Add 1-3 projects: the goal, the tools you used and the result."
+msgstr "ضيف من مشروع لـ3 مشاريع: الهدف، الأدوات اللي استخدمتها، والنتيجة."
+
+msgid "Add a Skills section listing your tools and methods."
+msgstr "ضيف قسم مهارات فيه الأدوات والطرق اللي بتستخدمها."
+
+msgid ""
+"Name your skills with their standard names (e.g. Excel, SQL, Financial "
+"Analysis)."
+msgstr "اكتب مهاراتك بأسمائها المعروفة (مثلاً Excel وSQL والتحليل المالي)."
+
+msgid "Add relevant courses or certificates with the issuer and year."
+msgstr "ضيف الكورسات أو الشهادات المرتبطة بمجالك مع الجهة والسنة."
+
+msgid "Add your languages with a level (e.g. English – fluent, IELTS 7)."
+msgstr "ضيف اللغات ومستواك (مثلاً الإنجليزية – بطلاقة، IELTS 7)."
+
+msgid "Show results with numbers: %, time saved, users, budget, grades."
+msgstr ""
+"وضّح النتايج بالأرقام: نسبة، وقت اتوفّر، عدد مستخدمين، ميزانية، درجات."
+
+msgid "Describe each experience and project in 2-4 bullet points."
+msgstr "اوصف كل خبرة ومشروع في 2 لـ4 نقاط."
+
+msgid "Keep it to 1-2 pages: cut old or unrelated details."
+msgstr "خليها صفحة أو اتنين: شيل التفاصيل القديمة أو اللي ملهاش علاقة."
+
+msgid ""
+"This DOCX file is unusually large once unpacked. Save it again from Word or "
+"upload a PDF."
+msgstr ""
+"ملف الـDOCX ده حجمه كبير بشكل غير طبيعي بعد فكّه. احفظه تاني من Word أو ارفع"
+" PDF."
+
+msgid ""
+"This PDF has no selectable text: it looks like a scanned image. We don't "
+"read images (no OCR): export your CV from Word or Google Docs as PDF or "
+"DOCX, or paste its text instead."
+msgstr ""
+"ملف الـPDF ده مفيهوش نص ينفع يتقرا: شكله صورة متصوّرة سكانر. إحنا مش بنقرا "
+"الصور (من غير OCR): صدّر السيرة الذاتية من Word أو Google Docs كـPDF أو "
+"DOCX، أو الصق النص بدل كده."
+
+msgid ""
+"No readable text found in this file. Upload a PDF or DOCX made from a text "
+"document, or paste the text."
+msgstr ""
+"مفيش نص ينفع يتقرا في الملف ده. ارفع PDF أو DOCX معمول من ملف نصي، أو الصق "
+"النص."
+
+msgid ""
+"You can take a test for skills in your profile, or for skills an open "
+"opportunity requires. Analyze your CV first to add this skill."
+msgstr ""
+"تقدر تمتحن في المهارات اللي في ملفك، أو المهارات اللي فرصة متاحة طالباها. "
+"حلّل سيرتك الذاتية الأول عشان تضيف المهارة دي."
+
+msgid "Declared in your CV"
+msgstr "مذكورة في سيرتك الذاتية"
+
+msgid "Shown by your experience"
+msgstr "باينة من خبرتك"
+
+msgid "Suggested by AI"
+msgstr "مقترحة بالذكاء الاصطناعي"
+
+msgid "Merged"
+msgstr "اتدمجت"
+
+msgid "Queued"
+msgstr "في الطابور"
+
+msgid "Analyzing"
+msgstr "جاري التحليل"
+
+msgid "Done"
+msgstr "خلص"
+
+msgid "Failed"
+msgstr "فشل"
+
+msgid "LinkedIn PDF"
+msgstr "ملف LinkedIn PDF"
+
+msgid "Pasted text"
+msgstr "نص ملصوق"
+
+msgid "Several sources"
+msgstr "أكتر من مصدر"
+
+msgid "Tick the skills you really have, then add them."
+msgstr "علّم على المهارات اللي عندك فعلاً، وبعدين ضيفها."
+
+msgid ""
+"%(n)s skills added to your claimed skills. Verify them with a challenge."
+msgstr "اتضافت %(n)s مهارة لمهاراتك المُعلنة. وثّقها بتحدي."
+
+msgid "We're analyzing your CV. Your results appear below in a few seconds."
+msgstr "بنحلّل سيرتك الذاتية دلوقتي. النتايج هتظهر تحت خلال ثواني."
+
+msgid "Not verified yet"
+msgstr "لسه متوثّقتش"
+
+msgid ""
+"Untrusted, advisory only: an AI read the candidate's own answer, so it can "
+"be wrong or steered by text inside it. The automatic credit and your grade "
+"decide."
+msgstr ""
+"غير موثوق واسترشادي بس: الذكاء الاصطناعي قرا إجابة المتقدم نفسها، فممكن يغلط"
+" أو يتأثر بكلام جواها. التقييم التلقائي وتقييمك إنت هما اللي بيحددوا."
+
+msgid "Asking the AI…"
+msgstr "بنسأل الذكاء الاصطناعي…"
+
+msgid "Get an advisory AI check"
+msgstr "اطلب مراجعة استرشادية بالذكاء الاصطناعي"
+
+msgid "Your CV analysis"
+msgstr "تحليل سيرتك الذاتية"
+
+msgid "Analyzing…"
+msgstr "جاري التحليل…"
+
+msgid ""
+"Reading your CV: facts first, then AI suggestions and your skills. This "
+"takes a few seconds; the page updates by itself."
+msgstr ""
+"بنقرا سيرتك الذاتية: المعلومات الأول، وبعدين اقتراحات الذكاء الاصطناعي "
+"ومهاراتك. ده بياخد ثواني، والصفحة هتتحدّث لوحدها."
+
+msgid "Refresh the page in a few seconds to see the results."
+msgstr "اعمل تحديث للصفحة بعد ثواني عشان تشوف النتايج."
+
+msgid "CV completeness"
+msgstr "اكتمال السيرة الذاتية"
+
+msgid ""
+"Counted from what your CV contains (sections, dates, contacts, results), not"
+" by AI."
+msgstr ""
+"محسوبة من محتوى سيرتك (الأقسام والتواريخ وبيانات التواصل والنتايج)، مش "
+"بالذكاء الاصطناعي."
+
+msgid "Certificates & courses"
+msgstr "الشهادات والكورسات"
+
+msgid "Languages"
+msgstr "اللغات"
+
+msgid "Skills recognised"
+msgstr "مهارات اتعرّفنا عليها"
+
+msgid "Make your CV stronger"
+msgstr "خلّي سيرتك الذاتية أقوى"
+
+msgid "AI suggestions"
+msgstr "اقتراحات الذكاء الاصطناعي"
+
+msgid "AI · check before you use them"
+msgstr "ذكاء اصطناعي · راجعها قبل ما تستخدمها"
+
+msgid "Skills to confirm"
+msgstr "مهارات محتاجة تأكيدك"
+
+msgid ""
+"Your CV shows these skills without naming them. Tick only the ones you "
+"really have: they are added as claimed (not verified) until you pass their "
+"challenge."
+msgstr ""
+"سيرتك الذاتية بتوضّح المهارات دي من غير ما تذكرها بالاسم. علّم بس على اللي "
+"عندك فعلاً: هتتضاف كمهارات مُعلنة (مش موثّقة) لحد ما تعدّي التحدي بتاعها."
+
+msgid "Add selected skills"
+msgstr "ضيف المهارات المختارة"

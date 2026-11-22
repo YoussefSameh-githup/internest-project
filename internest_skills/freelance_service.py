@@ -11,10 +11,10 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
-from .extraction import _clean_str, compact_cv_text, extract_skills_local
+from .extraction import _clean_str, compact_cv_text, extract_skills_local, relevant_known
 from internest_core.api_monitor import api_feature
 
-from .llm import LLMUnavailable, chat_json, llm_enabled
+from .llm import LLMUnavailable, llm_enabled
 from .models import Skill, StudentFreelanceGig, StudentSkill
 from .taxonomy import TaxonomyIndex
 from .utils import OWNER_MATCH_THRESHOLD, best_owner_match, extract_platform_username
@@ -28,7 +28,7 @@ _PROMPT = (
     "project_title: short English title. client_feedback: the client's review quoted or summarized in its original "
     "language, empty if none. rating: the client's star rating 1-5 if stated, else null. deliverables: up to 5 short "
     "English phrases. extracted_skills: up to 8 professional skills the work clearly demonstrates; if a skill is the "
-    "same as a Known name, use that Known name exactly. JSON only: "
+    "same as a name in known_skills, use that name exactly. JSON only: "
     '{"project_title":"","client_feedback":"","rating":null,"deliverables":[""],"extracted_skills":[""]}'
 )
 
@@ -43,13 +43,19 @@ def _rating(value):
 
 def parse_gig(platform: str, link: str, text: str) -> dict:
     """Structured gig data. AI when available; otherwise the local skill matcher (ai_parsed=False)."""
+    from internest_ai import engine
+
     skills = list(Skill.objects.filter(is_active=True))
     index = TaxonomyIndex(skills)
     if llm_enabled():
         try:
+            local = extract_skills_local(text, skills)
+            known = relevant_known(text, skills, found_ids=[e.skill.pk for e in local])  # top-N, never the whole table
             with api_feature("Freelance Gig Analysis"):
-                data = chat_json(_PROMPT, f"Known: {', '.join(s.name for s in skills)}\nPlatform: {platform}\nLink: {link}\n"
-                                          f"Text:\n{compact_cv_text(text)[:8000]}", max_tokens=700, timeout=45)
+                data = engine.run("freelance_gig_analysis", system=_PROMPT, prompt="Read the gig in the data block.",
+                                  data={"known_skills": ", ".join(s.name for s in known), "platform": platform, "link": link,
+                                        "text": compact_cv_text(text)[:8000]},
+                                  max_tokens=700, timeout=45)  # the public gig link is context the model needs
             names = data.get("extracted_skills") if isinstance(data.get("extracted_skills"), list) else []
             matched = []
             for name in names:

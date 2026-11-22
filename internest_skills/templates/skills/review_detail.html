@@ -37,10 +37,15 @@
                     <p class="rv__auto">{% blocktrans with c=r.auto_pct %}Automatic credit: {{ c }}%{% endblocktrans %}
                         {% if r.ai_suggestion %} · {% blocktrans with c=r.ai_pct %}AI suggestion (advisory): {{ c }}%{% endblocktrans %}{% endif %}</p>
                     {% if r.ai_suggestion %}
+                        <p class="rv__ai-warning"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> {% trans "Untrusted, advisory only: an AI read the candidate's own answer, so it can be wrong or steered by text inside it. The automatic credit and your grade decide." %}</p>
                         <details><summary>{% trans "AI notes" %}</summary>
                             <ul>{% for c in r.ai_suggestion.criteria %}<li>{% if c.met %}✅{% else %}❌{% endif %} {{ c.criterion }} — {{ c.note }}</li>{% endfor %}</ul>
                             <p>{{ r.ai_suggestion.rationale }}</p>
                         </details>
+                    {% endif %}
+                    {% if not r.ai_suggestion and r.answer_text %}
+                        <button type="button" class="btn btn--ghost btn--sm rv__ai-ask" data-ai-evaluate="{% url 'skills_api_answer_evaluate' r.pk %}"
+                                data-busy="{% trans 'Asking the AI…' %}">{% trans "Get an advisory AI check" %}</button>
                     {% endif %}
                     <label class="rv__credit">{% trans "Your credit (0–100%)" %}
                         <input type="number" name="credit_{{ r.pk }}" min="0" max="100" step="5" value="{{ r.default_pct }}" required inputmode="numeric">
@@ -59,4 +64,23 @@
         </form>
     </div>
 </section>
+<script>
+(function () {
+  document.querySelectorAll("[data-ai-evaluate]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      if (!window.InternestAsync || button.disabled) return;
+      var token = document.querySelector("input[name=csrfmiddlewaretoken]"), label = button.textContent;
+      button.disabled = true;
+      button.textContent = button.getAttribute("data-busy");
+      InternestAsync.fetchJSON(button.getAttribute("data-ai-evaluate"), {headers: {"X-CSRFToken": token ? token.value : ""}})
+        .then(function (res) {
+          if (res.ok) { window.location.reload(); return; }
+          button.disabled = false;
+          button.textContent = (res.data && (res.data.message || res.data.error)) || label;
+        })
+        .catch(function () { button.disabled = false; button.textContent = label; });
+    });
+  });
+})();
+</script>
 {% endblock %}

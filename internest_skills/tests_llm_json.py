@@ -5,7 +5,7 @@ from unittest import mock
 from django.test import SimpleTestCase, override_settings
 
 from . import llm
-from .extraction import LLM_TIMEOUT, analyze_cv
+from .cv_analysis import AI_MAX_TOKENS, AI_TIMEOUT, analyze_cv
 from .llm import parse_json_object
 from .tests import Base
 
@@ -45,24 +45,24 @@ class ParseJsonTests(SimpleTestCase):
 @override_settings(**AI)
 class ExtractionCallTests(Base):
     def test_truncated_extraction_still_returns_skills(self):
-        cut = '{"extracted_skills":["Python","SQL","Excel"],"implied_skills":["Excel"],"candidate_name":"Mona","summary":"Fin'
-        with mock.patch(CREATE, return_value=_reply(cut, "length")), self.assertLogs("internest_skills.llm", "WARNING") as logs:
-            analysis = analyze_cv("Finance intern. Skills: SQL and pivot tables.")
+        cut = ('{"skills":[{"name":"Python","evidence":"Python scripts"},{"name":"SQL","evidence":"SQL and pivot tables"},'
+               '{"name":"Excel","evid')
+        with mock.patch(CREATE, return_value=_reply(cut, "length")), self.assertLogs("internest_ai.engine", "WARNING") as logs:
+            analysis = analyze_cv("Finance intern. Python scripts.\nSkills: SQL and pivot tables.")
         self.assertTrue(analysis.ai_used and not analysis.ai_failed)
-        self.assertEqual([(e.skill.name, e.source) for e in analysis.skills],
-                         [("Python", "explicit"), ("SQL", "explicit"), ("Excel", "implicit")])
+        self.assertTrue({"Python", "SQL", "Excel"} <= {e.skill.name for e in analysis.skills})
         self.assertIn("hit max_tokens", logs.output[0])
 
     def test_extraction_uses_long_timeout_compact_output_and_json_mode(self):
         with mock.patch.object(llm, "_client", wraps=llm._client) as client, \
-                mock.patch(CREATE, return_value=_reply('{"extracted_skills":["SQL"]}')) as create:
+                mock.patch(CREATE, return_value=_reply('{"skills":[{"name":"SQL","evidence":"Skills: SQL"}]}')) as create:
             analyze_cv("Skills: SQL " + "x" * 50_000)
-        self.assertEqual((LLM_TIMEOUT, client.call_args.args[0]), (45.0, 45.0))
+        self.assertEqual((AI_TIMEOUT, client.call_args.args[0]), (45.0, 45.0))
         kwargs = create.call_args.kwargs
         self.assertEqual(kwargs["response_format"], {"type": "json_object"})
-        self.assertEqual(kwargs["max_tokens"], 700)
+        self.assertEqual(kwargs["max_tokens"], AI_MAX_TOKENS)
         self.assertIn("no markdown", kwargs["messages"][0]["content"])
-        self.assertTrue(kwargs["messages"][0]["content"].index('"extracted_skills"') < kwargs["messages"][0]["content"].index('"summary"'))
+        self.assertTrue(kwargs["messages"][0]["content"].index('"skills"') < kwargs["messages"][0]["content"].index('"summary"'))
         self.assertLess(len(kwargs["messages"][1]["content"]), 12_000)  # long CVs are capped
         self.assertNotIn("reasoning_effort", kwargs)
 

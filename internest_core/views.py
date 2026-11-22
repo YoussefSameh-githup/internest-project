@@ -771,10 +771,9 @@ def partner_submit_internship(request):
                 submission.save()
                 skills, new_skills = form.all_required_skills()
                 submission.required_skills.set(skills)
-                if new_skills:  # link founder-defined skills to related ones students have (one AI call each)
-                    from internest_skills.semantic import relate_skill_ai
-                    for skill in new_skills:
-                        relate_skill_ai(skill)
+                if new_skills:  # link founder-defined skills to related ones students have (AI, in a background job)
+                    from internest_skills.jobs import relate_new_skills
+                    relate_new_skills([skill.pk for skill in new_skills])
                 messages.success(request, _("Your opportunity was submitted for review."))
                 return redirect("partner_dashboard")
             except Exception:

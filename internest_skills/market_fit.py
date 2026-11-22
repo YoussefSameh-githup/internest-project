@@ -2,6 +2,8 @@
 
 Demand for a skill = number of open opportunities (active, deadline not passed) that require it.
 Readiness index = demand covered by the student's verified skills / total demand, over the field's top skills.
+The demand ranking and the open-opportunity count are the same for every student: they are cached in the
+"market_fit" page_cache group (bumped by internest_skills.signals whenever an opportunity or its skills change).
 """
 from dataclasses import dataclass, field
 
@@ -11,6 +13,8 @@ from .models import Discipline, Skill, StudentSkill
 
 RADAR_AXES = 8   # skills shown on the radar
 TOP_GAPS = 3     # missing skills with action buttons
+CACHE_GROUP = "market_fit"
+CACHE_TTL = 15 * 60
 
 
 @dataclass
@@ -32,10 +36,24 @@ class MarketFit:
 
 
 def market_demand(discipline=None, limit=RADAR_AXES):
-    """Most-required skills across open opportunities, optionally within one field (Discipline)."""
+    """Most-required skills across open opportunities, optionally within one field (Discipline). Cached per day."""
     from internest_core.models import opportunity_today
+    from internest_core.page_cache import cached_value
 
     today = opportunity_today()
+    field = discipline if discipline in Discipline.values else "all"
+    return cached_value(CACHE_GROUP, f"demand:{field}:{limit}:{today:%Y%m%d}", CACHE_TTL,
+                        lambda: _market_demand(today, discipline, limit))
+
+
+def open_opportunity_count() -> int:
+    from internest_core.models import Internship, opportunity_today
+    from internest_core.page_cache import cached_value
+
+    return cached_value(CACHE_GROUP, f"open:{opportunity_today():%Y%m%d}", CACHE_TTL, lambda: Internship.objects.open().count())
+
+
+def _market_demand(today, discipline, limit):
     open_q = Q(opportunities__is_active=True, opportunities__deadline__gte=today)
     skills = Skill.objects.filter(is_active=True)
     if discipline in Discipline.values:
@@ -53,8 +71,6 @@ def verified_level(student_skill) -> int:
 
 
 def market_fit(student, discipline=None) -> MarketFit:
-    from internest_core.models import Internship
-
     demand = market_demand(discipline)
     owned = {ss.skill_id: verified_level(ss) for ss in
              StudentSkill.objects.filter(student=student, skill__in=[s for s, _n in demand])}
@@ -65,5 +81,5 @@ def market_fit(student, discipline=None) -> MarketFit:
         demand=demand,
         student_levels={pk: level for pk, level in owned.items() if level},
         gaps=[(s, n) for s, n in demand if not owned.get(s.pk)][:TOP_GAPS],
-        open_opportunities=Internship.objects.open().count(),
+        open_opportunities=open_opportunity_count(),
     )

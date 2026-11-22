@@ -115,6 +115,10 @@ class ChallengeItem(models.Model):
                                                           help_text="30–60 s for multiple choice and case; 300–1800 s for practical.")
     weight = models.PositiveSmallIntegerField(default=1)
     is_active = models.BooleanField(default=True)
+    # AI-generated questions enter the bank unreviewed; a second model re-solves them (quizgen.verify_items):
+    # key_verified None = not checked yet, True = the verifier agreed with the key, False = disputed (deactivated).
+    reviewed = models.BooleanField(default=True, help_text="Checked by staff. AI-generated questions start unreviewed.")
+    key_verified = models.BooleanField(null=True, blank=True, help_text="Answer key re-solved by a second AI pass.")
 
     def __str__(self):
         return f"[{self.skill.name}/{self.sub_skill.name}] {self.prompt[:60]}"
@@ -167,6 +171,7 @@ class SkillProfile(models.Model):
     extraction_day = models.DateField(null=True, blank=True)
     cv_summary = models.CharField(max_length=400, blank=True)
     top_domains = models.JSONField(default=list, blank=True)
+    last_analysis = models.ForeignKey("CVAnalysis", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 
     def __str__(self):
         return f"Skill profile: {self.student}"
@@ -191,10 +196,21 @@ class StudentSkill(models.Model):
     VIA_CHOICES = [(VIA_CHALLENGE, _("Skill challenge")), (VIA_FREELANCE, _("Reviewed freelance work")),
                    (VIA_CERTIFICATE, _("Reviewed certificate")), (VIA_COURSE, _("Completed accredited course"))]
 
+    # Where a claimed skill comes from. "Verified" is never a provenance: it is the status (+ verified_via) set by a
+    # challenge, reviewed work, certificate or course. Inferred skills are AI suggestions the student confirmed.
+    PROVENANCE_DECLARED = "declared"    # the CV names the skill (or one of its aliases)
+    PROVENANCE_EVIDENCED = "evidenced"  # the CV describes work that shows it (curated taxonomy signals)
+    PROVENANCE_INFERRED = "inferred"    # an AI suggestion with a located evidence span, confirmed by the student
+    PROVENANCE_CHOICES = [(PROVENANCE_DECLARED, _("Declared in your CV")), (PROVENANCE_EVIDENCED, _("Shown by your experience")),
+                          (PROVENANCE_INFERRED, _("Suggested by AI"))]
+
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="skills")
     skill = models.ForeignKey(Skill, on_delete=models.CASCADE, related_name="student_skills")
     source = models.CharField(max_length=10, choices=SOURCE_CHOICES)
     evidence = models.CharField(max_length=300, blank=True)
+    provenance = models.CharField(max_length=10, choices=PROVENANCE_CHOICES, default=PROVENANCE_DECLARED)
+    confidence = models.PositiveSmallIntegerField(null=True, blank=True, validators=[MaxValueValidator(100)],
+                                                  help_text="0-100: how sure the extraction is (not a verification).")
     years_experience = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_CLAIMED)
     score = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -213,6 +229,8 @@ class StudentSkill(models.Model):
             # Talent Pool: verified skills → student ids (internest_skills.verification), and the min-score filter.
             models.Index(fields=["status", "student"], name="studentskill_status_idx"),
             models.Index(fields=["score", "student"], name="studentskill_score_idx"),
+            # Leaderboard rank / percentile: COUNTs of peers with a higher score on the same skill.
+            models.Index(fields=["skill", "score"], name="studentskill_skill_score_idx"),
         ]
 
     def __str__(self):
@@ -449,3 +467,69 @@ class SkillCertificate(models.Model):
 
     def __str__(self):
         return f"{self.title} · {self.skill} ({self.get_status_display()})"
+
+
+class SkillSuggestion(models.Model):
+    """A skill name an AI reply used that is not in the taxonomy. AI output never creates Skill rows (audit M1):
+    staff approve a suggestion (it becomes an active Skill), merge it into an existing skill (its name becomes an
+    alias) or reject it, in the Django admin."""
+
+    STATUS_PENDING, STATUS_APPROVED, STATUS_MERGED, STATUS_REJECTED = "pending", "approved", "merged", "rejected"
+    STATUS_CHOICES = [(STATUS_PENDING, _("Waiting for review")), (STATUS_APPROVED, _("Approved")), (STATUS_MERGED, _("Merged")),
+                      (STATUS_REJECTED, _("Rejected"))]
+
+    key = models.CharField(max_length=100, unique=True, editable=False)  # taxonomy.normalize_key(name)
+    name = models.CharField(max_length=100)
+    discipline = models.CharField(max_length=20, choices=Discipline.choices, default=Discipline.GENERAL)
+    seen_count = models.PositiveIntegerField(default=1)
+    example = models.CharField(max_length=300, blank=True, help_text="An evidence snippet from the text it was found in.")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING, db_index=True)
+    merge_into = models.ForeignKey(Skill, null=True, blank=True, on_delete=models.SET_NULL, related_name="+",
+                                   help_text="Pick the existing skill this name means, then run the Merge action.")
+    skill = models.ForeignKey(Skill, null=True, blank=True, on_delete=models.SET_NULL, related_name="+", editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_seen_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-seen_count", "name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.get_status_display()}, x{self.seen_count})"
+
+
+class CVAnalysis(models.Model):
+    """One CV / LinkedIn / pasted-text analysis (internest_skills.cv_analysis). `facts` come from the deterministic
+    parser (cv_facts), `ai` holds the AI suggestions kept apart from them; the raw text is never stored here."""
+
+    STATUS_QUEUED, STATUS_RUNNING, STATUS_DONE, STATUS_FAILED = "queued", "running", "done", "failed"
+    STATUS_CHOICES = [(STATUS_QUEUED, _("Queued")), (STATUS_RUNNING, _("Analyzing")), (STATUS_DONE, _("Done")),
+                      (STATUS_FAILED, _("Failed"))]
+    ACTIVE = (STATUS_QUEUED, STATUS_RUNNING)
+    SOURCE_CHOICES = [("cv", _("CV file")), ("linkedin", _("LinkedIn PDF")), ("text", _("Pasted text")),
+                      ("mixed", _("Several sources"))]
+
+    user = models.ForeignKey("auth.User", on_delete=models.CASCADE, related_name="cv_analyses")
+    source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default="cv")
+    file_sha256 = models.CharField(max_length=64)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_QUEUED)
+    facts = models.JSONField(default=dict, blank=True)
+    ai = models.JSONField(default=dict, blank=True)
+    quality_score = models.PositiveSmallIntegerField(null=True, blank=True)
+    counted = models.BooleanField(default=False, editable=False)  # took one of the student's daily analyses
+    error = models.CharField(max_length=200, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["user", "-created_at"], name="cvanalysis_user_created_idx"),
+                   models.Index(fields=["user", "file_sha256"], name="cvanalysis_user_sha_idx")]
+        verbose_name_plural = "CV analyses"
+
+    def __str__(self):
+        return f"CV analysis {self.pk} · {self.user} ({self.status})"
+
+    @property
+    def is_active(self):
+        return self.status in self.ACTIVE

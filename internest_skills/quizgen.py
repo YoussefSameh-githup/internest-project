@@ -1,4 +1,5 @@
-"""LLM quiz generation: tops up a skill's question bank so every extracted skill can be verified."""
+"""LLM quiz generation: tops up a skill's question bank so every extracted skill can be verified; a second model
+pass (verify_items) re-solves new questions and drops the ones whose answer key it disputes."""
 import hashlib
 import logging
 import random
@@ -9,7 +10,7 @@ from django.db import transaction
 from internest_core.ai_cache import no_ai_cache
 from internest_core.api_monitor import api_feature
 
-from .llm import LLM_ERRORS, chat_json, llm_enabled
+from .llm import LLM_ERRORS, llm_enabled
 from .models import ChallengeItem, Discipline, SubSkill
 
 logger = logging.getLogger(__name__)
@@ -131,24 +132,41 @@ def validate_quiz_reply(data) -> None:
         raise ValueError(f"only {usable} usable questions in the reply")
 
 
-def request_raw_items(skill, count=GENERATE_BATCH, avoid=(), chat=None) -> list:
-    """One trip down the provider chain → the raw 'q' list of the first provider whose reply is usable."""
+
+
+GENERATION_TASK = "question_generation"  # engine task (per-student daily quota: ai_tasks.DEFAULT_TASK_LIMITS)
+VERIFY_TASK = "quiz_verify"
+VERIFY_JOB = "quiz_verify"
+
+
+def request_raw_items(skill, count=GENERATE_BATCH, avoid=(), chat=None, user=None) -> list:
+    """One trip down the provider chain → the raw 'q' list of the first provider whose reply is usable.
+    `user` (the student) is charged against the daily generation quota (audit M2)."""
+    from internest_ai import engine
+
+    from . import llm
+
+    system, prompt = build_system_prompt(skill), build_user_prompt(skill, count, avoid)
     # Never cached: every attempt (and every student) must get fresh questions.
     with api_feature("Question Generation"), no_ai_cache():
-        data = (chat or chat_json)(build_system_prompt(skill), build_user_prompt(skill, count, avoid), max_tokens=MAX_TOKENS,
-                                   timeout=60, validate=validate_quiz_reply)
+        if chat is not None:
+            data = chat(system, prompt, max_tokens=MAX_TOKENS, timeout=60, validate=validate_quiz_reply)
+        else:
+            data = engine.run(GENERATION_TASK, system=system, prompt=prompt, user=user, max_tokens=MAX_TOKENS, timeout=60,
+                              validate=validate_quiz_reply, cache=False, log=llm.logger)
     return data["q"]
 
 
-def generate_items(skill, count=GENERATE_BATCH, avoid=()) -> list[ChallengeItem]:
+def generate_items(skill, count=GENERATE_BATCH, avoid=(), user=None) -> list[ChallengeItem]:
     """Ask the LLM for `count` fresh questions and save them (they also become the offline fallback bank).
 
     `avoid` = ChallengeItems the student already saw: their topics and openings go into the prompt, and any
     returned question matching one of them (by fingerprint) is dropped, so a retake never repeats a question.
+    New questions enter the bank unreviewed; verify_items re-solves them with a second model.
     """
     avoid = list(avoid)
     avoid_prints = {fingerprint(i.prompt, i.code_snippet) for i in avoid}
-    raw_items = request_raw_items(skill, count, avoid)
+    raw_items = request_raw_items(skill, count, avoid, user=user)
 
     existing = {i.prompt: i for i in skill.items.filter(is_active=True)}
     items = []
@@ -169,13 +187,14 @@ def generate_items(skill, count=GENERATE_BATCH, avoid=()) -> list[ChallengeItem]
             prompt=cleaned["prompt"], code_snippet=cleaned["code"], topic=cleaned["topic"],
             difficulty=cleaned["difficulty"], choices=cleaned["choices"], correct_index=cleaned["correct_index"],
             time_limit_seconds=_TIME_LIMIT[cleaned["difficulty"]] + (15 if cleaned["code"] and cleaned["difficulty"] != "hard" else 0),
+            reviewed=False,
         )
         existing[item.prompt] = item
         items.append(item)
     return items
 
 
-def live_quiz_item_ids(skill, exclude_ids=()) -> list[int]:
+def live_quiz_item_ids(skill, exclude_ids=(), user=None) -> list[int]:
     """Primary path: a fresh LLM-generated quiz for this attempt, easy → hard. Raises QuizGenerationError on failure."""
     if not llm_enabled():
         raise QuizGenerationError("LLM not configured")
@@ -183,7 +202,7 @@ def live_quiz_item_ids(skill, exclude_ids=()) -> list[int]:
     avoid = list(ChallengeItem.objects.filter(id__in=exclude_ids).select_related("sub_skill").order_by("id"))
     try:
         with transaction.atomic():  # savepoint: half-saved questions are rolled back on failure
-            generated = generate_items(skill, count=skill.challenge_length, avoid=avoid)
+            generated = generate_items(skill, count=skill.challenge_length, avoid=avoid, user=user)
             items = [i for i in generated if i.id not in exclude_ids]
     except LLM_ERRORS as exc:
         raise QuizGenerationError(str(exc)) from exc
@@ -208,14 +227,91 @@ def saved_quiz_item_ids(skill, exclude_ids=()) -> list[int]:
         return []
 
 
-def quiz_item_ids_for(skill, student_skill=None) -> list[int]:
-    """AI quiz FIRST (Gemini / AgentRouter, with key failover); on ANY failure (rate limit, timeout, bad output)
-    the saved bank. On a retake, questions the student already saw are excluded. [] = no quiz possible."""
+def quiz_item_ids_for(skill, student_skill=None, user=None) -> list[int]:
+    """AI quiz FIRST (Gemini / AgentRouter, with key failover); on ANY failure (rate limit, timeout, bad output, the
+    student's daily generation quota) the saved bank. On a retake, questions the student already saw are excluded.
+    [] = no quiz possible."""
     from .challenge import seen_item_ids
 
     seen = seen_item_ids(student_skill) if student_skill is not None else set()
+    if user is None and student_skill is not None:
+        user = student_skill.student.user_id
     try:
-        return live_quiz_item_ids(skill, exclude_ids=seen)
+        return live_quiz_item_ids(skill, exclude_ids=seen, user=user)
     except (QuizGenerationError, Exception) as exc:
         logger.warning("AI quiz generation failed for skill %s: %s. Falling back to saved items.", skill.pk, exc)
         return saved_quiz_item_ids(skill, exclude_ids=seen)
+
+
+# ---------------------------------------------------------------- answer-key verification (second model pass)
+VERIFY_SCHEMA = {"answers": [{"i": int, "answer": int}]}
+VERIFY_SYSTEM = (
+    "You are an independent exam checker. Solve every multiple-choice question in the data block yourself and give "
+    "the 0-based index of the single best choice. Do not guess a key from wording or position: reason about the "
+    "content. If no choice is correct or two are equally correct, answer -1. "
+    'JSON only: {"answers":[{"i":0,"answer":2}]}'
+)
+VERIFY_PROMPT = "Solve each question in the data block and return the JSON object."
+
+
+def schedule_verification(attempt, user_id=None) -> None:
+    """After the attempt is committed, re-solve its unchecked AI questions in the background (system job)."""
+    ids = list(ChallengeItem.objects.filter(id__in=attempt.item_ids, kind=ChallengeItem.KIND_MCQ, reviewed=False,
+                                            key_verified__isnull=True).values_list("id", flat=True))
+    if not ids:
+        return
+
+    def enqueue():
+        from internest_core import async_tasks
+
+        try:
+            async_tasks.enqueue(VERIFY_JOB, None, idempotency_key=f"verify:{attempt.pk}", priority=-1,
+                                attempt_id=attempt.pk, item_ids=ids, student_user_id=user_id)
+        except async_tasks.TaskThrottled as exc:  # the queue is full: the questions stay unchecked (and unreviewed)
+            logger.warning("Quiz verification for attempt %s not queued: %s", attempt.pk, exc.code)
+
+    transaction.on_commit(enqueue)
+
+
+def verify_items(item_ids, attempt_id=None, user_id=None) -> dict:
+    """Ask a second model to solve the questions; drop (deactivate) every item whose key it disputes, mark the others
+    verified, and take disputed questions the student has not reached out of the attempt. Raises AIUnavailable."""
+    from internest_ai import engine
+
+    items = list(ChallengeItem.objects.filter(id__in=item_ids, kind=ChallengeItem.KIND_MCQ, key_verified__isnull=True))
+    if not items:
+        return {"checked": 0, "disputed": []}
+    data = {"questions": [{"i": n, "question": item.prompt, "code": item.code_snippet, "choices": item.choices}
+                          for n, item in enumerate(items)]}
+    with api_feature("Question Verification"), no_ai_cache():
+        reply = engine.run(VERIFY_TASK, system=VERIFY_SYSTEM, prompt=VERIFY_PROMPT, data=data, user=user_id,
+                           max_tokens=800, timeout=60, cache=False)
+    answers = {a["i"]: a["answer"] for a in reply["answers"]}
+    agreed = [item.pk for n, item in enumerate(items) if answers.get(n) == item.correct_index]
+    disputed = [item.pk for n, item in enumerate(items) if n in answers and answers[n] != item.correct_index]
+    with transaction.atomic():
+        ChallengeItem.objects.filter(pk__in=agreed).update(key_verified=True)
+        ChallengeItem.objects.filter(pk__in=disputed).update(key_verified=False, is_active=False)
+        if disputed and attempt_id:
+            _drop_from_attempt(attempt_id, set(disputed))
+    if disputed:
+        logger.warning("Quiz verification disputed %s of %s AI questions (attempt %s)", len(disputed), len(items), attempt_id)
+    return {"checked": len(agreed) + len(disputed), "disputed": disputed}
+
+
+def _drop_from_attempt(attempt_id, disputed: set) -> None:
+    """Unserved disputed questions leave the attempt; answered ones stay but no longer count (challenge.score_responses)."""
+    from .challenge import finalize
+    from .models import ChallengeAttempt
+
+    attempt = ChallengeAttempt.objects.select_for_update().filter(pk=attempt_id, state=ChallengeAttempt.STATE_ACTIVE).first()
+    if attempt is None:
+        return
+    reached = attempt.current_index + (1 if attempt.current_served_at else 0)
+    kept = attempt.item_ids[:reached] + [i for i in attempt.item_ids[reached:] if i not in disputed]
+    if kept == attempt.item_ids:
+        return
+    attempt.item_ids = kept
+    attempt.save(update_fields=["item_ids"])
+    if attempt.current_index >= len(kept):
+        finalize(attempt)

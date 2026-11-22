@@ -29,6 +29,9 @@
         .cv-summary__domains { display: flex; gap: 6px; flex-wrap: wrap; }
         .cv-summary__domains span, .skill-years { padding: 2px 10px; border-radius: 999px; background: #eff6ff; color: #1d4ed8; font-size: 12px; font-weight: 700; }
         .skill-years { display: inline-block; margin-top: 6px; }
+        .skill-prov { display: inline-block; margin-top: 6px; white-space: normal; background: var(--brand-100); color: var(--brand-700); }
+        .skill-prov--evidenced { background: #e0f2fe; color: #0369a1; }
+        .skill-prov--inferred { background: #f3e8ff; color: #6b21a8; }
         .sx-card { max-width: 760px; margin-inline: auto; padding: clamp(18px, 4vw, 32px); border-radius: 22px; }
         .sx-card > form > .text-muted { display: block; margin-top: 10px; text-align: center; }
         </style>
@@ -37,19 +40,6 @@
             <p class="text-muted mb-5" style="font-size: var(--text-sm);">{% trans "Pick one way — our AI reads it and lists your skills in seconds." %}</p>
             <form method="post" enctype="multipart/form-data" class="skills-source-form">
                 {% csrf_token %}
-                {% if ai_notice %}
-                    <div class="ai-notice{% if ai_notice == 'empty' %} ai-notice--empty{% endif %}" role="alert">
-                        <i class="bi bi-cloud-slash"></i>
-                        <div>
-                            <strong>{% trans "Our AI analysis is temporarily unavailable." %}</strong>
-                            {% if ai_notice == 'empty' %}
-                                <p>{% trans "Your file was read correctly, but our backup scanner found no skills in it. This try did not count toward your daily limit — please analyze it again in a few minutes." %}</p>
-                            {% else %}
-                                <p>{% trans "We used our backup scanner, so some skills may be missing. This try did not count toward your daily limit — analyze your CV again in a few minutes for the full AI analysis." %}</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endif %}
                 {% include "skills/_analyze_inputs.html" %}
                 {% if skill_profile.last_extracted_at %}
                     <span class="text-muted" style="font-size: var(--text-xs); margin-inline-start: var(--space-3);">
@@ -63,6 +53,7 @@
                     {% if top_domains %}<div class="cv-summary__domains">{% for d in top_domains %}<span>{{ d }}</span>{% endfor %}</div>{% endif %}
                 </div>
             {% endif %}
+            {% if analysis %}{% include "skills/_cv_analysis.html" %}{% endif %}
         </div>
 
         {% if verified %}
@@ -134,12 +125,8 @@
                 <div class="skills-grid">
                     {% for s in claimed %}
                         <div class="skill-tile">
-                            <div class="flex justify-between items-center">
-                                <span class="fw-bold">{{ s.skill.name }}</span>
-                                <span class="badge {% if s.source == 'explicit' %}badge--primary{% else %}badge--info{% endif %}">
-                                    {% if s.source == 'explicit' %}{% trans "Explicit" %}{% else %}{% trans "Inferred" %}{% endif %}
-                                </span>
-                            </div>
+                            <div class="fw-bold"><bdi>{{ s.skill.name }}</bdi></div>
+                            <span class="badge skill-prov skill-prov--{{ s.provenance }}" title="{% trans 'Not verified yet' %}">{{ s.get_provenance_display }}</span>
                             <div class="skill-tile__meta">{{ s.skill.get_discipline_display }}</div>
                             {% if s.years_experience %}<span class="skill-years">{% blocktrans with n=s.years_experience|floatformat:"-1" %}{{ n }} yrs experience{% endblocktrans %}</span>{% endif %}
                             {% if s.evidence %}<div class="skill-tile__evidence">“{{ s.evidence|truncatechars:120 }}”</div>{% endif %}

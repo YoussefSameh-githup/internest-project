@@ -68,3 +68,5 @@
 .rv__credit input { width: 110px; height: 40px; padding: 0 8px; border: 1px solid #cbd5e1; border-radius: 10px; font: inherit; }
 .rv__note textarea { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 10px; font: inherit; }
 .rv__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.rv__ai-warning { margin: 0; padding: 8px 12px; border-radius: 10px; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: 13px; }
+.rv__ai-ask { justify-self: start; min-height: 40px; }

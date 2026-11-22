@@ -9,16 +9,17 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from . import llm
-from .extraction import analyze_cv, sanitize_text
+from .cv_analysis import analyze_cv
+from .extraction import sanitize_text
 from .llm import GROQ_DEFAULT_MODEL, LLMUnavailable, chat_json, providers
-from .models import Skill, SkillProfile, StudentSkill
+from .models import Skill, SkillProfile, SkillSuggestion, StudentSkill
 from .taxonomy import TaxonomyIndex
 from .tests import Base, _docx_upload, _llm_reply
 
 CREATE = "openai.resources.chat.completions.Completions.create"
 TWO_KEYS = dict(AGENTROUTER_API_KEY="key-1", AGENTROUTER_BASE_URL="https://llm.test/v1", SKILLS_LLM_MODEL="",
                 LLM_BACKUP_API_KEY="key-2", LLM_BACKUP_BASE_URL="", LLM_BACKUP_MODEL="")
-CV_TEXT = "Finance intern. Skills: SQL and pivot tables for monthly reporting."
+CV_TEXT = "Finance intern with 2 years of Python3 scripts.\nSkills: SQL and pivot tables for monthly reporting."
 
 
 def _rate_limited():
@@ -27,9 +28,10 @@ def _rate_limited():
 
 
 def _profile(**overrides):
-    data = {"candidate_name": "Mona Adel", "summary": "Finance student who automates reports with Python.",
-            "extracted_skills": ["Python3", "sql", "Excel"], "implied_skills": ["Excel"],
-            "years_experience_by_skill": {"Python3": 2, "sql": "1.5", "Excel": "lots"},
+    data = {"summary": "Finance student who automates reports with Python.",
+            "skills": [{"name": "Python3", "evidence": "2 years of Python3 scripts", "years": 2},
+                       {"name": "sql", "evidence": "SQL and pivot tables", "years": "1.5"},
+                       {"name": "Excel", "evidence": "pivot tables for monthly reporting", "implied": True, "years": "lots"}],
             "top_domains": ["business", "computing", "astrology"]}
     data.update(overrides)
     return _llm_reply(json.dumps(data))
@@ -128,28 +130,34 @@ class StructuredAnalysisTests(Base):
         with mock.patch(CREATE, return_value=_profile()) as create:
             analysis = analyze_cv(CV_TEXT)
         self.assertEqual(Skill.objects.count(), before)  # every name matched the taxonomy
-        self.assertEqual([(e.skill.name, e.source) for e in analysis.skills],
-                         [("Python", "explicit"), ("SQL", "explicit"), ("Excel", "implicit")])
-        self.assertEqual((analysis.candidate_name, analysis.top_domains), ("Mona Adel", ["business", "computing"]))
-        python, sql = Skill.objects.get(name="Python"), Skill.objects.get(name="SQL")
-        self.assertEqual(analysis.years_by_skill, {python.pk: Decimal("2.0"), sql.pk: Decimal("1.5")})
+        found = {e.skill.name: e.provenance for e in analysis.skills}
+        self.assertEqual(found["Python"], StudentSkill.PROVENANCE_DECLARED)  # "Python3" names it, the regex alone misses it
+        self.assertTrue({"SQL", "Excel"} <= set(found))
+        self.assertEqual(analysis.top_domains, ["business", "computing"])
+        python = Skill.objects.get(name="Python")
+        self.assertEqual(analysis.years_by_skill, {python.pk: Decimal("2.0")})  # only years the CV itself states
         self.assertTrue(analysis.ai_used and not analysis.ai_failed)
         prompt = create.call_args.kwargs["messages"]
-        self.assertIn('"years_experience_by_skill"', prompt[0]["content"])
-        self.assertIn("Known: ", prompt[1]["content"])
+        self.assertIn('"skills"', prompt[0]["content"])
+        self.assertIn("[known_skills]", prompt[1]["content"])
+        self.assertIn("BEGIN UNTRUSTED DATA", prompt[1]["content"])
 
-    def test_unknown_skill_is_created_once_with_domain_discipline(self):
-        reply = _profile(extracted_skills=["Supply Chain Planning", "supply chain planning skills"], top_domains=["business"])
+    def test_unknown_skill_becomes_one_suggestion_never_a_skill(self):
+        reply = _profile(skills=[{"name": "Supply Chain Planning", "evidence": "monthly reporting"},
+                                 {"name": "supply chain planning skills", "evidence": "pivot tables"}], top_domains=["business"])
+        before = Skill.objects.count()
         with mock.patch(CREATE, return_value=reply):
             analysis = analyze_cv(CV_TEXT)
-        self.assertEqual([e.skill.name for e in analysis.skills], ["Supply Chain Planning"])
-        self.assertEqual(Skill.objects.get(name="Supply Chain Planning").discipline, "business")
+        self.assertEqual(Skill.objects.count(), before)
+        suggestion = SkillSuggestion.objects.get()
+        self.assertEqual((suggestion.name, suggestion.discipline, suggestion.seen_count), ("Supply Chain Planning", "business", 2))
+        self.assertNotIn("Supply Chain Planning", {e.skill.name for e in analysis.skills})
 
-    def test_missing_skill_list_falls_back_and_is_flagged(self):
-        with mock.patch(CREATE, return_value=_llm_reply('{"skills": []}')), self.assertLogs("internest_skills", "WARNING"):
+    def test_bad_reply_shape_falls_back_and_is_flagged(self):
+        with mock.patch(CREATE, return_value=_llm_reply('{"extracted_skills": []}')), self.assertLogs("internest_skills", "WARNING"):
             analysis = analyze_cv(CV_TEXT)
         self.assertTrue(analysis.ai_failed)
-        self.assertEqual({e.skill.name for e in analysis.skills}, {"SQL", "Excel"})
+        self.assertEqual({e.skill.name for e in analysis.skills}, {"Python", "SQL", "Excel"})
 
 
 class SanitizeTests(TestCase):
@@ -182,6 +190,7 @@ class HubFeedbackTests(Base):
         self.assertContains(resp, "Finance student who automates reports with Python.")
         self.assertContains(resp, "2 yrs experience")
         self.assertContains(resp, "Business &amp; Finance")
+        self.assertContains(resp, "Your CV analysis")
         self.assertNotContains(resp, 'role="alert"')
 
     def test_all_keys_down_shows_inline_notice_and_keeps_local_skills(self):
@@ -189,9 +198,13 @@ class HubFeedbackTests(Base):
             resp = self._upload(side_effect=_rate_limited())
         self.assertContains(resp, "Our AI analysis is temporarily unavailable.")
         self.assertContains(resp, "some skills may be missing")
-        self.assertEqual(set(self.student.skills.values_list("skill__name", flat=True)), {"SQL", "Excel"})
+        self.assertEqual(set(self.student.skills.values_list("skill__name", flat=True)), {"Python", "SQL", "Excel"})
         self.assertEqual(SkillProfile.objects.get(student=self.student).extraction_count_today, 0)
-        self.assertNotContains(self.client.get(reverse("skills_hub")), "temporarily unavailable")  # shown once
+        # The same file is analysed again (not served from the failed try) once the AI is back.
+        with mock.patch(CREATE, return_value=_profile()):
+            self.client.post(reverse("skills_hub"), {"cv_file": _docx_upload(CV_TEXT)})
+        self.assertEqual(SkillProfile.objects.get(student=self.student).extraction_count_today, 1)
+        self.assertNotContains(self.client.get(reverse("skills_hub")), "temporarily unavailable")
 
     def test_all_keys_down_and_nothing_found_explains_instead_of_dropping(self):
         with self.assertLogs("internest_skills", "WARNING"):
