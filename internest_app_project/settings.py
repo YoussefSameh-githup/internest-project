@@ -557,14 +557,19 @@ UNFOLD = {
 
 # =========================================================================
 # Sentry (errors + performance). Off until SENTRY_DSN is set in .env; never in tests.
-# Privacy: no PII, no request bodies, secrets scrubbed (internest_core/observability.py).
+# Privacy: no PII, no local variables, no request bodies; emails, codes, tokens and keys masked
+# (internest_core/observability.py). Check delivery: `manage.py sentry_test` or /ops/sentry-check/ (superusers).
 # =========================================================================
 SENTRY_DSN = os.getenv("SENTRY_DSN", "")
-SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "pythonanywhere" if ON_PYTHONANYWHERE else ("development" if DEBUG else "production"))
+SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "development" if DEBUG else "production")
+SENTRY_RELEASE = os.getenv("SENTRY_RELEASE", "")
 SENTRY_TRACES_SAMPLE_RATE = env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.1)
 SENTRY_PROFILES_SAMPLE_RATE = env.float("SENTRY_PROFILES_SAMPLE_RATE", default=0.0)
+# uWSGI on PythonAnywhere runs without threads: send inline there (see observability.py).
+SENTRY_SYNC_TRANSPORT = env_bool("SENTRY_SYNC_TRANSPORT", default=ON_PYTHONANYWHERE)
 if SENTRY_DSN and not TESTING:
-    from internest_core.observability import init_sentry
+    from internest_core.observability import detect_release, init_sentry
 
-    init_sentry(SENTRY_DSN, environment=SENTRY_ENVIRONMENT, release=os.getenv("SENTRY_RELEASE", ""),
-                traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE, profiles_sample_rate=SENTRY_PROFILES_SAMPLE_RATE)
+    init_sentry(SENTRY_DSN, environment=SENTRY_ENVIRONMENT, release=SENTRY_RELEASE or detect_release(BASE_DIR),
+                traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE, profiles_sample_rate=SENTRY_PROFILES_SAMPLE_RATE,
+                sync_transport=SENTRY_SYNC_TRANSPORT)

@@ -1,8 +1,8 @@
-"""Crawler and uptime endpoints: /robots.txt, /sitemap.xml, /healthz/."""
+"""Crawler, uptime and ops endpoints: /robots.txt, /sitemap.xml, /healthz/, /ops/sentry-check/."""
 from xml.sax.saxutils import escape
 
 from django.db import DatabaseError, connection
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
@@ -10,7 +10,7 @@ from django.views.decorators.http import require_GET
 from .models import Internship
 
 # Everything behind a login or an API stays out of search engines.
-PRIVATE_PREFIXES = ("/admin/", "/accounts/", "/app/", "/apply/", "/partner/", "/profile/", "/student/", "/startups/", "/api/", "/media/", "/i18n/")
+PRIVATE_PREFIXES = ("/admin/", "/accounts/", "/app/", "/apply/", "/partner/", "/profile/", "/student/", "/startups/", "/api/", "/media/", "/i18n/", "/ops/")
 # Public, indexable pages (URL names). Open opportunities are added dynamically.
 PUBLIC_PAGES = ("landing", "university_landing", "list", "contact", "privacy", "terms", "refund_policy")
 
@@ -44,3 +44,16 @@ def healthz(request):
     except DatabaseError:
         return JsonResponse({"status": "error", "database": "down"}, status=503)
     return JsonResponse({"status": "ok", "database": "ok"})
+
+
+@require_GET
+@never_cache
+def sentry_check(request):
+    """Superusers only: send one test error from THIS web worker and show whether Sentry stored it.
+
+    The real end-to-end check on PythonAnywhere (`manage.py sentry_test` runs in a console, where threads work)."""
+    if not request.user.is_superuser:
+        raise Http404
+    from .observability import send_check
+
+    return JsonResponse(send_check("/ops/sentry-check/"))

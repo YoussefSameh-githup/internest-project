@@ -9,6 +9,7 @@ urlpatterns = [
     path('robots.txt', site_views.robots_txt, name='robots'),
     path('sitemap.xml', site_views.sitemap_xml, name='sitemap'),
     path('healthz/', site_views.healthz, name='healthz'),
+    path('ops/sentry-check/', site_views.sentry_check, name='sentry_check'),
     path('contact/', legal_views.contact, name='contact'),
     path('privacy/', legal_views.privacy, name='privacy'),
     path('trust/', legal_views.trust_page, name='trust'),

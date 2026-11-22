@@ -142,3 +142,12 @@ register(ProviderSpec(
     env_var="FAWATERAK_API_KEY", key_setting="FAWATERAK_API_KEY", code_location="internest_startups/fawaterak.py: create_invoice_link",
     dashboard_url="https://app.fawaterk.com/",
 ))
+register(ProviderSpec(
+    key="sentry", name="Sentry", category="other",
+    role="Error and performance monitoring: every server error and a sample of page timings, with personal data stripped",
+    impact="Errors still happen and are still logged on PythonAnywhere, but nobody is told about them and Sentry shows no new issues.",
+    degraded_behavior="Users see no difference; error reports for that period are lost.",
+    env_var="SENTRY_DSN", key_setting="SENTRY_DSN",
+    code_location="internest_core/observability.py: MonitoredTransport (started from settings.py when SENTRY_DSN is set)",
+    dashboard_url="https://sentry.io/issues/",
+))
