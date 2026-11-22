@@ -124,7 +124,8 @@ def _client(timeout: float, provider: Provider | None = None, max_retries: int =
 
     provider = provider or Provider("API_KEY_1", settings.AGENTROUTER_API_KEY, settings.AGENTROUTER_BASE_URL, "")
     # The SDK object is cheap; the pooled keep-alive connections (and the proxy choice, see ENABLE_PROXY_BYPASS) are shared.
-    return OpenAI(api_key=provider.api_key, base_url=provider.base_url, timeout=timeout, max_retries=max_retries, http_client=get_client())
+    # An empty key would make the SDK raise at construction; the call itself then fails with a monitored 401 instead.
+    return OpenAI(api_key=provider.api_key or "not-configured", base_url=provider.base_url, timeout=timeout, max_retries=max_retries, http_client=get_client())
 
 
 _FENCE = re.compile(r"^\s*```[a-z]*\s*|\s*```\s*$", re.I)
