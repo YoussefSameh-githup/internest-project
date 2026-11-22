@@ -55,7 +55,7 @@ jobs:
           code=$(curl -s -o cv.out -w '%{http_code}' -H "Host: $DOMAIN" http://127.0.0.1/media/cvs/someone.pdf)
           echo "private CV, anonymous: $code (login redirect or 404, never the file)"
           [ "$code" = "302" ] || [ "$code" = "404" ]
-          ! grep -q private-cv-content cv.out
+          if grep -q private-cv-content cv.out; then echo 'private file was served'; exit 1; fi
           # requests for other host names get no answer
           code=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: evil.example" http://127.0.0.1/healthz/ || true)
           echo "unknown host: $code"; [ "$code" = "000" ]
