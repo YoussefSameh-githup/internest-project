@@ -1,0 +1,49 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{{ kit.role }} — {% trans "Interview kit" %}{% endblock %}
+
+{% block content %}
+{% include "careers/_styles.html" %}
+{% if practice %}{% include "internship/_student_hub.html" %}{% endif %}
+<section class="{% if practice %}sh-body{% else %}section-sm{% endif %}">
+    <div class="container-narrow">
+        <a href="{{ back_url }}" class="btn btn--ghost btn--sm mb-4 no-print"><i class="bi bi-arrow-right-short"></i> {% if practice %}{% trans "Interview practice" %}{% else %}{% trans "Interview kits" %}{% endif %}</a>
+        <div class="cr-card">
+            <div class="ik-head">
+                <div style="min-width: 0;">
+                    <h1 dir="auto">{{ kit.role }}</h1>
+                    <p class="text-muted mb-0" style="font-size: var(--text-sm);">
+                        {% if practice %}{% trans "Practice kit: answer each question out loud first, then open the guide." %}
+                        {% elif applicant_name %}{% blocktrans with name=applicant_name %}Structured interview for {{ name }}{% endblocktrans %}
+                        {% else %}{% trans "Structured interview for this opportunity" %}{% endif %}
+                    </p>
+                    <div class="ik-meta">
+                        <span class="sh-pill">{{ kit.get_seniority_display }}</span>
+                        <span class="sh-pill">{% blocktrans with n=questions|length %}Questions: {{ n }}{% endblocktrans %}</span>
+                        <span class="sh-pill{% if kit.source == 'ai' %} sh-pill--ok{% endif %}">{{ kit.get_source_display }}</span>
+                    </div>
+                </div>
+                <div class="cr-actions ik-actions no-print" style="margin-top: 0;">
+                    <a href="{% url 'interview_kit_print' kit.pk %}" class="btn btn--primary btn--sm" target="_blank" rel="noopener"><i class="bi bi-printer"></i> {% trans "Print-friendly view" %}</a>
+                    {% if can_enrich %}
+                        <form method="post" action="{% url 'interview_kit_enrich' kit.pk %}" data-async-task data-async-busy="{% trans 'Adding AI questions…' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn--ghost btn--sm">✨ {% trans "Add AI-tailored questions" %}</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% if ai_message %}<p class="ik-note{% if kit.ai_status != 'done' %} ik-note--warn{% endif %}" role="status">{{ ai_message }}</p>{% endif %}
+            {% if not practice and not kit.includes_assessments and kit.application_id %}
+                <p class="ik-note">{% trans "Built from the verified skills you can see. A Hiring Pass for this opportunity adds the candidate's scores and flagged areas for sharper questions." %}</p>
+            {% endif %}
+            <p class="ik-note no-print" style="background: #f8fafc; border-color: #e2e8f0; color: #475569;">{% trans "Ask every candidate the same questions in the same order and score each answer from 1 to 5 against the criteria: it keeps the interview fair and comparable." %}</p>
+        </div>
+
+        <ol class="ik-list">
+            {% for q in questions %}{% include "careers/_question.html" with q=q practice=practice print=False %}{% endfor %}
+        </ol>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Interview questions" %} — Internest{% endblock %}
+
+{% block content %}
+{% include "careers/_styles.html" %}
+<section class="section-sm">
+    <div class="container-narrow">
+        {% if app %}
+            <a href="{% url 'partner_applicant' app.pk %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short"></i> {% trans "Back to the applicant" %}</a>
+        {% else %}
+            <a href="{% url 'interview_kits' %}" class="btn btn--ghost btn--sm mb-4"><i class="bi bi-arrow-right-short"></i> {% trans "Interview kits" %}</a>
+        {% endif %}
+        <div class="cr-card">
+            <h1 class="mb-1" style="font-size: var(--text-2xl);">{% trans "Structured interview questions" %}</h1>
+            <p class="text-muted mb-0">
+                {% if app %}{% blocktrans with name=app.applicant.get_full_name|default:app.applicant.username title=internship.title %}For {{ name }}, who applied to {{ title }}. Questions target this opportunity's required skills, what the candidate has verified and the gaps to probe.{% endblocktrans %}
+                {% else %}{% blocktrans with title=internship.title %}For every candidate of {{ title }}: questions built from the opportunity's required skills.{% endblocktrans %}{% endif %}
+            </p>
+            {% if app and not covered %}<p class="ik-note">{% trans "Built from the verified skills you can see. A Hiring Pass for this opportunity adds the candidate's scores and flagged areas for sharper questions." %}</p>{% endif %}
+            <form method="post" action="{% url 'interview_kit_new' %}" class="ik-form" data-async-task data-async-busy="{% trans 'Preparing your questions…' %}">
+                {% csrf_token %}
+                {% if app %}<input type="hidden" name="application_id" value="{{ app.pk }}">{% else %}<input type="hidden" name="internship_id" value="{{ internship.pk }}">{% endif %}
+                <label>{% trans "Role title" %}
+                    <input type="text" name="role_title" value="{{ internship.title }}" maxlength="120" dir="auto">
+                </label>
+                {% include "careers/_kit_options.html" %}
+                <button type="submit" class="btn btn--primary"><i class="bi bi-magic"></i> {% trans "Generate the interview kit" %}</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

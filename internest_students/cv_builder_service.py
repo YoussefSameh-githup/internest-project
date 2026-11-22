@@ -1,7 +1,8 @@
-"""ATS resume builder: clean CV JSON, voice transcription (Whisper), AI polishing and profile sync.
+"""ATS resume builder: clean CV JSON, voice transcription (Whisper), AI polishing, ATS score and profile sync.
 
-Every AI call goes through the llm.py key-failover chain; when AI is down the student keeps the data
-they typed and gets a clear message, never a 500.
+AI polishing goes through internest_ai.engine (task cv_polish, private): only the content to rewrite is sent, never
+the name, e-mail, phone or links, and the answer is merged back locally (merge_polished). When AI is down the student
+keeps the data they typed and gets a clear message, never a 500. The ATS score (ats_report) is plain rules, no AI.
 """
 import datetime
 import json
@@ -261,11 +262,12 @@ def standardize_skills(names, skills=None):
 
 # ---------------------------------------------------------------- AI
 _POLISH_PROMPT = (
-    "You are an expert ATS resume writer for students and fresh graduates. You get CURRENT resume JSON (may be "
-    "partly empty) and optionally a VOICE transcript (Egyptian Arabic / English code-switching). Merge them: the "
-    "transcript adds or corrects details; keep CURRENT data unless the transcript corrects it. "
-    "Write everything in clear professional English (translate Arabic; transliterate names of people, universities "
-    "and companies). Never invent employers, degrees, dates, contacts, links or numbers. "
+    "You are an expert ATS resume writer for students and fresh graduates. You get the CURRENT resume content as JSON "
+    "(may be partly empty) and optionally a VOICE transcript (Egyptian Arabic / English code-switching). Merge them: "
+    "the transcript adds or corrects details; keep CURRENT data unless the transcript corrects it. "
+    "Write everything in clear professional English (translate Arabic; transliterate names of universities and "
+    "companies). Never invent employers, degrees, dates, contacts, links or numbers. The content never includes the "
+    "student's name, e-mail, phone or links: do not add any. "
     "achievements: 2-4 bullets per experience, each starting with a strong past-tense action verb (Led, Developed, "
     "Optimized, Designed, Analyzed, Organized), max 25 words, quantified when the input gives figures; where a "
     "number would help but none was given, insert a placeholder like [X%] or [N] for the student to fill. "
@@ -273,24 +275,85 @@ _POLISH_PROMPT = (
     "2023 until 2027' -> 2023-09 / 2027; is_current true only if they are still studying and give no end date. "
     "summary: 2-3 sentences, max 60 words. skills: max 20; if a skill is the same as a Known name, use that "
     "Known name exactly. JSON only, this schema: "
-    '{"name":"","email":"","phone":"","linkedin":"","github":"","summary":"",'
+    '{"summary":"",'
     '"education":[{"university":"","major":"","start_date":"YYYY-MM or YYYY","end_date":"YYYY-MM or YYYY, expected graduation allowed","is_current":false}],'
     '"experiences":[{"title":"","organization":"","achievements":[""]}],'
-    '"projects":[{"title":"","description":"","tech_stack":"","link":""}],"skills":[""]}'
+    '"projects":[{"title":"","description":"","tech_stack":""}],"skills":[""]}'
 )
+CONTENT_SECTIONS = ("summary", "education", "experiences", "projects", "skills")
+_NUMBER = re.compile(r"(?<![\w\[])(\d+(?:[.,]\d+)?)(%?)")
+_ARABIC_INDIC = str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789")
 
 
-def polish_cv(current: dict, transcript: str = "") -> dict:
-    """AI-structured and polished CV. Raises llm.LLMUnavailable when every key fails."""
+def polish_content(cv: dict) -> dict:
+    """What the AI may rewrite: no name, e-mail, phone, LinkedIn / GitHub or project links (they never leave the server)."""
+    return {"summary": cv["summary"], "education": cv["education"], "experiences": cv["experiences"],
+            "projects": [{k: p[k] for k in ("title", "description", "tech_stack")} for p in cv["projects"]],
+            "skills": cv["skills"]}
+
+
+def _numbers(text: str) -> set:
+    return {m.group(1).replace(",", ".") for m in _NUMBER.finditer((text or "").translate(_ARABIC_INDIC))}
+
+
+def _no_new_numbers(text: str, allowed: set) -> str:
+    """Figures the student never gave become placeholders ("[X%]", "[X]"): the AI must not invent results."""
+    def repl(match):
+        if match.group(1).replace(",", ".") in allowed:
+            return match.group(0)
+        return "[X%]" if match.group(2) else "[X]"
+    return _NUMBER.sub(repl, text or "")
+
+
+def _contacts_from_voice(transcript: str) -> dict:
+    """E-mail / phone the student said in the voice note, found locally (contacts are never sent to the AI)."""
+    from internest_ai.redact import EMAIL, PHONE
+
+    email = EMAIL.search(transcript or "")
+    phone = next((m.group(0) for m in PHONE.finditer(transcript or "") if 8 <= sum(c.isdigit() for c in m.group(0)) <= 15), "")
+    return {"email": email.group(0) if email else "", "phone": phone}
+
+
+def merge_polished(current: dict, reply: dict, transcript: str = "") -> dict:
+    """The AI's content merged back into the student's CV, locally: contacts and links from the student, no new
+    entries without a voice note, and no figures the student did not give."""
+    reply = reply if isinstance(reply, dict) else {}
+    merged = clean_cv({**current, **{k: reply[k] for k in CONTENT_SECTIONS if k in reply}})
+    voice = _contacts_from_voice(transcript)
+    for field in PERSONAL_FIELDS:
+        merged[field] = current[field] or (clean_cv({field: voice.get(field, "")})[field] if field in voice else "")
+    if not transcript:  # only the voice note may add entries; a typed CV is reworded, never extended
+        for section in ("education", "experiences", "projects"):
+            merged[section] = merged[section][:len(current[section])]
+    allowed = _numbers(json.dumps(polish_content(current), ensure_ascii=False) + " " + (transcript or ""))
+    merged["summary"] = _no_new_numbers(merged["summary"], allowed)[:TEXT_LIMITS["summary"]]
+    for x in merged["experiences"]:
+        x["achievements"] = [_no_new_numbers(a, allowed) for a in x["achievements"]]
+    links = {p["title"].casefold(): p["link"] for p in current["projects"] if p["link"]}
+    for i, p in enumerate(merged["projects"]):
+        p["description"] = _no_new_numbers(p["description"], allowed)
+        p["link"] = links.get(p["title"].casefold()) or (current["projects"][i]["link"] if i < len(current["projects"]) else "")
+    merged["skills"], _matched = standardize_skills(merged["skills"])
+    return merged
+
+
+def polish_cv(current: dict, transcript: str = "", user=None) -> dict:
+    """AI-polished CV through the engine (task cv_polish, private). Raises llm.LLMUnavailable (QuotaExceeded included)
+    when no provider answers or a cap is reached."""
+    from internest_ai import engine
+
+    from .ai_tasks import POLISH_TASK
+
     current = clean_cv(current)
     known = ", ".join(Skill.objects.filter(is_active=True).values_list("name", flat=True)[:400])
-    payload = f"Known: {known}\nCURRENT: {json.dumps(current, ensure_ascii=False)}\nVOICE: {transcript or '(none)'}"
+    data = {"resume": polish_content(current)}
+    if transcript:
+        data["voice"] = transcript
     with api_feature("CV Builder AI Polish"):
-        polished = clean_cv(llm.chat_json(_POLISH_PROMPT, payload, max_tokens=2500, timeout=45))
-    for field in PERSONAL_FIELDS:  # contacts typed by the student always win
-        polished[field] = current[field] or polished[field]
-    polished["skills"], _matched = standardize_skills(polished["skills"])
-    return polished
+        reply = engine.run(POLISH_TASK, system=_POLISH_PROMPT, data=data, user=user, private=True,
+                           known_names=[current["name"]] if current["name"] else (),
+                           prompt=f"Known: {known}\nReturn the polished resume content as JSON.", max_tokens=2500, timeout=45)
+    return merge_polished(current, reply, transcript)
 
 
 def transcription_providers() -> list[llm.Provider]:
@@ -350,3 +413,86 @@ def sync_profile(student, cv) -> dict:
         for i, p in enumerate(cv["projects"])
     ])
     return {"skills": len(matched), "new_skills": created, "projects": len(cv["projects"])}
+
+
+# ---------------------------------------------------------------- ATS score (deterministic)
+ACTION_VERBS = {
+    "achieved", "analyzed", "analysed", "automated", "built", "collaborated", "conducted", "coordinated", "created",
+    "delivered", "designed", "developed", "drafted", "edited", "established", "evaluated", "facilitated", "founded",
+    "generated", "implemented", "improved", "increased", "initiated", "launched", "led", "managed", "mentored",
+    "optimized", "optimised", "organized", "organised", "planned", "presented", "produced", "reduced", "researched",
+    "resolved", "streamlined", "supported", "taught", "tested", "trained", "translated", "wrote",
+}
+_ARABIC_TEXT = re.compile(r"[\u0600-\u06ff]")
+SUMMARY_WORDS = (20, 80)
+SKILLS_RANGE = (5, 20)
+MAX_BULLET_WORDS = 25
+
+
+def _starts_with_action(text: str) -> bool:
+    first = re.sub(r"[^a-z]", "", (text.split() or [""])[0].lower())
+    return first in ACTION_VERBS or (len(first) > 4 and first.endswith("ed"))
+
+
+def ats_report(cv: dict) -> dict:
+    """{"score": 0-100, "grade", "checks": [{code, label, ok, points, max, fix}], "fixes": [...]}: plain rules an
+    applicant tracking system and a recruiter care about. Checks that do not apply (no experience yet) are skipped."""
+    from django.utils.translation import gettext as _
+
+    cv = clean_cv(cv)
+    checks = []
+
+    def check(code, label, earned, maximum, fix=""):
+        earned = max(0, min(maximum, round(earned)))
+        checks.append({"code": code, "label": str(label), "ok": earned == maximum, "points": earned, "max": maximum,
+                       "fix": "" if earned == maximum else str(fix)})
+
+    missing = [label for key, label in (("name", _("full name")), ("email", _("e-mail")), ("phone", _("phone number")))
+               if not cv[key]]
+    has_link = bool(cv["linkedin"] or cv["github"])
+    check("contact", _("Contact details"), 15 - 4 * len(missing) - (0 if has_link else 3), 15,
+          _("Add your %(items)s to the header.") % {"items": ", ".join(missing + ([] if has_link else [_("LinkedIn or GitHub link")]))})
+    words = len(cv["summary"].split())
+    check("summary", _("Summary"), 10 if SUMMARY_WORDS[0] <= words <= SUMMARY_WORDS[1] else 5 if words else 0, 10,
+          _("Write a 2-3 sentence summary (%(low)s-%(high)s words): who you are, your strongest skills and the role you want.")
+          % {"low": SUMMARY_WORDS[0], "high": SUMMARY_WORDS[1]})
+    edu = cv["education"]
+    dated = edu and all(e["end_date"] or e["is_current"] for e in edu)
+    check("education", _("Education"), (7 if edu else 0) + (3 if dated else 0), 10,
+          _("Add your university and major with the start and (expected) graduation dates.") if not edu
+          else _("Add the (expected) graduation date to every education entry."))
+    exp, projects = cv["experiences"], cv["projects"]
+    check("experience", _("Experience or projects"), 15 if exp else 10 if projects else 0, 15,
+          _("Add an internship, a volunteer role or a student activity as experience; projects alone score lower."))
+    bullets = [a for x in exp for a in x["achievements"]]
+    if exp:
+        if not bullets:
+            check("bullets", _("Achievement bullets"), 0, 15, _("Add 2-4 achievement bullets under each experience."))
+        else:
+            action = sum(_starts_with_action(a) for a in bullets) / len(bullets)
+            check("bullets", _("Action verbs"), 15 * action, 15,
+                  _("Start every bullet with a past-tense action verb such as Led, Built, Analyzed or Organized."))
+            quantified = sum(bool(re.search(r"\d|\[(?:X|N)", a)) for a in bullets) / len(bullets)
+            check("numbers", _("Measurable results"), 10 * quantified, 10,
+                  _("Add a number to each bullet (how many, how much, how fast): results are what recruiters scan for."))
+            long_ones = sum(len(a.split()) > MAX_BULLET_WORDS for a in bullets)
+            check("length", _("Bullet length"), 5 - 2 * long_ones, 5,
+                  _("Keep each bullet under %(n)s words.") % {"n": MAX_BULLET_WORDS})
+    pending = placeholders(cv)
+    check("placeholders", _("No placeholders left"), 0 if pending else 10, 10,
+          _("Replace %(items)s with your real figures.") % {"items": ", ".join(pending)})
+    n = len(cv["skills"])
+    check("skills", _("Skills"), 10 if SKILLS_RANGE[0] <= n <= SKILLS_RANGE[1] else 7 if n > SKILLS_RANGE[1] else 5 if n else 0, 10,
+          _("List %(low)s-%(high)s skills that match the roles you apply for.") % {"low": SKILLS_RANGE[0], "high": SKILLS_RANGE[1]})
+    if projects:
+        complete = sum(bool(p["description"] and p["tech_stack"]) for p in projects) / len(projects)
+        check("projects", _("Project details"), 5 * complete, 5,
+              _("Give every project a one-line description and the tools you used."))
+    content = json.dumps(polish_content(cv), ensure_ascii=False)
+    check("language", _("One language"), 0 if _ARABIC_TEXT.search(content) else 5, 5,
+          _("Write the whole CV in English: most applicant tracking systems read one language only."))
+    earned, possible = sum(c["points"] for c in checks), sum(c["max"] for c in checks)
+    score = round(earned * 100 / possible) if possible else 0
+    grade = (_("Excellent") if score >= 85 else _("Good") if score >= 70 else _("Needs work") if score >= 50 else _("Weak"))
+    fixes = [c["fix"] for c in sorted(checks, key=lambda c: c["max"] - c["points"], reverse=True) if c["fix"]]
+    return {"score": score, "grade": str(grade), "checks": checks, "fixes": fixes}

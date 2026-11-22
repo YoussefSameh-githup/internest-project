@@ -105,7 +105,8 @@ button.is-busy { opacity: .7; pointer-events: none; }
                 <p>{% trans "Build a clean CV that applicant tracking systems can read — type it step by step or just talk." %}</p>
             </div>
             <div class="cvb-head__actions" data-saved-actions {% if not has_saved_cv %}hidden{% endif %}>
-                <a href="{% url 'cv_builder_preview' %}" class="btn btn--ghost btn--sm" target="_blank" rel="noopener"><i class="bi bi-eye"></i> {% trans "Preview" %}</a>
+                <a href="{% url 'cv_builder_preview' %}" class="btn btn--ghost btn--sm" target="_blank" rel="noopener"><i class="bi bi-speedometer2"></i> {% trans "Preview & ATS score" %}</a>
+                <a href="{% url 'cv_builder_docx' %}" class="btn btn--ghost btn--sm"><i class="bi bi-file-earmark-word"></i> {% trans "Word (DOCX)" %}</a>
                 <a href="{% url 'cv_builder_pdf' %}" class="btn btn--primary btn--sm"><i class="bi bi-download"></i> {% trans "Download CV (PDF)" %}</a>
             </div>
         </header>

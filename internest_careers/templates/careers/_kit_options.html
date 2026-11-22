@@ -1,0 +1,7 @@
+{% load i18n %}{# Seniority select + AI checkbox shared by the kit forms. Context: seniorities, ai_available. #}
+<label>{% trans "Seniority" %}
+    <select name="seniority">{% for value, label in seniorities %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+</label>
+{% if ai_available %}
+    <label class="ik-check"><input type="checkbox" name="ai" value="1" checked> <span>✨ {% trans "Add AI-tailored questions" %} <small>({% trans "only skills and levels are shared with the AI, never names or contacts" %})</small></span></label>
+{% endif %}

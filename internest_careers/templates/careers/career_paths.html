@@ -1,0 +1,138 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Career paths" %} — Internest{% endblock %}
+
+{% block content %}
+{% include "careers/_styles.html" %}
+{% include "internship/_student_hub.html" %}
+<section class="sh-body">
+    <div class="container">
+        <div class="cr-intro">
+            <div>
+                <h2>{% trans "Career paths that fit your skills" %}</h2>
+                <p>{% trans "Built from the open internships on Internest and the skills you verified. Each path shows why it fits, what is missing and the fastest way to close it." %}</p>
+            </div>
+        </div>
+        <div class="cr-layout">
+            <div class="cr-roles">
+                {% for role in recs.roles %}
+                    <article class="cr-card">
+                        <div class="cr-role__top">
+                            <div class="cr-role__who">
+                                <h3 class="cr-role__title" dir="auto">{{ role.title }}</h3>
+                                <span class="cr-role__sub">{{ role.discipline_label }}</span>
+                            </div>
+                            <span class="cr-pill cr-pill--{{ role.readiness }}">{% if role.readiness == "ready" %}<i class="bi bi-check-circle-fill"></i>{% elif role.readiness == "almost" %}<i class="bi bi-hourglass-split"></i>{% else %}<i class="bi bi-bricks"></i>{% endif %} {{ role.readiness_label }}</span>
+                            <span class="cr-meter" role="img" aria-label="{% blocktrans with n=role.coverage %}{{ n }}% skill coverage{% endblocktrans %}"><b>{{ role.coverage }}%</b><small>{% trans "coverage" %}</small></span>
+                        </div>
+                        <p class="cr-why">{{ role.why }}</p>
+                        <ul class="cr-chips" aria-label="{% trans 'Core skills' %}">
+                            {% for s in role.skills %}
+                                <li class="cr-chip cr-chip--{{ s.state }}">{% if s.state == "verified" %}<i class="bi bi-patch-check-fill"></i>{% elif s.state == "related" %}<i class="bi bi-link-45deg"></i>{% elif s.state == "claimed" %}<i class="bi bi-hourglass"></i>{% else %}<i class="bi bi-plus-circle"></i>{% endif %}<bdi>{{ s.name }}</bdi>
+                                    <span class="visually-hidden">({% if s.state == "verified" %}{% trans "verified" %}{% elif s.state == "related" %}{% trans "covered by a related skill" %}{% elif s.state == "claimed" %}{% trans "listed, not verified" %}{% else %}{% trans "missing" %}{% endif %})</span></li>
+                            {% endfor %}
+                        </ul>
+                        {% if role.gaps %}
+                            <details class="cr-gaps" {% if forloop.first %}open{% endif %}>
+                                <summary><i class="bi bi-signpost-split"></i> {% blocktrans with n=role.gaps|length %}How to close the gaps ({{ n }}){% endblocktrans %}</summary>
+                                {% for gap in role.gaps %}
+                                    <div class="cr-gap">
+                                        <h4><bdi>{{ gap.skill }}</bdi></h4>
+                                        <p>{{ gap.why }}</p>
+                                        {% if gap.courses %}
+                                            <ul class="cr-links">
+                                                {% for c in gap.courses %}<li><a href="{{ c.url }}"{% if c.opens_externally %} target="_blank" rel="noopener nofollow"{% endif %}><span dir="auto">{{ c.title }}</span><small>{{ c.provider }}{% if c.is_partner %} · {% trans "Internest partner" %}{% endif %}</small></a></li>{% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                        <div class="cr-project"><strong><i class="bi bi-lightbulb"></i> {% trans "Project idea" %}: {{ gap.project.title }}</strong>{{ gap.project.description }}</div>
+                                    </div>
+                                {% endfor %}
+                            </details>
+                        {% endif %}
+                        <div class="cr-actions">
+                            <a href="{{ role.practice_url }}" class="btn btn--primary btn--sm"><i class="bi bi-mic"></i> {% trans "Practise this interview" %}</a>
+                            <a href="{{ role.feed_url }}" class="btn btn--ghost btn--sm">{% blocktrans with n=role.openings %}See the internships ({{ n }}){% endblocktrans %}</a>
+                            {% if role.to_verify %}<a href="{% url 'skills_hub' %}" class="btn btn--ghost btn--sm"><i class="bi bi-patch-check"></i> {% trans "Verify my listed skills" %}</a>{% endif %}
+                        </div>
+                    </article>
+                {% empty %}
+                    <div class="sh-empty">
+                        <i class="bi bi-compass" style="font-size: 2rem;"></i>
+                        <h3>{% trans "No career paths yet" %}</h3>
+                        <p>{% trans "Career paths appear as soon as open internships list their required skills. Meanwhile, verify your skills so you are ready first." %}</p>
+                        <a href="{% url 'skills_hub' %}" class="btn btn--primary btn--sm">{% trans "Verify a skill" %}</a>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <aside class="cr-side">
+                <div class="cr-card">
+                    <h3><i class="bi bi-bullseye"></i> {% trans "Best-fit internships" %}</h3>
+                    {% if recs.internships %}
+                        <p>{% trans "Ranked by how well your verified skills cover what each one requires." %}</p>
+                        <ul class="cr-fit">
+                            {% for i in recs.internships %}
+                                <li>
+                                    <div class="cr-fit__row"><a href="{{ i.url }}" dir="auto">{{ i.title }}</a><span class="sh-score">{{ i.score }}%</span></div>
+                                    <small dir="auto">{{ i.company }}</small>
+                                    <small>{{ i.why }}</small>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>{% trans "Verify a skill to see the internships you match best, with the reason for each." %}</p>
+                        <a href="{% url 'skills_hub' %}" class="btn btn--primary btn--sm">{% trans "Verify a skill" %}</a>
+                    {% endif %}
+                </div>
+                {% if ai_available and recs.roles %}
+                    <div class="cr-card" data-career-plan data-url="{% url 'api_career_advice' %}">
+                        <h3>✨ {% trans "Your personal plan" %}</h3>
+                        <p>{% trans "A short AI plan written from the paths above. Only skills and coverage are shared, never your name or contacts." %}</p>
+                        {% csrf_token %}<button type="button" class="btn btn--ghost btn--sm" data-plan-button>{% trans "Write my plan" %}</button>
+                        <div class="cr-plan" data-plan-output aria-live="polite"></div>
+                    </div>
+                {% endif %}
+            </aside>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if ai_available and recs.roles %}
+{% trans "Writing your plan…" as t_busy %}{% trans "Connection problem. Please try again." as t_network %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {  // after the deferred async_task_poller.js
+  var box = document.querySelector("[data-career-plan]");
+  if (!box || !window.InternestAsync) return;
+  var button = box.querySelector("[data-plan-button]"), out = box.querySelector("[data-plan-output]");
+  var field = box.querySelector("input[name=csrfmiddlewaretoken]"), token = field ? field.value : "";
+  function show(message, isError) {
+    out.textContent = "";
+    var p = document.createElement("p");
+    if (isError) p.setAttribute("role", "alert");
+    p.textContent = message;
+    out.appendChild(p);
+  }
+  button.addEventListener("click", function () {
+    var label = button.textContent;
+    button.disabled = true;
+    button.textContent = "{{ t_busy|escapejs }}";
+    window.InternestAsync.fetchJSON(box.getAttribute("data-url"), {headers: {"X-CSRFToken": token}})
+      .then(function (res) {
+        if (!res.ok) { show((res.data && res.data.error) || "{{ t_network|escapejs }}", true); return; }
+        show(res.data.narrative || "", false);
+        if (res.data.next_steps && res.data.next_steps.length) {
+          var ol = document.createElement("ol");
+          res.data.next_steps.forEach(function (step) { var li = document.createElement("li"); li.textContent = step; ol.appendChild(li); });
+          out.appendChild(ol);
+        }
+      })
+      .catch(function () { show("{{ t_network|escapejs }}", true); })
+      .finally(function () { button.disabled = false; button.textContent = label; });
+  });
+});
+</script>
+{% endif %}
+{% endblock %}

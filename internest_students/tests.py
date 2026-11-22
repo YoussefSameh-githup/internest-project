@@ -131,10 +131,11 @@ class PolishTests(Base):
         self.assertIn("strong past-tense action verb", system)
         self.assertIn("Never invent", system)
         self.assertIn("Known: ", user)
-        self.assertIn("VOICE: (none)", user)
+        for private in ("Mona Adel", "mona@example.com", "+20 100 000 0000", "linkedin.com/in/mona", "github.com/mona"):
+            self.assertNotIn(private, user)  # contact fields and links never leave the server
 
     def test_ai_down_keeps_student_text(self):
-        with mock.patch(CHAT, side_effect=_rate_limited()), self.assertLogs("internest_skills.llm", "WARNING"):
+        with mock.patch(CHAT, side_effect=_rate_limited()), self.assertLogs("internest_ai", "WARNING"):
             resp = self._polish()
         self.assertEqual(resp.status_code, 503)
         self.assertEqual(resp.json()["cv"]["name"], "Mona Adel")
@@ -203,7 +204,7 @@ class VoiceTests(Base):
 
     def test_ai_down_after_transcription_returns_transcript(self):
         with mock.patch(WHISPER, return_value=SimpleNamespace(text=TRANSCRIPT)), \
-                mock.patch(CHAT, side_effect=_rate_limited()), self.assertLogs("internest_skills.llm", "WARNING"):
+                mock.patch(CHAT, side_effect=_rate_limited()), self.assertLogs("internest_ai", "WARNING"):
             resp = self._send()
         self.assertEqual(resp.status_code, 503)
         self.assertEqual(resp.json()["transcript"], TRANSCRIPT)

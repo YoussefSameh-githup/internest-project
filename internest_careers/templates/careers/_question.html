@@ -1,0 +1,18 @@
+{% load i18n %}{# One interview question. Context: q (kit question item), practice (bool: answer guide folded so students try first), print (bool: score boxes + notes lines). #}
+<li class="ik-q">
+    <div class="ik-q__top">
+        <span class="ik-diff ik-diff--{{ q.difficulty }}">{% if q.difficulty == "easy" %}{% trans "Easy" %}{% elif q.difficulty == "hard" %}{% trans "Hard" %}{% else %}{% trans "Medium" %}{% endif %}</span>
+        {% if q.skill %}<span class="cr-chip"><bdi>{{ q.skill }}</bdi></span>{% endif %}
+        <span class="cr-chip">{% if q.kind == "depth" %}{% trans "Go deeper on a verified skill" %}{% elif q.kind == "subskill" %}{% trans "Flagged area" %}{% elif q.kind == "evidence" %}{% trans "Look for evidence" %}{% elif q.kind == "gap" %}{% trans "Skill gap" %}{% elif q.kind == "ai" %}✨ {% trans "AI-tailored" %}{% else %}{% trans "Behavioural" %}{% endif %}</span>
+    </div>
+    <h3 dir="auto">{{ q.question }}</h3>
+    {% if practice and not print %}<details><summary>{% trans "See what a strong answer shows" %}</summary>{% endif %}
+    <dl>
+        {% if q.purpose %}<div><dt>{% trans "Why ask it" %}</dt><dd dir="auto">{{ q.purpose }}</dd></div>{% endif %}
+        {% if q.expected_evidence %}<div><dt>{% trans "Strong answers show" %}</dt><dd dir="auto">{{ q.expected_evidence }}</dd></div>{% endif %}
+        {% if q.criteria %}<div><dt>{% trans "Scoring criteria" %}</dt><dd><ul>{% for c in q.criteria %}<li dir="auto">{{ c }}</li>{% endfor %}</ul></dd></div>{% endif %}
+        {% if q.follow_ups %}<div><dt>{% trans "Follow-up questions" %}</dt><dd><ul>{% for f in q.follow_ups %}<li dir="auto">{{ f }}</li>{% endfor %}</ul></dd></div>{% endif %}
+    </dl>
+    {% if practice and not print %}</details>{% endif %}
+    {% if print %}<p class="ik-score">{% trans "Score" %}: ☐ 1 &nbsp; ☐ 2 &nbsp; ☐ 3 &nbsp; ☐ 4 &nbsp; ☐ 5</p><div class="ik-lines" aria-hidden="true"></div>{% endif %}
+</li>

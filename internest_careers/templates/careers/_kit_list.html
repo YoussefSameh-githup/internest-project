@@ -1,0 +1,10 @@
+{% load i18n %}{# Saved kits as links. Context: kits, empty_text. #}
+{% if kits %}
+    <ul class="ik-kits">
+        {% for k in kits %}
+            <li><a href="{% url 'interview_kit' k.pk %}"><span dir="auto">{{ k.role }}</span><small>{{ k.get_seniority_display }} · {{ k.questions|length }} · {{ k.created_at|date:"Y/m/d" }}</small></a></li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <div class="sh-empty sh-empty--compact"><i class="bi bi-chat-square-text"></i><p>{{ empty_text }}</p></div>
+{% endif %}

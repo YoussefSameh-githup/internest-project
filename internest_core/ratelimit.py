@@ -39,6 +39,13 @@ RULES = {
     # Audit L1: promo / discount codes must not be guessable by brute force.
     "course_checkout": (10, 60 * 60, ("apply_discount", None)),
     "startup_upgrade": (10, 60 * 60, ("action", "apply")),
+    # AI career features (each POST queues an AI job; the engine also enforces per-user / per-company AI quotas)
+    "interview_kit_new": (30, 60 * 60),
+    "interview_practice": (30, 60 * 60),
+    "interview_kit_enrich": (20, 60 * 60),
+    "api_interview_kits": (30, 60 * 60),
+    "api_career_advice": (10, 60 * 60),
+    "api_resume_polish": (20, 60 * 60),
 }
 
 

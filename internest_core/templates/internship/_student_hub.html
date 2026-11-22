@@ -1,5 +1,5 @@
 {% load i18n %}
-{# Shared header + tabs for the student hub (My applications / Tasks & quizzes / Courses). #}
+{# Shared header + tabs for the student hub (My applications / Tasks & quizzes / Courses / Career paths / Interview practice). Context: hub_tab, hub_stats (optional). #}
 <section class="sh-hero">
     <div class="container">
         <div class="sh-hero__row">
@@ -23,6 +23,8 @@
             <a href="{% url 'task_list' %}" class="sh-tab {% if hub_tab == 'tasks' %}is-active{% endif %}" {% if hub_tab == 'tasks' %}aria-current="page"{% endif %}>🎯 {% trans "Tasks & quizzes" %}</a>
             <a href="{% url 'course_list' %}" class="sh-tab {% if hub_tab == 'courses' %}is-active{% endif %}" {% if hub_tab == 'courses' %}aria-current="page"{% endif %}>📚 {% trans "Courses & learning paths" %}</a>
             <a href="{% url 'student_dashboard' %}" class="sh-tab">📊 {% trans "Market fit" %}</a>
+            <a href="{% url 'career_paths' %}" class="sh-tab {% if hub_tab == 'careers' %}is-active{% endif %}" {% if hub_tab == 'careers' %}aria-current="page"{% endif %}>🧭 {% trans "Career paths" %}</a>
+            <a href="{% url 'interview_practice' %}" class="sh-tab {% if hub_tab == 'interview' %}is-active{% endif %}" {% if hub_tab == 'interview' %}aria-current="page"{% endif %}>🎤 {% trans "Interview practice" %}</a>
         </nav>
     </div>
 </section>

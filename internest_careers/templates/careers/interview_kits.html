@@ -1,0 +1,42 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Interview kits" %} — Internest{% endblock %}
+
+{% block content %}
+{% include "careers/_styles.html" %}
+<section class="section-sm">
+    <div class="container">
+        <div class="cr-intro">
+            <div>
+                <h2>{% trans "Interview kits" %}</h2>
+                <p>{% trans "Ask every candidate the same job-related questions and score them against clear criteria. Open an applicant to get questions tailored to their verified skills and gaps." %}</p>
+            </div>
+            <a href="{% url 'partner_dashboard_section' 'applicants' %}" class="btn btn--ghost btn--sm">{% trans "Applicants Inbox" %}</a>
+        </div>
+        <div class="cr-layout">
+            <div>
+                {% trans "No kits yet. Generate one for an opportunity or from an applicant's page." as empty_text %}
+                {% include "careers/_kit_list.html" with kits=kits empty_text=empty_text %}
+            </div>
+            <aside class="cr-side">
+                <div class="cr-card">
+                    <h3>{% trans "New kit for an opportunity" %}</h3>
+                    {% if internships %}
+                        <form method="post" action="{% url 'interview_kit_new' %}" class="ik-form" data-async-task data-async-busy="{% trans 'Preparing your questions…' %}">
+                            {% csrf_token %}
+                            <label>{% trans "Opportunity" %}
+                                <select name="internship_id" required>{% for i in internships %}<option value="{{ i.pk }}">{{ i.title }}</option>{% endfor %}</select>
+                            </label>
+                            {% include "careers/_kit_options.html" %}
+                            <button type="submit" class="btn btn--primary"><i class="bi bi-magic"></i> {% trans "Generate the interview kit" %}</button>
+                        </form>
+                    {% else %}
+                        <p>{% trans "Post an opportunity first: its required skills shape the questions." %}</p>
+                    {% endif %}
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+{% endblock %}

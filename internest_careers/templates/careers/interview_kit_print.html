@@ -1,0 +1,48 @@
+{% load i18n %}{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as RTL %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if RTL %}rtl{% else %}ltr{% endif %}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>{{ kit.role }} — {% trans "Interview kit" %}</title>
+<style>
+body { margin: 0; background: #f1f5f9; color: #1e293b; font: 11pt/1.5 Arial, Tahoma, Helvetica, sans-serif; }
+.toolbar { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; padding: 12px; font-family: system-ui, sans-serif; }
+.toolbar a, .toolbar button { padding: 8px 14px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #1e293b; font: inherit; text-decoration: none; cursor: pointer; min-height: 40px; }
+.toolbar .primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+.page { max-width: 794px; margin: 0 auto 32px; padding: 48px 56px; background: #fff; box-shadow: 0 10px 30px rgba(15, 23, 42, .08); box-sizing: border-box; }
+h1 { margin: 0 0 2px; font-size: 18pt; overflow-wrap: anywhere; }
+.meta { margin: 0 0 16px; color: #475569; font-size: 10pt; }
+.field { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; margin: 0 0 18px; font-size: 10pt; }
+.field span { border-bottom: 1px solid #94a3b8; padding-bottom: 4px; }
+ol { margin: 0; padding: 0; list-style: none; counter-reset: q; }
+.ik-q { counter-increment: q; padding: 12px 0 14px; border-top: 1px solid #cbd5e1; page-break-inside: avoid; break-inside: avoid; }
+.ik-q__top { display: flex; flex-wrap: wrap; gap: 6px; font-size: 9pt; color: #475569; }
+.ik-q__top::before { content: counter(q) "."; font-weight: 700; color: #1e293b; }
+.ik-q__top span { border: 1px solid #cbd5e1; border-radius: 999px; padding: 0 8px; }
+.ik-q h3 { margin: 6px 0; font-size: 11.5pt; overflow-wrap: anywhere; }
+dl { margin: 0; font-size: 9.5pt; }
+dt { font-weight: 700; margin-top: 4px; }
+dd { margin: 0; }
+ul { margin: 0; padding-inline-start: 18px; }
+.ik-score { margin: 8px 0 4px; font-size: 10pt; font-weight: 700; }
+.ik-lines { height: 54px; background: repeating-linear-gradient(transparent, transparent 17px, #cbd5e1 17px, #cbd5e1 18px); }
+@media (max-width: 640px) { .page { padding: 24px 18px; } .field { grid-template-columns: 1fr; } }
+@media print { body { background: #fff; } .toolbar { display: none; } .page { box-shadow: none; margin: 0; padding: 0; max-width: none; } }
+</style>
+</head>
+<body>
+<nav class="toolbar">
+    <a href="{% url 'interview_kit' kit.pk %}">{% trans "Back to the kit" %}</a>
+    <button type="button" class="primary" onclick="window.print()">{% trans "Print / save as PDF" %}</button>
+</nav>
+<main class="page">
+    <h1 dir="auto">{{ kit.role }}</h1>
+    <p class="meta">{{ kit.get_seniority_display }} · {% blocktrans with n=questions|length %}Questions: {{ n }}{% endblocktrans %}{% if applicant_name %} · <bdi>{{ applicant_name }}</bdi>{% endif %}</p>
+    {% if not practice %}<div class="field"><span>{% trans "Interviewer" %}:</span><span>{% trans "Date" %}:</span></div>{% endif %}
+    <ol>
+        {% for q in questions %}{% include "careers/_question.html" with q=q practice=practice print=True %}{% endfor %}
+    </ol>
+</main>
+</body>
+</html>

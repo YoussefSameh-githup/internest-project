@@ -6,11 +6,11 @@ from internest_core.async_tasks import register
 def cv_polish_job(user_id, cv):
     from .views import polish_outcome
 
-    return polish_outcome(cv)
+    return polish_outcome(cv, user_id)
 
 
 @register("cv_voice")
 def cv_voice_job(user_id, cv, audio, filename, content_type):
     from .views import voice_outcome
 
-    return voice_outcome(cv, audio, filename, content_type)
+    return voice_outcome(cv, audio, filename, content_type, user_id)

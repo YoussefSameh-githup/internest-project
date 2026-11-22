@@ -8179,3 +8179,1115 @@ msgstr "تقييم إجابات مهمة الفرز متاح مع باقة ال�
 
 msgid "Make the task optional"
 msgstr "اجعل المهمة اختيارية"
+
+msgid "Career paths"
+msgstr "المسارات المهنية"
+
+msgid "Interview practice"
+msgstr "التدريب على المقابلات"
+
+msgid "Interview questions"
+msgstr "أسئلة المقابلة"
+
+msgid "Save your CV in the builder first."
+msgstr "احفظ سيرتك الذاتية في المُنشئ أولاً."
+
+msgid "Summary"
+msgstr "الملخص"
+
+msgid "Experience or projects"
+msgstr "الخبرة أو المشاريع"
+
+msgid ""
+"Add an internship, a volunteer role or a student activity as experience; "
+"projects alone score lower."
+msgstr ""
+"أضف تدريباً أو عملاً تطوعياً أو نشاطاً طلابياً كخبرة؛ المشاريع وحدها تحصل "
+"على درجة أقل."
+
+msgid "No placeholders left"
+msgstr "لا توجد خانات فارغة"
+
+msgid "One language"
+msgstr "لغة واحدة"
+
+msgid ""
+"Write the whole CV in English: most applicant tracking systems read one "
+"language only."
+msgstr ""
+"اكتب السيرة الذاتية كاملة بالإنجليزية: معظم أنظمة تتبع المتقدمين تقرأ لغة "
+"واحدة فقط."
+
+msgid "Excellent"
+msgstr "ممتازة"
+
+msgid "Add your %(items)s to the header."
+msgstr "أضف %(items)s في رأس السيرة."
+
+msgid ""
+"Write a 2-3 sentence summary (%(low)s-%(high)s words): who you are, your "
+"strongest skills and the role you want."
+msgstr ""
+"اكتب ملخصاً من جملتين أو ثلاث (%(low)s-%(high)s كلمة): من أنت، وأقوى "
+"مهاراتك، والوظيفة التي تريدها."
+
+msgid ""
+"Add your university and major with the start and (expected) graduation "
+"dates."
+msgstr "أضف جامعتك وتخصصك مع تاريخ البداية وتاريخ التخرج (المتوقع)."
+
+msgid "Add the (expected) graduation date to every education entry."
+msgstr "أضف تاريخ التخرج (المتوقع) لكل مؤهل دراسي."
+
+msgid "Replace %(items)s with your real figures."
+msgstr "استبدل %(items)s بأرقامك الحقيقية."
+
+msgid "List %(low)s-%(high)s skills that match the roles you apply for."
+msgstr "اذكر من %(low)s إلى %(high)s مهارة تناسب الوظائف التي تتقدم لها."
+
+msgid "Project details"
+msgstr "تفاصيل المشاريع"
+
+msgid "Give every project a one-line description and the tools you used."
+msgstr "اكتب لكل مشروع وصفاً من سطر واحد والأدوات التي استخدمتها."
+
+msgid "Good"
+msgstr "جيدة"
+
+msgid "Achievement bullets"
+msgstr "نقاط الإنجازات"
+
+msgid "Add 2-4 achievement bullets under each experience."
+msgstr "أضف من 2 إلى 4 نقاط إنجاز تحت كل خبرة."
+
+msgid "Action verbs"
+msgstr "أفعال الإنجاز"
+
+msgid ""
+"Start every bullet with a past-tense action verb such as Led, Built, "
+"Analyzed or Organized."
+msgstr ""
+"ابدأ كل نقطة بفعل إنجاز بصيغة الماضي مثل Led أو Built أو Analyzed أو "
+"Organized."
+
+msgid "Measurable results"
+msgstr "نتائج قابلة للقياس"
+
+msgid ""
+"Add a number to each bullet (how many, how much, how fast): results are what"
+" recruiters scan for."
+msgstr ""
+"أضف رقماً لكل نقطة (كم عدد، كم مقدار، بأي سرعة): النتائج هي ما يبحث عنه "
+"مسؤولو التوظيف."
+
+msgid "Bullet length"
+msgstr "طول النقاط"
+
+msgid "Needs work"
+msgstr "تحتاج تحسيناً"
+
+msgid "Weak"
+msgstr "ضعيفة"
+
+msgid "full name"
+msgstr "الاسم الكامل"
+
+msgid "e-mail"
+msgstr "البريد الإلكتروني"
+
+msgid "phone number"
+msgstr "رقم الهاتف"
+
+msgid "Keep each bullet under %(n)s words."
+msgstr "اجعل كل نقطة أقل من %(n)s كلمة."
+
+msgid "LinkedIn or GitHub link"
+msgstr "رابط LinkedIn أو GitHub"
+
+msgid "PDF, modern look"
+msgstr "PDF بتصميم عصري"
+
+msgid "Word (DOCX)"
+msgstr "ملف Word (DOCX)"
+
+msgid "ATS score %(n)s out of 100"
+msgstr "درجة ATS ‏%(n)s من 100"
+
+msgid "ATS score"
+msgstr "درجة ATS"
+
+msgid ""
+"How well applicant tracking systems and recruiters can read this CV. Fix the"
+" items below, highest impact first."
+msgstr ""
+"مدى سهولة قراءة أنظمة تتبع المتقدمين ومسؤولي التوظيف لهذه السيرة. أصلح "
+"البنود التالية بدءاً بالأعلى تأثيراً."
+
+msgid "Nothing left to fix: this CV is ready to send."
+msgstr "لا يوجد ما يحتاج إصلاحاً: سيرتك جاهزة للإرسال."
+
+msgid "Preview & ATS score"
+msgstr "معاينة ودرجة ATS"
+
+msgid "AI career advice isn't available right now."
+msgstr "نصائح المسار المهني بالذكاء الاصطناعي غير متاحة الآن."
+
+msgid "This applicant, opportunity or role is not available to you."
+msgstr "هذا المتقدّم أو الفرصة أو المسار غير متاح لك."
+
+msgid "This interview kit is not available."
+msgstr "حزمة المقابلة هذه غير متاحة."
+
+msgid "Please sign in first."
+msgstr "من فضلك سجّل الدخول أولاً."
+
+msgid "Method not allowed."
+msgstr "هذه الطريقة غير مسموح بها."
+
+msgid "This is available to student accounts only."
+msgstr "هذه الخدمة متاحة لحسابات الطلاب فقط."
+
+msgid "Please complete your basic profile first."
+msgstr "من فضلك أكمل بياناتك الأساسية أولاً."
+
+msgid "Build the foundations"
+msgstr "ابنِ الأساسيات"
+
+msgid "Open %(title)s internships that require it: %(n)s of %(total)s."
+msgstr "فرص %(title)s المفتوحة التي تطلبها: %(n)s من %(total)s."
+
+msgid "Open internships asking for these skills: %(openings)s."
+msgstr "الفرص المفتوحة التي تطلب هذه المهارات: %(openings)s."
+
+msgid "Almost there"
+msgstr "قربت توصل"
+
+msgid ""
+"You listed it, but it is not verified yet: verifying it counts right away."
+msgstr "أضفتها لكنها لم تُوثَّق بعد: توثيقها يُحتسب فوراً."
+
+msgid "You cover %(covered)s of %(total)s core skills (%(coverage)s%%)."
+msgstr "تغطي %(covered)s من %(total)s مهارات أساسية (%(coverage)s%%)."
+
+msgid "You cover %(matched)s of %(required)s required skills."
+msgstr "تغطي %(matched)s من %(required)s مهارات مطلوبة."
+
+msgid "Verify the skills you already listed (%(n)s) to raise it."
+msgstr "وثّق المهارات التي أضفتها بالفعل (%(n)s) لترفعها."
+
+msgid "Strong: %(names)s."
+msgstr "نقاط قوتك: %(names)s."
+
+msgid "To close: %(names)s."
+msgstr "ينقصك: %(names)s."
+
+msgid "AI-tailored questions were added."
+msgstr "تمت إضافة أسئلة مخصصة بالذكاء الاصطناعي."
+
+msgid ""
+"You have reached today's AI limit, so this kit uses the question bank only. "
+"Try adding AI questions tomorrow."
+msgstr ""
+"وصلت لحد الذكاء الاصطناعي اليوم، لذلك تعتمد هذه الحزمة على بنك الأسئلة فقط. "
+"جرّب إضافة أسئلة الذكاء الاصطناعي غداً."
+
+msgid ""
+"The AI is busy right now, so this kit uses the question bank only. You can "
+"add AI questions later."
+msgstr ""
+"الذكاء الاصطناعي مشغول الآن، لذلك تعتمد هذه الحزمة على بنك الأسئلة فقط. "
+"يمكنك إضافة أسئلة الذكاء الاصطناعي لاحقاً."
+
+msgid "Career recommendations are for student accounts."
+msgstr "توصيات المسار المهني متاحة لحسابات الطلاب."
+
+msgid ""
+"Our AI is busy right now. Your recommendations above are complete without "
+"it; try again in a few minutes."
+msgstr ""
+"الذكاء الاصطناعي مشغول الآن. توصياتك أعلاه كاملة بدونه؛ حاول مرة أخرى بعد "
+"دقائق."
+
+msgid "Too many requests. Please wait a few minutes and try again."
+msgstr "طلبات كثيرة جداً. انتظر بضع دقائق ثم حاول مرة أخرى."
+
+msgid "Please finish the step shown on the site first."
+msgstr "من فضلك أكمل الخطوة الظاهرة على الموقع أولاً."
+
+msgid "Seniority"
+msgstr "المستوى الوظيفي"
+
+msgid "Question bank"
+msgstr "بنك الأسئلة"
+
+msgid "Question bank + AI"
+msgstr "بنك الأسئلة + الذكاء الاصطناعي"
+
+msgid "Intern"
+msgstr "متدرب"
+
+msgid "Junior / fresh graduate"
+msgstr "مبتدئ / حديث التخرج"
+
+msgid "Experienced (1-2 years)"
+msgstr "خبرة (سنة إلى سنتين)"
+
+msgid "Confirm the verified %(skill)s level holds up in a realistic task."
+msgstr "التأكد من أن مستوى %(skill)s الموثّق يصمد في مهمة واقعية."
+
+msgid ""
+"Probe %(area)s, the area the %(skill)s assessment flagged for improvement."
+msgstr "استكشاف %(area)s، الجزء الذي أظهر اختبار %(skill)s أنه يحتاج تحسيناً."
+
+msgid ""
+"Find real evidence for %(skill)s, which is not verified on Internest yet."
+msgstr "البحث عن دليل حقيقي على %(skill)s، وهي غير موثّقة على Internest بعد."
+
+msgid ""
+"Gauge the baseline and learning plan for %(skill)s, a required skill not "
+"shown yet."
+msgstr ""
+"قياس المستوى الحالي وخطة التعلم في %(skill)s، وهي مهارة مطلوبة لم تظهر بعد."
+
+msgid "Why this %(role)s role, and what would you like to learn in it?"
+msgstr "لماذا وظيفة %(role)s تحديداً، وماذا تحب أن تتعلم فيها؟"
+
+msgid "Check motivation and fit with the role."
+msgstr "التحقق من الدافع ومدى الملاءمة للوظيفة."
+
+msgid ""
+"Specific reasons linked to the role and the company, and clear learning "
+"goals."
+msgstr "أسباب محددة مرتبطة بالوظيفة والشركة، وأهداف تعلم واضحة."
+
+msgid ""
+"Tell me about a time you received critical feedback. What did you change?"
+msgstr "احكِ لي عن مرة تلقيت فيها ملاحظات نقدية. ما الذي غيّرته؟"
+
+msgid "Check how the candidate takes feedback and improves."
+msgstr "التحقق من كيفية تقبّل المرشح للملاحظات وتحسّنه."
+
+msgid "A real piece of feedback, the change they made and the result."
+msgstr "ملاحظة حقيقية، والتغيير الذي قام به، والنتيجة."
+
+msgid "Describe a deadline you almost missed. How did you handle it?"
+msgstr "صف موعداً نهائياً كدت تفوّته. كيف تعاملت معه؟"
+
+msgid "Check ownership and time management."
+msgstr "التحقق من تحمّل المسؤولية وإدارة الوقت."
+
+msgid "How they planned, communicated early and still delivered."
+msgstr "كيف خطط، وتواصل مبكراً، وسلّم رغم ذلك."
+
+msgid "Explains the reasoning behind each step, not only the result"
+msgstr "يشرح المنطق وراء كل خطوة، وليس النتيجة فقط"
+
+msgid "Names trade-offs or risks and how they were handled"
+msgstr "يذكر المفاضلات أو المخاطر وكيف تعامل معها"
+
+msgid "Uses correct terminology for %(skill)s"
+msgstr "يستخدم مصطلحات %(skill)s الصحيحة"
+
+msgid "What would you do differently with twice the data or half the time?"
+msgstr "ماذا كنت ستفعل بشكل مختلف لو كانت البيانات ضعفاً أو الوقت نصفاً؟"
+
+msgid "How did you check that the result was correct?"
+msgstr "كيف تأكدت أن النتيجة صحيحة؟"
+
+msgid "Shows what they have practised in %(area)s since the assessment"
+msgstr "يوضح ما تدرّب عليه في %(area)s منذ الاختبار"
+
+msgid "Gives a correct, concrete example rather than a definition"
+msgstr "يعطي مثالاً صحيحاً وملموساً بدلاً من تعريف"
+
+msgid "Knows where to look things up when unsure"
+msgstr "يعرف أين يبحث عندما لا يكون متأكداً"
+
+msgid "What is still hard for you in %(area)s?"
+msgstr "ما الذي ما زال صعباً عليك في %(area)s؟"
+
+msgid "How would you practise it during the internship?"
+msgstr "كيف ستتدرب عليه خلال فترة التدريب؟"
+
+msgid "Describes a specific situation, their own role and the outcome (STAR)"
+msgstr "يصف موقفاً محدداً ودوره الشخصي والنتيجة (STAR)"
+
+msgid "Details stay consistent and specific when probed"
+msgstr "تبقى التفاصيل متسقة ومحددة عند التعمق"
+
+msgid "Can show or describe an artefact (file, link, repository, report)"
+msgstr "يستطيع عرض أو وصف ناتج عمل (ملف، رابط، مستودع كود، تقرير)"
+
+msgid "Which part did you do yourself, and which part did others do?"
+msgstr "أي جزء قمت به بنفسك، وأي جزء قام به غيرك؟"
+
+msgid "What was the hardest problem and how did you solve it?"
+msgstr "ما أصعب مشكلة واجهتك وكيف حللتها؟"
+
+msgid "Is honest about the current level"
+msgstr "صادق بشأن مستواه الحالي"
+
+msgid "Has a concrete, realistic plan to learn it"
+msgstr "لديه خطة ملموسة وواقعية لتعلمها"
+
+msgid "Connects a related skill they already have"
+msgstr "يربطها بمهارة قريبة يمتلكها بالفعل"
+
+msgid "What would your first two weeks of learning look like?"
+msgstr "كيف سيكون أول أسبوعين من التعلم بالنسبة لك؟"
+
+msgid "Which related skill of yours will help you learn it faster?"
+msgstr "أي مهارة قريبة لديك ستساعدك على تعلمها أسرع؟"
+
+msgid ""
+"Walk me through how you would build a small %(skill)s solution for a real "
+"task in this role, from requirements to testing."
+msgstr ""
+"اشرح لي كيف ستبني حلاً صغيراً بـ %(skill)s لمهمة حقيقية في هذه الوظيفة، من "
+"المتطلبات حتى الاختبار."
+
+msgid ""
+"A clear plan: inputs and outputs, structure, edge cases, and how it is "
+"tested and shipped."
+msgstr ""
+"خطة واضحة: المدخلات والمخرجات، والهيكل، والحالات الطرفية، وكيف يُختبر "
+"ويُسلَّم."
+
+msgid ""
+"Here is a short %(area)s problem from our daily work: how would you approach"
+" it in %(skill)s?"
+msgstr ""
+"هذه مشكلة قصيرة في %(area)s من عملنا اليومي: كيف ستتعامل معها باستخدام "
+"%(skill)s؟"
+
+msgid ""
+"A step-by-step approach with correct use of %(area)s and a way to verify the"
+" answer."
+msgstr ""
+"أسلوب خطوة بخطوة مع استخدام صحيح لـ %(area)s وطريقة للتحقق من الإجابة."
+
+msgid ""
+"Tell me about a project where you used %(skill)s. What did you build and "
+"what broke along the way?"
+msgstr ""
+"احكِ لي عن مشروع استخدمت فيه %(skill)s. ماذا بنيت وما الذي تعطّل في الطريق؟"
+
+msgid ""
+"A specific project, their own contribution, a bug or problem they fixed, and"
+" a link to the code if available."
+msgstr ""
+"مشروع محدد، ومساهمته الشخصية، وخطأ أو مشكلة أصلحها، ورابط للكود إن وُجد."
+
+msgid ""
+"This role uses %(skill)s. What do you already know about it, and how would "
+"you get productive in it quickly?"
+msgstr ""
+"هذه الوظيفة تستخدم %(skill)s. ماذا تعرف عنها بالفعل، وكيف ستصبح منتجاً فيها "
+"بسرعة؟"
+
+msgid ""
+"A basic idea of what %(skill)s is used for, related tools they know, and a "
+"learning plan with resources."
+msgstr ""
+"فكرة أساسية عن استخدامات %(skill)s، والأدوات القريبة التي يعرفها، وخطة تعلم "
+"بمصادر محددة."
+
+msgid ""
+"Take a realistic %(skill)s task for this role, for example a quick analysis "
+"for a manager. How would you approach it and present the result?"
+msgstr ""
+"خذ مهمة %(skill)s واقعية لهذه الوظيفة، مثل تحليل سريع لمدير. كيف ستتعامل "
+"معها وتعرض النتيجة؟"
+
+msgid ""
+"A structured approach, the data or sources used, stated assumptions and a "
+"clear recommendation."
+msgstr ""
+"أسلوب منظّم، والبيانات أو المصادر المستخدمة، وافتراضات معلنة، وتوصية واضحة."
+
+msgid ""
+"Imagine a manager asks you for help with %(area)s tomorrow. What would you "
+"deliver and how?"
+msgstr "تخيّل أن مديراً طلب مساعدتك في %(area)s غداً. ماذا ستسلّم وكيف؟"
+
+msgid ""
+"A concrete deliverable, a correct method for %(area)s and a check of the "
+"numbers."
+msgstr "ناتج ملموس، وطريقة صحيحة في %(area)s، ومراجعة للأرقام."
+
+msgid ""
+"Describe a time you used %(skill)s to help a team, a client or a student "
+"activity make a decision."
+msgstr ""
+"صف موقفاً استخدمت فيه %(skill)s لمساعدة فريق أو عميل أو نشاط طلابي على اتخاذ"
+" قرار."
+
+msgid ""
+"A real situation, the numbers or facts used, their own role and the decision"
+" or result."
+msgstr ""
+"موقف حقيقي، والأرقام أو الحقائق المستخدمة، ودوره الشخصي، والقرار أو النتيجة."
+
+msgid ""
+"We use %(skill)s in this role. How would you build a working level in your "
+"first month?"
+msgstr "نستخدم %(skill)s في هذه الوظيفة. كيف ستصل لمستوى عملي في شهرك الأول؟"
+
+msgid ""
+"Awareness of what %(skill)s involves, a realistic plan and transferable "
+"experience."
+msgstr "وعي بما تتضمنه %(skill)s، وخطة واقعية، وخبرة قابلة للنقل."
+
+msgid ""
+"Here is a short brief for this role. How would you deliver it with "
+"%(skill)s, from first idea to final file?"
+msgstr ""
+"هذا موجز قصير لهذه الوظيفة. كيف ستنفذه بـ %(skill)s، من أول فكرة حتى الملف "
+"النهائي؟"
+
+msgid ""
+"A clear creative process: research, concepts, feedback rounds, delivery "
+"formats and deadlines."
+msgstr ""
+"عملية إبداعية واضحة: بحث، وأفكار مبدئية، وجولات ملاحظات، وصيغ التسليم، "
+"والمواعيد النهائية."
+
+msgid ""
+"Your %(skill)s work needs stronger %(area)s. Show or describe how you would "
+"improve one of your pieces."
+msgstr ""
+"عملك في %(skill)s يحتاج %(area)s أقوى. اعرض أو صف كيف ستحسّن أحد أعمالك."
+
+msgid ""
+"Specific changes tied to %(area)s and the reason each change makes the work "
+"better."
+msgstr "تعديلات محددة مرتبطة بـ %(area)s وسبب تحسين كل تعديل للعمل."
+
+msgid ""
+"Show us a piece from your portfolio that uses %(skill)s. What was the brief "
+"and what did you decide?"
+msgstr ""
+"اعرض علينا عملاً من ملف أعمالك يستخدم %(skill)s. ما كان المطلوب وما القرارات"
+" التي اتخذتها؟"
+
+msgid ""
+"A portfolio piece, the goal behind it, the choices they made and the "
+"feedback it received."
+msgstr ""
+"عمل من ملف الأعمال، والهدف منه، والاختيارات التي قام بها، والملاحظات التي "
+"تلقاها."
+
+msgid ""
+"This role needs %(skill)s. Which tools or related work could you start from,"
+" and how would you learn the rest?"
+msgstr ""
+"هذه الوظيفة تحتاج %(skill)s. من أي أدوات أو أعمال قريبة يمكنك البدء، وكيف "
+"ستتعلم الباقي؟"
+
+msgid ""
+"Related creative experience, familiarity with the tools and a practice plan "
+"with small deliverables."
+msgstr "خبرة إبداعية قريبة، وإلمام بالأدوات، وخطة تدريب بمخرجات صغيرة."
+
+msgid ""
+"Give a short %(skill)s answer to a realistic question from this role: which "
+"sources would you use and how would you structure it?"
+msgstr ""
+"قدّم إجابة قصيرة في %(skill)s عن سؤال واقعي من هذه الوظيفة: ما المصادر التي "
+"ستستخدمها وكيف ستنظم الإجابة؟"
+
+msgid ""
+"Correct sources (laws, cases, contracts), a clear structure and a practical "
+"conclusion."
+msgstr "مصادر صحيحة (قوانين، أحكام، عقود)، وهيكل واضح، وخلاصة عملية."
+
+msgid ""
+"Here is a short situation involving %(area)s. What would you check first, "
+"and why?"
+msgstr "هذا موقف قصير يتعلق بـ %(area)s. ما الذي ستراجعه أولاً، ولماذا؟"
+
+msgid ""
+"The relevant rules for %(area)s, the order of checks and the risks they "
+"would flag."
+msgstr ""
+"القواعد المتعلقة بـ %(area)s، وترتيب المراجعة، والمخاطر التي سينبّه إليها."
+
+msgid ""
+"Tell me about a time you used %(skill)s in a course, a moot court or an "
+"internship. What was your part?"
+msgstr ""
+"احكِ لي عن مرة استخدمت فيها %(skill)s في مقرر أو محكمة صورية أو تدريب. ما "
+"كان دورك؟"
+
+msgid ""
+"A specific case or document, their own research or drafting, and what they "
+"learned."
+msgstr "قضية أو مستند محدد، وبحثه أو صياغته الشخصية، وما تعلّمه."
+
+msgid ""
+"This role needs %(skill)s. How would you prepare for your first assignment "
+"in it?"
+msgstr "هذه الوظيفة تحتاج %(skill)s. كيف ستستعد لأول مهمة لك فيها؟"
+
+msgid ""
+"Awareness of the basics, the sources they would study and a realistic "
+"preparation plan."
+msgstr "وعي بالأساسيات، والمصادر التي سيدرسها، وخطة استعداد واقعية."
+
+msgid ""
+"Take a realistic %(skill)s problem from this role. How would you solve it, "
+"and how would you check the result is safe and correct?"
+msgstr ""
+"خذ مشكلة %(skill)s واقعية من هذه الوظيفة. كيف ستحلها، وكيف ستتأكد أن النتيجة"
+" آمنة وصحيحة؟"
+
+msgid ""
+"A sound method, the calculations or tools used, the standards followed and a"
+" verification step."
+msgstr ""
+"طريقة سليمة، والحسابات أو الأدوات المستخدمة، والمعايير المتبعة، وخطوة "
+"للتحقق."
+
+msgid ""
+"How would you handle %(area)s in a small project we give you on day one?"
+msgstr "كيف ستتعامل مع %(area)s في مشروع صغير نعطيه لك في أول يوم؟"
+
+msgid ""
+"A correct approach to %(area)s, the tools or formulas used and how they "
+"would check the work."
+msgstr ""
+"أسلوب صحيح في %(area)s، والأدوات أو المعادلات المستخدمة، وكيف سيراجع العمل."
+
+msgid ""
+"Describe a lab, project or team task where you used %(skill)s. What decision"
+" did you make and why?"
+msgstr ""
+"صف معملاً أو مشروعاً أو مهمة جماعية استخدمت فيها %(skill)s. ما القرار الذي "
+"اتخذته ولماذا؟"
+
+msgid ""
+"A concrete project, their technical decisions, the constraints they faced "
+"and the outcome."
+msgstr "مشروع ملموس، وقراراته التقنية، والقيود التي واجهها، والنتيجة."
+
+msgid ""
+"This role uses %(skill)s. What foundations do you have, and how would you "
+"close the gap?"
+msgstr ""
+"هذه الوظيفة تستخدم %(skill)s. ما الأساسيات التي لديك، وكيف ستسد الفجوة؟"
+
+msgid ""
+"Related coursework, the fundamentals they know and a concrete learning plan."
+msgstr "مقررات دراسية قريبة، والأساسيات التي يعرفها، وخطة تعلم ملموسة."
+
+msgid ""
+"Walk me through how you would apply %(skill)s in a realistic case from this "
+"role, step by step."
+msgstr "اشرح لي خطوة بخطوة كيف ستطبق %(skill)s في حالة واقعية من هذه الوظيفة."
+
+msgid ""
+"A safe, ordered procedure, the reasons behind each step and when to "
+"escalate."
+msgstr "إجراء آمن ومرتب، والأسباب وراء كل خطوة، ومتى يجب التصعيد."
+
+msgid ""
+"In a case that involves %(area)s, what would you watch for and what would "
+"you do first?"
+msgstr "في حالة تتضمن %(area)s، ما الذي ستنتبه له وماذا ستفعل أولاً؟"
+
+msgid ""
+"The key signs or risks in %(area)s, correct first actions and who to "
+"involve."
+msgstr ""
+"العلامات أو المخاطر الأساسية في %(area)s، والإجراءات الأولى الصحيحة، ومن يجب"
+" إشراكه."
+
+msgid ""
+"Tell me about a training, a clinical rotation or a project where you used "
+"%(skill)s."
+msgstr "احكِ لي عن تدريب أو دورة إكلينيكية أو مشروع استخدمت فيه %(skill)s."
+
+msgid ""
+"A specific situation, their own role, what went well and what they learned."
+msgstr "موقف محدد، ودوره الشخصي، وما سار بشكل جيد، وما تعلّمه."
+
+msgid ""
+"This role needs %(skill)s. How would you get ready safely, and under whose "
+"supervision?"
+msgstr "هذه الوظيفة تحتاج %(skill)s. كيف ستستعد بأمان، وتحت إشراف من؟"
+
+msgid ""
+"Awareness of the basics, respect for supervision and a clear learning plan."
+msgstr "وعي بالأساسيات، واحترام للإشراف، وخطة تعلم واضحة."
+
+msgid ""
+"Give an example of %(skill)s at its best in your work. What made it "
+"effective?"
+msgstr "أعطِ مثالاً لأفضل استخدام لـ %(skill)s في عملك. ما الذي جعله فعّالاً؟"
+
+msgid "A concrete example, a visible result and the habits behind it."
+msgstr "مثال ملموس، ونتيجة واضحة، والعادات التي أدت إليها."
+
+msgid "What have you done recently to improve %(area)s? Give an example."
+msgstr "ماذا فعلت مؤخراً لتحسين %(area)s؟ أعطِ مثالاً."
+
+msgid "A real example of practice in %(area)s and the improvement it brought."
+msgstr "مثال حقيقي على التدرب في %(area)s والتحسن الذي حققه."
+
+msgid ""
+"Tell me about a time %(skill)s made a difference to a team or a project you "
+"were part of."
+msgstr ""
+"احكِ لي عن مرة صنعت فيها %(skill)s فرقاً في فريق أو مشروع كنت جزءاً منه."
+
+msgid "A specific situation, their actions and a result others noticed."
+msgstr "موقف محدد، وأفعاله، ونتيجة لاحظها الآخرون."
+
+msgid ""
+"How would you build %(skill)s during this internship? What support would you"
+" ask for?"
+msgstr "كيف ستبني %(skill)s خلال هذا التدريب؟ ما الدعم الذي ستطلبه؟"
+
+msgid "Self-awareness, a realistic plan and openness to feedback."
+msgstr "وعي بالذات، وخطة واقعية، وتقبّل للملاحظات."
+
+msgid "Knows what the role involves"
+msgstr "يعرف ما تتضمنه الوظيفة"
+
+msgid "Gives personal, specific reasons"
+msgstr "يقدّم أسباباً شخصية ومحددة"
+
+msgid "Learning goals match what the role offers"
+msgstr "أهداف التعلم تتوافق مع ما تقدمه الوظيفة"
+
+msgid "What would make this internship a success for you?"
+msgstr "ما الذي سيجعل هذا التدريب ناجحاً بالنسبة لك؟"
+
+msgid "What do you know about our work so far?"
+msgstr "ماذا تعرف عن عملنا حتى الآن؟"
+
+msgid "Describes the feedback without blaming others"
+msgstr "يصف الملاحظة دون لوم الآخرين"
+
+msgid "Took a concrete action"
+msgstr "اتخذ إجراءً ملموساً"
+
+msgid "Can show the result of the change"
+msgstr "يستطيع إظهار نتيجة التغيير"
+
+msgid "How do you ask for feedback today?"
+msgstr "كيف تطلب الملاحظات حالياً؟"
+
+msgid "What feedback are you working on right now?"
+msgstr "ما الملاحظة التي تعمل عليها الآن؟"
+
+msgid "Takes ownership"
+msgstr "يتحمل المسؤولية"
+
+msgid "Told the team early"
+msgstr "أبلغ الفريق مبكراً"
+
+msgid "Explains what they do differently now"
+msgstr "يشرح ما يفعله بشكل مختلف الآن"
+
+msgid "How do you plan a week with several deadlines?"
+msgstr "كيف تخطط لأسبوع فيه عدة مواعيد نهائية؟"
+
+msgid "When do you ask for help?"
+msgstr "متى تطلب المساعدة؟"
+
+msgid "A small %(skill)s tool that solves a real problem"
+msgstr "أداة صغيرة بـ %(skill)s تحل مشكلة حقيقية"
+
+msgid ""
+"Build a small tool with %(skill)s for a problem you or your faculty actually"
+" have, and publish the code with a README and screenshots."
+msgstr ""
+"ابنِ أداة صغيرة بـ %(skill)s لمشكلة تواجهك أنت أو كليتك فعلاً، وانشر الكود "
+"مع ملف README وصور للشاشة."
+
+msgid "Rebuild one feature of an app you use"
+msgstr "أعد بناء خاصية من تطبيق تستخدمه"
+
+msgid ""
+"Recreate one feature of an app you use every day with %(skill)s, then write "
+"down what you would improve."
+msgstr ""
+"أعد إنشاء خاصية واحدة من تطبيق تستخدمه يومياً بـ %(skill)s، ثم اكتب ما الذي "
+"كنت ستحسّنه."
+
+msgid "A one-page %(skill)s analysis of a real company"
+msgstr "تحليل %(skill)s من صفحة واحدة لشركة حقيقية"
+
+msgid ""
+"Pick a listed Egyptian company or a local shop and produce a one-page "
+"analysis using %(skill)s, with sources and a clear recommendation."
+msgstr ""
+"اختر شركة مصرية مدرجة في البورصة أو محلاً محلياً وقدّم تحليلاً من صفحة واحدة"
+" باستخدام %(skill)s، مع المصادر وتوصية واضحة."
+
+msgid "Help a student club with %(skill)s"
+msgstr "ساعد نشاطاً طلابياً بـ %(skill)s"
+
+msgid ""
+"Offer a student club a small %(skill)s deliverable (a budget, a campaign "
+"plan, a report) and collect written feedback."
+msgstr ""
+"قدّم لنشاط طلابي ناتجاً صغيراً في %(skill)s (ميزانية، خطة حملة، تقرير) واجمع"
+" ملاحظات مكتوبة."
+
+msgid "A three-piece %(skill)s case study"
+msgstr "دراسة حالة من ثلاثة أعمال في %(skill)s"
+
+msgid ""
+"Create three pieces for a real or imaginary brand using %(skill)s and "
+"present the brief, the process and the result as a case study."
+msgstr ""
+"صمّم ثلاثة أعمال لعلامة تجارية حقيقية أو خيالية باستخدام %(skill)s واعرض "
+"المطلوب وطريقة العمل والنتيجة كدراسة حالة."
+
+msgid "Redesign something you see every day"
+msgstr "أعد تصميم شيء تراه كل يوم"
+
+msgid ""
+"Redo a poster, a page or a video you see often with %(skill)s and explain "
+"every change you made."
+msgstr ""
+"أعد تنفيذ ملصق أو صفحة أو فيديو تراه كثيراً بـ %(skill)s واشرح كل تغيير قمت "
+"به."
+
+msgid "A short legal memo using %(skill)s"
+msgstr "مذكرة قانونية قصيرة باستخدام %(skill)s"
+
+msgid ""
+"Write a two-page memo on a recent legal question using %(skill)s, citing "
+"your sources properly."
+msgstr ""
+"اكتب مذكرة من صفحتين عن مسألة قانونية حديثة باستخدام %(skill)s مع توثيق "
+"مصادرك بشكل صحيح."
+
+msgid "A plain-language guide"
+msgstr "دليل بلغة بسيطة"
+
+msgid ""
+"Turn a common contract or regulation into a plain-language guide for "
+"students that shows your %(skill)s."
+msgstr ""
+"حوّل عقداً أو لائحة شائعة إلى دليل بلغة بسيطة للطلاب يُظهر مهارتك في "
+"%(skill)s."
+
+msgid "A small %(skill)s design with calculations"
+msgstr "تصميم صغير في %(skill)s مع الحسابات"
+
+msgid ""
+"Design a small component or system using %(skill)s, document your "
+"assumptions and calculations, and include a simple test or simulation."
+msgstr ""
+"صمّم مكوناً أو نظاماً صغيراً باستخدام %(skill)s، ووثّق افتراضاتك وحساباتك، "
+"وأضف اختباراً أو محاكاة بسيطة."
+
+msgid "Improve a lab experiment"
+msgstr "حسّن تجربة معملية"
+
+msgid ""
+"Take a lab experiment from your course, improve one part of it using "
+"%(skill)s and report the before and after."
+msgstr ""
+"خذ تجربة معملية من مقررك، وحسّن جزءاً منها باستخدام %(skill)s، واكتب تقريراً"
+" عن الوضع قبل وبعد."
+
+msgid "A %(skill)s awareness sheet"
+msgstr "ورقة توعية في %(skill)s"
+
+msgid ""
+"Prepare an evidence-based one-page sheet that applies %(skill)s for patients"
+" or students, reviewed by a supervisor."
+msgstr ""
+"جهّز ورقة من صفحة واحدة مبنية على الأدلة تطبّق %(skill)s للمرضى أو الطلاب، "
+"يراجعها مشرف."
+
+msgid "A case reflection"
+msgstr "تأمل في حالة"
+
+msgid ""
+"Write up a training case where %(skill)s mattered: what happened, what was "
+"done and what you learned."
+msgstr ""
+"اكتب عن حالة تدريبية كانت فيها %(skill)s مهمة: ماذا حدث، وماذا تم، وماذا "
+"تعلمت."
+
+msgid "Lead a small %(skill)s task in a team"
+msgstr "قُد مهمة صغيرة في %(skill)s ضمن فريق"
+
+msgid ""
+"Volunteer to lead one task in a student activity that needs %(skill)s, and "
+"keep a short log of decisions and results."
+msgstr ""
+"تطوّع لقيادة مهمة في نشاط طلابي تحتاج %(skill)s، واحتفظ بسجل قصير للقرارات "
+"والنتائج."
+
+msgid "A 30-day %(skill)s challenge"
+msgstr "تحدي %(skill)s لمدة 30 يوماً"
+
+msgid ""
+"Practise %(skill)s every day for 30 days and share a short summary of your "
+"progress at the end."
+msgstr ""
+"تدرّب على %(skill)s يومياً لمدة 30 يوماً وشارك ملخصاً قصيراً لتقدمك في "
+"النهاية."
+
+msgid ""
+"Your interview kit is being prepared. It will appear in this list in a "
+"moment."
+msgstr "جاري تجهيز حزمة المقابلة. ستظهر في هذه القائمة خلال لحظات."
+
+msgid "AI questions are being added. Refresh in a moment."
+msgstr "جاري إضافة أسئلة الذكاء الاصطناعي. حدّث الصفحة بعد لحظات."
+
+msgid "AI questions are not available right now."
+msgstr "أسئلة الذكاء الاصطناعي غير متاحة الآن."
+
+msgid "Career paths that fit your skills"
+msgstr "مسارات مهنية تناسب مهاراتك"
+
+msgid ""
+"Built from the open internships on Internest and the skills you verified. "
+"Each path shows why it fits, what is missing and the fastest way to close "
+"it."
+msgstr ""
+"مبنية على الفرص المفتوحة على Internest والمهارات التي وثّقتها. كل مسار يوضح "
+"لماذا يناسبك، وما الذي ينقصك، وأسرع طريقة لسدّه."
+
+msgid "%(n)s%% skill coverage"
+msgstr "تغطية المهارات %(n)s%%"
+
+msgid "coverage"
+msgstr "تغطية"
+
+msgid "Core skills"
+msgstr "المهارات الأساسية"
+
+msgid "verified"
+msgstr "موثّقة"
+
+msgid "covered by a related skill"
+msgstr "تغطيها مهارة قريبة"
+
+msgid "listed, not verified"
+msgstr "مضافة وغير موثّقة"
+
+msgid "missing"
+msgstr "ناقصة"
+
+msgid "How to close the gaps (%(n)s)"
+msgstr "كيف تسدّ الفجوات (%(n)s)"
+
+msgid "Project idea"
+msgstr "فكرة مشروع"
+
+msgid "Practise this interview"
+msgstr "تدرّب على هذه المقابلة"
+
+msgid "See the internships (%(n)s)"
+msgstr "اعرض الفرص (%(n)s)"
+
+msgid "Verify my listed skills"
+msgstr "وثّق مهاراتي المضافة"
+
+msgid "No career paths yet"
+msgstr "لا توجد مسارات مهنية بعد"
+
+msgid ""
+"Career paths appear as soon as open internships list their required skills. "
+"Meanwhile, verify your skills so you are ready first."
+msgstr ""
+"تظهر المسارات المهنية بمجرد أن تحدد الفرص المفتوحة مهاراتها المطلوبة. حتى "
+"ذلك الحين، وثّق مهاراتك لتكون جاهزاً أولاً."
+
+msgid "Best-fit internships"
+msgstr "الفرص الأنسب لك"
+
+msgid "Ranked by how well your verified skills cover what each one requires."
+msgstr "مرتّبة حسب مدى تغطية مهاراتك الموثّقة لمتطلبات كل فرصة."
+
+msgid ""
+"Verify a skill to see the internships you match best, with the reason for "
+"each."
+msgstr "وثّق مهارة لترى الفرص الأنسب لك مع سبب كل ترشيح."
+
+msgid "Your personal plan"
+msgstr "خطتك الشخصية"
+
+msgid ""
+"A short AI plan written from the paths above. Only skills and coverage are "
+"shared, never your name or contacts."
+msgstr ""
+"خطة قصيرة بالذكاء الاصطناعي مبنية على المسارات أعلاه. نشارك المهارات ونسب "
+"التغطية فقط، ولا نشارك اسمك أو بيانات تواصلك أبداً."
+
+msgid "Write my plan"
+msgstr "اكتب خطتي"
+
+msgid "Writing your plan…"
+msgstr "جاري كتابة خطتك…"
+
+msgid "Connection problem. Please try again."
+msgstr "مشكلة في الاتصال. حاول مرة أخرى."
+
+msgid "Interview kit"
+msgstr "حزمة المقابلة"
+
+msgid "Interview kits"
+msgstr "حزم المقابلات"
+
+msgid ""
+"Practice kit: answer each question out loud first, then open the guide."
+msgstr "حزمة تدريب: أجب عن كل سؤال بصوت عالٍ أولاً، ثم افتح الدليل."
+
+msgid "Structured interview for %(name)s"
+msgstr "مقابلة منظّمة لـ %(name)s"
+
+msgid "Structured interview for this opportunity"
+msgstr "مقابلة منظّمة لهذه الفرصة"
+
+msgid "Print-friendly view"
+msgstr "نسخة للطباعة"
+
+msgid "Adding AI questions…"
+msgstr "جاري إضافة أسئلة الذكاء الاصطناعي…"
+
+msgid "Add AI-tailored questions"
+msgstr "أضف أسئلة مخصصة بالذكاء الاصطناعي"
+
+msgid ""
+"Built from the verified skills you can see. A Hiring Pass for this "
+"opportunity adds the candidate's scores and flagged areas for sharper "
+"questions."
+msgstr ""
+"مبنية على المهارات الموثّقة الظاهرة لك. تصريح التوظيف لهذه الفرصة يضيف درجات"
+" المرشح والنقاط التي تحتاج تحسيناً لأسئلة أدق."
+
+msgid ""
+"Ask every candidate the same questions in the same order and score each "
+"answer from 1 to 5 against the criteria: it keeps the interview fair and "
+"comparable."
+msgstr ""
+"اسأل كل مرشح نفس الأسئلة بنفس الترتيب وقيّم كل إجابة من 1 إلى 5 حسب "
+"المعايير: هذا يجعل المقابلة عادلة وقابلة للمقارنة."
+
+msgid ""
+"Ask every candidate the same job-related questions and score them against "
+"clear criteria. Open an applicant to get questions tailored to their "
+"verified skills and gaps."
+msgstr ""
+"اسأل كل مرشح نفس الأسئلة المرتبطة بالوظيفة وقيّمه بمعايير واضحة. افتح ملف "
+"متقدّم لتحصل على أسئلة مخصصة لمهاراته الموثّقة وفجواته."
+
+msgid ""
+"No kits yet. Generate one for an opportunity or from an applicant's page."
+msgstr "لا توجد حزم بعد. أنشئ حزمة لفرصة أو من صفحة متقدّم."
+
+msgid "New kit for an opportunity"
+msgstr "حزمة جديدة لفرصة"
+
+msgid "Generate the interview kit"
+msgstr "أنشئ حزمة المقابلة"
+
+msgid "Post an opportunity first: its required skills shape the questions."
+msgstr "انشر فرصة أولاً: مهاراتها المطلوبة هي التي تحدد الأسئلة."
+
+msgid "Back to the applicant"
+msgstr "العودة إلى المتقدّم"
+
+msgid "Structured interview questions"
+msgstr "أسئلة مقابلة منظّمة"
+
+msgid ""
+"For %(name)s, who applied to %(title)s. Questions target this opportunity's "
+"required skills, what the candidate has verified and the gaps to probe."
+msgstr ""
+"لـ %(name)s المتقدّم إلى %(title)s. تستهدف الأسئلة المهارات المطلوبة للفرصة،"
+" وما وثّقه المرشح، والفجوات التي تستحق الاستكشاف."
+
+msgid ""
+"For every candidate of %(title)s: questions built from the opportunity's "
+"required skills."
+msgstr "لكل مرشحي %(title)s: أسئلة مبنية على المهارات المطلوبة للفرصة."
+
+msgid "Role title"
+msgstr "المسمى الوظيفي"
+
+msgid "Back to the kit"
+msgstr "العودة إلى الحزمة"
+
+msgid "Print / save as PDF"
+msgstr "اطبع / احفظ PDF"
+
+msgid "Interviewer"
+msgstr "المُحاوِر"
+
+msgid "Date"
+msgstr "التاريخ"
+
+msgid "Practise the interview before the real one"
+msgstr "تدرّب على المقابلة قبل الحقيقية"
+
+msgid ""
+"Pick an opportunity or a career path. You get the questions a structured "
+"interviewer would ask about your verified skills, the areas your tests "
+"flagged and the gaps, with what a strong answer shows."
+msgstr ""
+"اختر فرصة أو مساراً مهنياً. ستحصل على الأسئلة التي يطرحها محاوِر منظّم عن "
+"مهاراتك الموثّقة، والنقاط التي أظهرتها اختباراتك، والفجوات، مع ما تُظهره "
+"الإجابة القوية."
+
+msgid "Practise for"
+msgstr "تدرّب على"
+
+msgid "Start practising"
+msgstr "ابدأ التدريب"
+
+msgid ""
+"Apply to an opportunity or open your career paths to practise for a role."
+msgstr "قدّم على فرصة أو افتح مساراتك المهنية لتتدرب على وظيفة."
+
+msgid "Your practice kits"
+msgstr "حزم تدريبك"
+
+msgid "Your practice kits will appear here."
+msgstr "ستظهر حزم تدريبك هنا."
+
+msgid "only skills and levels are shared with the AI, never names or contacts"
+msgstr ""
+"نشارك المهارات والمستويات فقط مع الذكاء الاصطناعي، ولا نشارك الأسماء أو "
+"بيانات التواصل أبداً"
+
+msgid "Go deeper on a verified skill"
+msgstr "تعمّق في مهارة موثّقة"
+
+msgid "Flagged area"
+msgstr "نقطة تحتاج تحسيناً"
+
+msgid "Look for evidence"
+msgstr "ابحث عن دليل"
+
+msgid "Skill gap"
+msgstr "فجوة مهارية"
+
+msgid "AI-tailored"
+msgstr "مخصص بالذكاء الاصطناعي"
+
+msgid "Behavioural"
+msgstr "سلوكي"
+
+msgid "See what a strong answer shows"
+msgstr "اعرف ما تُظهره الإجابة القوية"
+
+msgid "Why ask it"
+msgstr "لماذا نسأله"
+
+msgid "Strong answers show"
+msgstr "الإجابة القوية تُظهر"
+
+msgid "Follow-up questions"
+msgstr "أسئلة متابعة"

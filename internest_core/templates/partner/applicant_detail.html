@@ -61,9 +61,12 @@
                     </div>
                 {% endif %}
             {% endif %}
-            {% if is_pro and student %}
-                <a href="{% url 'skills_student_report' student.pk %}" class="btn btn--ghost btn--sm mt-4"><i class="bi bi-bar-chart"></i> {% trans "Skill report" %}</a>
-            {% endif %}
+            <div class="flex mt-4" style="flex-wrap: wrap; gap: var(--space-2);">
+                {% if is_pro and student %}
+                    <a href="{% url 'skills_student_report' student.pk %}" class="btn btn--ghost btn--sm"><i class="bi bi-bar-chart"></i> {% trans "Skill report" %}</a>
+                {% endif %}
+                <a href="{% url 'interview_kit_new' %}?application={{ app.pk }}" class="btn btn--ghost btn--sm"><i class="bi bi-chat-square-text"></i> {% trans "Interview questions" %}</a>
+            </div>
 
             {% if unlocked %}
                 <div class="contact-unlocked mt-6">

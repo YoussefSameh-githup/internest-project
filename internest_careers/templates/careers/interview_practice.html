@@ -1,0 +1,44 @@
+{% extends 'internship/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Interview practice" %} — Internest{% endblock %}
+
+{% block content %}
+{% include "careers/_styles.html" %}
+{% include "internship/_student_hub.html" %}
+<section class="sh-body">
+    <div class="container">
+        <div class="cr-layout">
+            <div class="cr-card">
+                <h2 class="sh-section-title"><i class="bi bi-mic"></i> {% trans "Practise the interview before the real one" %}</h2>
+                <p class="text-muted mb-0" style="font-size: var(--text-sm);">{% trans "Pick an opportunity or a career path. You get the questions a structured interviewer would ask about your verified skills, the areas your tests flagged and the gaps, with what a strong answer shows." %}</p>
+                {% if internship_options or role_options %}
+                    <form method="post" action="{% url 'interview_practice' %}" class="ik-form" data-async-task data-async-busy="{% trans 'Preparing your questions…' %}">
+                        {% csrf_token %}
+                        <label>{% trans "Practise for" %}
+                            <select name="target" required>
+                                {% if internship_options %}<optgroup label="{% trans 'Opportunities' %}">{% for value, label in internship_options %}<option value="{{ value }}" {% if value == selected %}selected{% endif %}>{{ label }}</option>{% endfor %}</optgroup>{% endif %}
+                                {% if role_options %}<optgroup label="{% trans 'Career paths' %}">{% for value, label in role_options %}<option value="{{ value }}" {% if value == selected %}selected{% endif %}>{{ label }}</option>{% endfor %}</optgroup>{% endif %}
+                            </select>
+                        </label>
+                        {% include "careers/_kit_options.html" %}
+                        <button type="submit" class="btn btn--primary"><i class="bi bi-play-circle"></i> {% trans "Start practising" %}</button>
+                    </form>
+                {% else %}
+                    <div class="sh-empty sh-empty--compact mt-4"><i class="bi bi-briefcase"></i>
+                        <p>{% trans "Apply to an opportunity or open your career paths to practise for a role." %}</p>
+                        <a href="{% url 'list' %}" class="btn btn--primary btn--sm">{% trans "Browse internships" %}</a>
+                    </div>
+                {% endif %}
+            </div>
+            <aside class="cr-side">
+                <div class="cr-card">
+                    <h3>{% trans "Your practice kits" %}</h3>
+                    {% trans "Your practice kits will appear here." as empty_text %}
+                    {% include "careers/_kit_list.html" with kits=kits empty_text=empty_text %}
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+{% endblock %}

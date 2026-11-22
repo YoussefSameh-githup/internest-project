@@ -3,6 +3,7 @@ import logging
 
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import F
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -11,14 +12,16 @@ from django.utils.text import slugify
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
+from internest_ai.errors import QuotaExceeded
 from internest_core import async_tasks
 from internest_core.views import get_user_context
-from internest_skills.llm import LLMUnavailable, llm_enabled
+from internest_skills.llm import LLMUnavailable
 from internest_skills.models import Skill
 from internest_skills.views import student_gate
 
+from . import ai_tasks
 from . import cv_builder_service as svc
-from .cv_pdf import render_cv_pdf
+from .cv_pdf import DEFAULT_TEMPLATE, TEMPLATES, render_cv_pdf
 from .models import StudentCV
 
 logger = logging.getLogger(__name__)
@@ -56,6 +59,28 @@ def _use_ai(student):
         return True
 
 
+def _refund_ai(user_id):
+    """Give today's use back: the request was throttled or answered by an already-running task, nothing was spent."""
+    StudentCV.objects.filter(student__user_id=user_id, ai_day=timezone.localdate(), ai_uses__gt=0).update(
+        ai_uses=F("ai_uses") - 1)
+
+
+def _queue_ai(request, kind, **kwargs):
+    """Enqueue an AI job (202 + polling). A refusal (429 / 503) or a duplicate of a running task costs no daily use."""
+    try:
+        task = async_tasks.enqueue(kind, request.user, idempotency_key=async_tasks.idempotency_key_for(kind, kwargs), **kwargs)
+    except async_tasks.TaskThrottled as exc:
+        _refund_ai(request.user.pk)
+        return async_tasks.throttled_response(exc)
+    if task.deduplicated:
+        _refund_ai(request.user.pk)
+    return async_tasks.accepted(task)
+
+
+def _quota_body(cv, exc, **extra) -> tuple[int, dict]:
+    return 429, {"cv": cv, "error": exc.user_message, "code": "ai_quota", "retry_after": exc.retry_after, **extra}
+
+
 def _limit_reached():
     return JsonResponse({"error": _("You've reached today's AI limit for the CV builder. Your data is saved in the form — try again tomorrow.")}, status=429)
 
@@ -69,7 +94,7 @@ def cv_builder(request):
         "cv": record.data if record and record.data else svc.initial_cv(student),
         "has_saved_cv": bool(record and record.data),
         "taxonomy": list(Skill.objects.filter(is_active=True).order_by("name").values_list("name", flat=True)),
-        "ai_enabled": llm_enabled(),
+        "ai_enabled": ai_tasks.available(),
         "voice_enabled": svc.voice_enabled(),
         "max_seconds": 180,
     })
@@ -79,14 +104,19 @@ def cv_builder(request):
 @student_gate(api=True)
 @require_POST
 def cv_polish(request):
-    cv = _payload(request)
-    if not llm_enabled():
-        return JsonResponse({"cv": cv, "error": _("AI polishing isn't available right now. You can still finish and download your CV.")}, status=503)
+    return polish_request(request, _payload(request), force_async=False)
+
+
+def polish_request(request, cv, *, force_async):
+    """The polish answer for the builder page (sync or 202) and the JSON API (always 202)."""
+    if not ai_tasks.available():
+        return JsonResponse({"cv": cv, "error": _("AI polishing isn't available right now. You can still finish and download your CV."),
+                             "code": "ai_unavailable"}, status=503)
     if not _use_ai(request.student):
         return _limit_reached()
-    if async_tasks.wants_async(request):  # 202 now, the browser polls /api/tasks/<id>/status/
-        return async_tasks.enqueue_response("cv_polish", request.user, cv=cv)
-    return _respond(polish_outcome(cv))
+    if force_async or async_tasks.wants_async(request):  # 202 now, the browser polls /api/tasks/<id>/status/
+        return _queue_ai(request, "cv_polish", cv=cv)
+    return _respond(polish_outcome(cv, request.user.pk))
 
 
 def _respond(outcome) -> JsonResponse:
@@ -94,10 +124,13 @@ def _respond(outcome) -> JsonResponse:
     return JsonResponse(body, status=status)
 
 
-def polish_outcome(cv) -> tuple[int, dict]:
+def polish_outcome(cv, user_id=None) -> tuple[int, dict]:
     """(HTTP status, JSON body) of an AI polish. Shared by the sync endpoint and the async job."""
     try:
-        return 200, {"cv": svc.polish_cv(cv)}
+        return 200, {"cv": svc.polish_cv(cv, user=user_id)}
+    except QuotaExceeded as exc:  # the engine's cap: today's builder use is given back
+        _refund_ai(user_id)
+        return _quota_body(cv, exc)
     except LLMUnavailable:
         return 503, {"cv": cv, "error": _("Our AI is busy right now, so your text was kept as is. Try polishing again in a few minutes.")}
 
@@ -117,12 +150,11 @@ def process_voice_cv(request):
         return _limit_reached()
     filename = f"voice.{AUDIO_TYPES[content_type]}"
     if async_tasks.wants_async(request):
-        return async_tasks.enqueue_response(
-            "cv_voice", request.user, cv=cv, audio=audio.read(), filename=filename, content_type=content_type)
-    return _respond(voice_outcome(cv, audio.read(), filename, content_type))
+        return _queue_ai(request, "cv_voice", cv=cv, audio=audio.read(), filename=filename, content_type=content_type)
+    return _respond(voice_outcome(cv, audio.read(), filename, content_type, request.user.pk))
 
 
-def voice_outcome(cv, audio: bytes, filename: str, content_type: str) -> tuple[int, dict]:
+def voice_outcome(cv, audio: bytes, filename: str, content_type: str, user_id=None) -> tuple[int, dict]:
     """(HTTP status, JSON body) of transcription + AI organisation. Shared by the sync endpoint and the async job."""
     try:
         transcript = svc.transcribe(audio, filename, content_type)
@@ -131,7 +163,10 @@ def voice_outcome(cv, audio: bytes, filename: str, content_type: str) -> tuple[i
     if len(transcript) < 15:
         return 400, {"error": _("We couldn't hear enough in this recording. Speak a little closer to the microphone and try again.")}
     try:
-        return 200, {"cv": svc.polish_cv(cv, transcript), "transcript": transcript}
+        return 200, {"cv": svc.polish_cv(cv, transcript, user=user_id), "transcript": transcript}
+    except QuotaExceeded as exc:
+        _refund_ai(user_id)
+        return _quota_body(cv, exc, transcript=transcript)
     except LLMUnavailable:
         return 503, {"cv": cv, "transcript": transcript,
                      "error": _("We transcribed your voice note, but the AI couldn't organize it right now. Copy the details from the transcript below into the form.")}
@@ -150,35 +185,67 @@ def cv_save(request):
     record = _cv_record(request.student)
     record.data = cv
     record.save(update_fields=["data", "updated_at"])
-    return JsonResponse({"cv": cv, "synced": synced, "pdf_url": reverse("cv_builder_pdf"),
+    return JsonResponse({"cv": cv, "synced": synced, "pdf_url": reverse("cv_builder_pdf"), "ats": svc.ats_report(cv),
                          "message": _("CV saved. %(skills)s skills and %(projects)s projects were added to your profile.") % synced})
 
 
-def _saved_cv(request):
-    record = StudentCV.objects.filter(student=request.student).first()
+def saved_cv(student):
+    record = StudentCV.objects.filter(student=student).first()
     return svc.clean_cv(record.data) if record and record.data else None
+
+
+DOCX_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+
+def template_choice(request) -> str:
+    value = request.GET.get("template", "")
+    return value if value in TEMPLATES else DEFAULT_TEMPLATE
+
+
+def export_response(cv, fmt: str, template: str = DEFAULT_TEMPLATE) -> HttpResponse:
+    """The CV file download (PDF in either template, or DOCX). Shared by the builder pages and the JSON API."""
+    if fmt == "docx":
+        from .cv_docx import render_cv_docx
+
+        content, content_type = render_cv_docx(cv), DOCX_TYPE
+    else:
+        content, content_type = render_cv_pdf(cv, template), "application/pdf"
+    response = HttpResponse(content, content_type=content_type)
+    suffix = "" if fmt == "docx" or template == DEFAULT_TEMPLATE else f"-{template}"
+    response["Content-Disposition"] = f'attachment; filename="{slugify(cv["name"]) or "cv"}-cv{suffix}.{fmt}"'
+    response["Cache-Control"] = "no-store"
+    return response
+
+
+def _download(request, fmt):
+    cv = saved_cv(request.student)
+    if cv is None:
+        messages.info(request, _("Save your CV first, then download it."))
+        return redirect("cv_builder")
+    return export_response(cv, fmt, template_choice(request))
 
 
 @student_gate()
 @require_GET
 def cv_pdf(request):
-    cv = _saved_cv(request)
-    if cv is None:
-        messages.info(request, _("Save your CV first, then download it."))
-        return redirect("cv_builder")
-    response = HttpResponse(render_cv_pdf(cv), content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="{slugify(cv["name"]) or "cv"}-cv.pdf"'
-    return response
+    return _download(request, "pdf")
+
+
+@student_gate()
+@require_GET
+def cv_docx(request):
+    return _download(request, "docx")
 
 
 @student_gate()
 @require_GET
 def cv_preview(request):
-    cv = _saved_cv(request)
+    cv = saved_cv(request.student)
     if cv is None:
         return redirect("cv_builder")
     for e in cv["education"]:
         e["period"] = svc.format_period(e["start_date"], e["end_date"], e["is_current"])
     for project in cv["projects"]:
         project["link"], project["link_display"] = svc.clean_url(project["link"])
-    return render(request, "students/cv_ats.html", {"cv": cv, "contacts": svc.contact_items(cv)})
+    return render(request, "students/cv_ats.html", {"cv": cv, "contacts": svc.contact_items(cv), "ats": svc.ats_report(cv),
+                                                    "templates": TEMPLATES})
