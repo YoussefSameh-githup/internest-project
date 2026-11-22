@@ -319,7 +319,7 @@ def challenge_outcome(student, student_skill_id) -> tuple[int, dict]:
 def challenge_start(request, student_skill_id):
     if async_tasks.wants_async(request):  # quiz generation can take 5-60 s: answer 202 and let the page poll
         get_object_or_404(StudentSkill, pk=student_skill_id, student=request.student)  # ownership checked before queueing
-        return async_tasks.accepted(async_tasks.enqueue("skill_challenge_start", request.user, student_skill_id=student_skill_id))
+        return async_tasks.enqueue_response("skill_challenge_start", request.user, student_skill_id=student_skill_id)
     outcome, value = start_challenge(request.student, student_skill_id)
     if outcome == CHALLENGE_UNAVAILABLE:
         return _quiz_unavailable(request, value)

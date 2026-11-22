@@ -7,6 +7,8 @@
  *
  * Polling backs off from 400 ms to 2 s, stops after `timeoutMs` (default 120 s) and can be cancelled with an
  * AbortSignal. A busy form ignores repeated submits (double-submit protection).
+ * A 429 (too many tasks for this user) or 503 (queue full) refusal resolves to {ok: false, status, data, retryAfter,
+ * throttled: true}; forms show data.error and keep the button disabled until Retry-After has passed.
  */
 (function () {
   "use strict";
@@ -45,11 +47,21 @@
     return {ok: task.status === "done" && status < 400, status: status, data: task.result || {error: task.error || "failed"}};
   }
 
+  // Seconds from a 429 / 503 refusal (Retry-After header, else the body's retry_after); 0 when absent.
+  function retryAfter(response, data) {
+    var value = parseInt(response.headers.get("Retry-After") || (data && data.retry_after) || "0", 10);
+    return isNaN(value) ? 0 : Math.max(0, value);
+  }
+
   function fetchJSON(url, init) {
     init = Object.assign({method: "POST", credentials: "same-origin"}, init || {});
     init.headers = Object.assign({"Prefer": "respond-async", "Accept": "application/json"}, init.headers || {});
     return fetch(url, init).then(function (r) {
       return readJSON(r).then(function (d) {
+        if (r.status === 429 || r.status === 503) {
+          // Too many tasks for this user / the queue is full: the server says when to try again.
+          return {ok: false, status: r.status, data: d, retryAfter: retryAfter(r, d), throttled: true};
+        }
         if (r.status !== 202 || !d.status_url) return {ok: r.ok, status: r.status, data: d};
         return settle(d) || poll(d.status_url, {signal: init.signal, timeoutMs: init.timeoutMs, timeoutMessage: init.timeoutMessage});
       });
@@ -85,9 +97,16 @@
         button.setAttribute("aria-busy", "true");
         button.innerHTML = '<span class="ia-spinner" aria-hidden="true"></span> ' + (form.getAttribute("data-async-busy") || label);
       }
+      var cooldown = 0;
       fetchJSON(form.action, {body: new FormData(form), headers: {"X-CSRFToken": csrfToken(form)},
                               timeoutMessage: form.getAttribute("data-async-timeout") || ""})
         .then(function (res) {
+          if (res.throttled) {
+            // 429 / 503: show why, keep the button disabled until Retry-After (max 60 s); never re-post automatically.
+            showError(form, (res.data && res.data.error) || form.getAttribute("data-async-busy-error") || "Please try again in a moment.");
+            cooldown = Math.min(res.retryAfter || 5, 60);
+            throw new Error("done");
+          }
           var redirect = res.data && res.data.redirect;
           if (res.ok && redirect) { window.location.assign(redirect); return; }
           if (res.data && res.data.error) showError(form, res.data.error);
@@ -100,8 +119,13 @@
           form.submit();  // network trouble: fall back to the classic post, which still works
         })
         .finally(function () {
-          form.dataset.asyncBusy = "";
-          if (button) { button.disabled = false; button.removeAttribute("aria-busy"); button.innerHTML = label; }
+          function release() {
+            form.dataset.asyncBusy = "";
+            if (button) { button.disabled = false; button.removeAttribute("aria-busy"); button.innerHTML = label; }
+          }
+          if (!cooldown) { release(); return; }
+          if (button) { button.removeAttribute("aria-busy"); button.innerHTML = label; }
+          setTimeout(release, cooldown * 1000);
         });
     });
   }

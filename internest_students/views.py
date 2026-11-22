@@ -85,7 +85,7 @@ def cv_polish(request):
     if not _use_ai(request.student):
         return _limit_reached()
     if async_tasks.wants_async(request):  # 202 now, the browser polls /api/tasks/<id>/status/
-        return async_tasks.accepted(async_tasks.enqueue("cv_polish", request.user, cv=cv))
+        return async_tasks.enqueue_response("cv_polish", request.user, cv=cv)
     return _respond(polish_outcome(cv))
 
 
@@ -117,8 +117,8 @@ def process_voice_cv(request):
         return _limit_reached()
     filename = f"voice.{AUDIO_TYPES[content_type]}"
     if async_tasks.wants_async(request):
-        return async_tasks.accepted(async_tasks.enqueue(
-            "cv_voice", request.user, cv=cv, audio=audio.read(), filename=filename, content_type=content_type))
+        return async_tasks.enqueue_response(
+            "cv_voice", request.user, cv=cv, audio=audio.read(), filename=filename, content_type=content_type)
     return _respond(voice_outcome(cv, audio.read(), filename, content_type))
 
 

@@ -9,7 +9,8 @@ from .models import AsyncTask
 
 def _own_task(request, task_id):
     task = AsyncTask.objects.filter(pk=task_id, user_id=request.user.pk).only(
-        "id", "user_id", "kind", "status", "result", "http_status", "error", "created_at", "started_at").first()
+        "id", "user_id", "kind", "status", "result", "http_status", "error", "created_at", "started_at", "attempts",
+        "next_run_at", "lease_expires_at").first()
     if task is None:
         raise Http404
     return task

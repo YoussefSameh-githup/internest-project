@@ -8120,3 +8120,24 @@ msgid ""
 "our emails with anyone."
 msgstr ""
 "إذا لم تكن أنت، فلا تحتاج لفعل أي شيء. لا تشارك أي رمز من رسائلنا مع أي شخص."
+
+msgid "This is taking longer than expected. Please try again later."
+msgstr "العملية استغرقت وقتًا أطول من المتوقع. حاول مرة أخرى لاحقًا."
+
+msgid ""
+"You already have tasks in progress. Please wait for them to finish, then try"
+" again."
+msgstr "لديك مهام قيد التنفيذ بالفعل. انتظر حتى تنتهي ثم حاول مرة أخرى."
+
+msgid "We are very busy right now. Please try again in a moment."
+msgstr "الضغط علينا كبير الآن. حاول مرة أخرى بعد لحظات."
+
+msgid ""
+"You have reached today's AI limit for this feature. Please try again "
+"tomorrow."
+msgstr ""
+"وصلت للحد اليومي لاستخدام الذكاء الاصطناعي في هذه الميزة. حاول مرة أخرى "
+"غدًا."
+
+msgid "The AI is very busy right now. Please try again in a moment."
+msgstr "الذكاء الاصطناعي مشغول جدًا الآن. حاول مرة أخرى بعد لحظات."
