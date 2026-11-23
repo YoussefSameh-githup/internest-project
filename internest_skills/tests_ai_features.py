@@ -10,7 +10,7 @@ from unittest import mock
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
-from django.test import Client, override_settings
+from django.test import Client, TransactionTestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
@@ -715,3 +715,40 @@ class BusyDatabaseRetryTests(Base):
                 cv_analysis.run(analysis.pk, "Python developer")
         analysis.refresh_from_db()
         self.assertEqual(analysis.status, CVAnalysis.STATUS_QUEUED)
+
+
+class AICallsOutsideTransactionsTests(TransactionTestCase):
+    """The load benchmark found the CV model call inside transaction.atomic(): its quota rows (and on SQLite the whole
+    database) stayed write-locked for the whole call, so 4 queue workers ran at the speed of 1 and web requests hit
+    "database is locked". No AI call may run inside a transaction."""
+
+    def setUp(self):
+        from internest_skills.models import Skill
+        self.python = Skill.objects.create(name="Zeta Lang Alpha", slug="zeta-lang-alpha", is_active=True)
+        self.django = Skill.objects.create(name="Zeta Lang Beta", slug="zeta-lang-beta", is_active=True)
+
+    def _outside(self, reply):
+        from django.db import connection
+        depths = []
+
+        def fake(*args, **kwargs):
+            depths.append(len(connection.atomic_blocks))
+            return reply
+        return fake, depths
+
+    def test_cv_analysis_model_call(self):
+        from internest_skills import cv_analysis
+        fake, depths = self._outside({"skills": [], "summary": ""})
+        with mock.patch.object(cv_analysis, "ai_configured", return_value=True), \
+                mock.patch.object(cv_analysis, "ai_enrich", side_effect=fake), \
+                mock.patch.object(cv_analysis, "_apply_ai"):
+            cv_analysis.analyze_cv("Zeta Lang Alpha developer", [self.python, self.django])
+        self.assertEqual(depths, [0])
+
+    def test_skill_relation_model_call(self):
+        from internest_skills import llm, semantic
+        fake, depths = self._outside({"r": [{"n": "Zeta Lang Alpha", "w": 0.8}]})
+        with mock.patch.object(llm, "llm_enabled", return_value=True), mock.patch.object(llm, "chat_json", side_effect=fake):
+            written = semantic.relate_skill_ai(self.django)
+        self.assertEqual(depths, [0])
+        self.assertEqual(written, 1)

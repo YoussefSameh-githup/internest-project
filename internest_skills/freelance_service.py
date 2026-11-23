@@ -99,9 +99,13 @@ def ownership_check(student, link: str) -> tuple[str, bool | None]:
     return handle, best_owner_match(handle, student_identifiers(student)) >= OWNER_MATCH_THRESHOLD
 
 
-@transaction.atomic
 def import_gig(student, platform: str, link: str, text: str, proof=None) -> StudentFreelanceGig:
-    parsed = parse_gig(platform, link, text)
+    parsed = parse_gig(platform, link, text)  # the AI call: never inside a transaction (it would hold write locks)
+    with transaction.atomic():
+        return _save_gig(student, platform, link, text, proof, parsed)
+
+
+def _save_gig(student, platform, link, text, proof, parsed) -> StudentFreelanceGig:
     handle, matched = ownership_check(student, link)
     gig = StudentFreelanceGig.objects.create(
         student=student, platform=platform, link=link, raw_text=text, proof=proof,

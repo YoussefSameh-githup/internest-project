@@ -9,6 +9,7 @@ No LLM call happens while computing a match — AI relations are generated once,
 import logging
 import re
 
+from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
@@ -114,13 +115,10 @@ _AI_PROMPT = (
 
 def relate_skill_ai(skill: Skill) -> int:
     """Ask the LLM which existing skills relate to `skill`; store them. Returns rows written (0 on failure)."""
-    from django.db import transaction
-
     from .llm import LLM_ERRORS
 
     try:
-        with transaction.atomic():
-            return _relate_skill_ai(skill)
+        return _relate_skill_ai(skill)  # the model call runs outside any transaction; the writes get their own
     except LLM_ERRORS as exc:
         logger.warning("AI skill relation failed for %s (%s)", skill.pk, exc)
         return 0
@@ -139,6 +137,11 @@ def _relate_skill_ai(skill: Skill) -> int:
     by_name = {c.name.lower(): c for c in candidates}
     with api_feature("Skill Matching (semantic)"):
         data = chat_json(_AI_PROMPT, f"TARGET: {skill.name}\nKNOWN: {', '.join(c.name for c in candidates)}", max_tokens=400)
+    with transaction.atomic():
+        return _store_relations(skill, data, by_name)
+
+
+def _store_relations(skill, data, by_name) -> int:
     written = 0
     for item in (data.get("r") or [])[:15]:
         if not isinstance(item, dict):

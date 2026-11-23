@@ -222,8 +222,11 @@ def analyze_cv(text: str, skills=None, *, user=None, local=None) -> SkillExtract
         return result
     known = relevant_known(text, skills, found_ids=[e.skill.pk for e in local])
     try:
+        # The model call stays OUTSIDE any transaction: inside one, the quota rows it updates (and, on SQLite, the
+        # whole database) stay write-locked for the full call; the load benchmark measured every queue worker
+        # waiting in line behind it (4 workers = the throughput of 1) and "database is locked" errors on SQLite.
+        reply = ai_enrich(text, known, user=user)
         with transaction.atomic():  # savepoint: a failed write never poisons the caller's transaction
-            reply = ai_enrich(text, known, user=user)
             _apply_ai(result, reply, text, TaxonomyIndex(skills))
     except QuotaExceeded as exc:
         result.ai_status, result.ai_message = AI_QUOTA, exc.user_message

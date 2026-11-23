@@ -36,6 +36,7 @@ PLANS = {
                                        "sync_resume_pdf") for n in (10, 50, 100, 250)],
     # Ramp (gradual), sustained and mixed workloads.
     "cv": [("cv_analysis", "burst", n) for n in (10, 50, 100, 250, 500, 1000)],
+    "cv50": [("cv_analysis", "burst", 50)],
     "cv-accept": [("cv_analysis", "burst", n) for n in (10, 100, 250)],
     "load": [("cv_analysis", "ramp", 300), ("cv_analysis", "sustained", 600),
              ("cv_analysis,skills_extraction,assessment_generation,interview_questions,career_recommendations,resume_builder",
