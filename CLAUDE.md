@@ -25,7 +25,8 @@ Describe every API ONCE in `internest_core/api_registry.py` (`register(ProviderS
 Alerts go to `ADMIN_ALERT_EMAIL` only (30-min cooldown per provider and type). Verify with `python manage.py test_api_alert` and `python manage.py check_api_health` (schedule the latter daily on PythonAnywhere).
 
 ## Performance
-- Heavy AI work (> ~1 s) runs through `internest_core/async_tasks.py` (`@register` a job in `<app>/jobs.py`, answer `Prefer: respond-async` with `accepted(enqueue(...))`, poll with `static/js/async_task_poller.js`); outbound HTTP uses the pooled `internest_core/http_client.py`; idempotent AI answers go through `ai_cache` (quiz generation stays uncached).
+- AI calls go through `internest_ai.engine` (providers, router, breaker, quotas, PII redaction). **Never call a model inside `transaction.atomic()`**: call first, then save in a short transaction (`AICallsOutsideTransactionsTests`).
+- Heavy AI work (> ~1 s) runs through `internest_core/async_tasks.py` (`@register` a job in `<app>/jobs.py`, answer `Prefer: respond-async` with `enqueue_response(...)` — it handles 429 `too_many_tasks` / 503 `queue_full` — poll with `static/js/async_task_poller.js`); API errors use `internest_core/api_responses.json_error` (`{"error", "code"}`). Load-test changes with `bench/` (`docs/INTERNEST_PERFORMANCE_BENCHMARK.md`); outbound HTTP uses the pooled `internest_core/http_client.py`; idempotent AI answers go through `ai_cache` (quiz generation stays uncached).
 - Profile lookups use `internest_core/identity.py` (never `user.partnerprofile` directly); shared aggregates use `page_cache.cached_value` + `bump()` in signals; anonymous public pages use `@cache_public_page`.
 - `internest_core/tests_performance.py` holds query ceilings per page: a new query on those pages must be justified, not just the ceiling raised.
 
@@ -33,7 +34,7 @@ Alerts go to `ADMIN_ALERT_EMAIL` only (30-min cooldown per provider and type). V
 Implement → add tests → AR/EN i18n (`scripts/i18n_catalog.py apply|check|compile`) → run the full suite → commit → `git push origin main`. End replies with the PythonAnywhere steps (`git pull`, plus migrate / pip install / collectstatic / compilemessages when needed, then Reload).
 
 Full test command:
-`../venv-win/Scripts/python.exe manage.py test internest_core internest_skills internest_lounge internest_campus internest_startups internest_students`
+`../venv-win/Scripts/python.exe manage.py test internest_core internest_skills internest_lounge internest_campus internest_startups internest_students internest_ai internest_careers --parallel 1 --noinput`
 
 ## Guardrails
 - Never commit secrets (keys live in `.env`). Never commit `INTERNEST_CONTEXT.*` or `pdf_exports/`.

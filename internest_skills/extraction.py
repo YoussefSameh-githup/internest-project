@@ -28,7 +28,7 @@ class ExtractionError(Exception):
 
 
 _CID = re.compile(r"\(cid:\d+\)")  # unmapped glyphs from PDF fonts
-_CONTROL = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f\x7f​-‏‪-‮﻿�]")
+_CONTROL = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\u200b-\u200f\u202a-\u202e\ufeff\ufffd]")  # escapes, not raw bidi characters (Trojan Source)
 _BULLETS = re.compile(r"^[\s•·▪●○■□◆◇►▶✓✔➢➤*-]+")
 
 

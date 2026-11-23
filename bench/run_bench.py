@@ -38,6 +38,9 @@ PLANS = {
     "cv": [("cv_analysis", "burst", n) for n in (10, 50, 100, 250, 500, 1000)],
     "cv50": [("cv_analysis", "burst", 50)],
     "cv-accept": [("cv_analysis", "burst", n) for n in (10, 100, 250)],
+    # Scenario F (failure conditions): run with --env (provider down) or --mock-latency 10000 (slow model).
+    "failure": [(f, "burst", 50) for f in ("skills_extraction", "assessment_generation", "interview_questions",
+                                           "career_recommendations")],
     "load": [("cv_analysis", "ramp", 300), ("cv_analysis", "sustained", 600),
              ("cv_analysis,skills_extraction,assessment_generation,interview_questions,career_recommendations,resume_builder",
               "burst", 600)],

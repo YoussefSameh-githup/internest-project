@@ -21,7 +21,7 @@ def campus_key(university: str, faculty: str) -> str:
 
 
 def campus_code(key: str) -> str:
-    return hashlib.sha1(key.encode("utf-8")).hexdigest()[:6].upper()
+    return hashlib.sha1(key.encode("utf-8"), usedforsecurity=False).hexdigest()[:6].upper()
 
 
 def new_share_code() -> str:

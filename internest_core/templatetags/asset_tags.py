@@ -15,7 +15,7 @@ register = template.Library()
 
 @lru_cache(maxsize=1)
 def asset_version() -> str:
-    digest = hashlib.sha1()
+    digest = hashlib.sha1(usedforsecurity=False)
     for finder in finders.get_finders():
         for path, storage in finder.list(ignore_patterns=None):
             if path.endswith((".css", ".js")):

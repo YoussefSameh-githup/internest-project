@@ -46,3 +46,43 @@ class ThriftyFileBasedCacheTests(SimpleTestCase):
             registry._settings = None
             results = [ratelimit.hit("rl:test", 3, 60) for _ in range(4)]
         self.assertEqual(results, [True, True, True, False])
+
+
+class BusyCacheFileTests(SimpleTestCase):
+    """Windows refuses to delete or replace a file another thread holds open: that must read as a miss, not a 500."""
+
+    def setUp(self):
+        self.dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.dir, True)
+        self.cache = ThriftyFileBasedCache(self.dir, {})
+
+    def test_a_busy_expired_entry_is_a_miss(self):
+        self.cache.set("page", "html", 60)
+        with mock.patch("internest_core.cache_backends.FileBasedCache._is_expired",
+                        side_effect=PermissionError(32, "in use")):
+            self.assertEqual(self.cache.get("page", "fallback"), "fallback")
+            self.assertFalse(self.cache.has_key("page"))
+            self.assertFalse(self.cache.touch("page"))
+
+    def test_a_file_that_cannot_be_opened_is_a_miss(self):
+        self.cache.set("page", "html", 60)
+        with mock.patch("builtins.open", side_effect=PermissionError(13, "denied")):
+            self.assertIsNone(self.cache.get("page"))
+
+    def test_a_write_that_loses_the_race_is_dropped(self):
+        with mock.patch("internest_core.cache_backends.FileBasedCache.set", side_effect=PermissionError(32, "in use")):
+            self.cache.set("k", 1)  # no exception
+        self.assertIsNone(self.cache.get("k"))
+        self.cache.set("k", 2)
+        self.assertEqual(self.cache.get("k"), 2)
+
+    def test_a_delete_of_a_busy_file_reports_false(self):
+        self.cache.set("k", 1)
+        with mock.patch("django.core.cache.backends.filebased.os.remove", side_effect=PermissionError(32, "in use")):
+            self.assertFalse(self.cache.delete("k"))
+        self.assertEqual(self.cache.get("k"), 1)
+
+    def test_other_os_errors_still_surface(self):
+        with mock.patch("internest_core.cache_backends.FileBasedCache.set", side_effect=OSError(28, "disk full")):
+            with self.assertRaises(OSError):
+                self.cache.set("k", 1)
