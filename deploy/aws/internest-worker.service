@@ -1,0 +1,23 @@
+# /etc/systemd/system/internest-worker.service on the EC2 server (needs ASYNC_TASK_BACKEND=db in .env).
+[Unit]
+Description=Internest async task worker (AI jobs from the ASYNC_TASK_BACKEND=db queue)
+After=network-online.target gunicorn.service
+Wants=network-online.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/internest
+EnvironmentFile=/home/ubuntu/internest/.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/ubuntu/internest/venv/bin/python manage.py run_async_tasks --idle 0.5
+Restart=always
+RestartSec=3
+# SIGTERM lets the current job finish before the worker exits.
+KillSignal=SIGTERM
+TimeoutStopSec=90
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

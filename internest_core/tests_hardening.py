@@ -191,9 +191,33 @@ class RateLimitRuleTests(TestCase):
         from django.core.cache import cache
         cache.clear()
         limit = RULES["contact"][0]
-        codes = [self.client.post(reverse("contact"), {}).status_code for _ in range(limit + 1)]
-        self.assertNotIn(429, codes[:limit])
-        self.assertEqual(codes[-1], 429)
+        responses = [self.client.post(reverse("contact"), {}) for _ in range(limit + 1)]
+        self.assertNotIn(429, [r.status_code for r in responses[:limit]])
+        self.assertEqual(responses[-1].status_code, 429)
+        self.assertLessEqual(int(responses[-1]["Retry-After"]), RULES["contact"][1])
+        cache.clear()
+
+    def test_uploads_and_ai_endpoints_are_limited(self):
+        for name in ("skills_hub", "skills_api_cv_analysis", "skills_api_skills_extract", "skills_api_assessments",
+                     "skills_api_answer_evaluate", "cv_builder_polish", "cv_builder_voice", "freelance_importer",
+                     "freelance_gig_proof", "api_resume_polish", "api_career_advice", "api_interview_kits"):
+            self.assertIn(name, RULES)
+            reverse(name, kwargs={"gig_id": 1} if name == "freelance_gig_proof" else
+                    {"response_id": 1} if name == "skills_api_answer_evaluate" else None)  # the url name exists
+
+    @override_settings(RATELIMIT_ENABLED=True)
+    def test_api_clients_get_the_json_error_shape_with_retry_after(self):
+        from django.core.cache import cache
+        cache.clear()
+        limit, window = RULES["skills_api_cv_analysis"]
+        url = reverse("skills_api_cv_analysis")
+        for _ in range(limit):
+            self.assertNotEqual(self.client.post(url, {}).status_code, 429)
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(response.json()["code"], "rate_limited")
+        self.assertTrue(0 < int(response["Retry-After"]) <= window)
+        self.assertEqual(response["Cache-Control"], "no-store")
         cache.clear()
 
 

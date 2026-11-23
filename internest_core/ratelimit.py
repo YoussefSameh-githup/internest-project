@@ -46,6 +46,17 @@ RULES = {
     "api_interview_kits": (30, 60 * 60),
     "api_career_advice": (10, 60 * 60),
     "api_resume_polish": (20, 60 * 60),
+    # CPU-heavy uploads and AI analysis: each POST parses a document or queues a model call. The AI engine's daily
+    # quotas cap spend; these cap the parsing work and request floods per account (or per IP when signed out).
+    "skills_hub": (20, 60 * 60),  # CV / LinkedIn upload → analysis
+    "skills_api_cv_analysis": (20, 60 * 60),
+    "skills_api_skills_extract": (30, 60 * 60),
+    "skills_api_assessments": (30, 60 * 60),
+    "skills_api_answer_evaluate": (60, 60 * 60),
+    "cv_builder_polish": (20, 60 * 60),
+    "cv_builder_voice": (10, 60 * 60),  # up to 15 MB of audio + a transcription call each
+    "freelance_importer": (20, 60 * 60),
+    "freelance_gig_proof": (20, 60 * 60),
 }
 
 
@@ -97,6 +108,27 @@ class RateLimitMiddleware:
             if name in RULES and _counted(request, RULES[name][2:]):
                 limit, window = RULES[name][:2]
                 who = f"u{request.user.pk}" if getattr(request, "user", None) and request.user.is_authenticated else client_ip(request)
-                if not hit(f"rl:{name}:{who}", limit, window):
-                    return render(request, "429.html", {"minutes": max(1, window // 60)}, status=429)
+                key = f"rl:{name}:{who}"
+                if not hit(key, limit, window):
+                    return _limited(request, key, window)
         return self.get_response(request)
+
+
+def _seconds_left(key, window) -> int:
+    end = cache.get(key + ":end")
+    return max(1, min(window, int(end - time.time()) + 1)) if end else window
+
+
+def _limited(request, key, window):
+    """429 with Retry-After: the shared JSON error shape for API clients, the friendly page for browsers."""
+    wait = _seconds_left(key, window)
+    if request.path_info.startswith("/api/") or "application/json" in request.headers.get("Accept", ""):
+        from django.utils.translation import gettext as _
+
+        from .api_responses import json_error
+
+        return json_error(_("Too many requests. Please wait a few minutes and try again."), "rate_limited", 429,
+                          retry_after=wait)
+    response = render(request, "429.html", {"minutes": max(1, -(-wait // 60))}, status=429)
+    response["Retry-After"] = str(wait)
+    return response
