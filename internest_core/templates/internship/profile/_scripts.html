@@ -1,6 +1,6 @@
 {% load i18n %}
 {% trans "File is larger than 5 MB." as too_big %}{% trans "Ready to upload" as ready %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   // Tabs: links work without JS (?tab=…); with JS they switch in place and keep the URL shareable.
   var tabs = document.querySelectorAll("[data-tab]"), panels = document.querySelectorAll("[data-panel]");

@@ -5,6 +5,8 @@
 # connects directly and sends the header is ignored. Harmless while the domain is not proxied by Cloudflare.
 # Run as root, now and weekly (the ranges change rarely): sudo bash deploy/aws/update_cloudflare_ips.sh
 set -euo pipefail
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin  # cron's PATH has no /usr/sbin (nginx)
+umask 022
 
 OUT=/etc/nginx/conf.d/cloudflare-realip.conf
 TMP=$(mktemp)

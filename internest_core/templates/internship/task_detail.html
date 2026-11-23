@@ -36,9 +36,7 @@
 
                         <div style="display: flex; flex-direction: column; gap: var(--space-2);">
                             {% for radio in field %}
-                                <label style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: border-color 150ms, background-color 150ms;"
-                                       onmouseover="this.style.borderColor='var(--brand-300)'; this.style.backgroundColor='var(--brand-50)';"
-                                       onmouseout="this.style.borderColor='var(--color-border)'; this.style.backgroundColor='transparent';">
+                                <label class="choice-card" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); border-radius: var(--radius-md); cursor: pointer;">
                                     {{ radio.tag }}
                                     <span>{{ radio.choice_label }}</span>
                                 </label>

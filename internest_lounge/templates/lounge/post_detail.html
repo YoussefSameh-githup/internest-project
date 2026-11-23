@@ -15,7 +15,7 @@
                 {% if flagged %}
                     <span><i class="bi bi-flag-fill"></i> {% trans "Reported" %}</span>
                 {% else %}
-                    <form method="post" action="{% url 'lounge_flag' post.pk %}" onsubmit="return confirm('{% trans "Report this post to the moderators?" as confirm_text %}{{ confirm_text|escapejs }}');">
+                    <form method="post" action="{% url 'lounge_flag' post.pk %}" {% trans "Report this post to the moderators?" as confirm_text %}data-confirm="{{ confirm_text }}">
                         {% csrf_token %}
                         <button type="submit" class="nw-action"><i class="bi bi-flag"></i> {% trans "Report post" %}</button>
                     </form>

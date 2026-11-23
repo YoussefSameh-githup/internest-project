@@ -8,7 +8,7 @@
 
 Groups are invalidated by bumping a version number that is part of every key, so invalidation is O(1) and works on
 any cache backend (Redis, file, local memory). Pages are never cached for signed-in users, for non-GET requests, when
-it sets cookies or when flash messages are pending. CSRF tokens are swapped for each visitor's own on a cache hit.
+it sets cookies or when flash messages are pending. CSRF tokens and CSP nonces are swapped for fresh ones on a cache hit.
 """
 import functools
 import logging
@@ -79,8 +79,17 @@ CSRF_PLACEHOLDER = b"__INTERNEST_CSRF_TOKEN__"
 _CSRF_INPUT = re.compile(rb'name="csrfmiddlewaretoken" value="([A-Za-z0-9]{32,})"')
 
 
+# The CSP script nonce (internest_core/csp.py) must be unique per response: the stored copy keeps a placeholder and
+# every hit gets the nonce of the response it is served in. The nonce is 22 random URL-safe characters, so replacing
+# that exact string cannot touch anything else on the page.
+NONCE_PLACEHOLDER = b"__INTERNEST_CSP_NONCE__"
+
+
 def _template_for_cache(request, content: bytes):
     """The content to store, or None when it cannot be shared safely."""
+    nonce = getattr(request, "csp_nonce", "")
+    if nonce:
+        content = content.replace(nonce.encode("ascii"), NONCE_PLACEHOLDER)
     if not request.META.get("CSRF_COOKIE_NEEDS_UPDATE"):
         return content
     match = _CSRF_INPUT.search(content)
@@ -90,6 +99,8 @@ def _template_for_cache(request, content: bytes):
 
 
 def _personalise(request, content: bytes) -> bytes:
+    if NONCE_PLACEHOLDER in content:
+        content = content.replace(NONCE_PLACEHOLDER, getattr(request, "csp_nonce", "").encode("ascii"))
     if CSRF_PLACEHOLDER not in content:
         return content
     from django.middleware.csrf import get_token

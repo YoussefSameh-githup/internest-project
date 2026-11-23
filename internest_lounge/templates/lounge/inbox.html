@@ -65,7 +65,7 @@
 
 {% block extra_scripts %}
 {% if other %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   var list = document.querySelector("[data-thread]"), form = document.querySelector("[data-send]");
   var box = form.querySelector("textarea"), errorBox = document.querySelector("[data-error]");

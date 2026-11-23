@@ -153,7 +153,8 @@ class AccessTests(KitFixtures):
         self.assertContains(page, "Mona Adel")
         self.assertContains(page, reverse("partner_profile"))  # company navigation, not the student one
         printed = self.client.get(reverse("interview_kit_print", args=[self.kit.pk]))
-        self.assertContains(printed, "window.print()")
+        self.assertContains(printed, "data-print")  # print button, wired by ui_behaviors.js (no inline handler: CSP)
+        self.assertContains(printed, "js/ui_behaviors")
         self.assertContains(printed, "☐ 5")
         data = self.client.get(reverse("api_interview_kit", args=[self.kit.pk])).json()
         self.assertEqual((data["id"], len(data["questions"])), (self.kit.pk, len(self.kit.questions)))

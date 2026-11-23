@@ -43,7 +43,7 @@
                     {% if post.is_editable %}<a class="nw-owner-action" href="{% url 'lounge_edit' post.pk %}"><i class="bi bi-pencil"></i> {% trans "Edit" %}</a>{% endif %}
                     {% if post.is_deletable %}
                         <form method="post" action="{% url 'lounge_delete' post.pk %}" class="nw-inline-form"
-                              onsubmit="return confirm('{% trans "Delete this post? This cannot be undone." as delete_text %}{{ delete_text|escapejs }}');">
+                              {% trans "Delete this post? This cannot be undone." as delete_text %}data-confirm="{{ delete_text }}">
                             {% csrf_token %}
                             <button type="submit" class="nw-owner-action nw-owner-action--danger"><i class="bi bi-trash3"></i> {% trans "Delete" %}</button>
                         </form>

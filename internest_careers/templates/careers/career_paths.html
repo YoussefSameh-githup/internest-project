@@ -102,7 +102,7 @@
 {% block extra_scripts %}
 {% if ai_available and recs.roles %}
 {% trans "Writing your plan…" as t_busy %}{% trans "Connection problem. Please try again." as t_network %}
-<script>
+<script nonce="{{ csp_nonce }}">
 document.addEventListener("DOMContentLoaded", function () {  // after the deferred async_task_poller.js
   var box = document.querySelector("[data-career-plan]");
   if (!box || !window.InternestAsync) return;

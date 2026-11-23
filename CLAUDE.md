@@ -38,5 +38,6 @@ Full test command:
 
 ## Guardrails
 - Never commit secrets (keys live in `.env`). Never commit `INTERNEST_CONTEXT.*` or `pdf_exports/`.
+- CSP has no `'unsafe-inline'` for scripts: every inline `<script>` needs `nonce="{{ csp_nonce }}"`, and inline handlers (`onclick=`, `onsubmit=`, `javascript:`) are refused by the browser. Use `data-confirm="…"` (forms), `data-print`, `data-autosubmit` (`static/js/ui_behaviors.js`) or a listener in a nonced script / static file. `internest_core/tests_csp.py` scans every template.
 - No personal phone number in payment UI. Don't misrepresent the business model to payment providers or banks.
 - Architecture reference: business logic in service modules (`internest_core/student_hub.py`), reusable markup in `templates/components/`.

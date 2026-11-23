@@ -120,7 +120,7 @@
                         {% else %}<span class="ix-state ix-state--closed">{% trans "Closed" %}</span>{% endif %}
                         {% if gig.is_active %}
                             <form method="post" action="{% url 'partner_close_opportunity' gig.pk %}" style="margin: 0;"
-                                  onsubmit="return confirm('{% trans "Close this opportunity? Pending applicants will see “Position filled”." as close_text %}{{ close_text|escapejs }}');">
+                                  {% trans "Close this opportunity? Pending applicants will see “Position filled”." as close_text %}data-confirm="{{ close_text }}">
                                 {% csrf_token %}
                                 <button type="submit" class="ix-btn"><i class="bi bi-door-closed"></i> {% trans "Close" %}</button>
                             </form>
@@ -201,7 +201,7 @@
         </div>
     {% endif %}
 </div>
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   document.addEventListener("click", function (e) {  // close open status menus when clicking elsewhere
     document.querySelectorAll(".ix-menu[open]").forEach(function (m) { if (!m.contains(e.target)) m.removeAttribute("open"); });

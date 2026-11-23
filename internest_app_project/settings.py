@@ -97,11 +97,12 @@ SITE_ID = 1
 MIDDLEWARE = [
     # Internest: one id per request (X-Request-ID header, log lines, Sentry tag).
     "internest_core.request_id.RequestIDMiddleware",
+    # Internest: per-response script nonce + Content-Security-Policy (no 'unsafe-inline' scripts; internest_core/csp.py).
+    # Early, so pages answered by the middleware below (413, 429, gates) also get a nonce and the header.
+    "internest_core.csp.ContentSecurityPolicyMiddleware",
     # Internest: refuse oversized request bodies (uploads included) before they are read.
     "internest_core.middleware.RequestSizeLimitMiddleware",
     "django.middleware.security.SecurityMiddleware",
-    # Internest: site-wide Content-Security-Policy (keeps inline scripts working; see internest_core/csp.py).
-    "internest_core.csp.ContentSecurityPolicyMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     # Internest: gzip HTML/JSON (70-85% smaller pages), then 304 Not Modified via ETag / Last-Modified.
     "internest_core.middleware.TextGZipMiddleware",
@@ -140,6 +141,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "internest_core.csp.nonce_context",
                 "internest_core.context_processors.skill_gate",
                 "internest_core.context_processors.site_contact",
                 "internest_core.context_processors.social_providers",

@@ -1,4 +1,4 @@
-{% load i18n %}{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as RTL %}<!DOCTYPE html>
+{% load i18n asset_tags %}{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as RTL %}<!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}" dir="{% if RTL %}rtl{% else %}ltr{% endif %}">
 <head>
 <meta charset="UTF-8">
@@ -34,7 +34,7 @@ ul { margin: 0; padding-inline-start: 18px; }
 <body>
 <nav class="toolbar">
     <a href="{% url 'interview_kit' kit.pk %}">{% trans "Back to the kit" %}</a>
-    <button type="button" class="primary" onclick="window.print()">{% trans "Print / save as PDF" %}</button>
+    <button type="button" class="primary" data-print>{% trans "Print / save as PDF" %}</button>
 </nav>
 <main class="page">
     <h1 dir="auto">{{ kit.role }}</h1>
@@ -44,5 +44,6 @@ ul { margin: 0; padding-inline-start: 18px; }
         {% for q in questions %}{% include "careers/_question.html" with q=q practice=practice print=True %}{% endfor %}
     </ol>
 </main>
+<script src="{% asset 'js/ui_behaviors.js' %}" defer></script>
 </body>
 </html>

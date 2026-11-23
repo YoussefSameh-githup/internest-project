@@ -370,8 +370,9 @@ class ContentSecurityPolicyTests(Base):
             with self.subTest(page=name):
                 csp = self.client.get(reverse(name))["Content-Security-Policy"]
                 for rule in ("default-src 'self'", "object-src 'none'", "base-uri 'self'", "frame-ancestors 'none'",
-                             "script-src 'self' 'unsafe-inline' https:", "img-src 'self' data: blob: https:"):
+                             "img-src 'self' data: blob: https:"):
                     self.assertIn(rule, csp)
+                self.assertRegex(csp, r"script-src 'self' 'nonce-[A-Za-z0-9_-]{22}' https:;")
                 self.assertNotIn("unsafe-eval", csp)
 
     def test_signed_in_pages_redirects_and_404s_too(self):

@@ -161,7 +161,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   var form = document.querySelector("[data-fl-form]");
   if (form) form.addEventListener("submit", function () { form.querySelector("[data-fl-submit]").classList.add("is-busy"); });

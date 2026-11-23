@@ -248,7 +248,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
     <script src="{% asset 'js/async_task_poller.js' %}" defer></script>
-    <script>
+    <script src="{% asset 'js/ui_behaviors.js' %}" defer></script>
+    <script nonce="{{ csp_nonce }}">
         // Sticky nav shadow on scroll
         (function() {
             var nav = document.getElementById('siteNav');

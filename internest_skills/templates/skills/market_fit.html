@@ -59,7 +59,7 @@
             </div>
             <form method="get">
                 <label class="sr-only" for="mf-field">{% trans "Field" %}</label>
-                <select id="mf-field" name="field" onchange="this.form.submit()">
+                <select id="mf-field" name="field" data-autosubmit>
                     <option value="">{% trans "All fields" %}</option>
                     {% for value, label in fields %}<option value="{{ value }}" {% if field == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
                 </select>
@@ -157,7 +157,7 @@
 {% block extra_scripts %}
 {% trans "Market demand" as t_market %}{% trans "Your verified level" as t_you %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   var dialog = document.getElementById("cert-dialog"), select = dialog.querySelector("[data-cert-select]");
   document.querySelectorAll("[data-cert-skill]").forEach(function (b) {

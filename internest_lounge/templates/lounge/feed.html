@@ -106,7 +106,7 @@
 
 {% block extra_scripts %}
 <script src="{% asset 'lounge/network.js' %}"></script>
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   var form = document.getElementById("composer");
   if (!form) return;

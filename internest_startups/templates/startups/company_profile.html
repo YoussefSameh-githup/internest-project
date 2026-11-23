@@ -70,7 +70,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   // "Other" country / industry: show the free-text box (and the Europe checkbox) only while "Other" is chosen.
   document.querySelectorAll("[data-other-of]").forEach(function (input) {

@@ -123,7 +123,7 @@
     {% endif %}
 </section>
 {% if analysis.active %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   var box = document.querySelector("[data-cva-poll]");
   if (!box || !window.fetch) return;

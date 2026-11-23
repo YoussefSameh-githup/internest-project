@@ -109,7 +109,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   // Deadline: tomorrow at the earliest.
   var deadline = document.getElementById("id_deadline");

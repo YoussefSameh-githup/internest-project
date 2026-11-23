@@ -12,7 +12,7 @@
         <input type="text" class="form-control campus-cta__link" value="{{ campus_share.link }}" readonly dir="ltr" style="display: none;"
                aria-label="{% trans 'Voting link' %}">
     </div>
-    <script>
+    <script nonce="{{ csp_nonce }}">
     (function () {
       var btn = document.querySelector("[data-share-link]");
       if (!btn) return;

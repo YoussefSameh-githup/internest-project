@@ -67,7 +67,7 @@
         <input id="mp-ref" name="{{ form.payment_reference.html_name }}" maxlength="64" dir="ltr" value="{{ form.payment_reference.value|default_if_none:'' }}">
     </div>
 </section>
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   var box = document.querySelector("[data-manual-payment]");
   if (!box) return;

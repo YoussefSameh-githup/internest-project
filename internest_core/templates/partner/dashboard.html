@@ -211,7 +211,7 @@
                                     <td>
                                         {% if internship.is_active %}
                                             <form method="post" action="{% url 'partner_close_opportunity' internship.pk %}" style="margin: 0;"
-                                                  onsubmit="return confirm('{% trans "Close this opportunity? Pending applicants will see “Position filled”." as close_text %}{{ close_text|escapejs }}');">
+                                                  {% trans "Close this opportunity? Pending applicants will see “Position filled”." as close_text %}data-confirm="{{ close_text }}">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn--ghost btn--sm"><i class="bi bi-door-closed"></i> {% trans "Close" %}</button>
                                             </form>

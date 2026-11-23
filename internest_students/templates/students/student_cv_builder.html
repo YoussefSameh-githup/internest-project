@@ -271,7 +271,7 @@ button.is-busy { opacity: .7; pointer-events: none; }
 {% trans "We need microphone access to record. Allow it in your browser and try again." as t_mic %}{% trans "Analyzing your voice note — this can take up to a minute…" as t_processing %}
 {% trans "Done! We filled in the form from your voice note. Review each step, then save." as t_voice_done %}{% trans "Connection problem. Your data is still in the form — please try again." as t_network %}
 {% trans "Polishing your CV…" as t_polishing %}{% trans "Saving…" as t_saving %}{% trans "Month" as t_month %}{% trans "Year" as t_year %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   var T = {
     empty: "{{ t_empty|escapejs }}", pick: "{{ t_pick|escapejs }}", free: "{{ t_free|escapejs }}", remove: "{{ t_remove|escapejs }}",

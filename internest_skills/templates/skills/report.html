@@ -54,7 +54,7 @@
         <section class="card mt-6 ev" aria-labelledby="ev-title">
             <div class="ev__head">
                 <h2 id="ev-title">{% trans "Evidence report" %}</h2>
-                <button type="button" class="btn btn--ghost btn--sm ev__print" onclick="window.print()"><i class="bi bi-printer" aria-hidden="true"></i> {% trans "Print or save as PDF" %}</button>
+                <button type="button" class="btn btn--ghost btn--sm ev__print" data-print><i class="bi bi-printer" aria-hidden="true"></i> {% trans "Print or save as PDF" %}</button>
             </div>
             <p class="text-muted">{% trans "How each verified skill was verified, from our records. A verified skill shows what the candidate demonstrated on that day; it is not a guarantee of job performance." %}
                 <a href="{% url 'trust' %}">{% trans "How verification works" %}</a></p>

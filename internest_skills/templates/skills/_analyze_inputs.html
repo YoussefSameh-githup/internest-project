@@ -95,7 +95,7 @@
     {% if form.non_field_errors %}<div class="sx-error" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
     <button type="submit" class="sx-submit" data-analyze-submit><span class="sx-spin" aria-hidden="true"></span><i class="bi bi-stars"></i> {% trans "Analyze my skills" %}</button>
 </div>
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   document.querySelectorAll("[data-analyze]:not([data-ready])").forEach(function (box) {
     box.dataset.ready = "1";

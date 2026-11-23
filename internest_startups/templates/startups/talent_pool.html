@@ -219,7 +219,7 @@
 
 {% block extra_scripts %}
 {% trans "Could not load this profile. Please try again." as load_error %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   var invite = document.getElementById("inviteDialog"), form = document.getElementById("inviteForm");
   var profile = document.getElementById("profileDialog"), body = profile.querySelector("[data-profile-body]");
