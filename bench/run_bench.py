@@ -35,6 +35,8 @@ PLANS = {
     "sync": [(f, "burst", n) for f in ("sync_healthz", "sync_landing", "sync_feed", "sync_careers", "sync_resume_ats",
                                        "sync_resume_pdf") for n in (10, 50, 100, 250)],
     # Ramp (gradual), sustained and mixed workloads.
+    "cv": [("cv_analysis", "burst", n) for n in (10, 50, 100, 250, 500, 1000)],
+    "cv-accept": [("cv_analysis", "burst", n) for n in (10, 100, 250)],
     "load": [("cv_analysis", "ramp", 300), ("cv_analysis", "sustained", 600),
              ("cv_analysis,skills_extraction,assessment_generation,interview_questions,career_recommendations,resume_builder",
               "burst", 600)],
@@ -53,6 +55,8 @@ def bench_env(args):
         "ASYNC_TASK_BACKEND": "db", "AI_MOCK_PROVIDER": "1", "AI_MOCK_ALLOW_PRODUCTION": "1",
         "AI_MOCK_LATENCY_MS": str(args.mock_latency), "AI_CACHE_TTL": "0", "PYTHONUNBUFFERED": "1",
     })
+    if args.database_url:
+        env["DATABASE_URL"] = args.database_url
     for item in args.env or []:
         key, _, value = item.partition("=")
         env[key] = value
@@ -97,8 +101,11 @@ def main():
     parser.add_argument("--tag", default="", help="suffix for the results folder")
     parser.add_argument("--env", nargs="*", help="extra KEY=VALUE for the server and workers")
     parser.add_argument("--only", default="", help="comma list of features to keep from the plan")
+    parser.add_argument("--database-url", default="", help="benchmark on PostgreSQL (seed it first with DATABASE_URL set)")
+    parser.add_argument("--sessions-dir", default=str(OUT), help="folder with sessions.json / reviewers.json from seed.py")
+    parser.add_argument("--no-follow", action="store_true", help="measure acceptance only (don't poll jobs to completion)")
     args = parser.parse_args()
-    if not (OUT / "bench.sqlite3").exists():
+    if not args.database_url and not (OUT / "bench.sqlite3").exists():
         sys.exit("Seed first: SQLITE_PATH=bench/out/bench.sqlite3 python bench/seed.py")
     env = bench_env(args)
     subprocess.run([PY, "manage.py", "collectstatic", "--noinput", "-v", "0"], cwd=ROOT, env=env, check=True)  # as in production
@@ -112,11 +119,11 @@ def main():
             if args.only and feature not in args.only.split(","):
                 continue
             name = f"{feature.split(',')[0] if ',' not in feature else 'mixed'}_{scenario}_{users}"
-            sessions = OUT / ("reviewers.json" if feature == "answer_evaluation" else "sessions.json")
+            sessions = Path(args.sessions_dir) / ("reviewers.json" if feature == "answer_evaluation" else "sessions.json")
             cmd = [PY, str(ROOT / "bench" / "loadgen.py"), "--base", f"http://127.0.0.1:{args.port}", "--sessions", str(sessions),
                    "--feature", feature, "--scenario", scenario, "--users", str(users), "--offset", str(offset),
-                   "--duration", "60" if scenario != "burst" else "0", "--poll", "0" if feature.startswith("sync_") else "1",
-                   "--job-timeout", "900", "--pids", *map(str, pids), "--db", env["SQLITE_PATH"],
+                   "--duration", "60" if scenario != "burst" else "0", "--poll", "0" if (feature.startswith("sync_") or args.no_follow) else "1",
+                   "--job-timeout", "900", "--pids", *map(str, pids), "--db", args.database_url or env["SQLITE_PATH"],
                    "--out", str(folder / f"{name}.json")]
             print(f"== {name}", flush=True)
             run = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
@@ -132,7 +139,7 @@ def main():
     finally:
         stop(server, workers)
     meta = {"plan": args.plan, "workers": args.workers, "threads": args.threads, "mock_latency_ms": args.mock_latency,
-            "server": "waitress (Windows dev laptop)", "database": "SQLite WAL", "queue": "db backend", "env": args.env or []}
+            "server": "waitress (Windows dev laptop)", "database": "PostgreSQL 16" if args.database_url else "SQLite WAL", "queue": "db backend", "env": args.env or []}
     (folder / "summary.json").write_text(json.dumps({"meta": meta, "runs": summary}, indent=1))
     print(f"Saved {folder / 'summary.json'}")
 

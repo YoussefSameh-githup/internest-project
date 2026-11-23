@@ -95,6 +95,8 @@ INSTALLED_APPS = [
 SITE_ID = 1
 
 MIDDLEWARE = [
+    # Internest: one id per request (X-Request-ID header, log lines, Sentry tag).
+    "internest_core.request_id.RequestIDMiddleware",
     # Internest: refuse oversized request bodies (uploads included) before they are read.
     "internest_core.middleware.RequestSizeLimitMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -171,7 +173,7 @@ if os.getenv("REDIS_URL") and not TESTING:
 elif TESTING:
     CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache", "LOCATION": "internest-tests"}}
 else:
-    CACHES = {"default": {"BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+    CACHES = {"default": {"BACKEND": "internest_core.cache_backends.ThriftyFileBasedCache",
                           "LOCATION": str(BASE_DIR / ".cache" / "django"), "TIMEOUT": 300,
                           "OPTIONS": {"MAX_ENTRIES": 20000, "CULL_FREQUENCY": 4}}}
 
@@ -346,14 +348,16 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "verbose": {
-            "format": "[{asctime}] {levelname} {name}: {message}",
+            "format": "[{asctime}] {levelname} {name} [{request_id}]: {message}",
             "style": "{",
         },
     },
+    "filters": {"request_id": {"()": "internest_core.request_id.RequestIDLogFilter"}},
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
+            "filters": ["request_id"],
         },
         # AI provider failures (HTTP status + response body) also go to logs/ai.log for later debugging.
         "ai_file": {
@@ -363,6 +367,7 @@ LOGGING = {
             "backupCount": 3,
             "encoding": "utf-8",
             "formatter": "verbose",
+            "filters": ["request_id"],
             "level": "WARNING",
         },
     },

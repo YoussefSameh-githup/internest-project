@@ -600,3 +600,29 @@ class PasswordResetCodeAdmin(ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
+
+
+from .models import AsyncTask  # noqa: E402
+
+
+@admin.register(AsyncTask)
+class AsyncTaskAdmin(ModelAdmin):
+    """Read-only view of the background queue: what is waiting, running, failed or dead (retried max times).
+    Payload and result are never shown: they can hold CV text and extracted personal data."""
+
+    list_display = ("kind", "user", "status", "priority", "attempts", "max_attempts", "http_status", "created_at",
+                    "started_at", "finished_at")
+    list_filter = ("status", "kind")
+    search_fields = ("id", "user__username", "kind", "error")
+    list_select_related = ("user",)
+    date_hierarchy = "created_at"
+    exclude = ("payload", "result")
+    readonly_fields = ("id", "user", "kind", "status", "priority", "attempts", "max_attempts", "next_run_at",
+                       "lease_expires_at", "idempotency_key", "http_status", "error", "created_at",
+                       "started_at", "finished_at")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

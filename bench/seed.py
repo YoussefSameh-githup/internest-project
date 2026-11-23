@@ -26,9 +26,9 @@ parser.add_argument("--reviewers", type=int, default=200)
 parser.add_argument("--out", default="bench/out")
 args = parser.parse_args()
 
-target = os.environ.get("SQLITE_PATH", "")
-if not target or Path(target).resolve() == (ROOT / "db.sqlite3").resolve():
-    sys.exit("Set SQLITE_PATH to a disposable file (e.g. bench/out/bench.sqlite3); the real database is never seeded.")
+target = os.environ.get("DATABASE_URL") or os.environ.get("SQLITE_PATH", "")
+if not target or (not os.environ.get("DATABASE_URL") and Path(target).resolve() == (ROOT / "db.sqlite3").resolve()):
+    sys.exit("Set SQLITE_PATH (disposable file) or DATABASE_URL (disposable database); the real database is never seeded.")
 
 import django  # noqa: E402
 

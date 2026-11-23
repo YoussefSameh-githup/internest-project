@@ -153,30 +153,42 @@ async def sampler(pids, db_path, samples, stop):
             row["system_cpu_pct"] = psutil.cpu_percent(None)
         if db_path:
             try:
-                con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=1)
+                con = _connect(db_path)
                 row["queue"] = dict(con.execute(
                     "SELECT status, COUNT(*) FROM internest_core_asynctask GROUP BY status").fetchall())
                 con.close()
-            except sqlite3.Error:
+            except Exception:
                 pass
         samples.append(row)
         await asyncio.sleep(0.5)
+
+
+def _connect(db):
+    if db.startswith("postgres"):
+        import psycopg
+        return psycopg.connect(db.replace("postgres://", "postgresql://"), autocommit=True, connect_timeout=5)
+    return sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=5)
+
+
+def _ph(db):
+    return "%s" if db.startswith("postgres") else "?"
 
 
 def queue_timing(db_path, task_ids):
     """Queue wait (created -> started) and run time (started -> finished) of this run's jobs, from the database."""
     if not db_path or not task_ids:
         return {}
-    con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=5)
-    ids = [t.replace("-", "") for t in task_ids if t]
+    con = _connect(db_path)
+    pg = db_path.startswith("postgres")
+    ids = [t if pg else t.replace("-", "") for t in task_ids if t]
     waits, runs = [], []
     for i in range(0, len(ids), 500):
         chunk = ids[i:i + 500]
-        q = ",".join("?" * len(chunk))
+        q = ",".join([_ph(db_path)] * len(chunk))
         for created, started, finished in con.execute(
                 f"SELECT created_at, started_at, finished_at FROM internest_core_asynctask WHERE id IN ({q})", chunk):
             from datetime import datetime
-            parse = lambda s: datetime.fromisoformat(s) if s else None  # noqa: E731
+            parse = lambda s: (s if isinstance(s, datetime) else datetime.fromisoformat(s)) if s else None  # noqa: E731
             c, s, f = parse(created), parse(started), parse(finished)
             if c and s:
                 waits.append((s - c).total_seconds() * 1000)
@@ -196,7 +208,10 @@ async def run(args):
     if args.users > len(sessions):
         sys.exit(f"Only {len(sessions)} seeded sessions; seed more (bench/seed.py --students N).")
     metrics, samples, stop = Metrics(), [], asyncio.Event()
-    limits = httpx.Limits(max_connections=args.users + 10, max_keepalive_connections=args.users + 10)
+    # waitress on Windows uses select(), which fails above ~512 sockets: the client keeps at most --max-connections
+    # open; extra requests of a burst wait for a free connection (as they would in nginx's accept queue).
+    conns = min(args.users, args.max_connections)
+    limits = httpx.Limits(max_connections=conns, max_keepalive_connections=conns)
     features = args.feature.split(",")
     async with httpx.AsyncClient(base_url=args.base, timeout=args.request_timeout, limits=limits) as client:
         sampler_task = asyncio.create_task(sampler(args.pids, args.db, samples, stop))
@@ -247,6 +262,7 @@ def main():
     parser.add_argument("--scenario", choices=["burst", "ramp", "sustained"], default="burst")
     parser.add_argument("--users", type=int, default=10)
     parser.add_argument("--offset", type=int, default=0, help="first seeded account to use (rotates)")
+    parser.add_argument("--max-connections", type=int, default=400, help="client-side cap on open connections")
     parser.add_argument("--duration", type=float, default=10.0, help="ramp/sustained: seconds over which users start")
     parser.add_argument("--poll", type=float, default=0.5, help="seconds between status polls (0 = don't follow jobs)")
     parser.add_argument("--job-timeout", type=float, default=300.0)
