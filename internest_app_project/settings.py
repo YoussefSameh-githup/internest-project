@@ -327,11 +327,20 @@ CLAMAV_HOST = env.str("CLAMAV_HOST", default="")
 CLAMAV_PORT = env.int("CLAMAV_PORT", default=3310)
 
 # --- (7) Production hardening (only when DEBUG=False) ---
+# Do browsers reach the site over HTTPS? Yes by default. DJANGO_HTTPS=False is ONLY for a server that is reachable
+# over plain http:// (e.g. by IP before a certificate exists): browsers never store Secure cookies over http://, so
+# the CSRF and session cookies would never come back and every login, signup, logout and social-login POST would fail
+# with "CSRF cookie not set". Delete the variable as soon as HTTPS works; `check --deploy` keeps warning until then.
+SITE_HTTPS = env_bool("DJANGO_HTTPS", default=True)
+# Providers whose OAuth apps accept only https:// redirect URIs on a real domain (http only for localhost). Their
+# buttons are hidden while a production site runs without HTTPS, instead of leading to the provider's error page.
+SOCIAL_HTTPS_ONLY_PROVIDERS = ("google", "linkedin_oauth2", "microsoft")
 if not DEBUG:
-    SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", default=True)
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 365
+    SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", default=SITE_HTTPS)
+    SESSION_COOKIE_SECURE = SITE_HTTPS
+    CSRF_COOKIE_SECURE = SITE_HTTPS
+    ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https" if SITE_HTTPS else "http"  # allauth's absolute callback URLs
+    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 365 if SITE_HTTPS else 0
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True

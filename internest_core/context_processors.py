@@ -23,6 +23,9 @@ def configured_social_providers():
     from django.conf import settings
 
     configured = [p for p in settings.SOCIAL_LOGIN_PROVIDER_ORDER if settings.SOCIALACCOUNT_PROVIDERS.get(p, {}).get("APP")]
+    if not settings.DEBUG and not getattr(settings, "SITE_HTTPS", True):
+        # Plain-http production (DJANGO_HTTPS=False): these providers reject http:// callbacks, so no dead buttons.
+        configured = [p for p in configured if p not in settings.SOCIAL_HTTPS_ONLY_PROVIDERS]
     return [{"id": p, "name": SOCIAL_NAMES[p], "primary": i == 0} for i, p in enumerate(configured)]
 
 
