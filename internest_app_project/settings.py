@@ -284,6 +284,7 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_FAILURE_VIEW = "internest_core.api_responses.csrf_failure"  # JSON on /api/, the 403_csrf.html page elsewhere
 
 # --- (6) Email (Gmail SMTP) ---
 # .env is loaded into os.environ above by environ.Env.read_env().

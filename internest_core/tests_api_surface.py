@@ -19,7 +19,7 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core import serializers
-from django.test import SimpleTestCase, override_settings
+from django.test import Client, SimpleTestCase, TestCase, override_settings
 from django.urls import NoReverseMatch, URLPattern, URLResolver, get_resolver, reverse
 from django.utils import timezone
 
@@ -215,3 +215,14 @@ class JsonErrorContractTests(SimpleTestCase):
                     line = text.count("\n", 0, match.start()) + 1
                     missing.append(f"{path.relative_to(root).as_posix()}:{line}")
         self.assertEqual(missing, [])
+
+
+class CsrfFailureShapeTests(TestCase):
+    def test_api_csrf_failures_are_json_and_pages_keep_the_page(self):
+        client = Client(enforce_csrf_checks=True)
+        api = client.post(reverse("api_resume_polish"))
+        self.assertEqual(api.status_code, 403)
+        self.assertEqual(api.json()["code"], "csrf_failed")
+        page = client.post(reverse("login"), {"username": "x", "password": "y"})
+        self.assertEqual(page.status_code, 403)
+        self.assertIn("text/html", page["Content-Type"])
