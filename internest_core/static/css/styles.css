@@ -257,7 +257,10 @@ hr  { border: 0; border-top: 1px solid var(--color-border); margin: var(--space-
 }
 
 .nav__brand:hover { color: var(--brand-700); }
-.nav__brand img { height: 38px; width: 38px; border-radius: 10px; object-fit: cover; }
+/* Brand: SVG mark + stroke wordmark (components/brand_*.html); "Inter" follows the link colour, "nest" is orange. */
+.nav__brand .brand-mark { width: 44px; height: auto; flex-shrink: 0; }
+.nav__brand .brand-wordmark { height: 22px; width: auto; }
+html[dir="rtl"] .nav__brand, html[dir="rtl"] .footer__brand { direction: ltr; } /* the logo reads left to right */
 
 .nav__links {
     display: flex;
@@ -1241,7 +1244,8 @@ input[type="checkbox"], input[type="radio"] {
     margin-bottom: var(--space-4);
 }
 
-.footer__brand img { height: 36px; width: 36px; border-radius: 8px; }
+.footer__brand .brand-mark { width: 42px; height: auto; flex-shrink: 0; }
+.footer__brand .brand-wordmark { height: 21px; width: auto; }
 
 .footer__tagline { color: var(--slate-400); font-size: var(--text-sm); line-height: 1.7; max-width: 320px; }
 
@@ -2051,10 +2055,11 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px
   .nav__inner { gap: var(--space-2); }
   .nav__cta { gap: var(--space-2); }
   .nav__brand { gap: var(--space-2); font-size: var(--text-base); letter-spacing: .02em; }
-  .nav__brand img { width: 32px; height: 32px; }
+  .nav__brand .brand-mark { width: 38px; }
+  .nav__brand .brand-wordmark { height: 18px; }
   .nav__cta .btn { padding-inline: 10px; }
 }
-@media (max-width: 380px) { .nav__brand span { display: none; } }  /* the link keeps aria-label="Internest" */
+@media (max-width: 380px) { .nav__brand .brand-wordmark { display: none; } }  /* the link keeps aria-label="Internest" */
 
 /* Task answer choices (internship/task_detail.html): hover highlight without inline event handlers (CSP). */
 .choice-card { border: 1px solid var(--color-border); background-color: transparent; transition: border-color 150ms, background-color 150ms; }

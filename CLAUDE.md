@@ -14,6 +14,10 @@ On every coding, UI or marketing prompt, use the relevant skills in `.claude/ski
 1. **Zero duplication, single source of truth.** Never render the same stat card, widget, list or action button twice on one page, and never copy dashboard widgets (overview stats, full skill-assessment lists, application lists) that already live in the Student Workspace (`مساحتك الطلابية`: My applications / Tasks / Courses / Skills hub). Link to the workspace instead.
 2. **Multi-device, RTL + LTR.** Every layout, avatar, tab bar and card grid is styled and checked at Desktop (>=1024px), Tablet (768-1023px) and Mobile (<768px), in Arabic (`dir="rtl"`) and English (`dir="ltr"`): no text/image overlap, no horizontal overflow.
 
+## Brand
+- Logo = purple→orange "N" mark (two people reaching for a star) + stroke-drawn "Inter|nest" wordmark. Single source: `scripts/brand_assets.py` (writes `components/brand_mark.html`, `components/brand_wordmark.html`, `static/img/brand/*.svg`) and `scripts/brand_png.ps1` (favicon, touch icon, OG card). Never edit the generated files by hand; include the mark with a page-unique `gid`.
+- The homepage (`internship/landing_page.html`, `body.lp`, `static/css/landing.css`) is the dark brand canvas; app pages keep `styles.css`. The logo reveal plays once per session and only under `prefers-reduced-motion: no-preference` (`tests_landing.py`).
+
 ## Working style
 - **Scoped reads:** open only files tied to the task (grep first, read ranges). Do not scan unrelated apps.
 - **Ultra-brief terminal replies:** result, what changed, what to run. No recaps, no filler. Reply in Egyptian Arabic to the user.

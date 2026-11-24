@@ -1,248 +1,258 @@
 {% extends 'internship/base.html' %}
-{% load static i18n %}
+{% load static i18n asset_tags %}
 
 {% block title %}Internest — {% trans "Verified student talent marketplace" %}{% endblock %}
+{% block body_class %}lp{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% asset 'css/landing.css' %}">
+{# The logo reveal plays once per browser session; later visits in the same session show the finished logo. #}
+<script nonce="{{ csp_nonce }}">
+try { if (sessionStorage.getItem("lp-intro")) document.documentElement.classList.add("lp-intro-seen");
+      else sessionStorage.setItem("lp-intro", "1"); } catch (e) {}
+</script>
+{% endblock %}
 
 {% block content %}
 
-<section class="hero">
-    <div class="container">
-        <div class="hero__inner">
-            <div class="fade-up">
-                <span class="eyebrow hero__eyebrow">
-                    <i class="bi bi-stars"></i> {% trans "Students work · Startups hire · Universities prove outcomes" %}
-                </span>
-
-                <h1>
-                    {% trans "Real work with real startups," %}
-                    <span class="hero__highlight">{% trans "verified by your skills" %}</span>
-                </h1>
-
-                <p class="hero__lead">
-                    {% trans "Internships, gigs, freelance projects and part-time roles you can do while you study. Prove your skills with AI-powered tests, earn verified experience badges, and follow a personal roadmap to close your skill gaps." %}
-                </p>
-
-                <ul class="hero__tags" aria-label="{% trans 'Opportunity types' %}">
-                    <li><i class="bi bi-mortarboard"></i> {% trans "Internships" %}</li>
-                    <li><i class="bi bi-lightning-charge"></i> {% trans "Gigs" %}</li>
-                    <li><i class="bi bi-laptop"></i> {% trans "Freelance projects" %}</li>
-                    <li><i class="bi bi-clock-history"></i> {% trans "Part-time roles" %}</li>
-                </ul>
-
-                <div class="hero__cta">
-                    <a href="{% url 'login_or_signup' %}" class="btn btn--accent btn--lg">
-                        {% trans "Create your free account" %} <i class="bi bi-arrow-left-short"></i>
-                    </a>
-                    <a href="#how-it-works" class="btn btn--white btn--lg">
-                        <i class="bi bi-play-circle"></i> {% trans "How it works" %}
-                    </a>
+<section class="lp-hero" aria-labelledby="lp-title">
+    <div class="container lp-hero__inner">
+        <div class="lp-hero__copy">
+            <div class="lp-intro" role="img" aria-label="Internest — {% trans 'Learn' %}, {% trans 'Grow' %}, {% trans 'Get Hired' %}">
+                <span class="lp-intro__glow" aria-hidden="true"></span>
+                <div class="lp-intro__row">
+                    {% include "components/brand_mark.html" with gid="heroMark" %}
+                    {% include "components/brand_wordmark.html" %}
                 </div>
+                <p class="lp-intro__tagline" aria-hidden="true">{% trans "Learn" %}<i>•</i>{% trans "Grow" %}<i>•</i>{% trans "Get Hired" %}</p>
             </div>
 
-            <div class="hero__visual fade-up delay-2" aria-hidden="true">
-                {# Decorative SVG illustration #}
-                <svg viewBox="0 0 520 480" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;">
-                    <defs>
-                        <linearGradient id="cardA" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
-                            <stop offset="1" stop-color="#ffffff" stop-opacity="0.04"/>
-                        </linearGradient>
-                        <linearGradient id="cardB" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0" stop-color="#f59e0b"/>
-                            <stop offset="1" stop-color="#d97706"/>
-                        </linearGradient>
-                        <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-                            <feGaussianBlur stdDeviation="20"/>
-                        </filter>
-                    </defs>
+            <h1 id="lp-title" class="lp-hero__title">{% trans "Real work with real startups," %} {% trans "verified by your skills" %}</h1>
 
-                    {# Glow #}
-                    <circle cx="280" cy="240" r="180" fill="#3b6fe0" opacity="0.25" filter="url(#soft)"/>
-                    <circle cx="380" cy="120" r="80" fill="#f59e0b" opacity="0.35" filter="url(#soft)"/>
+            <p class="lp-hero__lead">
+                {% trans "Internships, gigs, freelance projects and part-time roles you can do while you study. Prove your skills with AI-powered tests, earn verified experience badges, and follow a personal roadmap to close your skill gaps." %}
+            </p>
 
-                    {# Big card #}
-                    <g class="float-anim">
-                        <rect x="80" y="80" width="320" height="200" rx="22" fill="url(#cardA)" stroke="rgba(255,255,255,0.25)"/>
-                        <circle cx="120" cy="120" r="20" fill="#ffffff" opacity="0.9"/>
-                        <rect x="155" y="108" width="120" height="10" rx="5" fill="#ffffff" opacity="0.9"/>
-                        <rect x="155" y="124" width="80"  height="8"  rx="4" fill="#ffffff" opacity="0.5"/>
-                        <rect x="100" y="170" width="200" height="8" rx="4" fill="#ffffff" opacity="0.4"/>
-                        <rect x="100" y="186" width="240" height="8" rx="4" fill="#ffffff" opacity="0.4"/>
-                        <rect x="100" y="202" width="160" height="8" rx="4" fill="#ffffff" opacity="0.4"/>
-                        <rect x="100" y="232" width="80"  height="26" rx="13" fill="url(#cardB)"/>
-                        <rect x="190" y="232" width="80"  height="26" rx="13" fill="#ffffff" opacity="0.3"/>
-                    </g>
+            <div class="lp-hero__cta">
+                <a href="{% url 'login_or_signup' %}" class="btn btn--lp btn--lg">{% trans "Create your free account" %}</a>
+                <a href="{% url 'startup_register' %}" class="btn btn--lp-ghost btn--lg">{% trans "Hire verified students" %}</a>
+            </div>
 
-                    {# Small floating card #}
-                    <g class="float-anim" style="animation-delay: -1.5s;">
-                        <rect x="280" y="290" width="200" height="120" rx="18" fill="#ffffff" opacity="0.95"/>
-                        <circle cx="312" cy="322" r="14" fill="#f59e0b"/>
-                        <rect x="335" y="316" width="100" height="8" rx="4" fill="#0b1e4d" opacity="0.85"/>
-                        <rect x="335" y="328" width="70"  height="6" rx="3" fill="#64748b"/>
-                        <rect x="300" y="356" width="160" height="6" rx="3" fill="#e2e8f0"/>
-                        <rect x="300" y="370" width="120" height="6" rx="3" fill="#e2e8f0"/>
-                        <rect x="300" y="388" width="60" height="14" rx="7" fill="#16a34a"/>
-                    </g>
+            <ul class="lp-types" aria-label="{% trans 'Opportunity types' %}">
+                <li><i class="bi bi-mortarboard" aria-hidden="true"></i> {% trans "Internships" %}</li>
+                <li><i class="bi bi-lightning-charge" aria-hidden="true"></i> {% trans "Gigs" %}</li>
+                <li><i class="bi bi-laptop" aria-hidden="true"></i> {% trans "Freelance projects" %}</li>
+                <li><i class="bi bi-clock-history" aria-hidden="true"></i> {% trans "Part-time roles" %}</li>
+            </ul>
+        </div>
 
-                    {# Tag chips #}
-                    <g class="float-anim" style="animation-delay: -2.8s;">
-                        <rect x="50" y="320" width="160" height="44" rx="22" fill="#ffffff" opacity="0.95"/>
-                        <circle cx="80" cy="342" r="14" fill="#3b6fe0"/>
-                        <text x="105" y="346" font-family="Tajawal, Cairo, sans-serif" font-weight="700" font-size="14" fill="#0b1e4d">{% trans "Unified CV" %}</text>
-                    </g>
-                </svg>
+        <figure class="lp-proof" aria-labelledby="lp-proof-caption">
+            <div class="lp-card">
+                <div class="lp-proof__who" aria-hidden="true">
+                    <span class="lp-proof__avatar">S</span>
+                    <span><span class="lp-proof__name">{% trans "Sara, Finance student" %}</span>
+                        <span class="lp-proof__meta">{% trans "Cairo University · 3rd year" %}</span></span>
+                    <span class="lp-proof__badge"><i class="bi bi-patch-check-fill"></i> {% trans "Verified" %}</span>
+                </div>
+                <div class="lp-skill" aria-hidden="true">
+                    <span class="lp-skill__name"><i class="bi bi-shield-check"></i> {% trans "Financial analysis" %}</span>
+                    <span class="lp-skill__state">{% trans "Passed a timed test" %}</span>
+                </div>
+                <div class="lp-skill" aria-hidden="true">
+                    <span class="lp-skill__name"><i class="bi bi-shield-check"></i> Excel</span>
+                    <span class="lp-skill__state">{% trans "Passed a timed test" %}</span>
+                </div>
+                <div class="lp-skill" aria-hidden="true">
+                    <span class="lp-skill__name"><i class="bi bi-briefcase"></i> {% trans "Budget dashboard" %}</span>
+                    <span class="lp-skill__state">{% trans "Completed with a startup" %}</span>
+                </div>
+                <figcaption class="lp-proof__note" id="lp-proof-caption">{% trans "An example of a verified profile. Each skill shows how it was proven." %}</figcaption>
+            </div>
+            <div class="lp-proof__chip" aria-hidden="true"><i class="bi bi-send-check"></i> {% trans "Applied with a verified profile" %}</div>
+        </figure>
+    </div>
+</section>
+
+<section class="lp-section" id="why" aria-labelledby="lp-why">
+    <div class="container">
+        <div class="lp-head">
+            <p class="lp-kicker">{% trans "The problem" %}</p>
+            <h2 class="lp-h2" id="lp-why">{% trans "A CV can claim anything. Employers need proof." %}</h2>
+            <p class="lp-lead">{% trans "Students have skills that never show on paper, and startups cannot afford to guess. Internest turns claims into evidence both sides can trust." %}</p>
+        </div>
+        <div class="lp-contrast">
+            <div class="lp-contrast__col lp-contrast__col--no">
+                <h3><i class="bi bi-file-earmark-text" aria-hidden="true"></i> {% trans "A typical application" %}</h3>
+                <ul>
+                    <li><i class="bi bi-x-circle" aria-hidden="true"></i> {% trans "Skills listed on a CV, with nothing behind them" %}</li>
+                    <li><i class="bi bi-x-circle" aria-hidden="true"></i> {% trans "No work history yet, so no way to stand out" %}</li>
+                    <li><i class="bi bi-x-circle" aria-hidden="true"></i> {% trans "Employers screen hundreds of CVs by hand" %}</li>
+                </ul>
+            </div>
+            <div class="lp-contrast__col lp-contrast__col--yes">
+                <h3><i class="bi bi-patch-check" aria-hidden="true"></i> {% trans "With Internest" %}</h3>
+                <ul>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "Short, timed and proctored tests turn the skills on your CV into proof, with your percentile among peers." %}</li>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "Every passed test and completed project becomes a badge on your profile that startups can trust at a glance." %}</li>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "Pre-tested students — no CV guesswork" %}</li>
+                </ul>
             </div>
         </div>
     </div>
 </section>
 
-<section class="section" id="features">
+<section class="lp-section" id="how-it-works" aria-labelledby="lp-how">
     <div class="container">
-        <div class="text-center" style="max-width: 720px; margin-inline: auto; margin-bottom: var(--space-12);">
-            <span class="eyebrow">{% trans "For students · Always free" %}</span>
-            <h2 class="section-title mt-3">{% trans "Turn what you can do into proof employers trust" %}</h2>
-            <p class="text-muted">{% trans "From your first gig to your first job: verified skills, real work history and a clear view of your market readiness." %}</p>
+        <div class="lp-head lp-head--center">
+            <p class="lp-kicker">{% trans "3 simple steps" %}</p>
+            <h2 class="lp-h2" id="lp-how">{% trans "How does it work?" %}</h2>
+            <p class="lp-lead">{% trans "From sign-up to your first paid task in three steps." %}</p>
         </div>
-
-        <div class="feature-grid">
-            <div class="feature fade-up">
-                <div class="feature__icon"><i class="bi bi-briefcase"></i></div>
-                <h3>{% trans "Internships, gigs & part-time roles" %}</h3>
-                <p>{% trans "Real work with real startups — internships, short gigs, freelance projects and part-time roles that fit around your studies." %}</p>
-            </div>
-
-            <div class="feature fade-up delay-1">
-                <div class="feature__icon"><i class="bi bi-cpu"></i></div>
-                <h3>{% trans "AI skill analysis" %}</h3>
-                <p>{% trans "Upload your CV or LinkedIn export and our AI maps both your stated and your hidden skills in seconds." %}</p>
-            </div>
-
-            <div class="feature fade-up delay-2">
-                <div class="feature__icon"><i class="bi bi-shield-check"></i></div>
-                <h3>{% trans "Skill tests that verify every claim" %}</h3>
-                <p>{% trans "Short, timed and proctored tests turn the skills on your CV into proof, with your percentile among peers." %}</p>
-            </div>
-
-            <div class="feature fade-up">
-                <div class="feature__icon"><i class="bi bi-patch-check"></i></div>
-                <h3>{% trans "Verified experience badges" %}</h3>
-                <p>{% trans "Every passed test and completed project becomes a badge on your profile that startups can trust at a glance." %}</p>
-            </div>
-
-            <div class="feature fade-up delay-1">
-                <div class="feature__icon"><i class="bi bi-signpost-split"></i></div>
-                <h3>{% trans "Personal skill-gap roadmap" %}</h3>
-                <p>{% trans "See exactly which topics to improve next and get matching courses from our partners and top learning platforms." %}</p>
-            </div>
-
-            <div class="feature fade-up delay-2">
-                <div class="feature__icon"><i class="bi bi-cursor"></i></div>
-                <h3>{% trans "One-click apply & tracking" %}</h3>
-                <p>{% trans "Apply with your verified profile in one click, get a CV tailored to each role, and track every application in one place." %}</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="section" id="how-it-works" style="background-color: var(--white); border-block: 1px solid var(--color-border);">
-    <div class="container">
-        <div class="text-center" style="max-width: 720px; margin-inline: auto; margin-bottom: var(--space-12);">
-            <span class="eyebrow eyebrow--accent">{% trans "3 simple steps" %}</span>
-            <h2 class="section-title mt-3">{% trans "How does it work?" %}</h2>
-            <p class="text-muted">{% trans "From sign-up to your first paid task in three steps." %}</p>
-        </div>
-
-        <div class="steps">
-            <div class="step fade-up">
+        <ol class="lp-steps">
+            <li class="lp-step">
                 <h3>{% trans "Build your verified profile" %}</h3>
                 <p>{% trans "Sign up free with your university email, upload your CV or LinkedIn, and let our AI analyze your skills." %}</p>
-            </div>
-            <div class="step fade-up delay-1">
+            </li>
+            <li class="lp-step">
                 <h3>{% trans "Prove your skills" %}</h3>
                 <p>{% trans "Take short AI-generated tests to turn claimed skills into verified badges — and get a roadmap for any gaps." %}</p>
-            </div>
-            <div class="step fade-up delay-2">
+            </li>
+            <li class="lp-step">
                 <h3>{% trans "Get real work" %}</h3>
                 <p>{% trans "Apply in one click to internships, gigs and part-time roles with startups that hire by verified skill." %}</p>
-            </div>
+            </li>
+        </ol>
+    </div>
+</section>
+
+<section class="lp-section" id="features" aria-labelledby="lp-features">
+    <div class="container">
+        <div class="lp-head">
+            <p class="lp-kicker">{% trans "For students · Always free" %}</p>
+            <h2 class="lp-h2" id="lp-features">{% trans "Turn what you can do into proof employers trust" %}</h2>
+            <p class="lp-lead">{% trans "From your first gig to your first job: verified skills, real work history and a clear view of your market readiness." %}</p>
+        </div>
+        <div class="lp-features">
+            <article class="lp-feature">
+                <div class="lp-feature__icon" aria-hidden="true"><i class="bi bi-cpu"></i></div>
+                <h3>{% trans "AI skill analysis" %}</h3>
+                <p>{% trans "Upload your CV or LinkedIn export and our AI maps both your stated and your hidden skills in seconds." %}</p>
+            </article>
+            <article class="lp-feature">
+                <div class="lp-feature__icon" aria-hidden="true"><i class="bi bi-shield-check"></i></div>
+                <h3>{% trans "Skill tests that verify every claim" %}</h3>
+                <p>{% trans "Short, timed and proctored tests turn the skills on your CV into proof, with your percentile among peers." %}</p>
+            </article>
+            <article class="lp-feature">
+                <div class="lp-feature__icon" aria-hidden="true"><i class="bi bi-patch-check"></i></div>
+                <h3>{% trans "Verified experience badges" %}</h3>
+                <p>{% trans "Every passed test and completed project becomes a badge on your profile that startups can trust at a glance." %}</p>
+            </article>
+            <article class="lp-feature">
+                <div class="lp-feature__icon" aria-hidden="true"><i class="bi bi-briefcase"></i></div>
+                <h3>{% trans "Internships, gigs & part-time roles" %}</h3>
+                <p>{% trans "Real work with real startups — internships, short gigs, freelance projects and part-time roles that fit around your studies." %}</p>
+            </article>
+            <article class="lp-feature">
+                <div class="lp-feature__icon" aria-hidden="true"><i class="bi bi-signpost-split"></i></div>
+                <h3>{% trans "Personal skill-gap roadmap" %}</h3>
+                <p>{% trans "See exactly which topics to improve next and get matching courses from our partners and top learning platforms." %}</p>
+            </article>
+            <article class="lp-feature">
+                <div class="lp-feature__icon" aria-hidden="true"><i class="bi bi-cursor"></i></div>
+                <h3>{% trans "One-click apply & tracking" %}</h3>
+                <p>{% trans "Apply with your verified profile in one click, get a CV tailored to each role, and track every application in one place." %}</p>
+            </article>
         </div>
     </div>
 </section>
 
-<section class="section">
+<section class="lp-section" id="partners" aria-labelledby="lp-partners">
     <div class="container">
-        <div class="card card--brand" style="padding: clamp(40px, 6vw, 72px); display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--space-12); align-items: center; border-radius: var(--radius-2xl); overflow: hidden;">
-            <div>
-                <span class="eyebrow hero__eyebrow">{% trans "Are you a university student?" %}</span>
-                <h2 style="font-size: clamp(1.75rem, 3vw, var(--text-4xl)); margin-top: var(--space-4);">
-                    {% trans "Start building verified experience today" %}
-                </h2>
-                <p style="color: rgba(255,255,255,0.85); font-size: var(--text-lg); margin-bottom: var(--space-6);">
-                    {% trans "Work with real startups while you study and graduate with proof of what you can do — not just a certificate." %}
-                </p>
-                <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
-                    <a href="{% url 'login_or_signup' %}" class="btn btn--accent btn--lg">
-                        {% trans "Get started" %} <i class="bi bi-arrow-left-short"></i>
-                    </a>
-                    <a href="{% url 'list' %}" class="btn btn--white btn--lg">
-                        {% trans "Browse opportunities" %}
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center;" aria-hidden="true">
-                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%; max-width: 280px; margin-inline: auto;">
-                    <defs>
-                        <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0" stop-color="#f59e0b"/>
-                            <stop offset="1" stop-color="#d97706"/>
-                        </linearGradient>
-                    </defs>
-                    <circle cx="100" cy="100" r="84" fill="rgba(255,255,255,0.12)"/>
-                    <circle cx="100" cy="100" r="64" fill="url(#badge)"/>
-                    <path d="M75 100 L92 117 L128 80" stroke="#ffffff" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
+        <div class="lp-head lp-head--center">
+            <p class="lp-kicker">{% trans "Startups & universities" %}</p>
+            <h2 class="lp-h2" id="lp-partners">{% trans "One marketplace, three winners" %}</h2>
+            <p class="lp-lead">{% trans "Students get real work, startups get verified talent, and universities get provable outcomes." %}</p>
+        </div>
+        <div class="lp-audiences">
+            <article class="lp-aud" id="students">
+                <span class="lp-aud__who">{% trans "For students" %}</span>
+                <h3>{% trans "Start building verified experience today" %}</h3>
+                <ul>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "Internships, gigs & part-time roles" %}</li>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "Skill tests that verify every claim" %}</li>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "Personal skill-gap roadmap" %}</li>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "Always free for students" %}</li>
+                </ul>
+                <a href="{% url 'login_or_signup' %}" class="btn btn--lp btn--lg">{% trans "Create your free account" %}</a>
+            </article>
+            <article class="lp-aud lp-aud--featured" id="startups">
+                <span class="lp-aud__who">{% trans "For startups" %}</span>
+                <h3>{% trans "Hire verified student talent — fast and affordable" %}</h3>
+                <ul>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "Pre-tested students — no CV guesswork" %}</li>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "Direct founder-to-student channel" %}</li>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "Cheaper and faster than a full-time hire, an agency or an AI tool" %}</li>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "Choose by verified skill and interest — and discover future co-founders" %}</li>
+                </ul>
+                <a href="{% url 'startup_register' %}" class="btn btn--lp btn--lg">{% trans "Join as a startup" %}</a>
+            </article>
+            <article class="lp-aud" id="universities">
+                <span class="lp-aud__who">{% trans "For universities" %}</span>
+                <h3>{% trans "Prove your students' outcomes" %}</h3>
+                <ul>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "NAQAAE-ready reports: skills, practical hours and projects per cohort" %}</li>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "One-click dashboard with skill maps and market readiness" %}</li>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "Guaranteed training opportunities through our startup network" %}</li>
+                    <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i> {% trans "A dedicated partnership manager, from pilot to annual contract" %}</li>
+                </ul>
+                <a href="{% url 'university_landing' %}" class="btn btn--lp-ghost btn--lg" data-university-cta>{% trans "Become a partner university" %}</a>
+            </article>
         </div>
     </div>
 </section>
 
-<section class="section" id="partners" style="background-color: var(--white); border-top: 1px solid var(--color-border);">
+<section class="lp-section" id="trust" aria-labelledby="lp-trust">
     <div class="container">
-        <div class="text-center" style="max-width: 720px; margin-inline: auto; margin-bottom: var(--space-12);">
-            <span class="eyebrow eyebrow--accent">{% trans "Startups & universities" %}</span>
-            <h2 class="section-title mt-3">{% trans "One marketplace, three winners" %}</h2>
-            <p class="text-muted">{% trans "Students get real work, startups get verified talent, and universities get provable outcomes." %}</p>
+        <div class="lp-head">
+            <p class="lp-kicker">{% trans "Why trust Internest?" %}</p>
+            <h2 class="lp-h2" id="lp-trust">{% trans "Built on evidence, and private by default" %}</h2>
         </div>
+        <div class="lp-trust">
+            <div class="lp-trust__item">
+                <i class="bi bi-stopwatch" aria-hidden="true"></i>
+                <h3>{% trans "Timed, proctored tests" %}</h3>
+                <p>{% trans "A verified skill means a test passed under time limits and focus checks, not a box ticked on a form." %}</p>
+            </div>
+            <div class="lp-trust__item">
+                <i class="bi bi-file-earmark-lock" aria-hidden="true"></i>
+                <h3>{% trans "Your CV stays private" %}</h3>
+                <p>{% trans "Your CV opens only for a startup that shortlists you for a role you applied to." %}</p>
+            </div>
+            <div class="lp-trust__item">
+                <i class="bi bi-building-check" aria-hidden="true"></i>
+                <h3>{% trans "Reviewed companies" %}</h3>
+                <p>{% trans "Startups are reviewed before they can post opportunities to students." %}</p>
+            </div>
+            <div class="lp-trust__item">
+                <i class="bi bi-qr-code" aria-hidden="true"></i>
+                <h3>{% trans "Experience anyone can check" %}</h3>
+                <p>{% trans "Completed work comes with an experience letter that carries its own public verification link." %}</p>
+            </div>
+        </div>
+        <p class="lp-trust__more"><a href="{% url 'trust' %}">{% trans "How verification works" %}</a></p>
+    </div>
+</section>
 
-        <div class="audience-grid">
-            <article class="card audience-card" id="startups">
-                <span class="eyebrow">{% trans "For startups" %}</span>
-                <h3 class="mt-3">{% trans "Hire verified student talent — fast and affordable" %}</h3>
-                <ul class="audience-card__list">
-                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "Pre-tested students — no CV guesswork" %}</li>
-                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "Direct founder-to-student channel" %}</li>
-                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "Cheaper and faster than a full-time hire, an agency or an AI tool" %}</li>
-                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "Choose by verified skill and interest — and discover future co-founders" %}</li>
-                </ul>
-                <a href="{% url 'startup_register' %}" class="btn btn--primary btn--lg">
-                    {% trans "Join as a startup" %} <i class="bi bi-arrow-left-short"></i>
-                </a>
-            </article>
-
-            <article class="card audience-card" id="universities">
-                <span class="eyebrow">{% trans "For universities" %}</span>
-                <h3 class="mt-3">{% trans "Prove your students' outcomes" %}</h3>
-                <ul class="audience-card__list">
-                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "NAQAAE-ready reports: skills, practical hours and projects per cohort" %}</li>
-                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "One-click dashboard with skill maps and market readiness" %}</li>
-                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "Guaranteed training opportunities through our startup network" %}</li>
-                    <li><i class="bi bi-check-circle-fill text-success"></i> {% trans "A dedicated partnership manager, from pilot to annual contract" %}</li>
-                </ul>
-                <p class="audience-card__note"><i class="bi bi-award"></i> {% trans "Our students train with real startups — a reputation and recruitment edge." %}</p>
-                <a href="{% url 'university_landing' %}" class="btn btn--outline btn--lg" data-university-cta>
-                    {% trans "Become a partner university" %} <i class="bi bi-arrow-left-short"></i>
-                </a>
-            </article>
+<section class="lp-section" aria-labelledby="lp-final">
+    <div class="container">
+        <div class="lp-final">
+            <h2 class="lp-h2" id="lp-final">{% trans "Start building verified experience today" %}</h2>
+            <p class="lp-lead">{% trans "Work with real startups while you study and graduate with proof of what you can do — not just a certificate." %}</p>
+            <div class="lp-final__cta">
+                <a href="{% url 'login_or_signup' %}" class="btn btn--lp btn--lg">{% trans "Get started" %}</a>
+                <a href="{% url 'list' %}" class="btn btn--lp-ghost btn--lg">{% trans "Browse opportunities" %}</a>
+            </div>
         </div>
     </div>
 </section>

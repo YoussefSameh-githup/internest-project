@@ -9596,3 +9596,107 @@ msgid ""
 msgstr ""
 "أضف شيئًا إلى سيرتك الذاتية أولًا (نبذة أو خبرة أو مشروع أو مهارة)، ثم "
 "حسّنها."
+
+msgid "Learn"
+msgstr "تعلّم"
+
+msgid "Grow"
+msgstr "اتطوّر"
+
+msgid "Get Hired"
+msgstr "اتوظّف"
+
+msgid "Hire verified students"
+msgstr "وظّف طلابًا موثّقين"
+
+msgid "Sara, Finance student"
+msgstr "سارة، طالبة تمويل"
+
+msgid "Cairo University · 3rd year"
+msgstr "جامعة القاهرة · السنة الثالثة"
+
+msgid "Financial analysis"
+msgstr "التحليل المالي"
+
+msgid "Passed a timed test"
+msgstr "اجتازت اختبارًا موقوتًا"
+
+msgid "Budget dashboard"
+msgstr "لوحة متابعة الميزانية"
+
+msgid "Completed with a startup"
+msgstr "أنجزته مع شركة ناشئة"
+
+msgid "An example of a verified profile. Each skill shows how it was proven."
+msgstr "مثال لملف موثّق: كل مهارة توضح كيف تم إثباتها."
+
+msgid "Applied with a verified profile"
+msgstr "قدّمت بملف موثّق"
+
+msgid "The problem"
+msgstr "المشكلة"
+
+msgid "A CV can claim anything. Employers need proof."
+msgstr "السيرة الذاتية تقدر تقول أي حاجة. أصحاب العمل محتاجين دليل."
+
+msgid ""
+"Students have skills that never show on paper, and startups cannot afford to"
+" guess. Internest turns claims into evidence both sides can trust."
+msgstr ""
+"عند الطلاب مهارات لا تظهر على الورق، والشركات الناشئة لا تتحمل التخمين. "
+"Internest يحوّل الادعاءات إلى دليل يثق فيه الطرفان."
+
+msgid "A typical application"
+msgstr "طلب تقديم عادي"
+
+msgid "Skills listed on a CV, with nothing behind them"
+msgstr "مهارات مكتوبة في السيرة الذاتية بدون أي دليل"
+
+msgid "No work history yet, so no way to stand out"
+msgstr "لا توجد خبرة عمل بعد، فلا وسيلة للتميّز"
+
+msgid "Employers screen hundreds of CVs by hand"
+msgstr "أصحاب العمل يفرزون مئات السير الذاتية يدويًا"
+
+msgid "With Internest"
+msgstr "مع Internest"
+
+msgid "Always free for students"
+msgstr "مجاني دائمًا للطلاب"
+
+msgid "Built on evidence, and private by default"
+msgstr "مبني على الدليل، وخصوصيتك محفوظة من البداية"
+
+msgid "Timed, proctored tests"
+msgstr "اختبارات موقوتة ومراقَبة"
+
+msgid ""
+"A verified skill means a test passed under time limits and focus checks, not"
+" a box ticked on a form."
+msgstr ""
+"المهارة الموثّقة تعني اختبارًا اجتزته بوقت محدد ومراقبة للتركيز، لا خانة "
+"اخترتها في نموذج."
+
+msgid "Your CV stays private"
+msgstr "سيرتك الذاتية تبقى خاصة"
+
+msgid ""
+"Your CV opens only for a startup that shortlists you for a role you applied "
+"to."
+msgstr ""
+"سيرتك الذاتية تُفتح فقط لشركة ناشئة اختارتك ضمن القائمة المختصرة لوظيفة "
+"قدّمت عليها."
+
+msgid "Reviewed companies"
+msgstr "شركات تمت مراجعتها"
+
+msgid "Startups are reviewed before they can post opportunities to students."
+msgstr "نراجع الشركات الناشئة قبل أن تستطيع نشر فرص للطلاب."
+
+msgid "Experience anyone can check"
+msgstr "خبرة يمكن لأي شخص التحقق منها"
+
+msgid ""
+"Completed work comes with an experience letter that carries its own public "
+"verification link."
+msgstr "العمل المكتمل يأتي مع خطاب خبرة يحمل رابط تحقق عام خاصًا به."

@@ -41,7 +41,7 @@ class UniversityLandingTests(TestCase):
         page = self.client.get(reverse("landing"))
         card = page.content.decode()
         card = card[card.index('id="universities"'):]
-        self.assertIn(f'href="{URL}" class="btn btn--outline btn--lg" data-university-cta', card[:3000])
+        self.assertIn(f'href="{URL}" class="btn btn--lp-ghost btn--lg" data-university-cta', card[:3000])
         self.assertContains(page, f'<a href="{URL}" class="nav__link">')
         self.assertContains(page, f'<li><a href="{URL}">Internest for universities</a></li>')
 

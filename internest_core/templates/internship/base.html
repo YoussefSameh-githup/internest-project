@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#0b1e4d">
     {% trans 'Internest — the verified student talent marketplace. Students get real work, startups hire verified talent, universities prove outcomes.' as site_description %}
     {% trans "Verified student talent marketplace" as site_tagline %}
-    {% static 'img/internest_logo.jpg' as logo_path %}
+    {% static 'img/brand/og-image.png' as logo_path %}
     <meta name="description" content="{{ meta_description|default:site_description }}">
     {# Signed-in pages are private: keep them out of search results. #}
     {% if user.is_authenticated %}<meta name="robots" content="noindex, nofollow">{% endif %}
@@ -20,17 +20,21 @@
     <meta property="og:description" content="{{ meta_description|default:site_description }}">
     <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
     <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ logo_path }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Internest — {% trans 'Learn' %}, {% trans 'Grow' %}, {% trans 'Get Hired' %}">
     <meta property="og:locale" content="{{ LANGUAGE_CODE }}">
-    <meta name="twitter:card" content="summary">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ meta_title|default:'Internest' }} — {{ site_tagline }}">
     <meta name="twitter:description" content="{{ meta_description|default:site_description }}">
     <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ logo_path }}">
 
     <title>{% block title %}Internest — {% trans "Verified student talent marketplace" %}{% endblock title %}</title>
 
-    {# 192 px copy (5 KB) for every small placement; the 1024 px original stays for og:image and PDF letters. #}
-    <link rel="icon" type="image/jpeg" href="{% static 'img/internest_logo_192.jpg' %}">
-    <link rel="apple-touch-icon" href="{% static 'img/internest_logo_192.jpg' %}">
+    {# Brand icons: scripts/brand_assets.py (SVG) + scripts/brand_png.ps1 (PNG sizes). #}
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/brand/internest-mark.svg' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/brand/favicon-32.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/brand/apple-touch-icon.png' %}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -88,7 +92,7 @@
     .footer__contact a, .footer__contact span { display: inline-flex; align-items: center; gap: 8px; overflow-wrap: anywhere; }
     </style>
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <a class="skip-link" href="#main">{% trans "Skip to main content" %}</a>
 
     {% block top_nav %}
@@ -99,8 +103,8 @@
             {% else %}
                 <a href="{% url 'landing' %}" class="nav__brand" aria-label="Internest">
             {% endif %}
-                <img src="{% static 'img/internest_logo_192.jpg' %}" alt="" width="38" height="38">
-                <span>INTERNEST</span>
+                {% include "components/brand_mark.html" with gid="navMark" %}
+                {% include "components/brand_wordmark.html" %}
             </a>
 
             <ul class="nav__links" id="siteNavLinks">
@@ -193,9 +197,9 @@
         <div class="container">
             <div class="footer__grid">
                 <div>
-                    <a href="{% url 'landing' %}" class="footer__brand">
-                        <img src="{% static 'img/internest_logo_192.jpg' %}" alt="Internest" width="36" height="36" loading="lazy" decoding="async">
-                        <span>INTERNEST</span>
+                    <a href="{% url 'landing' %}" class="footer__brand" aria-label="Internest">
+                        {% include "components/brand_mark.html" with gid="footMark" %}
+                        {% include "components/brand_wordmark.html" %}
                     </a>
                     <p class="footer__tagline">
                         {% trans "The verified student talent marketplace: students get real work and verified experience, startups hire pre-tested talent, and universities prove their outcomes." %}
