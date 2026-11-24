@@ -28,13 +28,15 @@ body.lp .nav__link, body.lp .lang-switcher__toggle { color: var(--lp-muted); }
 body.lp .nav__link:hover, body.lp .nav__link:focus-visible,
 body.lp .lang-switcher__toggle:hover { color: #fff; background: var(--lp-panel-2); }
 body.lp .nav__toggle { color: #fff; }
+body.lp .nav__toggle:hover, body.lp .nav__toggle:focus-visible, body.lp .nav.is-open .nav__toggle { background-color: var(--lp-panel-2); }
+/* the phone drawer (styles.css opens it white with .nav.is-open .nav__links): same specificity + body.lp wins */
+body.lp .nav.is-open .nav__links { background: var(--lp-bg-2); border: 1px solid var(--lp-line);
+  box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.9); }
+body.lp .nav.is-open .nav__link { color: #ecebff; }
 body.lp .nav .btn--ghost { color: #fff; border-color: var(--lp-line); background: transparent; }
 body.lp .nav .btn--primary, body.lp .btn--lp { background: var(--lp-brand); color: #fff; border: 0;
   box-shadow: 0 10px 28px -12px rgba(124, 92, 255, 0.75); }
 body.lp .nav .btn--primary:hover, body.lp .btn--lp:hover { filter: brightness(1.08); color: #fff; }
-@media (max-width: 1023px) {
-  body.lp .nav__links { background: var(--lp-bg-2); border-color: var(--lp-line); }
-}
 body.lp .footer { background: #05050f; border-top: 1px solid var(--lp-line); color: var(--lp-muted); }
 body.lp .footer a, body.lp .footer__brand { color: var(--lp-muted); }
 body.lp .footer a:hover { color: #fff; }

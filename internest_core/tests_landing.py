@@ -70,3 +70,12 @@ class LandingMotionStylesheetTests(SimpleTestCase):
         self.assertEqual(len(re.findall(r"\banimation:", block)), len(uses))  # every animation lives in the guarded block
         self.assertIn("html:not(.lp-intro-seen)", block)
         self.assertNotIn("opacity: 0;", css[:block_start])  # nothing is hidden outside the animation itself
+
+
+class LandingDrawerStylesTests(SimpleTestCase):
+    def test_phone_drawer_is_dark_on_the_homepage(self):
+        """styles.css opens the drawer with `.nav.is-open .nav__links { background: white }`; the dark override must be
+        at least as specific, or the homepage menu shows pale text on white (found on the live site)."""
+        css = pathlib.Path(finders.find("css/landing.css")).read_text(encoding="utf-8")
+        self.assertRegex(css, r"body\.lp \.nav\.is-open \.nav__links \{ background: var\(--lp-bg-2\)")
+        self.assertIn("body.lp .nav.is-open .nav__toggle", css)
