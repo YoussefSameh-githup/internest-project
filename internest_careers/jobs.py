@@ -61,5 +61,5 @@ def career_advice_job(user_id):
     except QuotaExceeded as exc:
         return 429, {"error": exc.user_message, "code": "ai_quota", "retry_after": exc.retry_after}
     except AIUnavailable:
-        return 503, {"error": _("Our AI is busy right now. Your recommendations above are complete without it; try again in a few minutes."),
+        return 503, {"code": "ai_busy", "error": _("Our AI is busy right now. Your recommendations above are complete without it; try again in a few minutes."),
                      "code": "ai_unavailable"}

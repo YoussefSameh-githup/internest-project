@@ -116,6 +116,8 @@ MIDDLEWARE = [
     "internest_core.middleware.SlidingSessionMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    # Internest: /oauth/<provider>/ answers 404 for providers that are not offered (instead of allauth's 500).
+    "internest_core.social_views.SocialProviderGuardMiddleware",
     # Internest: /api/ai/ answers stay JSON when the rate limiter or an onboarding gate answers first.
     "internest_careers.middleware.APIJSONErrorsMiddleware",
     # Internest: per-IP / per-user limits on login, signup, password reset and uploads.

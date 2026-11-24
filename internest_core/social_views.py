@@ -35,3 +35,24 @@ def social_start(request, role, provider):
         return social_provider.redirect(request, "login", next_url=target or None)
     except (OAuth2Error, RequestException, PermissionDenied) as exc:  # same handling as allauth's own login view
         return render_authentication_error(request, social_provider, exception=exc)
+
+
+class SocialProviderGuardMiddleware:
+    """allauth registers /oauth/<provider>/login/ and /callback/ for every installed provider, configured or not; a
+    request for one without credentials raised SocialApp.DoesNotExist (an anonymous, unlimited 500). Providers that
+    are not offered (no keys, or https-only while the site runs on plain http) now answer 404, the same as their
+    hidden buttons and social_start."""
+
+    def __init__(self, get_response):
+        from django.conf import settings
+
+        self.get_response = get_response
+        self.prefixes = {f"/oauth/{p}/": p for p in settings.SOCIAL_LOGIN_PROVIDER_ORDER}
+
+    def __call__(self, request):
+        path = request.path_info
+        if path.startswith("/oauth/"):
+            for prefix, provider in self.prefixes.items():
+                if path.startswith(prefix) and provider not in {p["id"] for p in configured_social_providers()}:
+                    raise Http404("Unknown or unconfigured sign-in method")
+        return self.get_response(request)

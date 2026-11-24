@@ -72,7 +72,7 @@ class AdmissionTests(Base):
     @override_settings(**LLM_KEYS)
     def test_view_double_submit_is_deduplicated_on_the_arguments(self):
         self.client.force_login(self.student_user)
-        body = json.dumps({"cv": {"name": "Raw"}})
+        body = json.dumps({"cv": {"name": "Raw", "summary": "Finance student"}})
         first = self.client.post(reverse("cv_builder_polish"), data=body, content_type="application/json", **ASYNC).json()
         second = self.client.post(reverse("cv_builder_polish"), data=body, content_type="application/json", **ASYNC).json()
         self.assertEqual(first["task_id"], second["task_id"])
@@ -94,7 +94,7 @@ class AdmissionTests(Base):
         self.client.force_login(self.student_user)
         for n in range(2):
             async_tasks.enqueue("t_echo", self.student_user, n=n)
-        resp = self.client.post(reverse("cv_builder_polish"), data=json.dumps({"cv": {"name": "Raw"}}),
+        resp = self.client.post(reverse("cv_builder_polish"), data=json.dumps({"cv": {"name": "Raw", "summary": "Finance student"}}),
                                 content_type="application/json", **ASYNC)
         self.assertEqual(resp.status_code, 429)
         self.assertEqual((resp["Retry-After"], resp["Cache-Control"]), ("10", "no-store"))

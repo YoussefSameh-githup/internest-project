@@ -35,7 +35,7 @@ def university_inquiry(request):
         return JsonResponse({"ok": True})
     key = f"uni-inquiry:{client_ip(request)}"
     if cache.get(key, 0) >= INQUIRIES_PER_HOUR:
-        return JsonResponse({"ok": False, "error": "rate_limited"}, status=429)
+        return JsonResponse({"ok": False, "error": "rate_limited", "code": "rate_limited"}, status=429)
 
     data = {k: (request.POST.get(k) or "").strip()[:n] for k, n in LIMITS.items()}
     if data["email"]:
@@ -44,7 +44,7 @@ def university_inquiry(request):
         except ValidationError:
             data["email"] = ""
     if not (data["name"] and data["role"] and data["uni"] and (data["email"] or data["phone"])):
-        return JsonResponse({"ok": False, "error": "missing_fields"}, status=400)
+        return JsonResponse({"ok": False, "error": "missing_fields", "code": "missing_fields"}, status=400)
 
     UniversityInquiry.objects.create(
         name=data["name"], position=data["role"], university=data["uni"], faculty=data["fac"], email=data["email"],

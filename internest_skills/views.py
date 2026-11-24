@@ -317,8 +317,8 @@ def challenge_outcome(student, student_skill_id) -> tuple[int, dict]:
     if outcome == CHALLENGE_STARTED:
         return 200, {"redirect": reverse("skills_challenge", kwargs={"token": value.token})}
     if outcome == CHALLENGE_REFUSED:
-        return 409, {"error": value, "redirect": reverse("skills_hub")}
-    return 503, {"error": _("Not enough questions are available for this challenge right now. Please try again later.")}
+        return 409, {"error": value, "code": "challenge_unavailable", "redirect": reverse("skills_hub")}
+    return 503, {"code": "no_questions", "error": _("Not enough questions are available for this challenge right now. Please try again later.")}
 
 
 @student_gate()
@@ -368,7 +368,7 @@ def challenge_start_for_skill(request, skill_id):
     ss = student_skill_for_test(request.student, skill)
     if ss is None:
         if async_tasks.wants_async(request):
-            return JsonResponse({"error": "not_testable", "message": str(NOT_TESTABLE)}, status=403)
+            return JsonResponse({"error": "not_testable", "code": "not_testable", "message": str(NOT_TESTABLE)}, status=403)
         messages.warning(request, NOT_TESTABLE)
         return redirect("skills_hub")
     return challenge_start(request, ss.pk)
@@ -432,7 +432,7 @@ def api_answer(request, token):
     try:
         item_id = int(body.get("item_id"))
     except (TypeError, ValueError):
-        return JsonResponse({"error": "item_id required"}, status=400)
+        return JsonResponse({"error": "item_id required", "code": "invalid"}, status=400)
     choice = body.get("choice_index")
     choice = int(choice) if isinstance(choice, int) or (isinstance(choice, str) and choice.isdigit()) else None
     answer = body.get("answer_text") if isinstance(body.get("answer_text"), str) else ""
@@ -460,7 +460,7 @@ def api_event(request, token):
         elif kind in ("copy", "cut", "paste", "contextmenu", "drop", "devtools"):
             engine.record_blocked_action(attempt, kind)
         else:
-            return JsonResponse({"error": "unknown event"}, status=400)
+            return JsonResponse({"error": "unknown event", "code": "invalid"}, status=400)
         payload = {
             "state": attempt.state,
             "focus_warnings": attempt.focus_warnings,

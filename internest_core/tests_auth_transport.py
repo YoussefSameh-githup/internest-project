@@ -126,3 +126,25 @@ class SettingsSwitchTests(TestCase):
 
     def test_plain_http_switch(self):
         self.assertEqual(self._settings(DJANGO_HTTPS="False"), "False False False False http")
+
+
+class UnconfiguredProviderRoutesTests(TestCase):
+    """allauth's own /oauth/<provider>/ routes: 404 for providers that are not offered, never a 500."""
+
+    ROUTES = ("/oauth/{p}/login/", "/oauth/{p}/login/callback/")
+
+    def test_no_keys_means_404_not_500(self):
+        for provider in settings.SOCIAL_LOGIN_PROVIDER_ORDER:
+            for route in self.ROUTES:
+                self.assertEqual(self.client.get(route.format(p=provider)).status_code, 404, (provider, route))
+
+    @override_settings(SOCIALACCOUNT_PROVIDERS=KEYED, DEBUG=False, SITE_HTTPS=True)
+    def test_configured_providers_still_reach_allauth(self):
+        for provider in settings.SOCIAL_LOGIN_PROVIDER_ORDER:
+            status = self.client.get(f"/oauth/{provider}/login/").status_code
+            self.assertNotIn(status, (404, 500), provider)
+
+    @override_settings(SOCIALACCOUNT_PROVIDERS=KEYED, DEBUG=False, SITE_HTTPS=False)
+    def test_https_only_providers_are_closed_on_plain_http(self):
+        self.assertEqual(self.client.get("/oauth/google/login/").status_code, 404)
+        self.assertNotEqual(self.client.get("/oauth/github/login/").status_code, 404)

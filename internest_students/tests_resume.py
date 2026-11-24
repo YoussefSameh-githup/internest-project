@@ -176,6 +176,16 @@ class DailyCapTests(Base):
         self.client.post(reverse("cv_builder_polish"), {"cv": CV}, content_type="application/json", **ASYNC)
         self.assertEqual(self._uses(), 1)
 
+    @override_settings(**MOCK)
+    def test_an_empty_cv_is_refused_before_it_costs_a_use_or_a_model_call(self):
+        with mock.patch.object(engine, "run") as run:
+            for payload in ({"cv": {}}, {"cv": {"name": "Mona Adel", "email": "mona@example.com"}}, {}):
+                resp = self.client.post(reverse("cv_builder_polish"), payload, content_type="application/json")
+                self.assertEqual(resp.status_code, 400)
+                self.assertEqual(resp.json()["code"], "empty_cv")
+        run.assert_not_called()
+        self.assertEqual(self._uses(), 0)
+
     @override_settings(**MOCK, ASYNC_TASK_USER_MAX_ACTIVE=1)
     def test_throttled_request_costs_nothing(self):
         AsyncTask.objects.create(user=self.student_user, kind="cv_voice")

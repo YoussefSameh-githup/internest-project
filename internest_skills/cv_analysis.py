@@ -337,7 +337,7 @@ def run(analysis_id: int, text: str) -> tuple[int, dict]:
 
     analysis = CVAnalysis.objects.filter(pk=analysis_id).first()
     if analysis is None:
-        return 404, {"error": "not_found"}
+        return 404, {"error": "not_found", "code": "not_found"}
     if analysis.status == CVAnalysis.STATUS_DONE:  # a retried job: the work is already saved
         return 200, payload(analysis)
     CVAnalysis.objects.filter(pk=analysis.pk).update(status=CVAnalysis.STATUS_RUNNING)
@@ -353,7 +353,7 @@ def run(analysis_id: int, text: str) -> tuple[int, dict]:
         CVAnalysis.objects.filter(pk=analysis.pk).update(status=CVAnalysis.STATUS_FAILED, error="internal_error",
                                                          finished_at=timezone.now())
         analysis.refresh_from_db()
-        return 500, {**payload(analysis), "error": _("The analysis failed. Please try again.")}
+        return 500, {**payload(analysis), "code": "analysis_failed", "error": _("The analysis failed. Please try again.")}
     return 200, payload(analysis)
 
 

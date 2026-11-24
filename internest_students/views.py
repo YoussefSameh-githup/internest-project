@@ -82,7 +82,7 @@ def _quota_body(cv, exc, **extra) -> tuple[int, dict]:
 
 
 def _limit_reached():
-    return JsonResponse({"error": _("You've reached today's AI limit for the CV builder. Your data is saved in the form — try again tomorrow.")}, status=429)
+    return JsonResponse({"code": "daily_limit", "error": _("You've reached today's AI limit for the CV builder. Your data is saved in the form — try again tomorrow.")}, status=429)
 
 
 @student_gate()
@@ -112,11 +112,21 @@ def polish_request(request, cv, *, force_async):
     if not ai_tasks.available():
         return JsonResponse({"cv": cv, "error": _("AI polishing isn't available right now. You can still finish and download your CV."),
                              "code": "ai_unavailable"}, status=503)
+    if not _has_content(cv):
+        return JsonResponse({"cv": cv, "code": "empty_cv", "error": _(
+            "Add something to your CV first (a summary, an experience, a project or a skill), then polish it.")},
+            status=400)
     if not _use_ai(request.student):
         return _limit_reached()
     if force_async or async_tasks.wants_async(request):  # 202 now, the browser polls /api/tasks/<id>/status/
         return _queue_ai(request, "cv_polish", cv=cv)
     return _respond(polish_outcome(cv, request.user.pk))
+
+
+def _has_content(cv) -> bool:
+    content = svc.polish_content(cv)
+    return bool(str(content["summary"] or "").strip() or content["education"] or content["experiences"]
+                or content["projects"] or content["skills"])
 
 
 def _respond(outcome) -> JsonResponse:
@@ -132,7 +142,7 @@ def polish_outcome(cv, user_id=None) -> tuple[int, dict]:
         _refund_ai(user_id)
         return _quota_body(cv, exc)
     except LLMUnavailable:
-        return 503, {"cv": cv, "error": _("Our AI is busy right now, so your text was kept as is. Try polishing again in a few minutes.")}
+        return 503, {"cv": cv, "code": "ai_busy", "error": _("Our AI is busy right now, so your text was kept as is. Try polishing again in a few minutes.")}
 
 
 @student_gate(api=True)
@@ -141,11 +151,11 @@ def process_voice_cv(request):
     cv, audio = _payload(request), request.FILES.get("audio")
     content_type = (getattr(audio, "content_type", "") or "").split(";")[0].strip().lower()
     if audio is None or content_type not in AUDIO_TYPES:
-        return JsonResponse({"error": _("Please record a voice note first (WebM, OGG, MP3, M4A or WAV).")}, status=400)
+        return JsonResponse({"code": "audio_missing", "error": _("Please record a voice note first (WebM, OGG, MP3, M4A or WAV).")}, status=400)
     if audio.size > svc.AUDIO_MAX_BYTES:
-        return JsonResponse({"error": _("The recording is too long. Keep it under 3 minutes.")}, status=400)
+        return JsonResponse({"code": "audio_too_long", "error": _("The recording is too long. Keep it under 3 minutes.")}, status=400)
     if not svc.voice_enabled():
-        return JsonResponse({"error": _("Voice input isn't available right now. Please fill in the form instead.")}, status=503)
+        return JsonResponse({"code": "voice_unavailable", "error": _("Voice input isn't available right now. Please fill in the form instead.")}, status=503)
     if not _use_ai(request.student):
         return _limit_reached()
     filename = f"voice.{AUDIO_TYPES[content_type]}"
@@ -159,16 +169,16 @@ def voice_outcome(cv, audio: bytes, filename: str, content_type: str, user_id=No
     try:
         transcript = svc.transcribe(audio, filename, content_type)
     except svc.VoiceUnavailable:
-        return 503, {"error": _("We couldn't process your voice note right now. Please try again in a few minutes or fill in the form.")}
+        return 503, {"code": "transcription_failed", "error": _("We couldn't process your voice note right now. Please try again in a few minutes or fill in the form.")}
     if len(transcript) < 15:
-        return 400, {"error": _("We couldn't hear enough in this recording. Speak a little closer to the microphone and try again.")}
+        return 400, {"code": "audio_unclear", "error": _("We couldn't hear enough in this recording. Speak a little closer to the microphone and try again.")}
     try:
         return 200, {"cv": svc.polish_cv(cv, transcript, user=user_id), "transcript": transcript}
     except QuotaExceeded as exc:
         _refund_ai(user_id)
         return _quota_body(cv, exc, transcript=transcript)
     except LLMUnavailable:
-        return 503, {"cv": cv, "transcript": transcript,
+        return 503, {"cv": cv, "transcript": transcript, "code": "ai_busy",
                      "error": _("We transcribed your voice note, but the AI couldn't organize it right now. Copy the details from the transcript below into the form.")}
 
 
@@ -177,10 +187,10 @@ def voice_outcome(cv, audio: bytes, filename: str, content_type: str, user_id=No
 def cv_save(request):
     cv = _payload(request)
     if not cv["name"]:
-        return JsonResponse({"error": _("Add your full name in Personal info."), "step": 0}, status=400)
+        return JsonResponse({"code": "name_required", "error": _("Add your full name in Personal info."), "step": 0}, status=400)
     pending = svc.placeholders(cv)
     if pending:
-        return JsonResponse({"error": _("Replace the placeholders with real numbers before saving: %(items)s") % {"items": ", ".join(pending)}}, status=400)
+        return JsonResponse({"code": "placeholders", "error": _("Replace the placeholders with real numbers before saving: %(items)s") % {"items": ", ".join(pending)}}, status=400)
     synced = svc.sync_profile(request.student, cv)
     record = _cv_record(request.student)
     record.data = cv

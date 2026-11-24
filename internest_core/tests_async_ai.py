@@ -176,7 +176,7 @@ class AsyncTaskEndpointTests(Base):
 
     def _polish(self, **extra):
         with mock.patch("internest_students.cv_builder_service.polish_cv", return_value={"name": "Polished"}) as polish:
-            resp = self.client.post(reverse("cv_builder_polish"), data=json.dumps({"cv": {"name": "Raw"}}),
+            resp = self.client.post(reverse("cv_builder_polish"), data=json.dumps({"cv": {"name": "Raw", "summary": "Finance student"}}),
                                     content_type="application/json", **extra)
         return resp, polish
 
@@ -238,7 +238,7 @@ class AsyncTaskEndpointTests(Base):
         from internest_skills.llm import LLMUnavailable
 
         with mock.patch("internest_students.cv_builder_service.polish_cv", side_effect=LLMUnavailable("busy")):
-            body = self.client.post(reverse("cv_builder_polish"), data=json.dumps({"cv": {"name": "Raw"}}),
+            body = self.client.post(reverse("cv_builder_polish"), data=json.dumps({"cv": {"name": "Raw", "summary": "Finance student"}}),
                                     content_type="application/json", **ASYNC).json()
         self.assertEqual((body["status"], body["http_status"]), ("done", 503))
         self.assertIn("busy right now", body["result"]["error"])
@@ -249,13 +249,13 @@ class AsyncTaskEndpointTests(Base):
 
         self.client.cookies["internest_lang"] = "ar"
         with mock.patch("internest_students.cv_builder_service.polish_cv", side_effect=LLMUnavailable("busy")):
-            body = self.client.post(reverse("cv_builder_polish"), data=json.dumps({"cv": {}}), content_type="application/json", **ASYNC).json()
+            body = self.client.post(reverse("cv_builder_polish"), data=json.dumps({"cv": {"summary": "Finance student"}}), content_type="application/json", **ASYNC).json()
         self.assertNotIn("busy right now", body["result"]["error"])
 
     @override_settings(ASYNC_TASK_BACKEND="sync")
     def test_crash_inside_a_job_becomes_a_clean_failure(self):
         with mock.patch("internest_students.cv_builder_service.polish_cv", side_effect=ZeroDivisionError), self.assertLogs("internest_core.async_tasks", "ERROR"):
-            body = self.client.post(reverse("cv_builder_polish"), data=json.dumps({"cv": {}}), content_type="application/json", **ASYNC).json()
+            body = self.client.post(reverse("cv_builder_polish"), data=json.dumps({"cv": {"summary": "Finance student"}}), content_type="application/json", **ASYNC).json()
         self.assertEqual((body["status"], body["http_status"], body["error"]), ("failed", 500, "internal_error"))
 
     def test_status_is_private_to_the_owner(self):

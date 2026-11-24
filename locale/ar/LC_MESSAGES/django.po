@@ -9589,3 +9589,10 @@ msgstr ""
 
 msgid "Add selected skills"
 msgstr "ضيف المهارات المختارة"
+
+msgid ""
+"Add something to your CV first (a summary, an experience, a project or a "
+"skill), then polish it."
+msgstr ""
+"أضف شيئًا إلى سيرتك الذاتية أولًا (نبذة أو خبرة أو مشروع أو مهارة)، ثم "
+"حسّنها."

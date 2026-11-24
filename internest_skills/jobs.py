@@ -67,7 +67,7 @@ def answer_evaluation_job(user_id, response_id):
     try:
         response.ai_suggestion = review.ai_suggestion(response, user=user_id)
     except AIUnavailable as exc:
-        return 503, {"error": getattr(exc, "user_message", "") or "AI unavailable",
+        return 503, {"code": "ai_unavailable", "error": getattr(exc, "user_message", "") or "AI unavailable",
                      "redirect": reverse("skills_review_detail", args=[response.attempt.token])}
     response.save(update_fields=["ai_suggestion"])
     return 200, {"ai_suggestion": response.ai_suggestion,
