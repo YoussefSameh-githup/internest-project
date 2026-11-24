@@ -9,8 +9,7 @@
     <div class="auth-shell__visual">
         <div>
             <a href="{% url 'landing' %}" class="nav__brand" style="color: var(--white);">
-                <img src="{% static 'img/internest_logo_192.jpg' %}" alt="Internest" width="38" height="38">
-                <span>INTERNEST</span>
+                {% include "components/brand_mark.html" with gid="authMark" %}{% include "components/brand_wordmark.html" %}<span class="sr-only">Internest</span>
             </a>
         </div>
 
@@ -20,7 +19,7 @@
                 {% trans "Your first step toward real work experience" %}
             </h1>
             <p style="color: rgba(255,255,255,0.85); font-size: var(--text-lg); max-width: 380px;">
-                {% trans "Join thousands of students who built their unified professional profile on Internest." %}
+                {% trans "Build one unified professional profile and let your verified skills speak for you." %}
             </p>
         </div>
 

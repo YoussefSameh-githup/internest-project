@@ -6,11 +6,10 @@
 {% block content %}
 <div class="auth-shell">
 
-    <div class="auth-shell__visual" style="background: linear-gradient(135deg, #5b2c0c 0%, #b45309 50%, #d97706 100%);">
+    <div class="auth-shell__visual" style="background: linear-gradient(135deg, #5b2c0c 0%, #c2410c 50%, #f97316 100%);">
         <div>
             <a href="{% url 'landing' %}" class="nav__brand" style="color: var(--white);">
-                <img src="{% static 'img/internest_logo_192.jpg' %}" alt="Internest" width="38" height="38">
-                <span>INTERNEST</span>
+                {% include "components/brand_mark.html" with gid="authMark" %}{% include "components/brand_wordmark.html" %}<span class="sr-only">Internest</span>
             </a>
         </div>
 

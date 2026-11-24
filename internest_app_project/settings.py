@@ -560,18 +560,18 @@ UNFOLD = {
     "SITE_HEADER": "Internest",
     "SITE_SUBHEADER": _("Control center"),
     "SITE_URL": "/",
-    "SITE_ICON": lambda request: static("img/internest_logo_192.jpg"),  # small copy; the original is 1024 px / 106 KB
-    "SITE_FAVICONS": [{"rel": "icon", "type": "image/jpeg", "href": lambda request: static("img/internest_logo_192.jpg")}],
+    "SITE_ICON": lambda request: static("img/brand/internest-mark.svg"),  # brand mark (scripts/brand_assets.py)
+    "SITE_FAVICONS": [{"rel": "icon", "type": "image/svg+xml", "href": lambda request: static("img/brand/internest-mark.svg")}],
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
     "SHOW_LANGUAGES": True,  # AR / EN switch; the layout flips to RTL in Arabic
     "DASHBOARD_CALLBACK": "internest_core.admin_dashboard.dashboard_callback",
     "COLORS": {
-        "primary": {  # Internest blue
-            "50": "oklch(97% .014 254.604)", "100": "oklch(93.2% .032 255.585)", "200": "oklch(88.2% .059 254.128)",
-            "300": "oklch(80.9% .105 251.813)", "400": "oklch(70.7% .165 254.624)", "500": "oklch(62.3% .214 259.815)",
-            "600": "oklch(54.6% .245 262.881)", "700": "oklch(48.8% .243 264.376)", "800": "oklch(42.4% .199 265.638)",
-            "900": "oklch(37.9% .146 265.522)", "950": "oklch(28.2% .091 267.935)",
+        "primary": {  # Internest brand purple (logo gradient start)
+            "50": "oklch(96.9% .016 293.756)", "100": "oklch(94.3% .029 294.588)", "200": "oklch(89.4% .057 293.283)",
+            "300": "oklch(81.1% .111 293.571)", "400": "oklch(70.2% .183 293.541)", "500": "oklch(60.6% .25 292.717)",
+            "600": "oklch(54.1% .281 293.009)", "700": "oklch(49.1% .27 292.581)", "800": "oklch(43.2% .232 292.759)",
+            "900": "oklch(38% .189 293.745)", "950": "oklch(28.3% .141 291.089)",
         },
     },
     "SIDEBAR": {

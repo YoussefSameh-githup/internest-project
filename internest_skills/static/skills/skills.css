@@ -12,7 +12,7 @@
   background: var(--white);
 }
 .skill-tile--verified { border-color: #bbf7d0; background: #f0fdf4; }
-.skill-tile--lag { border-color: #fde68a; background: #fffbeb; }
+.skill-tile--lag { border-color: #fed7aa; background: var(--accent-50); }
 .skill-tile__meta { font-size: var(--text-xs); color: var(--gray-500, #6b7280); margin-top: var(--space-1); }
 .skill-tile__score { font-weight: 700; color: #15803d; margin-top: var(--space-2); }
 .skill-tile__evidence { font-size: var(--text-xs); color: var(--gray-600, #4b5563); margin-top: var(--space-2); font-style: italic; }
@@ -54,8 +54,8 @@
 .rv__row small { display: block; color: #64748b; }
 .rv__chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .rv__chip { display: inline-flex; padding: 3px 10px; border-radius: 999px; background: #f1f5f9; color: #334155; font-size: 12px; font-weight: 700; }
-.rv__chip--practical_review { background: #eff6ff; color: #1d4ed8; }
-.rv__chip--fast_correct_answers, .rv__chip--similar_answer, .rv__chip--typing_flags { background: #fef3c7; color: #92400e; }
+.rv__chip--practical_review { background: var(--brand-50); color: var(--brand-700); }
+.rv__chip--fast_correct_answers, .rv__chip--similar_answer, .rv__chip--typing_flags { background: var(--accent-100); color: #9a3412; }
 .rv__empty { padding: 24px; border-radius: 14px; background: #f8fafc; color: #64748b; text-align: center; }
 .rv__events { margin: 8px 0 16px; font-size: 13px; }
 .rv__form { display: grid; gap: 16px; }
@@ -68,5 +68,5 @@
 .rv__credit input { width: 110px; height: 40px; padding: 0 8px; border: 1px solid #cbd5e1; border-radius: 10px; font: inherit; }
 .rv__note textarea { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 10px; font: inherit; }
 .rv__actions { display: flex; flex-wrap: wrap; gap: 10px; }
-.rv__ai-warning { margin: 0; padding: 8px 12px; border-radius: 10px; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: 13px; }
+.rv__ai-warning { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--accent-50); border: 1px solid #fed7aa; color: #9a3412; font-size: 13px; }
 .rv__ai-ask { justify-self: start; min-height: 40px; }

@@ -258,4 +258,5 @@ class RatingTierTests(ApplicationsBase):
         exp = GigExperience.objects.get()
         with exp.pdf_file.open("rb") as f:
             self.assertEqual(f.read(4), b"%PDF")
-        self.assertIn("-v4-", exp.pdf_file.name)
+        from internest_core.letters import LETTER_VERSION
+        self.assertIn(f"-{LETTER_VERSION}-", exp.pdf_file.name)

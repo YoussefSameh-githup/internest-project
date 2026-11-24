@@ -45,7 +45,7 @@
                                 <strong dir="auto">{{ g.project_title|default:g.get_platform_display }}</strong>
                                 <span class="px-pill px-pill--{{ g.status }}">{% if g.status == 'verified' %}✅ {% trans "Approved & verified" %}{% elif g.status == 'needs_proof' %}📎 {{ g.get_status_display }}{% elif g.status == 'pending' %}⏳ {{ g.get_status_display }}{% else %}{{ g.get_status_display }}{% endif %}</span>
                                 {% if g.owner_matched %}<span class="px-pill px-pill--verified">👤 {% trans "Account matches you" %}</span>{% endif %}
-                                {% if g.rating %}<span style="color: #f59e0b; font-weight: 800;">★ {{ g.rating }}</span>{% endif %}
+                                {% if g.rating %}<span style="color: #ff8a1f; font-weight: 800;">★ {{ g.rating }}</span>{% endif %}
                             </div>
                             <div class="px-gig__meta">{{ g.get_platform_display }}{% if g.platform_username %} · @{{ g.platform_username }}{% endif %} · <a href="{{ g.link }}" target="_blank" rel="noopener nofollow" dir="ltr">{{ g.link|truncatechars:48 }}</a></div>
                             {% if g.skills.all %}<div class="px-chips mt-2">{% for skill in g.skills.all %}<span class="px-chip {% if g.status == 'verified' %}px-chip--verified{% else %}px-chip--explicit{% endif %}" style="padding: 4px 10px;">{{ skill.name }}</span>{% endfor %}</div>{% endif %}

@@ -6,17 +6,17 @@
 .sx-modes button { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 8px 6px; border: 0; border-radius: 11px; background: none;
   color: #475569; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s, color .15s; }
 .sx-modes button:hover { color: #0f172a; }
-.sx-modes button[aria-selected="true"] { background: #fff; color: #1d4ed8; box-shadow: 0 2px 8px rgba(15, 23, 42, .08); }
-.sx-modes button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.sx-modes button[aria-selected="true"] { background: #fff; color: #5b3fd6; box-shadow: 0 2px 8px rgba(15, 23, 42, .08); }
+.sx-modes button:focus-visible { outline: 2px solid #6a4cff; outline-offset: 2px; }
 .sx-panel { display: flex; flex-direction: column; gap: 10px; animation: sx-in .2s ease-out; }
 .sx-panel[hidden] { display: none; }
 @keyframes sx-in { from { opacity: 0; transform: translateY(4px); } }
 .sx-drop { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 32px 16px; border: 2px dashed #cbd5e1; border-radius: 18px;
   background: #f8fafc; text-align: center; cursor: pointer; transition: border-color .15s, background .15s, transform .15s; }
-.sx-drop:hover, .sx-drop:focus-within { border-color: #93c5fd; background: #f5f9ff; }
-.sx-drop.is-drag { border-color: #2563eb; background: #eff6ff; transform: scale(1.01); }
+.sx-drop:hover, .sx-drop:focus-within { border-color: #b7a6ff; background: #f5f9ff; }
+.sx-drop.is-drag { border-color: #6a4cff; background: #f6f3ff; transform: scale(1.01); }
 .sx-drop.has-file { border-style: solid; border-color: #86efac; background: #f0fdf4; }
-.sx-drop__icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: #dbeafe; color: #2563eb; font-size: 1.5rem; }
+.sx-drop__icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: #ebe5ff; color: #6a4cff; font-size: 1.5rem; }
 .sx-drop.has-file .sx-drop__icon { background: #dcfce7; color: #16a34a; }
 .sx-drop strong { color: #0f172a; }
 .sx-drop small, .sx-hint { color: #64748b; font-size: 13px; }
@@ -26,16 +26,16 @@
 .sx input[type="url"], .sx textarea { display: block; width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 14px;
   font: inherit; background: #fff; transition: border-color .15s, box-shadow .15s; }
 .sx textarea { min-height: 180px; line-height: 1.6; resize: vertical; }
-.sx input[type="url"]:focus, .sx textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, .12); }
+.sx input[type="url"]:focus, .sx textarea:focus { outline: none; border-color: #6a4cff; box-shadow: 0 0 0 4px rgba(106, 76, 255, .12); }
 .sx-or { display: flex; align-items: center; gap: 10px; color: #94a3b8; font-size: 12px; font-weight: 700; text-transform: uppercase; }
 .sx-or::before, .sx-or::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; }
 .sx-row { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .sx-hint { margin: 0; }
 .sx-error { color: #b91c1c; font-size: 13px; }
 .sx-submit { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; border: 0; border-radius: 14px; color: #fff;
-  font: inherit; font-size: 16px; font-weight: 800; cursor: pointer; background: #1d4ed8; box-shadow: 0 10px 24px rgba(29, 78, 216, .28); transition: background .15s, transform .15s; }
-.sx-submit:hover { background: #1e40af; transform: translateY(-1px); }
-.sx-submit:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+  font: inherit; font-size: 16px; font-weight: 800; cursor: pointer; background: #5b3fd6; box-shadow: 0 10px 24px rgba(91, 63, 214, .28); transition: background .15s, transform .15s; }
+.sx-submit:hover { background: #5b3fd6; transform: translateY(-1px); }
+.sx-submit:focus-visible { outline: 3px solid #b7a6ff; outline-offset: 2px; }
 .sx-submit:disabled { opacity: .75; cursor: progress; transform: none; }
 .sx-spin { display: none; width: 16px; height: 16px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: sx-spin .8s linear infinite; }
 .sx-submit.is-busy .sx-spin { display: inline-block; }

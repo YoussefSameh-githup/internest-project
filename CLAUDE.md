@@ -16,7 +16,9 @@ On every coding, UI or marketing prompt, use the relevant skills in `.claude/ski
 
 ## Brand
 - Logo = purple→orange "N" mark (two people reaching for a star) + stroke-drawn "Inter|nest" wordmark. Single source: `scripts/brand_assets.py` (writes `components/brand_mark.html`, `components/brand_wordmark.html`, `static/img/brand/*.svg`) and `scripts/brand_png.ps1` (favicon, touch icon, OG card). Never edit the generated files by hand; include the mark with a page-unique `gid`.
-- The homepage (`internship/landing_page.html`, `body.lp`, `static/css/landing.css`) is the dark brand canvas; app pages keep `styles.css`. The logo reveal plays once per session and only under `prefers-reduced-motion: no-preference` (`tests_landing.py`).
+- Colours come only from the tokens in `styles.css :root` (`--brand-*` purple, `--accent-*` orange, `--ink`, `--gradient-brand`, semantic `--brand-primary`/`--surface-*`/`--text-*`). Never hardcode a colour in a template or app stylesheet; `tests_landing` fails on the old blue/amber palette. E-mails (no CSS variables) use the token hex values.
+- One near-black brand nav on every page (`styles.css` "Brand chrome"); working screens stay on light surfaces (no theme toggle: see `docs/INTERNEST_BRAND_TRANSFORMATION_STATUS.md` phase 4).
+- The homepage (`internship/landing_page.html`, `body.lp`, `static/css/landing.css`) uses `components/brand_lockup_hero.html`: stacked logo whose "Intern" and "nest" share one "n". The reveal plays on each homepage load, only under `prefers-reduced-motion: no-preference` (reduced motion = fade), never blocks the hero copy (`tests_landing.py`).
 
 ## Working style
 - **Scoped reads:** open only files tied to the task (grep first, read ranges). Do not scan unrelated apps.

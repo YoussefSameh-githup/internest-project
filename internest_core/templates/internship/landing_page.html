@@ -6,11 +6,6 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% asset 'css/landing.css' %}">
-{# The logo reveal plays once per browser session; later visits in the same session show the finished logo. #}
-<script nonce="{{ csp_nonce }}">
-try { if (sessionStorage.getItem("lp-intro")) document.documentElement.classList.add("lp-intro-seen");
-      else sessionStorage.setItem("lp-intro", "1"); } catch (e) {}
-</script>
 {% endblock %}
 
 {% block content %}
@@ -20,10 +15,7 @@ try { if (sessionStorage.getItem("lp-intro")) document.documentElement.classList
         <div class="lp-hero__copy">
             <div class="lp-intro" role="img" aria-label="Internest — {% trans 'Learn' %}, {% trans 'Grow' %}, {% trans 'Get Hired' %}">
                 <span class="lp-intro__glow" aria-hidden="true"></span>
-                <div class="lp-intro__row">
-                    {% include "components/brand_mark.html" with gid="heroMark" %}
-                    {% include "components/brand_wordmark.html" %}
-                </div>
+                {% include "components/brand_lockup_hero.html" with gid="heroMark" %}
                 <p class="lp-intro__tagline" aria-hidden="true">{% trans "Learn" %}<i>•</i>{% trans "Grow" %}<i>•</i>{% trans "Get Hired" %}</p>
             </div>
 

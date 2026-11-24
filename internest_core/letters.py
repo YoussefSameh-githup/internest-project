@@ -27,15 +27,15 @@ FONT_CANDIDATES = [
     ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
     ("/usr/share/fonts/truetype/noto/NotoNaskhArabic-Regular.ttf", "/usr/share/fonts/truetype/noto/NotoNaskhArabic-Bold.ttf"),
 ]
-LETTER_VERSION = "v4"  # bump when the design changes: stored letters from older versions are rebuilt
+LETTER_VERSION = "v5"  # bump when the design changes: stored letters from older versions are rebuilt
 
 
 def _rgb(hex_color):
     return tuple(int(hex_color[i:i + 2], 16) / 255 for i in (1, 3, 5))
 
 
-DEEP, PRIMARY, INK, SOFT = _rgb("#1e3a8a"), _rgb("#2563eb"), _rgb("#0f172a"), _rgb("#f8fafc")
-MUTED, LINE, GOLD = _rgb("#64748b"), _rgb("#e2e8f0"), _rgb("#f59e0b")
+DEEP, PRIMARY, INK, SOFT = _rgb("#1a1147"), _rgb("#6a4cff"), _rgb("#0f172a"), _rgb("#f8fafc")  # brand purple
+MUTED, LINE, GOLD = _rgb("#64748b"), _rgb("#e2e8f0"), _rgb("#ff8a1f")  # brand orange
 W, H, M = 595.28, 841.89, 48  # A4 points, page margin
 STATEMENTS = {
     "excellence": "delivered outstanding work and earned the issuing company's highest rating. Internest and the company "
@@ -203,7 +203,7 @@ def _image(path):
 def _brand_logo_path():
     from django.contrib.staticfiles import finders
 
-    return finders.find("img/internest_logo.jpg")
+    return finders.find("img/brand/icon-512.png")
 
 
 def _logo_tile(c, x, y, size, image, letters, bold):

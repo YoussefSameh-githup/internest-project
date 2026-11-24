@@ -6,7 +6,7 @@
 {% block content %}
 <style>
 /* Embedded so the page renders right even with an old cached stylesheet. */
-.fl { --fl-accent: #2563eb; --fl-line: #e2e8f0; --fl-muted: #64748b; padding: 32px 0 64px; background: #f8fafc; }
+.fl { --fl-accent: #6a4cff; --fl-line: #e2e8f0; --fl-muted: #64748b; padding: 32px 0 64px; background: #f8fafc; }
 .fl-wrap { max-width: 900px; }
 .fl-head { margin-bottom: 20px; }
 .fl-head a { color: var(--fl-muted); font-size: 14px; text-decoration: none; }
@@ -19,12 +19,12 @@
 .fl-platform span { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 6px; border: 1px solid var(--fl-line); border-radius: 16px;
   background: #fff; font-size: 13px; font-weight: 700; color: #334155; text-align: center; cursor: pointer; transition: .15s; }
 .fl-platform b { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; color: #fff; font-size: 1.05rem; }
-.fl-platform input:checked + span { border-color: var(--fl-accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); color: var(--fl-accent); }
+.fl-platform input:checked + span { border-color: var(--fl-accent); box-shadow: 0 0 0 3px rgba(106, 76, 255, .15); color: var(--fl-accent); }
 .fl-platform input:focus-visible + span { outline: 2px solid var(--fl-accent); outline-offset: 2px; }
 .fl-field { margin-bottom: 16px; }
 .fl-field input[type=url], .fl-field textarea { width: 100%; box-sizing: border-box; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 12px; font: inherit; background: #fff; }
 .fl-field textarea { resize: vertical; line-height: 1.55; }
-.fl-field input:focus, .fl-field textarea:focus { outline: none; border-color: var(--fl-accent); box-shadow: 0 0 0 4px rgba(37, 99, 235, .12); }
+.fl-field input:focus, .fl-field textarea:focus { outline: none; border-color: var(--fl-accent); box-shadow: 0 0 0 4px rgba(106, 76, 255, .12); }
 .fl-field small { display: block; margin-top: 4px; color: var(--fl-muted); font-size: 12px; }
 .fl-error { margin-top: 4px; color: #b91c1c; font-size: 13px; }
 .fl-drop { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px dashed #94a3b8; border-radius: 14px; background: #f8fafc; cursor: pointer; }
@@ -35,7 +35,7 @@
 .is-busy .fl-spin { display: inline-block; }
 @keyframes fl-spin { to { transform: rotate(360deg); } }
 .fl-how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0 0 20px; padding: 0; list-style: none; }
-.fl-how li { padding: 12px 14px; border-radius: 14px; background: #eff6ff; color: #1e3a8a; font-size: 13px; }
+.fl-how li { padding: 12px 14px; border-radius: 14px; background: #f6f3ff; color: #2a1a78; font-size: 13px; }
 .fl-how b { display: block; margin-bottom: 2px; }
 .fl-gig { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-top: 1px solid #f1f5f9; }
 .fl-gig:first-of-type { border-top: 0; }
@@ -46,7 +46,7 @@
 .fl-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .fl-chip { padding: 3px 10px; border-radius: 999px; background: #f1f5f9; color: #334155; font-size: 12px; font-weight: 700; }
 .fl-status { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
-.fl-status--pending { background: #fef3c7; color: #92400e; }
+.fl-status--pending { background: #ffedd5; color: #9a3412; }
 .fl-status--verified { background: #dcfce7; color: #166534; }
 .fl-status--rejected { background: #fee2e2; color: #991b1b; }
 .fl-status--needs_proof { background: #ffedd5; color: #9a3412; }
@@ -141,7 +141,7 @@
                             <span dir="auto">{{ g.project_title|default:g.get_platform_display }}</span>
                             <span class="fl-status fl-status--{{ g.status }}">{% if g.status == 'verified' %}✅ {% elif g.status == 'pending' %}⏳ {% elif g.status == 'needs_proof' %}📎 {% endif %}{{ g.get_status_display }}</span>
                             {% if g.owner_matched %}<span class="fl-status fl-status--verified" title="{% trans 'The username in the link matches your profile' %}">👤 {% trans "Account matches you" %}</span>{% endif %}
-                            {% if g.rating %}<span style="color: #f59e0b;">★ {{ g.rating }}</span>{% endif %}
+                            {% if g.rating %}<span style="color: #ff8a1f;">★ {{ g.rating }}</span>{% endif %}
                         </div>
                         <div class="fl-gig__meta">{{ g.get_platform_display }} · <a href="{{ g.link }}" target="_blank" rel="noopener nofollow" dir="ltr">{{ g.link|truncatechars:60 }}</a> · {{ g.created_at|date:"Y/m/d" }}</div>
                         {% if g.status == 'needs_proof' %}<p class="fl-owner-hint"><i class="bi bi-person-exclamation"></i> {% blocktrans with handle=g.platform_username %}“{{ handle }}” doesn't match your name, so our team will check your proof of account ownership.{% endblocktrans %}</p>{% endif %}
