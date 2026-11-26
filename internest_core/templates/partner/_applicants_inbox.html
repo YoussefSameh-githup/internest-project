@@ -22,12 +22,13 @@
 .ix-summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid #f1f5f9; }
 .ix-summary h4 { margin: 0 0 6px; font-size: 1.15rem; color: var(--ix-ink); }
 .ix-facts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--ix-muted); font-size: 13px; }
-.ix-facts span { display: inline-flex; align-items: center; gap: 5px; }
+.ix-facts span, .ix-facts a { display: inline-flex; align-items: center; gap: 5px; }
+.ix-facts a { min-height: 28px; font-weight: 700; }  /* a tappable target, not a 19px line of text */
 .ix-state { padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; }
 .ix-state--open { background: #dcfce7; color: #166534; }
 .ix-state--expired { background: #f1f5f9; color: #475569; }
 .ix-state--closed { background: #fee2e2; color: #991b1b; }
-.ix-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.ix-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 12px; }
 .ix-app { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 18px; background: #f8fafc; border: 1px solid #eef2f7;
   transition: transform .15s, box-shadow .2s, border-color .2s; }
 .ix-app { position: relative; z-index: 0; }
@@ -66,7 +67,8 @@
 .ix-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 32px 16px; border-radius: 18px; border: 1px dashed #cbd5e1;
   color: var(--ix-muted); text-align: center; }
 .ix-empty .bi { font-size: 2.2rem; color: var(--ix-brand); }
-@media (max-width: 640px) { .ix-summary { grid-template-columns: 1fr; } .ix-views { width: 100%; } .ix-views a { flex: 1; text-align: center; } }
+@media (max-width: 640px) { .ix-summary { grid-template-columns: 1fr; } .ix-views { display: flex; width: 100%; } .ix-views a { flex: 1 1 0; min-width: 0; text-align: center; white-space: normal; line-height: 1.3; }
+  .ix-menu__list { position: static; margin-top: 6px; min-width: 0; } }  /* phones: the menu opens inside the card, never past the screen edge */
 </style>
 
 {% partner_is_pro partner as is_pro %}

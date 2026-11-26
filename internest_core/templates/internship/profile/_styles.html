@@ -61,7 +61,7 @@ a.px-badge:hover { border-color: var(--px-brand); color: var(--px-brand); }
 .px-ring__fill { stroke: #16a34a; stroke-linecap: round; transition: stroke-dasharray .6s ease; }
 .px-ring__text { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; line-height: 1.1; }
 .px-ring__text strong { color: var(--px-ink); font-size: 1.3rem; }
-.px-ring__text small { font-size: 9.5px; color: var(--px-muted); }
+.px-ring__text small { font-size: 11px; color: var(--px-muted); }
 .px-cta-main { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 13px 16px; border-radius: 16px; border: 0; color: #fff; text-decoration: none;
   font: inherit; font-weight: 800; cursor: pointer; background: linear-gradient(135deg, #22c55e, #059669); box-shadow: 0 12px 26px rgba(16, 185, 129, .4); transition: transform .15s; }
 .px-cta-main:hover { transform: translateY(-2px); color: #fff; }
@@ -69,7 +69,7 @@ a.px-badge:hover { border-color: var(--px-brand); color: var(--px-brand); }
 .px-quick a, .px-quick button { display: flex; align-items: center; gap: 9px; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14);
   color: #e2e8f0; font: inherit; font-size: 13.5px; font-weight: 700; text-decoration: none; cursor: pointer; text-align: start; }
 .px-quick a:hover, .px-quick button:hover { background: rgba(255, 255, 255, .16); color: #fff; }
-.px-quick small { display: block; font-weight: 500; font-size: 11.5px; color: #d6ccff; }
+.px-quick small { display: block; font-weight: 500; font-size: 12px; color: #d6ccff; }
 .px-quick i { font-size: 1.15rem; }
 
 /* Tabs */
@@ -173,7 +173,7 @@ a.px-badge:hover { border-color: var(--px-brand); color: var(--px-brand); }
 
 
 /* Overview: verified badges, skill cards, activity rows */
-.px-sbadges { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.px-sbadges { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 12px; }
 .px-sbadge { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 18px; background: linear-gradient(135deg, #f0fdf4, #ecfeff); border: 1px solid #bbf7d0; }
 .px-sbadge__seal { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; background: #16a34a; color: #fff; font-size: 1.2rem; flex-shrink: 0; }
 .px-sbadge__body { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; align-items: flex-start; }

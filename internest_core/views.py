@@ -15,6 +15,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.text import Truncator
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext as _
 
@@ -35,7 +36,7 @@ from .models import (
     DiscountCode, StudentEnrollment,
     EmailVerification, GigExperience, RATING_CHOICES,
 )
-from . import audit, identity
+from . import audit, identity, seo
 from .page_cache import cache_public_page
 from .student_hub import cv_primary_education, hub_header, open_invitations, profile_context, skill_quizzes, student_applications
 from .forms import (
@@ -429,6 +430,10 @@ def internship_detail_view(request, pk):
     )
     context = get_user_context(request)
     context["internship"] = internship
+    context["meta_description"] = Truncator(" ".join(internship.description.split())).chars(155)
+    posting = seo.job_posting(request, internship)
+    context["structured_data"] = [seo.ld_json(posting)] if posting else []
+    context["robots_noindex"] = posting is None or request.user.is_authenticated  # closed / expired: drop from the index
     student = _get_student_profile(request.user) if request.user.is_authenticated else None
     if student is not None:
         from internest_startups.talent import valid_invitation

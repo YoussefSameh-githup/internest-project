@@ -35,7 +35,7 @@
 
             <div>
                 <h4 class="mb-4">{% trans "Contact information" %}</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-5);">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: var(--space-4); margin-bottom: var(--space-5);">
                     <div>
                         <span class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em;">{% trans "Official email" %}</span>
                         <p class="fw-bold mt-2 mb-0"><i class="bi bi-envelope"></i> {{ partner_profile.official_email|default:"-" }}</p>

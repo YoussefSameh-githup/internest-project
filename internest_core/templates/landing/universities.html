@@ -7,6 +7,15 @@
 <link rel="icon" type="image/svg+xml" href="{% static 'img/brand/internest-mark.svg' %}">
 <link rel="apple-touch-icon" href="{% static 'img/brand/apple-touch-icon.png' %}">
 <meta name="description" content="Internest للجامعات: فرص تدريب حقيقية لطلابكم مع startups، تقرير مهارات جاهز يدعم ملف الجودة والاعتماد، وداشبورد لكل كلية.">
+<link rel="canonical" href="{{ canonical_url }}">
+{% if robots_noindex %}<meta name="robots" content="noindex, nofollow">{% endif %}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Internest">
+<meta property="og:title" content="Internest للجامعات">
+<meta property="og:url" content="{{ canonical_url }}">
+<meta property="og:image" content="{{ site_origin }}{% static 'img/brand/og-image.png' %}">
+<meta property="og:locale" content="{{ og_locale }}">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -269,7 +278,7 @@ table.t td.n{font-variant-numeric:tabular-nums}
 .pg.p2{inset-inline-start:210px;top:22px;transform:rotate(3deg);z-index:1}
 html[dir="rtl"] .pg.p2{transform:rotate(-3deg)}
 @media (max-width:560px){.pg{width:260px;height:360px;padding:22px}.pg.p2{inset-inline-start:70px}.stack{height:390px}}
-.pg-top{display:flex;justify-content:space-between;font-size:10.5px;color:#5d6678}
+.pg-top{display:flex;justify-content:space-between;font-size:11px;color:#5d6678}
 .pg h4{font:600 20px/1.35 var(--head);margin-top:70px}
 .pg .pg-m{font-size:12px;color:#47526a;margin-top:8px}
 .pg .pg-band{position:absolute;inset-inline:0;bottom:0;height:110px;background:#14213a;color:#c9d2e3;padding:22px 28px;font-size:11px}
@@ -278,9 +287,9 @@ html[dir="rtl"] .pg.p2{transform:rotate(-3deg)}
 .mini-k{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
 .mini-k div{border:1px solid #e3e6eb;border-radius:6px;padding:8px}
 .mini-k b{display:block;font:600 16px var(--head)}
-.mini-k span{font-size:9.5px;color:#5d6678}
+.mini-k span{font-size:11px;color:#5d6678}
 .mini-bars{margin-top:14px;display:grid;gap:6px}
-.mini-bars div{display:grid;grid-template-columns:70px 1fr;gap:6px;align-items:center;font-size:9.5px;color:#47526a}
+.mini-bars div{display:grid;grid-template-columns:70px 1fr;gap:6px;align-items:center;font-size:11px;color:#47526a}
 .mini-bars i{display:block;height:6px;border-radius:0 3px 3px 0;background:#0e7f60}
 html[dir="rtl"] .mini-bars i{border-radius:3px 0 0 3px}
 .checks{list-style:none;padding:0;margin:24px 0 0;display:grid;gap:14px}
@@ -343,6 +352,7 @@ html[dir="rtl"] .mini-bars i{border-radius:3px 0 0 3px}
 .form input,.form select,.form textarea{font:400 15px var(--body);color:#111a2b;border:1px solid #d5dae2;border-radius:9px;padding:11px 12px;background:#fff;width:100%}
 .form textarea{min-height:90px;resize:vertical}
 .form input:focus,.form select:focus,.form textarea:focus{outline:2px solid #0e7f60;outline-offset:0;border-color:#0e7f60}
+@media (max-width:640px){.form input,.form select,.form textarea,.sel{font-size:16px}} /* 16px+: iOS does not zoom the page on focus */
 .form .btn{grid-column:1/-1;background:#0e7f60;color:#fff;padding:14px}
 .form .fine{grid-column:1/-1;font-size:12.5px;color:#5d6678}
 .form .ok{grid-column:1/-1;font-size:14px;color:#0e7f60;display:none}

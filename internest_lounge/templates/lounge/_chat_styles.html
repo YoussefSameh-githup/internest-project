@@ -100,7 +100,7 @@
 .dm-form__error { padding: 6px 16px; background: #fef2f2; color: #991b1b; font-size: 13px; }
 
 @media (max-width: 960px) {
-  .ch-layout { grid-template-columns: 1fr; }
+  .ch-layout { grid-template-columns: minmax(0, 1fr); }  /* minmax(0,…): a wide post can never push the column past the screen */
   .ch-side { position: static; }
   .dm-shell { grid-template-columns: 1fr; height: calc(100vh - 140px); height: calc(100dvh - 140px); }
   .dm-shell.has-active .dm-list { display: none; }

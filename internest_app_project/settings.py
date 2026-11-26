@@ -123,6 +123,8 @@ MIDDLEWARE = [
     # Internest: per-IP / per-user limits on login, signup, password reset and uploads.
     "internest_core.ratelimit.RateLimitMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Internest: X-Robots-Tag noindex on private, personal and error responses (internest_core/seo.py).
+    "internest_core.seo.SEOHeadersMiddleware",
     # Internest: lock unverified students on the verify-email page.
     "internest_core.middleware.EmailVerificationGateMiddleware",
     # Startups must complete their company profile before using the dashboard.
@@ -141,6 +143,7 @@ TEMPLATES = [
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
+                "internest_core.seo.seo",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "internest_core.csp.nonce_context",
@@ -528,6 +531,9 @@ INSTAPAY_LINK = env("INSTAPAY_LINK", default="https://ipn.eg/S/you_zersif7/insta
 INSTAPAY_IPA = env("INSTAPAY_IPA", default="you_zersif7@instapay")
 REDOTPAY_ID = env("REDOTPAY_ID", default="1588800300")
 SALES_EMAIL = env("SALES_EMAIL", default="sales@internest.app")
+# Canonical public origin for canonical/og URLs, robots.txt and the sitemap (production: https://internest.app).
+# Empty = build from the request (local development).
+SITE_URL = env("SITE_URL", default="")
 SUPPORT_PHONE = env("SUPPORT_PHONE", default="01113999387")
 SUPPORT_EMAIL = env("SUPPORT_EMAIL", default="engineerthe973@gmail.com")
 

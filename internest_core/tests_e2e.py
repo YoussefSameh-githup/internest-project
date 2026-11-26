@@ -135,6 +135,8 @@ class StudentJourney(E2EBase):
         code = EmailVerification.objects.get(user__username="nour").code
         self.assertTrue(any(code in m.body for m in mail.outbox))
         self.assertRedirects(c.get(reverse("list")), reverse("verify_email"), fetch_redirect_response=False)  # gate
+        # The gate page has no site menu: it must offer its own sign-out (wrong e-mail, shared phone).
+        self.assertContains(c.get(reverse("verify_email")), f'<form method="post" action="{reverse("logout")}"')
         c.post(reverse("verify_email"), {"code": "000000" if code != "000000" else "111111", "email_type": "personal"})
         self.assertRedirects(c.get(reverse("list")), reverse("verify_email"), fetch_redirect_response=False)  # wrong code
         c.post(reverse("verify_email"), {"code": code, "email_type": "personal"})

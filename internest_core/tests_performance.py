@@ -319,11 +319,12 @@ class FrontEndTests(Base):
         html = self.client.get(reverse("list")).content.decode()
         self.assertIn('width="48" height="48" loading="lazy" decoding="async"', html)
 
-    def test_scripts_are_deferred_and_cdn_is_preconnected(self):
+    def test_scripts_are_deferred_and_ui_libraries_are_first_party(self):
         html = self.client.get(reverse("landing")).content.decode()
-        self.assertIn('bootstrap.bundle.min.js" defer', html)
-        self.assertIn('async_task_poller.js', html)
-        self.assertIn('<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>', html)
+        self.assertRegex(html, r'bootstrap\.bundle\.min(\.[0-9a-f]+)?\.js" defer')
+        self.assertIn('async_task_poller', html)
+        self.assertIn('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>', html)
+        self.assertNotIn("cdn.jsdelivr.net", html)  # Bootstrap + icons come from /static/vendor/: one origin less before first paint
 
 
 @override_settings(AI_CACHE_TTL=3600, ASYNC_TASK_BACKEND="sync", GEMINI_API_KEY="g-key",

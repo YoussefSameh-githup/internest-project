@@ -50,9 +50,12 @@ dialog { max-width: calc(100vw - 24px); max-height: calc(var(--vh-full) - 24px);
 @media (max-width: 767.98px) {
   main table:not(.sr-only) { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .btn-lg { padding-inline: 18px; }
+  /* Form text 16px+ on phones and tablets: iOS Safari zooms the whole page when a smaller field gets focus. */
+  body input:not([type=checkbox], [type=radio], [type=range], [type=file], [type=color]),
+  body select:not([hidden]), body textarea:not([hidden]) { font-size: max(16px, 1rem); }
 }
 @media (max-width: 359.98px) {
-  :root { --gutter: 12px; }
+  :root { --gutter: 12px; --text-xs: 0.8rem; }  /* the 15px root would put xs labels at 11.25px; keep them at 12px */
   html { font-size: 15px; }
   .nav__brand span { display: none; }
 }

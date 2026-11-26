@@ -49,7 +49,7 @@
                 <div class="form-group">
                     <label for="{{ form.password.id_for_label }}" class="form-label">{% trans "Password" %}</label>
                     {{ form.password }}
-                    <a href="{% url 'password_reset' %}" class="pw-forgot" style="display: inline-block; margin-top: 6px; font-size: var(--text-sm, 14px); font-weight: 700;">{% trans "Forgot password?" %}</a>
+                    <a href="{% url 'password_reset' %}" class="pw-forgot" style="display: inline-block; margin-top: 2px; padding-block: 6px; font-size: var(--text-sm, 14px); font-weight: 700;">{% trans "Forgot password?" %}</a>
                 </div>
 
                 <input type="hidden" name="next" value="{{ next }}">
