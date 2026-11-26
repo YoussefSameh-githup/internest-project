@@ -323,8 +323,10 @@ class FrontEndTests(Base):
         html = self.client.get(reverse("landing")).content.decode()
         self.assertRegex(html, r'bootstrap\.bundle\.min(\.[0-9a-f]+)?\.js" defer')
         self.assertIn('async_task_poller', html)
-        self.assertIn('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>', html)
-        self.assertNotIn("cdn.jsdelivr.net", html)  # Bootstrap + icons come from /static/vendor/: one origin less before first paint
+        self.assertRegex(html, r'vendor/fonts/fonts-(rtl|ltr)')
+        self.assertRegex(html, r'rel="preload" href="/static/vendor/fonts/(cairo-arabic|inter-latin)-wght-normal(\.[0-9a-f]+)?\.woff2" as="font"')
+        for third_party in ("cdn.jsdelivr.net", "fonts.googleapis.com", "fonts.gstatic.com"):
+            self.assertNotIn(third_party, html)  # UI libraries and fonts come from /static/vendor/: nothing else before first paint
 
 
 @override_settings(AI_CACHE_TTL=3600, ASYNC_TASK_BACKEND="sync", GEMINI_API_KEY="g-key",

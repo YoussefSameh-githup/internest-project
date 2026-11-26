@@ -40,14 +40,14 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/brand/favicon-32.png' %}">
     <link rel="apple-touch-icon" href="{% static 'img/brand/apple-touch-icon.png' %}">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    {# Only the families this direction's stylesheet uses (styles.css: RTL = Cairo body + Tajawal display, LTR = Inter), #}
-    {# at the weights it uses (400-800; nothing asks for 900). #}
+    {# Fonts are self-hosted (static/vendor/fonts, OFL): no Google round trip before text can render. Only the families #}
+    {# this direction's stylesheet uses (RTL = Cairo body + Tajawal display, LTR = Inter); the body face is preloaded. #}
     {% if LANGUAGE_BIDI %}
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" href="{% static 'vendor/fonts/cairo-arabic-wght-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{% static 'vendor/fonts/fonts-rtl.css' %}">
     {% else %}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" href="{% static 'vendor/fonts/inter-latin-wght-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{% static 'vendor/fonts/fonts-ltr.css' %}">
     {% endif %}
 
     {# Bootstrap + icons are served from our own origin (static/vendor/README.md): no third-party hop before first paint. #}

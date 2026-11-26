@@ -113,7 +113,8 @@ html[dir="rtl"] .lp-intro .brand-lockup { direction: ltr; }
 @keyframes lp-spark { 0% { opacity: 0; transform: scale(.4); } 35% { opacity: .9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.5); } }
 /* Tracking-in look with transform only: animating letter-spacing resized the intro and shifted the hero (CLS). */
 @keyframes lp-tag { from { opacity: 0; transform: scaleX(1.3); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
-@keyframes lp-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+/* Hero copy rises without fading: text that starts at opacity 0 is not "painted", which delayed LCP by ~1 s on phones. */
+@keyframes lp-rise { from { transform: translateY(10px); } to { transform: none; } }
 @media (prefers-reduced-motion: reduce) {   /* no movement: the finished logo simply fades in */
   .lp-intro { animation: lp-fade .6s ease-out both; }
 }
