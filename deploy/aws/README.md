@@ -10,9 +10,9 @@ sudo /usr/local/sbin/update-cloudflare-ips       # refresh now (log: /var/log/up
 
 | File | Installs to | Why |
 | --- | --- | --- |
-| `nginx/internest.conf` | `/etc/nginx/sites-available/internest` | no general `/media/` alias (private uploads go through Django's permission checks; only public company logos are served directly); edge rate limit on auth paths; body/timeout caps |
+| `nginx/internest.conf` | `/etc/nginx/sites-available/internest` | internest.app on 443 with the Cloudflare origin cert (`/etc/nginx/ssl/`, not in git), http → https, origin guard; no general `/media/` alias (private uploads go through Django's permission checks; only public company logos are served directly); edge rate limit on auth paths; body/timeout caps |
 | `nginx/internest-hardening.conf` | `/etc/nginx/conf.d/` | `server_tokens off`, the `internest_auth` limit zone |
-| `update_cloudflare_ips.sh` | `/etc/nginx/conf.d/cloudflare-realip.conf` | trusts `CF-Connecting-IP` only from Cloudflare's published ranges; validated CIDRs, `nginx -t` before reload, restores the old file on failure |
+| `update_cloudflare_ips.sh` | `/etc/nginx/conf.d/cloudflare-realip.conf` and `conf.d/cloudflare-origin-guard.conf` | trusts `CF-Connecting-IP` only from Cloudflare's published ranges, and defines `$from_cloudflare` (the site closes every non-Cloudflare connection with 444, so the origin IP cannot bypass Cloudflare); validated CIDRs, `nginx -t` before reload, restores the old file on failure |
 | `install_cloudflare_cron.sh` | `/usr/local/sbin/update-cloudflare-ips`, `/etc/cron.d/update-cloudflare-ips` | runs the refresh every Sunday 03:00 UTC from a root-owned copy |
 | `lock_sg_to_cloudflare.sh` | (AWS API, run from your machine) | limits the security group's 80/443 to Cloudflare; see below. **Not applied yet.** |
 | `internest-worker.service` | `/etc/systemd/system/` | the background AI worker (`ASYNC_TASK_BACKEND=db`) |
