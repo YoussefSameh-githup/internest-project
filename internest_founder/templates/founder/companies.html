@@ -1,0 +1,22 @@
+{% extends "founder/base.html" %}{% load i18n %}
+{% block title %}{% trans "Companies" %}{% endblock %}
+{% block content %}
+<div class="fc-head"><div><h1>{% trans "Companies" %}</h1><p class="fc-sub">{% blocktrans with p=submissions.Pending|default:0 a=submissions.Approved|default:0 r=submissions.Rejected|default:0 %}Opportunity submissions: {{ p }} pending · {{ a }} approved · {{ r }} rejected{% endblocktrans %}</p></div>
+<a class="fc-btn" href="{% url 'admin:internest_startups_pendingcompanyprofile_changelist' %}"><i class="bi bi-patch-check"></i>{% trans "Verify startups (admin)" %}</a></div>
+<form class="fc-filters" method="get">
+    <label>{% trans "Search" %}<input name="q" value="{{ q }}" type="search"></label>
+    <label>{% trans "Verification" %}<select name="status"><option value="">{% trans "All" %}</option><option value="pending" {% if status == 'pending' %}selected{% endif %}>{% trans "Awaiting verification" %}</option><option value="verified" {% if status == 'verified' %}selected{% endif %}>{% trans "Verified" %}</option></select></label>
+    <button class="fc-btn" type="submit">{% trans "Filter" %}</button>
+</form>
+<div class="fc-table-wrap"><table class="fc-table">
+<thead><tr><th scope="col">{% trans "Company" %}</th><th scope="col">{% trans "Verified" %}</th><th scope="col">{% trans "Open" %}</th><th scope="col">{% trans "All opportunities" %}</th><th scope="col">{% trans "Joined" %}</th><th scope="col">{% trans "Last sign-in" %}</th><th scope="col"><span class="visually-hidden">{% trans "Links" %}</span></th></tr></thead>
+<tbody>{% for c in page %}<tr>
+    <td>{{ c.company_name }}</td>
+    <td>{% if c.is_fully_verified %}<span class="fc-pill is-healthy">{% trans "Verified" %}</span>{% else %}<span class="fc-pill is-degraded">{% trans "Pending" %}</span>{% endif %}</td>
+    <td>{{ c.open_count }}</td><td>{{ c.total_count }}</td>
+    <td>{{ c.user.date_joined|date:"Y-m-d" }}</td><td>{{ c.user.last_login|date:"Y-m-d"|default:"—" }}</td>
+    <td><a href="{% url 'founder:internships' %}?q={{ c.company_name|urlencode }}">{% trans "Opportunities" %}</a> · <a href="{% url 'founder:user_detail' c.user_id %}">{% trans "Account" %}</a></td>
+</tr>{% empty %}<tr><td colspan="7">{% trans "No company matches these filters." as e %}{% include "founder/_empty.html" with icon="building" text=e %}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "founder/_pager.html" %}
+{% endblock %}

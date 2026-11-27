@@ -1,0 +1,3 @@
+{% load i18n %}<div class="fc-bars" role="img" aria-label="{{ label }}: {% for s in series %}{{ s.week|date:'d M' }} {{ s.n }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+    {% for s in series %}<div class="fc-bars__col" title="{{ s.week|date:'d M Y' }}: {{ s.n }}"><span class="fc-bars__n">{{ s.n }}</span><span class="fc-bars__bar" style="--h: {{ s.pct }}%"></span><span class="fc-bars__x">{{ s.week|date:'d/m' }}</span></div>{% endfor %}
+</div>

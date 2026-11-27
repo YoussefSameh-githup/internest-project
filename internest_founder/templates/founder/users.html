@@ -1,0 +1,25 @@
+{% extends "founder/base.html" %}{% load i18n %}
+{% block title %}{% trans "Users" %}{% endblock %}
+{% block content %}
+<div class="fc-head"><div><h1>{% trans "Users" %}</h1><p class="fc-sub">{% blocktrans with n=page.paginator.count %}Accounts: {{ n }}{% endblocktrans %}</p></div></div>
+<form class="fc-filters" method="get">
+    <label>{% trans "Search" %}<input name="q" value="{{ q }}" type="search" placeholder="{% trans 'Username, email or name' %}"></label>
+    <label>{% trans "Role" %}<select name="role"><option value="">{% trans "All" %}</option><option value="student" {% if role == 'student' %}selected{% endif %}>{% trans "Students" %}</option><option value="company" {% if role == 'company' %}selected{% endif %}>{% trans "Companies" %}</option><option value="staff" {% if role == 'staff' %}selected{% endif %}>{% trans "Staff" %}</option></select></label>
+    <label>{% trans "State" %}<select name="state"><option value="">{% trans "All" %}</option><option value="unverified" {% if state == 'unverified' %}selected{% endif %}>{% trans "Email not verified" %}</option><option value="suspended" {% if state == 'suspended' %}selected{% endif %}>{% trans "Suspended" %}</option></select></label>
+    <button class="fc-btn" type="submit">{% trans "Filter" %}</button>
+</form>
+<div class="fc-table-wrap"><table class="fc-table">
+    <thead><tr><th scope="col">{% trans "Account" %}</th><th scope="col">{% trans "Role" %}</th><th scope="col">{% trans "Profile" %}</th><th scope="col">{% trans "Joined" %}</th><th scope="col">{% trans "Last sign-in" %}</th><th scope="col">{% trans "Status" %}</th></tr></thead>
+    <tbody>
+    {% for u in page %}<tr>
+        <td><a href="{% url 'founder:user_detail' u.pk %}">{{ u.get_username }}</a></td>
+        <td>{% if u.is_superuser %}{% trans "Superuser" %}{% elif u.is_staff %}{% trans "Staff" %}{% elif u.studentprofile %}{% trans "Student" %}{% elif u.partnerprofile %}{% trans "Company" %}{% else %}—{% endif %}</td>
+        <td>{% if u.studentprofile %}<span class="fc-meter" style="--v: {{ u.studentprofile.profile_completion_score }}%"></span> {{ u.studentprofile.profile_completion_score }}%{% if u.studentprofile.is_personal_email_verified %} <i class="bi bi-patch-check-fill fc-ok" title="{% trans 'Email verified' %}"></i>{% endif %}{% else %}—{% endif %}</td>
+        <td>{{ u.date_joined|date:"Y-m-d" }}</td>
+        <td>{{ u.last_login|date:"Y-m-d"|default:"—" }}</td>
+        <td>{% if u.is_active %}<span class="fc-pill is-healthy">{% trans "Active" %}</span>{% else %}<span class="fc-pill is-unavailable">{% trans "Suspended" %}</span>{% endif %}</td>
+    </tr>{% empty %}<tr><td colspan="6">{% trans "No account matches these filters." as e %}{% include "founder/_empty.html" with icon="people" text=e %}</td></tr>{% endfor %}
+    </tbody>
+</table></div>
+{% include "founder/_pager.html" %}
+{% endblock %}

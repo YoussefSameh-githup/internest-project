@@ -1,0 +1,26 @@
+{% extends "founder/base.html" %}{% load i18n %}
+{% block title %}{{ member.get_username }}{% endblock %}
+{% block content %}
+<div class="fc-head"><div><p class="fc-crumb"><a href="{% url 'founder:users' %}">{% trans "Users" %}</a></p><h1>{{ member.get_username }}</h1>
+<p class="fc-sub">{% blocktrans with d=member.date_joined|date:"Y-m-d" %}Joined {{ d }}{% endblocktrans %} · {% if member.last_login %}{% blocktrans with t=member.last_login|timesince %}last sign-in {{ t }} ago{% endblocktrans %}{% else %}{% trans "never signed in" %}{% endif %}</p></div>
+{% if can_suspend %}<form method="post" action="{% url 'founder:user_set_active' member.pk %}" data-confirm="{% if member.is_active %}{% trans 'Suspend this account? The person is signed out and cannot sign in until reactivated.' %}{% else %}{% trans 'Reactivate this account?' %}{% endif %}">{% csrf_token %}
+    <input type="hidden" name="active" value="{% if member.is_active %}0{% else %}1{% endif %}">
+    <button class="fc-btn{% if member.is_active %} is-danger{% endif %}" type="submit">{% if member.is_active %}{% trans "Suspend account" %}{% else %}{% trans "Reactivate account" %}{% endif %}</button>
+</form>{% endif %}</div>
+<div class="fc-cols">
+<section class="fc-card"><h2>{% trans "Account" %}</h2><dl class="fc-dl">
+    <dt>{% trans "Status" %}</dt><dd>{% if member.is_active %}{% trans "Active" %}{% else %}{% trans "Suspended" %}{% endif %}</dd>
+    <dt>{% trans "Role" %}</dt><dd>{% if member.is_superuser %}{% trans "Superuser" %}{% elif member.is_staff %}{% trans "Staff" %}{% elif student %}{% trans "Student" %}{% elif member.partnerprofile %}{% trans "Company" %}{% else %}—{% endif %}</dd>
+    <dt>{% trans "Email" %}</dt><dd>{{ member.email|default:"—" }}</dd>
+    {% if student %}<dt>{% trans "Profile completion" %}</dt><dd>{{ student.profile_completion_score }}%</dd>
+    <dt>{% trans "Personal email verified" %}</dt><dd>{% if student.is_personal_email_verified %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</dd>
+    <dt>{% trans "CV" %}</dt><dd>{% if has_cv %}{% trans "Uploaded or built" %}{% else %}{% trans "None" %}{% endif %}</dd>
+    <dt>{% trans "Skills" %}</dt><dd>{% for s in skills %}{{ s.n }} {{ s.status }}{% if not forloop.last %} · {% endif %}{% empty %}—{% endfor %}</dd>{% endif %}
+</dl></section>
+<section class="fc-card"><h2>{% trans "Applications" %}</h2>
+<ul class="fc-list">{% for a in apps %}<li><span>{{ a.internship.title|truncatechars:50 }}</span><small>{{ a.get_status_display }} · {{ a.application_date|date:"Y-m-d" }}</small></li>{% empty %}<li>{% trans "No applications." %}</li>{% endfor %}</ul>
+</section></div>
+<section class="fc-card"><h2>{% trans "Audit history" %}</h2>
+<ul class="fc-timeline">{% for e in history %}<li><time>{{ e.created_at|date:"Y-m-d H:i" }}</time><span>{{ e.get_action_display }}</span><small>{{ e.detail.op|default:e.target }}</small></li>{% empty %}<li>{% trans "No recorded sensitive action." %}</li>{% endfor %}</ul>
+</section>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "founder/base.html" %}{% load i18n %}
+{% block title %}{% trans "Security" %}{% endblock %}
+{% block content %}
+<div class="fc-head"><div><h1>{% trans "Security" %}</h1><p class="fc-sub">{% trans "Configuration checks from the running settings and the audit trail of sensitive actions (ids only, no contents)." %}</p></div></div>
+<div class="fc-cols">
+<section class="fc-card"><h2>{% trans "Posture" %}</h2>
+    <ul class="fc-list">{% for label, ok in posture %}<li><i class="bi {% if ok %}bi-check-circle-fill fc-ok{% else %}bi-exclamation-triangle-fill fc-warn{% endif %}"></i><span>{{ label }}</span><small>{% if ok %}{% trans "on" %}{% else %}{% trans "off" %}{% endif %}</small></li>{% endfor %}</ul>
+    <p class="fc-note">{% trans "Two-factor sign-in is not installed. django-allauth (already used here) ships an MFA module; enabling it for staff accounts is the recommended next step." %}</p>
+</section>
+<section class="fc-card"><h2>{% trans "Staff and superuser accounts" %}</h2>
+    <ul class="fc-list">{% for u in privileged %}<li><i class="bi bi-person-badge"></i><a href="{% url 'founder:user_detail' u.pk %}">{{ u.get_username }}</a><small>{% if u.is_superuser %}{% trans "superuser" %}{% else %}{% trans "staff" %}{% endif %}{% if not u.is_active %} · {% trans "suspended" %}{% endif %}</small><small>{{ u.last_login|date:"Y-m-d"|default:"—" }}</small></li>{% endfor %}</ul>
+</section></div>
+<form class="fc-filters" method="get"><label>{% trans "Action" %}<select name="action"><option value="">{% trans "All" %}</option>{% for code, label in actions %}<option value="{{ code }}" {% if action == code %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label><button class="fc-btn" type="submit">{% trans "Filter" %}</button></form>
+<div class="fc-table-wrap"><table class="fc-table">
+<thead><tr><th scope="col">{% trans "When" %}</th><th scope="col">{% trans "Who" %}</th><th scope="col">{% trans "Action" %}</th><th scope="col">{% trans "Target" %}</th><th scope="col">{% trans "Result" %}</th></tr></thead>
+<tbody>{% for e in page %}<tr><td>{{ e.created_at|date:"Y-m-d H:i" }}</td><td>{{ e.actor.get_username|default:"—" }}</td><td>{{ e.get_action_display }}{% if e.detail.op %} · {{ e.detail.op }}{% endif %}</td><td>{{ e.target }}</td>
+<td>{% if e.detail.ok is False %}<span class="fc-pill is-unavailable">{% trans "refused" %}</span>{% else %}<span class="fc-pill is-healthy">{% trans "ok" %}</span>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="5">{% trans "No audit event." as e %}{% include "founder/_empty.html" with icon="shield" text=e %}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "founder/_pager.html" %}
+{% endblock %}

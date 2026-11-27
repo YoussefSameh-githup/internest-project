@@ -1,0 +1,24 @@
+{% extends "founder/base.html" %}{% load i18n %}
+{% block title %}{% trans "Notifications" %}{% endblock %}
+{% block content %}
+<div class="fc-head"><div><h1>{% trans "Notifications" %}</h1><p class="fc-sub">{% trans "Repeats of the same alert are folded into one line with a counter." %}</p></div>
+<form method="post">{% csrf_token %}<input type="hidden" name="op" value="read_all"><button class="fc-btn" type="submit" {% if not unread_count %}disabled{% endif %}><i class="bi bi-check2-all"></i>{% trans "Mark all as read" %}</button></form></div>
+<nav class="fc-seg" aria-label="{% trans 'Filter' %}">
+    <a href="?" {% if not severity and not unread %}aria-current="true"{% endif %}>{% trans "All" %}</a>
+    <a href="?unread=1" {% if unread %}aria-current="true"{% endif %}>{% trans "Unread" %} ({{ unread_count }})</a>
+    <a href="?severity=critical" {% if severity == 'critical' %}aria-current="true"{% endif %}>{% trans "Critical" %}</a>
+    <a href="?severity=warning" {% if severity == 'warning' %}aria-current="true"{% endif %}>{% trans "Warning" %}</a>
+    <a href="?severity=milestone" {% if severity == 'milestone' %}aria-current="true"{% endif %}>{% trans "Milestone" %}</a>
+    <a href="?severity=info" {% if severity == 'info' %}aria-current="true"{% endif %}>{% trans "Info" %}</a>
+</nav>
+<ul class="fc-notes">
+{% for n in page %}<li class="fc-note-item is-{{ n.severity }}{% if not n.read_at %} is-unread{% endif %}">
+    <span class="fc-pill is-{% if n.severity == 'critical' %}unavailable{% elif n.severity == 'warning' %}degraded{% elif n.severity == 'milestone' %}healthy{% else %}unknown{% endif %}">{{ n.get_severity_display }}</span>
+    <div><p class="fc-note-item__title">{% if n.link %}<a href="{{ n.link }}">{% trans n.title %}</a>{% else %}{% trans n.title %}{% endif %}{% if n.count > 1 %} <span class="fc-count">×{{ n.count }}</span>{% endif %}</p>
+    {% if n.body %}<p class="fc-note">{{ n.body }}</p>{% endif %}
+    <p class="fc-note"><small>{{ n.get_category_display }} · {% blocktrans with t=n.last_seen|timesince %}{{ t }} ago{% endblocktrans %}</small></p></div>
+    {% if not n.read_at %}<form method="post">{% csrf_token %}<input type="hidden" name="id" value="{{ n.pk }}"><button class="fc-btn is-small" type="submit">{% trans "Mark read" %}</button></form>{% endif %}
+</li>{% empty %}<li>{% trans "No notification." as e %}{% include "founder/_empty.html" with icon="bell" text=e %}</li>{% endfor %}
+</ul>
+{% include "founder/_pager.html" %}
+{% endblock %}

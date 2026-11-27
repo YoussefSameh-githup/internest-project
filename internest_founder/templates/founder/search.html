@@ -1,0 +1,12 @@
+{% extends "founder/base.html" %}{% load i18n %}
+{% block title %}{% trans "Search" %}{% endblock %}
+{% block content %}
+<div class="fc-head"><div><h1>{% trans "Search" %}</h1>{% if q %}<p class="fc-sub">{% blocktrans %}Results for “{{ q }}”{% endblocktrans %}</p>{% endif %}</div></div>
+{% if q|length < 2 %}{% trans "Type at least 2 characters in the search box." as e %}{% include "founder/_empty.html" with icon="search" text=e %}{% else %}
+<div class="fc-cols">
+<section class="fc-card"><h2>{% trans "Users" %}</h2><ul class="fc-list">{% for u in results.users %}<li><a href="{% url 'founder:user_detail' u.pk %}">{{ u.get_username }}</a><small>{{ u.date_joined|date:"Y-m-d" }}</small></li>{% empty %}<li>{% trans "No match." %}</li>{% endfor %}</ul></section>
+<section class="fc-card"><h2>{% trans "Companies" %}</h2><ul class="fc-list">{% for c in results.companies %}<li><a href="{% url 'founder:companies' %}?q={{ c.company_name|urlencode }}">{{ c.company_name }}</a></li>{% empty %}<li>{% trans "No match." %}</li>{% endfor %}</ul></section>
+</div>
+<section class="fc-card"><h2>{% trans "Opportunities" %}</h2><ul class="fc-list">{% for i in results.internships %}<li><a href="{% url 'founder:internships' %}?q={{ i.pk }}">#{{ i.pk }} {{ i.title }}</a><small>{{ i.partner.company_name }}</small></li>{% empty %}<li>{% trans "No match." %}</li>{% endfor %}</ul></section>
+{% endif %}
+{% endblock %}

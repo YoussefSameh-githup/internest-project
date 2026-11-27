@@ -1,0 +1,23 @@
+{% extends "founder/base.html" %}{% load i18n %}
+{% block title %}{% trans "Applications" %}{% endblock %}
+{% block content %}
+<div class="fc-head"><div><h1>{% trans "Applications" %}</h1><p class="fc-sub">{% blocktrans with n=total %}Applications in total: {{ n }}{% endblocktrans %}</p></div></div>
+<section class="fc-card"><h2>{% trans "Progression" %}</h2>
+<ol class="fc-funnel">{% for f in funnel %}<li><a href="?status={{ f.code }}" {% if status == f.code %}aria-current="true"{% endif %}><span>{{ f.label }}</span><strong>{{ f.n }}</strong><span class="fc-meter" style="--v: {{ f.pct }}%"></span><small>{{ f.pct }}%</small></a></li>{% endfor %}</ol>
+{% if status %}<a class="fc-more" href="?">{% trans "Show all" %}</a>{% endif %}
+</section>
+<form class="fc-filters" method="get"><input type="hidden" name="status" value="{{ status }}">
+    <label>{% trans "Search" %}<input name="q" value="{{ q }}" type="search" placeholder="{% trans 'Opportunity or username' %}"></label>
+    <button class="fc-btn" type="submit">{% trans "Filter" %}</button>
+</form>
+<div class="fc-table-wrap"><table class="fc-table">
+<thead><tr><th scope="col">{% trans "Date" %}</th><th scope="col">{% trans "Student" %}</th><th scope="col">{% trans "Opportunity" %}</th><th scope="col">{% trans "Company" %}</th><th scope="col">{% trans "Status" %}</th><th scope="col">{% trans "Source" %}</th></tr></thead>
+<tbody>{% for a in page %}<tr>
+    <td>{{ a.application_date|date:"Y-m-d" }}</td>
+    <td><a href="{% url 'founder:user_detail' a.applicant_id %}">{{ a.applicant.get_username }}</a></td>
+    <td>{{ a.internship.title|truncatechars:44 }}</td><td>{{ a.internship.partner.company_name }}</td>
+    <td>{{ a.get_status_display }}</td><td>{{ a.get_source_display }}</td>
+</tr>{% empty %}<tr><td colspan="6">{% trans "No application matches these filters." as e %}{% include "founder/_empty.html" with icon="send" text=e %}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "founder/_pager.html" %}
+{% endblock %}

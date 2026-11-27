@@ -1,0 +1,19 @@
+{% extends "founder/base.html" %}{% load i18n %}
+{% block title %}{% trans "Settings" %}{% endblock %}
+{% block content %}
+<div class="fc-head"><div><h1>{% trans "Settings" %}</h1><p class="fc-sub">{% trans "Thresholds and alert routing. Secrets stay in .env on the server and are never shown here." %}</p></div></div>
+<div class="fc-cols">
+<form class="fc-card fc-form" method="post" novalidate>{% csrf_token %}
+    <h2>{% trans "Alerts and thresholds" %}</h2>
+    {% for field in form %}<div class="fc-field{% if field.errors %} has-error{% endif %}">
+        {% if field.field.widget.input_type == 'checkbox' %}<label class="fc-check-label">{{ field }} {{ field.label }}</label>{% else %}<label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% endif %}
+        {% if field.help_text %}<p class="fc-note">{{ field.help_text }}</p>{% endif %}
+        {% for err in field.errors %}<p class="fc-error" role="alert">{{ err }}</p>{% endfor %}
+    </div>{% endfor %}
+    <button class="fc-btn" type="submit">{% trans "Save settings" %}</button>
+</form>
+<section class="fc-card"><h2>{% trans "Integrations" %}</h2>
+    <ul class="fc-list">{% for label, ok in integrations %}<li><i class="bi {% if ok %}bi-check-circle-fill fc-ok{% else %}bi-dash-circle fc-muted{% endif %}"></i><span>{{ label }}</span><small>{% if ok %}{% trans "configured" %}{% else %}{% trans "not configured" %}{% endif %}</small></li>{% endfor %}</ul>
+    <p class="fc-note">{% trans "Daily summary and periodic alerts are produced by manage.py founder_watch (schedule it every 10 minutes); synthetic timings by manage.py founder_probe (every 30 minutes)." %}</p>
+</section></div>
+{% endblock %}

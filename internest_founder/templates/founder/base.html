@@ -1,0 +1,62 @@
+{% load static i18n %}{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{% block title %}{% trans "Founder Control Center" %}{% endblock %} · Internest</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/brand/internest-mark.svg' %}">
+    {% if LANGUAGE_BIDI %}<link rel="stylesheet" href="{% static 'vendor/fonts/fonts-rtl.css' %}">{% else %}<link rel="stylesheet" href="{% static 'vendor/fonts/fonts-ltr.css' %}">{% endif %}
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons-1.11.3/bootstrap-icons.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'founder/founder.css' %}">
+</head>
+<body class="fc">
+<a class="fc-skip" href="#fc-main">{% trans "Skip to content" %}</a>
+<div class="fc-shell">
+    <aside class="fc-side" id="fc-side" aria-label="{% trans 'Founder navigation' %}">
+        <a class="fc-brand" href="{% url 'founder:overview' %}">
+            <img src="{% static 'img/brand/internest-mark.svg' %}" alt="" width="28" height="28">
+            <span>Internest <small>{% trans "Founder" %}</small></span>
+        </a>
+        <nav class="fc-nav">
+            {% url 'founder:overview' as u %}<a href="{{ u }}" {% if section == 'overview' %}aria-current="page"{% endif %}><i class="bi bi-grid-1x2"></i>{% trans "Overview" %}</a>
+            <p class="fc-nav__group">{% trans "Business" %}</p>
+            {% url 'founder:users' as u %}<a href="{{ u }}" {% if section == 'users' %}aria-current="page"{% endif %}><i class="bi bi-people"></i>{% trans "Users" %}</a>
+            {% url 'founder:companies' as u %}<a href="{{ u }}" {% if section == 'companies' %}aria-current="page"{% endif %}><i class="bi bi-building"></i>{% trans "Companies" %}</a>
+            {% url 'founder:internships' as u %}<a href="{{ u }}" {% if section == 'internships' %}aria-current="page"{% endif %}><i class="bi bi-briefcase"></i>{% trans "Opportunities" %}</a>
+            {% url 'founder:applications' as u %}<a href="{{ u }}" {% if section == 'applications' %}aria-current="page"{% endif %}><i class="bi bi-send-check"></i>{% trans "Applications" %}</a>
+            {% url 'founder:finance' as u %}<a href="{{ u }}" {% if section == 'finance' %}aria-current="page"{% endif %}><i class="bi bi-cash-coin"></i>{% trans "Finance" %}</a>
+            {% url 'founder:analytics' as u %}<a href="{{ u }}" {% if section == 'analytics' %}aria-current="page"{% endif %}><i class="bi bi-bar-chart-line"></i>{% trans "Analytics" %}</a>
+            <p class="fc-nav__group">{% trans "Operations" %}</p>
+            {% url 'founder:system' as u %}<a href="{{ u }}" {% if section == 'system' %}aria-current="page"{% endif %}><i class="bi bi-activity"></i>{% trans "System health" %}</a>
+            {% url 'founder:performance' as u %}<a href="{{ u }}" {% if section == 'performance' %}aria-current="page"{% endif %}><i class="bi bi-speedometer2"></i>{% trans "Performance" %}</a>
+            {% url 'founder:automations' as u %}<a href="{{ u }}" {% if section == 'automations' %}aria-current="page"{% endif %}><i class="bi bi-diagram-3"></i>{% trans "Automations" %}</a>
+            {% url 'founder:security' as u %}<a href="{{ u }}" {% if section == 'security' %}aria-current="page"{% endif %}><i class="bi bi-shield-lock"></i>{% trans "Security" %}</a>
+            {% url 'founder:settings' as u %}<a href="{{ u }}" {% if section == 'settings' %}aria-current="page"{% endif %}><i class="bi bi-sliders"></i>{% trans "Settings" %}</a>
+            <a href="{% url 'admin:index' %}"><i class="bi bi-box-arrow-up-right"></i>{% trans "Django admin" %}</a>
+        </nav>
+    </aside>
+    <div class="fc-body">
+        <header class="fc-top">
+            <button class="fc-menu" type="button" aria-controls="fc-side" aria-expanded="false" data-fc-menu><i class="bi bi-list"></i><span class="visually-hidden">{% trans "Menu" %}</span></button>
+            <form class="fc-search" action="{% url 'founder:search' %}" method="get" role="search">
+                <label class="visually-hidden" for="fc-q">{% trans "Search users, companies, opportunities" %}</label>
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input id="fc-q" name="q" type="search" value="{{ q|default:'' }}" placeholder="{% trans 'Search users, companies, opportunities' %}" minlength="2">
+            </form>
+            <a class="fc-bell{% if critical_unread %} is-critical{% endif %}" href="{% url 'founder:notifications' %}?unread=1" aria-label="{% blocktrans with n=unread_count %}Unread notifications: {{ n }}{% endblocktrans %}">
+                <i class="bi bi-bell"></i>{% if unread_count %}<span class="fc-bell__n">{{ unread_count }}</span>{% endif %}
+            </a>
+            <span class="fc-who"><i class="bi bi-person-circle"></i> {{ request.user.get_username }}</span>
+        </header>
+        <main id="fc-main" class="fc-main">
+            {% if messages %}<div class="fc-flash" role="status">{% for m in messages %}<p class="fc-flash__item is-{{ m.tags }}">{{ m }}</p>{% endfor %}</div>{% endif %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+<script src="{% static 'js/ui_behaviors.js' %}" defer></script>
+<script src="{% static 'founder/founder.js' %}" defer></script>
+</body>
+</html>

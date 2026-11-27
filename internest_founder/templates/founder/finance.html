@@ -1,0 +1,28 @@
+{% extends "founder/base.html" %}{% load i18n %}
+{% block title %}{% trans "Finance" %}{% endblock %}
+{% block content %}
+<div class="fc-head"><div><h1>{% trans "Finance" %}</h1><p class="fc-sub">{% trans "Company orders (Hiring Pass / plans) and course enrollments. Card details are never stored here: online payments go through the gateway." %}</p></div>
+<a class="fc-btn" href="{% url 'admin:internest_startups_proupgraderequest_changelist' %}?status__exact=verifying"><i class="bi bi-receipt"></i>{% trans "Verify receipts (admin)" %}</a></div>
+<section class="fc-grid fc-grid--kpi">
+    {% for s in data.by_status %}<a class="fc-kpi" href="?status={{ s.code }}" {% if status == s.code %}aria-current="true"{% endif %}><p class="fc-kpi__label">{{ s.label }}</p><p class="fc-kpi__value">{{ s.n }}</p></a>{% endfor %}
+</section>
+<div class="fc-cols">
+<section class="fc-card"><h2>{% trans "Confirmed revenue" %}</h2>
+    {% if data.revenue %}<dl class="fc-dl">{% for cur, total in data.revenue.items %}<dt>{% trans "Orders" %} ({{ cur }})</dt><dd>{{ total|floatformat:2 }}</dd>{% endfor %}
+    {% for g in data.by_gateway %}<dt>{{ g.gateway }}</dt><dd>{{ g.n }} · {{ g.total|floatformat:2 }}</dd>{% endfor %}</dl>
+    {% else %}{% trans "No confirmed order yet." as e %}{% include "founder/_empty.html" with icon="cash" text=e %}{% endif %}
+    <p class="fc-note">{% blocktrans with n=data.courses.n t=data.courses.total|floatformat:2 %}Course enrollments: {{ n }}, recorded price total {{ t }}.{% endblocktrans %} {% trans "Refunds are not recorded in the database, so they are not shown." %}</p>
+</section>
+<section class="fc-card"><h2>{% trans "Revenue by week" %}</h2>
+    <ul class="fc-list">{% for w in data.weekly %}<li><span>{{ w.week|date:"Y-m-d" }}</span><strong>{{ w.total|floatformat:2 }} {{ w.currency }}</strong></li>{% empty %}<li>{% trans "No confirmed order yet." %}</li>{% endfor %}</ul>
+</section></div>
+<div class="fc-table-wrap"><table class="fc-table">
+<thead><tr><th scope="col">#</th><th scope="col">{% trans "Created" %}</th><th scope="col">{% trans "Company" %}</th><th scope="col">{% trans "Product" %}</th><th scope="col">{% trans "Amount" %}</th><th scope="col">{% trans "Gateway" %}</th><th scope="col">{% trans "Status" %}</th></tr></thead>
+<tbody>{% for o in page %}<tr>
+    <td><a href="{% url 'admin:internest_startups_proupgraderequest_change' o.pk %}">{{ o.pk }}</a></td><td>{{ o.created_at|date:"Y-m-d" }}</td>
+    <td>{{ o.partner.company_name }}</td><td>{{ o.get_product_display }}</td><td>{{ o.final_price|floatformat:2 }} {{ o.currency }}</td>
+    <td>{{ o.gateway }}</td><td>{{ o.get_status_display }}</td>
+</tr>{% empty %}<tr><td colspan="7">{% trans "No order matches this filter." as e %}{% include "founder/_empty.html" with icon="receipt" text=e %}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "founder/_pager.html" %}
+{% endblock %}

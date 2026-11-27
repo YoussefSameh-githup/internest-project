@@ -1,0 +1,24 @@
+{% extends "founder/base.html" %}{% load i18n %}
+{% block title %}{% trans "Opportunities" %}{% endblock %}
+{% block content %}
+<div class="fc-head"><div><h1>{% trans "Opportunities" %}</h1><p class="fc-sub">{% blocktrans with n=page.paginator.count %}Opportunities: {{ n }}{% endblocktrans %} · {% blocktrans with p=pending %}{{ p }} submissions pending{% endblocktrans %}</p></div>
+<a class="fc-btn" href="{% url 'admin:internest_core_partnerinternshipsubmission_changelist' %}?status__exact=Pending"><i class="bi bi-hourglass-split"></i>{% trans "Review submissions (admin)" %}</a></div>
+<form class="fc-filters" method="get">
+    <label>{% trans "Search" %}<input name="q" value="{{ q }}" type="search" placeholder="{% trans 'Title, company or #id' %}"></label>
+    <label>{% trans "State" %}<select name="state"><option value="">{% trans "All" %}</option><option value="open" {% if state == 'open' %}selected{% endif %}>{% trans "Open" %}</option><option value="expired" {% if state == 'expired' %}selected{% endif %}>{% trans "Expired" %}</option><option value="closed" {% if state == 'closed' %}selected{% endif %}>{% trans "Closed" %}</option></select></label>
+    <button class="fc-btn" type="submit">{% trans "Filter" %}</button>
+</form>
+<div class="fc-table-wrap"><table class="fc-table">
+<thead><tr><th scope="col">{% trans "Opportunity" %}</th><th scope="col">{% trans "Company" %}</th><th scope="col">{% trans "Deadline" %}</th><th scope="col">{% trans "Applicants" %}</th><th scope="col">{% trans "State" %}</th><th scope="col">{% trans "Needs attention" %}</th><th scope="col"><span class="visually-hidden">{% trans "Actions" %}</span></th></tr></thead>
+<tbody>{% for i in page %}<tr>
+    <td><a href="{% url 'internship_detail' i.pk %}" target="_blank" rel="noopener">#{{ i.pk }} {{ i.title|truncatechars:48 }}</a></td>
+    <td>{{ i.partner.company_name }}</td><td>{{ i.deadline|date:"Y-m-d" }}</td><td>{{ i.app_count }}</td>
+    <td><span class="fc-pill is-{% if i.status == 'open' %}healthy{% elif i.status == 'expired' %}degraded{% else %}unknown{% endif %}">{% if i.status == 'open' %}{% trans "Open" %}{% elif i.status == 'expired' %}{% trans "Expired" %}{% else %}{% trans "Closed" %}{% endif %}</span></td>
+    <td>{% for x in i.issues %}<span class="fc-tag">{{ x }}</span>{% empty %}—{% endfor %}</td>
+    <td><form method="post" action="{% url 'founder:internship_set_active' i.pk %}" data-confirm="{% if i.is_active %}{% trans 'Close this opportunity? Students can no longer apply; search engines are asked to recrawl it.' %}{% else %}{% trans 'Reopen this opportunity?' %}{% endif %}">{% csrf_token %}
+        <input type="hidden" name="active" value="{% if i.is_active %}0{% else %}1{% endif %}"><input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="fc-btn is-small{% if i.is_active %} is-danger{% endif %}" type="submit">{% if i.is_active %}{% trans "Close" %}{% else %}{% trans "Reopen" %}{% endif %}</button></form></td>
+</tr>{% empty %}<tr><td colspan="7">{% trans "No opportunity matches these filters." as e %}{% include "founder/_empty.html" with icon="briefcase" text=e %}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "founder/_pager.html" %}
+{% endblock %}

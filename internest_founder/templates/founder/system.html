@@ -1,0 +1,18 @@
+{% extends "founder/base.html" %}{% load i18n %}
+{% block title %}{% trans "System health" %}{% endblock %}
+{% block content %}
+<div class="fc-head"><div><h1>{% trans "System health" %}</h1><p class="fc-sub">{% blocktrans with t=snap.at|date:"H:i:s" %}Checked at {{ t }} (cached up to 30 s). Read-only: nothing here restarts or changes the server.{% endblocktrans %}</p></div>
+<a class="fc-btn" href="?refresh=1"><i class="bi bi-arrow-clockwise"></i>{% trans "Check now" %}</a></div>
+<p class="fc-overall is-{{ snap.overall }}"><span class="fc-dot"></span>{% if snap.overall == 'healthy' %}{% trans "All observed systems are healthy." %}{% elif snap.overall == 'unknown' %}{% trans "Healthy where observed; some checks have no data." %}{% elif snap.overall == 'degraded' %}{% trans "Something needs attention." %}{% else %}{% trans "A system is unavailable." %}{% endif %}</p>
+<section class="fc-grid fc-grid--health">
+    {% for c in snap.checks %}<article class="fc-check is-{{ c.state }}"><h2><span class="fc-dot"></span>{{ c.label }}</h2><p class="fc-check__state">{% if c.state == 'healthy' %}{% trans "Healthy" %}{% elif c.state == 'degraded' %}{% trans "Degraded" %}{% elif c.state == 'unavailable' %}{% trans "Unavailable" %}{% else %}{% trans "Unknown" %}{% endif %}</p><p>{{ c.detail }}</p></article>{% endfor %}
+</section>
+<div class="fc-cols">
+<section class="fc-card"><h2>{% trans "Failed background jobs (7 days)" %}</h2>
+    <ul class="fc-list">{% for f in failing %}<li><span>{{ f.kind }}</span><small>{{ f.status }}</small><strong>{{ f.n }}</strong></li>{% empty %}<li>{% trans "No failed job." %}</li>{% endfor %}</ul>
+    <a class="fc-more" href="{% url 'admin:internest_core_asynctask_changelist' %}">{% trans "Task log (admin)" %} →</a>
+</section>
+<section class="fc-card"><h2>{% trans "What is not observed here" %}</h2>
+    <p class="fc-note">{% blocktrans with b=backend %}Queue backend: {{ b }}. nginx and Cloudflare are observed indirectly by the synthetic probe (a request from the server through Cloudflare). Restarts and server logs stay on the server: they are not exposed to the web.{% endblocktrans %}</p>
+</section></div>
+{% endblock %}

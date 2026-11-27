@@ -1,0 +1,6 @@
+{% load i18n %}{% if page.has_other_pages %}
+<nav class="fc-pager" aria-label="{% trans 'Pages' %}">
+    {% if page.has_previous %}<a href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ page.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}
+    <span>{% blocktrans with n=page.number total=page.paginator.num_pages %}Page {{ n }} of {{ total }}{% endblocktrans %}</span>
+    {% if page.has_next %}<a href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ page.next_page_number }}">{% trans "Next" %}</a>{% endif %}
+</nav>{% endif %}

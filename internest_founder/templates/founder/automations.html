@@ -1,0 +1,26 @@
+{% extends "founder/base.html" %}{% load i18n %}
+{% block title %}{% trans "Automations" %}{% endblock %}
+{% block content %}
+<div class="fc-head"><div><h1>{% trans "Automations (n8n)" %}</h1><p class="fc-sub">{% trans "Django stays the source of truth. Business events are recorded here and, when n8n is connected, delivered as signed webhooks by the background worker." %}</p></div>
+<form method="post">{% csrf_token %}<input type="hidden" name="op" value="test"><button class="fc-btn" type="submit" {% if not configured %}disabled{% endif %}><i class="bi bi-plug"></i>{% trans "Send test event" %}</button></form></div>
+<div class="fc-cols">
+<section class="fc-card"><h2>{% trans "Connection" %}</h2><dl class="fc-dl">
+    <dt>{% trans "Status" %}</dt><dd>{% if configured %}<span class="fc-pill is-healthy">{% trans "Configured" %}</span> {{ host }}{% else %}<span class="fc-pill is-unknown">{% trans "Not connected" %}</span>{% endif %}</dd>
+    <dt>N8N_WEBHOOK_URL</dt><dd>{% if url_set %}{% trans "set" %}{% else %}{% trans "missing (https URL of the n8n Webhook node)" %}{% endif %}</dd>
+    <dt>N8N_WEBHOOK_SECRET</dt><dd>{% if secret_ok %}{% trans "set (never shown)" %}{% else %}{% trans "missing or shorter than 32 characters" %}{% endif %}</dd>
+    <dt>{% trans "Last delivered" %}</dt><dd>{% if last_ok %}{{ last_ok.kind }} · {{ last_ok.delivered_at|timesince }}{% else %}—{% endif %}</dd>
+    <dt>{% trans "Last failure" %}</dt><dd>{% if last_fail %}{{ last_fail.kind }} · {{ last_fail.last_error }}{% else %}—{% endif %}</dd>
+</dl></section>
+<section class="fc-card"><h2>{% trans "Verifying a webhook in n8n" %}</h2>
+<p class="fc-note">{% trans "Each request carries X-Internest-Event-Id, X-Internest-Timestamp and X-Internest-Signature = v1=HMAC-SHA256(secret, timestamp + '.' + raw body). In n8n: Webhook node (raw body) → Code node that recomputes the signature, rejects timestamps older than 5 minutes and skips event ids it has already processed. Retries reuse the same event id." %}</p>
+<p class="fc-note">{% trans "Events: student.registered, company.registered, company.verified, internship.published, internship.closed, milestone.users, milestone.applications, payment.receipt_uploaded, payment.succeeded, payment.cancelled, security.privileged_account, system.website_down, system.worker_down, system.queue_backlog, system.backup_stale, summary.daily." %}</p>
+</section></div>
+<nav class="fc-seg" aria-label="{% trans 'Filter by status' %}"><a href="?" {% if not status %}aria-current="true"{% endif %}>{% trans "All" %}</a>{% for code, label, n in tabs %}<a href="?status={{ code }}" {% if status == code %}aria-current="true"{% endif %}>{{ label }} ({{ n }})</a>{% endfor %}</nav>
+<div class="fc-table-wrap"><table class="fc-table">
+<thead><tr><th scope="col">{% trans "Created" %}</th><th scope="col">{% trans "Event" %}</th><th scope="col">{% trans "Status" %}</th><th scope="col">{% trans "Attempts" %}</th><th scope="col">{% trans "Last response" %}</th><th scope="col"><span class="visually-hidden">{% trans "Actions" %}</span></th></tr></thead>
+<tbody>{% for e in page %}<tr><td>{{ e.created_at|date:"Y-m-d H:i" }}</td><td>{{ e.kind }}</td><td>{{ e.get_status_display }}</td><td>{{ e.attempts }}</td><td>{{ e.last_status_code|default:"" }} {{ e.last_error }}</td>
+<td>{% if e.status == 'failed' and configured %}<form method="post">{% csrf_token %}<input type="hidden" name="op" value="retry"><input type="hidden" name="event" value="{{ e.pk }}"><button class="fc-btn is-small" type="submit">{% trans "Retry" %}</button></form>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="6">{% trans "No event recorded yet." as e %}{% include "founder/_empty.html" with icon="diagram-3" text=e %}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "founder/_pager.html" %}
+{% endblock %}

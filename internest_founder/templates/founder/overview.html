@@ -1,0 +1,79 @@
+{% extends "founder/base.html" %}{% load i18n %}
+{% block title %}{% trans "Overview" %}{% endblock %}
+{% block content %}
+<div class="fc-head">
+    <div><h1>{% trans "Overview" %}</h1><p class="fc-sub">{% trans "Live figures from the Internest database." %}</p></div>
+    <nav class="fc-seg" aria-label="{% trans 'Period' %}">
+        {% for p in periods %}<a href="?days={{ p }}" {% if p|add:0 == days %}aria-current="true"{% endif %}>{% blocktrans with d=p %}{{ d }} days{% endblocktrans %}</a>{% endfor %}
+    </nav>
+</div>
+
+{% if alerts %}
+<section class="fc-alerts" aria-label="{% trans 'Alerts' %}">
+    {% for a in alerts %}<a class="fc-alert is-{{ a.severity }}" href="{{ a.link|default:'/founder/notifications/' }}"><i class="bi bi-exclamation-triangle"></i><span>{% trans a.title %}{% if a.count > 1 %} ×{{ a.count }}{% endif %}</span><time>{{ a.last_seen|timesince }}</time></a>{% endfor %}
+</section>
+{% endif %}
+
+{% with t=data.totals g=data.growth %}
+<section class="fc-grid fc-grid--kpi" aria-label="{% trans 'Key figures' %}">
+    {% trans "Registered users" as l %}{% include "founder/_kpi.html" with label=l value=t.users growth=g.users link="/founder/users/" %}
+    {% blocktrans asvar n with a=t.verified_students b=t.active_students %}{{ a }} verified email · {{ b }} signed in this period{% endblocktrans %}
+    {% trans "Students" as l %}{% include "founder/_kpi.html" with label=l value=t.students note=n link="/founder/users/?role=student" %}
+    {% blocktrans asvar n with a=t.pending_companies %}{{ a }} awaiting verification{% endblocktrans %}
+    {% trans "Companies" as l %}{% include "founder/_kpi.html" with label=l value=t.companies growth=g.companies note=n link="/founder/companies/" %}
+    {% blocktrans asvar n with a=t.expired_internships b=t.closed_internships %}{{ a }} expired · {{ b }} closed{% endblocktrans %}
+    {% trans "Open opportunities" as l %}{% include "founder/_kpi.html" with label=l value=t.open_internships note=n link="/founder/internships/?state=open" %}
+    {% trans "Applications" as l %}{% include "founder/_kpi.html" with label=l value=t.applications growth=g.applications link="/founder/applications/" %}
+    {% blocktrans asvar n with a=t.placements %}{{ a }} accepted or completed{% endblocktrans %}
+    {% trans "In progress" as l %}{% include "founder/_kpi.html" with label=l value=t.pending_applications note=n link="/founder/applications/?status=submitted" %}
+</section>
+{% endwith %}
+
+<div class="fc-cols">
+    <section class="fc-card">
+        <h2>{% trans "Revenue (confirmed orders)" %}</h2>
+        {% if data.revenue.all_time %}
+        <dl class="fc-dl">
+            {% for cur, total in data.revenue.period.items %}<dt>{% blocktrans with d=days %}Last {{ d }} days{% endblocktrans %}</dt><dd>{{ total|floatformat:2 }} {{ cur }}</dd>{% empty %}<dt>{% blocktrans with d=days %}Last {{ d }} days{% endblocktrans %}</dt><dd>0</dd>{% endfor %}
+            {% for cur, total in data.revenue.all_time.items %}<dt>{% trans "All time" %}</dt><dd>{{ total|floatformat:2 }} {{ cur }}</dd>{% endfor %}
+            <dt>{% trans "Receipts to verify" %}</dt><dd>{{ data.totals.orders_to_verify }}</dd>
+        </dl>
+        {% else %}{% trans "No confirmed payment yet." as e %}{% include "founder/_empty.html" with icon="cash" text=e %}{% endif %}
+        <a class="fc-more" href="{% url 'founder:finance' %}">{% trans "Finance" %} →</a>
+    </section>
+
+    <section class="fc-card" data-fc-health="{% url 'founder:health_api' %}" aria-live="polite">
+        <h2>{% trans "System health" %}</h2>
+        <div class="fc-skeleton" data-fc-health-body><span></span><span></span><span></span><span></span></div>
+        <p class="fc-error" data-fc-health-error hidden>{% trans "Health checks could not be loaded." %}</p>
+        <a class="fc-more" href="{% url 'founder:system' %}">{% trans "Details" %} →</a>
+    </section>
+</div>
+
+<div class="fc-cols">
+    <section class="fc-card">
+        <h2>{% trans "Waiting for you" %}</h2>
+        <ul class="fc-list">
+            {% for c in pending_companies %}<li><i class="bi bi-building"></i><span>{{ c.company_name }}</span><small>{% trans "company to verify" %}</small><a href="{% url 'admin:internest_core_partnerprofile_change' c.pk %}">{% trans "Review" %}</a></li>{% endfor %}
+            {% for s in pending_submissions %}<li><i class="bi bi-hourglass-split"></i><span>{{ s.title }}</span><small>{{ s.partner.company_name }}</small><a href="{% url 'admin:internest_core_partnerinternshipsubmission_changelist' %}?status__exact=Pending">{% trans "Review" %}</a></li>{% endfor %}
+        </ul>
+        {% if not pending_companies and not pending_submissions %}{% trans "Nothing is waiting for approval." as e %}{% include "founder/_empty.html" with icon="check2-circle" text=e %}{% endif %}
+    </section>
+    <section class="fc-card">
+        <h2>{% trans "Recent activity" %}</h2>
+        <ul class="fc-timeline">
+            {% for i in activity %}<li class="is-{{ i.kind }}"><time datetime="{{ i.at|date:'c' }}">{{ i.at|timesince }}</time><a href="{{ i.link }}">{{ i.label|truncatechars:60 }}</a><small>{{ i.kind }}</small></li>{% empty %}<li>{% trans "No activity yet." %}</li>{% endfor %}
+        </ul>
+    </section>
+</div>
+
+<section class="fc-card">
+    <h2>{% trans "Quick actions" %}</h2>
+    <div class="fc-actions">
+        <a class="fc-btn" href="{% url 'founder:internships' %}?state=open"><i class="bi bi-briefcase"></i>{% trans "Manage opportunities" %}</a>
+        <a class="fc-btn" href="{% url 'founder:finance' %}?status=verifying"><i class="bi bi-receipt"></i>{% trans "Verify receipts" %}</a>
+        <a class="fc-btn" href="{% url 'founder:performance' %}"><i class="bi bi-speedometer2"></i>{% trans "Check performance" %}</a>
+        <a class="fc-btn" href="{% url 'founder:notifications' %}?unread=1"><i class="bi bi-bell"></i>{% trans "Unread notifications" %}</a>
+    </div>
+</section>
+{% endblock %}

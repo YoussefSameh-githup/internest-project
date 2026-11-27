@@ -1,0 +1,56 @@
+{% extends "founder/base.html" %}{% load i18n %}
+{% block title %}{% trans "Performance" %}{% endblock %}
+{% block content %}
+<div class="fc-head"><div><h1>{% trans "Website performance" %}</h1><p class="fc-sub">{% trans "Three separate sources: synthetic probes (server response through Cloudflare), lab runs (Lighthouse) and field data (real visitors). They are never mixed." %}</p></div>
+<form method="post">{% csrf_token %}<input type="hidden" name="op" value="probe"><button class="fc-btn" type="submit"><i class="bi bi-lightning"></i>{% trans "Run probe now" %}</button></form></div>
+
+<section class="fc-card"><h2>{% trans "Recommendations" %}</h2>
+{% for r in recs %}<details class="fc-rec is-{{ r.severity }}"{% if forloop.first %} open{% endif %}>
+    <summary><span class="fc-pill is-{% if r.severity == 'high' %}unavailable{% elif r.severity == 'medium' %}degraded{% else %}unknown{% endif %}">{% if r.severity == 'high' %}{% trans "High" %}{% elif r.severity == 'medium' %}{% trans "Medium" %}{% else %}{% trans "Low" %}{% endif %}</span> {{ r.problem }}</summary>
+    <dl class="fc-dl">
+        <dt>{% trans "Evidence" %}</dt><dd>{{ r.evidence }}</dd><dt>{% trans "Impact" %}</dt><dd>{{ r.impact }}</dd>
+        <dt>{% trans "Suggested fix" %}</dt><dd>{{ r.fix }}</dd><dt>{% trans "Effort" %}</dt><dd>{{ r.effort }}</dd>
+        <dt>{% trans "Expected benefit" %}</dt><dd>{{ r.benefit }}</dd><dt>{% trans "Safe to automate" %}</dt><dd>{% if r.automatable %}{% trans "Yes" %}{% else %}{% trans "No, needs a review" %}{% endif %}</dd>
+    </dl></details>{% empty %}{% trans "No issue found in the stored measurements. Run a probe or import a Lighthouse report to get evidence." as e %}{% include "founder/_empty.html" with icon="check2-circle" text=e %}{% endfor %}
+</section>
+
+<section class="fc-card"><h2>{% trans "Synthetic probe (last 24 h)" %}</h2>
+<p class="fc-note">{% trans "Source: this server requests each public page through Cloudflare, one after another, at most every 5 minutes. Measures server + network time, not rendering." %}</p>
+{% if probes %}<div class="fc-table-wrap"><table class="fc-table">
+<thead><tr><th scope="col">{% trans "Page" %}</th><th scope="col">{% trans "Status" %}</th><th scope="col">{% trans "TTFB (latest)" %}</th><th scope="col">{% trans "TTFB (median 24 h)" %}</th><th scope="col">{% trans "Total" %}</th><th scope="col">{% trans "Transferred" %}</th><th scope="col">{% trans "Compression" %}</th><th scope="col">{% trans "Edge cache" %}</th><th scope="col">{% trans "Measured" %}</th></tr></thead>
+<tbody>{% for p in probes %}<tr>
+    <td>{{ p.path }}</td><td>{{ p.status_code|default:p.error }}</td>
+    <td class="{% if p.ttfb_ms > prefs.slow_page_ms %}is-bad{% endif %}">{{ p.ttfb_ms|default:"—" }} ms</td><td>{{ p.median_ttfb|default:"—" }} ms <small>({{ p.samples }})</small></td>
+    <td>{{ p.total_ms|default:"—" }} ms</td><td>{% if p.bytes %}{{ p.bytes|filesizeformat }}{% else %}—{% endif %}</td>
+    <td>{{ p.data.content_encoding|default:"—" }}</td><td>{{ p.data.cf_cache_status|default:"—" }}</td><td>{{ p.measured_at|date:"H:i" }}</td>
+</tr>{% endfor %}</tbody></table></div>
+{% else %}{% trans "No probe yet. Run one now or schedule manage.py founder_probe." as e %}{% include "founder/_empty.html" with icon="speedometer" text=e %}{% endif %}
+{% if trend %}<h3>{% trans "Homepage TTFB, daily median" %}</h3>
+<ul class="fc-list">{% for d in trend %}<li><span>{{ d.day|date:"Y-m-d" }}</span><strong>{{ d.median }} ms</strong><small>{% blocktrans with n=d.n %}probes: {{ n }}{% endblocktrans %}</small></li>{% endfor %}</ul>{% endif %}
+</section>
+
+<section class="fc-card"><h2>{% trans "Field data: real visitors (28 days)" %}</h2>
+<p class="fc-note">{% blocktrans with r=rum_rate %}Source: browsers of anonymous visitors on public pages (sample rate {{ r }}), counted per day as good / needs improvement / poor with the web.dev thresholds. No user, IP or URL id is stored. INP is the slowest interaction seen on the page (an approximation of the official p98).{% endblocktrans %}</p>
+{% if field %}<div class="fc-table-wrap"><table class="fc-table">
+<thead><tr><th scope="col">{% trans "Metric" %}</th><th scope="col">{% trans "Device" %}</th><th scope="col">{% trans "Samples" %}</th><th scope="col">{% trans "Good" %}</th><th scope="col">{% trans "Needs improvement" %}</th><th scope="col">{% trans "Poor" %}</th><th scope="col">{% trans "Mean" %}</th><th scope="col">{% trans "Rating" %}</th></tr></thead>
+<tbody>{% for f in field %}<tr><td>{{ f.metric }}</td><td>{{ f.device }}</td><td>{{ f.samples }}</td><td>{{ f.good }}%</td><td>{{ f.ni }}%</td><td>{{ f.poor }}%</td><td>{% if f.metric == 'CLS' %}{{ f.mean|floatformat:3 }}{% else %}{{ f.mean|floatformat:0 }} ms{% endif %}</td>
+<td><span class="fc-pill is-{% if f.verdict == 'good' %}healthy{% elif f.verdict == 'poor' %}unavailable{% else %}degraded{% endif %}">{{ f.verdict }}</span>{% if f.samples < 20 %} <small>{% trans "too few samples" %}</small>{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}{% trans "No field data yet. It appears after real visits once this release is live." as e %}{% include "founder/_empty.html" with icon="people" text=e %}{% endif %}
+</section>
+
+<section class="fc-card"><h2>{% trans "Lab runs (Lighthouse)" %}</h2>
+<p class="fc-note">{% trans "Source: Lighthouse JSON reports you run (DevTools > Lighthouse > Save as JSON, or the lighthouse CLI) and import here. One run is one controlled test, not all visitors." %}</p>
+{% if labs %}<div class="fc-table-wrap"><table class="fc-table">
+<thead><tr><th scope="col">{% trans "Run" %}</th><th scope="col">{% trans "Page" %}</th><th scope="col">{% trans "Device" %}</th><th scope="col">{% trans "Performance" %}</th><th scope="col">LCP</th><th scope="col">CLS</th><th scope="col">{% trans "TBT (lab proxy for INP)" %}</th><th scope="col">{% trans "Page weight" %}</th></tr></thead>
+<tbody>{% for l in labs %}<tr><td>{{ l.measured_at|date:"Y-m-d H:i" }}</td><td>{{ l.url|cut:"https://internest.app"|default:"/" }}</td><td>{{ l.data.form_factor }}</td>
+<td>{% if l.data.scores.performance is not None %}{% widthratio l.data.scores.performance 1 100 %}{% else %}—{% endif %}</td>
+<td>{% if l.data.metrics.LCP %}{% widthratio l.data.metrics.LCP 1000 1 %} s{% else %}—{% endif %}</td>
+<td>{{ l.data.metrics.CLS|floatformat:3|default:"—" }}</td><td>{{ l.data.metrics.TBT|floatformat:0|default:"—" }} ms</td>
+<td>{% if l.bytes %}{{ l.bytes|filesizeformat }}{% else %}—{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}{% trans "No lab run imported yet." as e %}{% include "founder/_empty.html" with icon="clipboard-data" text=e %}{% endif %}
+<form class="fc-filters" method="post" enctype="multipart/form-data">{% csrf_token %}
+    <label>{{ form.report.label }}{{ form.report }}</label>{% for err in form.report.errors %}<p class="fc-error">{{ err }}</p>{% endfor %}
+    <button class="fc-btn" type="submit">{% trans "Import report" %}</button>
+</form>
+</section>
+{% endblock %}

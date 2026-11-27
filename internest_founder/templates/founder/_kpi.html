@@ -1,0 +1,6 @@
+{% load i18n %}<div class="fc-kpi">
+    <p class="fc-kpi__label">{{ label }}</p>
+    <p class="fc-kpi__value">{{ value }}</p>
+    {% if growth %}<p class="fc-kpi__note">{% blocktrans with n=growth.current %}+{{ n }} this period{% endblocktrans %}{% if growth.growth is not None %} · <span class="{% if growth.growth >= 0 %}is-up{% else %}is-down{% endif %}">{% if growth.growth >= 0 %}+{% endif %}{{ growth.growth }}%</span>{% endif %}</p>{% elif note %}<p class="fc-kpi__note">{{ note }}</p>{% endif %}
+    {% if link %}<a class="fc-kpi__link" href="{{ link }}"><span class="visually-hidden">{{ label }}</span></a>{% endif %}
+</div>
