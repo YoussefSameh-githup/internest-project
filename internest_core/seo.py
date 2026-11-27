@@ -17,7 +17,7 @@ from django.utils.translation import gettext_lazy as _
 
 # Areas behind a login or an API: robots.txt Disallow + noindex.
 PRIVATE_PREFIXES = ("/admin/", "/accounts/", "/app/", "/apply/", "/partner/", "/profile/", "/student/", "/startups/", "/api/",
-                    "/media/", "/i18n/", "/ops/", "/oauth/", "/staff/", "/checkout/", "/home/")
+                    "/media/", "/i18n/", "/ops/", "/oauth/", "/staff/", "/checkout/", "/home/", "/founder/", "/rum/")
 # Public on purpose (shareable proof for employers) but personal: crawlable, never indexed.
 PERSONAL_PREFIXES = ("/verify/", "/courses/certificate/", "/notices/")
 NOINDEX_PREFIXES = PRIVATE_PREFIXES + PERSONAL_PREFIXES

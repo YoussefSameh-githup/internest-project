@@ -6,9 +6,12 @@ from django.views.generic import RedirectView
 from django.views.i18n import set_language
 
 from internest_core import social_views, views as core_views, views_password_reset as pw_reset
+from internest_founder import views as founder_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('founder/', include('internest_founder.urls')),  # founder-only control center (internest_founder.access)
+    path('rum/vitals/', founder_views.vitals_beacon, name='rum_vitals'),  # anonymous Web Vitals counters
 
     # Forgot password: email → 6-digit code → new password (internest_core.password_reset). Listed before Django's
     # auth URLs so these win; Django's old link-based reset pages now lead into this flow.

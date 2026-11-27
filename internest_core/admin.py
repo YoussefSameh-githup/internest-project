@@ -16,6 +16,7 @@ from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationFo
 from internest_skills.models import Skill
 
 from . import indexnow
+from .signals import internships_bulk_changed
 from .admin_base import BAD, INFO, OK, WAIT, ModelAdmin, StackedInline, TabularInline, flag_badge, status_badge
 from .models import (
     APIIncident, APIProvider, Application, DiscountCode, EmailVerification, GamificationTask, GigExperience, Internship,
@@ -320,6 +321,7 @@ class InternshipAdmin(ModelAdmin):
         reopened = list(queryset.filter(is_active=False, deadline__gte=opportunity_today()).values_list("pk", flat=True))
         queryset.update(is_active=True)
         indexnow.notify_internships(reopened)
+        internships_bulk_changed.send(sender=Internship, pks=reopened, is_active=True)
         self.message_user(request, _("Selected opportunities are active."))
 
     @admin.action(description=_("Close selected opportunities"))
@@ -327,6 +329,7 @@ class InternshipAdmin(ModelAdmin):
         closing = list(queryset.open().values_list("pk", flat=True))
         queryset.update(is_active=False)
         indexnow.notify_internships(closing)
+        internships_bulk_changed.send(sender=Internship, pks=closing, is_active=False)
         self.message_user(request, _("Selected opportunities are closed."))
 
 

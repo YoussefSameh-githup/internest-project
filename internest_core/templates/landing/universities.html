@@ -1,4 +1,4 @@
-{% load static %}<!doctype html>
+{% load founder_tags static %}<!doctype html>
 <html lang="{{ page_lang }}" dir="{% if page_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
 <head>
 <meta charset="utf-8">
@@ -958,5 +958,6 @@ $("#form").addEventListener("submit",e=>{
 });
 applyLang();
 </script>
+{% rum_script %}
 </body>
 </html>

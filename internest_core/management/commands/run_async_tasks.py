@@ -34,9 +34,12 @@ class Command(BaseCommand):
                 signal.signal(signal.SIGTERM, previous)
 
     def _drain(self, options):
-        done, last_purge, last_reclaim = 0, time.monotonic(), None
+        done, last_purge, last_reclaim, last_beat = 0, time.monotonic(), None, None
         while not self._stop:
             close_old_connections()
+            if last_beat is None or time.monotonic() - last_beat > 15:
+                async_tasks.heartbeat()  # read by the founder System page (shared cache): "is the worker alive?"
+                last_beat = time.monotonic()
             if last_reclaim is None or time.monotonic() - last_reclaim > options["reclaim_every"]:
                 reclaimed = async_tasks.reclaim_stale()
                 if reclaimed:

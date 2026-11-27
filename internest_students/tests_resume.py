@@ -38,6 +38,12 @@ PRIVATE = ("Mona", "Adel", "mona@example.com", "+20 100 123 4567", "linkedin.com
 
 
 class AtsScoreTests(SimpleTestCase):
+    def setUp(self):
+        from django.utils import translation
+
+        translation.activate("en")  # English assertions: a request in an earlier test can leave Arabic active
+        self.addCleanup(translation.deactivate)
+
     def test_complete_cv_scores_high(self):
         report = svc.ats_report(CV)
         self.assertGreaterEqual(report["score"], 90)

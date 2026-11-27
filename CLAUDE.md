@@ -40,7 +40,7 @@ Alerts go to `ADMIN_ALERT_EMAIL` only (30-min cooldown per provider and type). V
 Implement → add tests → AR/EN i18n (`scripts/i18n_catalog.py apply|check|compile`) → run the full suite → commit → `git push origin main`. End replies with the PythonAnywhere steps (`git pull`, plus migrate / pip install / collectstatic / compilemessages when needed, then Reload).
 
 Full test command:
-`../venv-win/Scripts/python.exe manage.py test internest_core internest_skills internest_lounge internest_campus internest_startups internest_students internest_ai internest_careers --parallel 1 --noinput`
+`../venv-win/Scripts/python.exe manage.py test internest_core internest_skills internest_lounge internest_campus internest_startups internest_students internest_ai internest_careers internest_founder --parallel 1 --noinput`
 
 ## Guardrails
 - Never commit secrets (keys live in `.env`). Never commit `INTERNEST_CONTEXT.*` or `pdf_exports/`.

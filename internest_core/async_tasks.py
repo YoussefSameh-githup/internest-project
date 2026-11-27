@@ -35,6 +35,7 @@ import json
 import logging
 import random
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 
@@ -91,6 +92,28 @@ def autodiscover():
 
     autodiscover_modules("jobs")
     return sorted(REGISTRY)
+
+
+HEARTBEAT_KEY = "async-worker:heartbeat"
+
+
+def heartbeat() -> None:
+    """Called by run_async_tasks every ~15 s; never raises (a cache hiccup must not stop the worker)."""
+    from django.core.cache import cache
+
+    try:
+        cache.set(HEARTBEAT_KEY, time.time(), 600)
+    except Exception:
+        logger.warning("Worker heartbeat could not be written", exc_info=True)
+
+
+def last_heartbeat() -> float | None:
+    from django.core.cache import cache
+
+    try:
+        return cache.get(HEARTBEAT_KEY)
+    except Exception:
+        return None
 
 
 def backend() -> str:

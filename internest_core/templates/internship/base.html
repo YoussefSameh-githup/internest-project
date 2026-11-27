@@ -1,4 +1,4 @@
-{% load static i18n skills_tags lounge_tags asset_tags notice_tags %}
+{% load founder_tags static i18n skills_tags lounge_tags asset_tags notice_tags %}
 {% get_current_language as LANGUAGE_CODE %}
 {% get_current_language_bidi as LANGUAGE_BIDI %}
 <!DOCTYPE html>
@@ -333,5 +333,6 @@
     </script>
 
     {% block extra_scripts %}{% endblock %}
+{% rum_script %}
 </body>
 </html>

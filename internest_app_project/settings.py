@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     "internest_students.apps.InternestStudentsConfig",
     "internest_ai.apps.InternestAIConfig",
     "internest_careers.apps.InternestCareersConfig",
+    "internest_founder.apps.InternestFounderConfig",
 ]
 
 SITE_ID = 1
@@ -536,6 +537,10 @@ SALES_EMAIL = env("SALES_EMAIL", default="sales@internest.app")
 SITE_URL = env("SITE_URL", default="")
 # IndexNow (Bing, Yandex...): the key file https://<SITE_URL host>/<key>.txt must serve this exact value. Empty = off.
 INDEXNOW_API_KEY = env("INDEXNOW_API_KEY", default="")
+# Founder Control Center (/founder/). n8n is optional: empty URL or a secret shorter than 32 chars = events stay local.
+N8N_WEBHOOK_URL = env("N8N_WEBHOOK_URL", default="")          # https only
+N8N_WEBHOOK_SECRET = env("N8N_WEBHOOK_SECRET", default="")    # HMAC-SHA256 key, >= 32 random characters
+FOUNDER_RUM_SAMPLE_RATE = env.float("FOUNDER_RUM_SAMPLE_RATE", default=0.1)  # share of anonymous public visits; 0 = off
 SUPPORT_PHONE = env("SUPPORT_PHONE", default="01113999387")
 SUPPORT_EMAIL = env("SUPPORT_EMAIL", default="engineerthe973@gmail.com")
 

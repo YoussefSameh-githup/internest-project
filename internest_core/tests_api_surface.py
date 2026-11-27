@@ -41,14 +41,14 @@ SKIP = {
 
 
 def named_routes():
-    def walk(resolver):
+    def walk(resolver, namespace=""):
         for entry in resolver.url_patterns:
             if isinstance(entry, URLResolver):
                 if entry.namespace == "admin" or str(entry.pattern).startswith(("admin", "i18n")):
                     continue
-                yield from walk(entry)
+                yield from walk(entry, f"{namespace}{entry.namespace}:" if entry.namespace else namespace)
             elif isinstance(entry, URLPattern) and entry.name:
-                yield entry.name, str(entry.pattern)
+                yield f"{namespace}{entry.name}", str(entry.pattern)  # namespaced apps (founder:...) are swept too
     return sorted(set(walk(get_resolver())))
 
 

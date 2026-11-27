@@ -934,6 +934,7 @@ class SecurityEvent(models.Model):
     DATA_EXPORT = "data_export"
     ACCOUNT_DELETED = "account_deleted"
     PASSWORD_RESET = "password_reset"
+    FOUNDER_ACTION = "founder_action"
     ACTION_CHOICES = [
         (PRIVATE_FILE_VIEW, _("Private file opened")),
         (ORDER_ACTIVATED, _("Order activated")),
@@ -942,6 +943,7 @@ class SecurityEvent(models.Model):
         (DATA_EXPORT, _("Data exported")),
         (ACCOUNT_DELETED, _("Account deleted")),
         (PASSWORD_RESET, _("Password reset by email code")),
+        (FOUNDER_ACTION, _("Founder Control Center action")),
     ]
 
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)

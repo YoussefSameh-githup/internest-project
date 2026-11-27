@@ -9774,3 +9774,1241 @@ msgstr ""
 
 msgid "Wrong account? Sign out"
 msgstr "حساب غلط؟ سجّل خروج"
+
+msgid "Founder Control Center action"
+msgstr "إجراء في مركز تحكم المؤسس"
+
+msgid "Alert email"
+msgstr "بريد التنبيهات"
+
+msgid "Email critical alerts"
+msgstr "إرسال التنبيهات الحرجة بالبريد"
+
+msgid "Daily summary email"
+msgstr "ملخص يومي بالبريد"
+
+msgid "User milestone every"
+msgstr "إنجاز المستخدمين كل"
+
+msgid "Application milestone every"
+msgstr "إنجاز الطلبات كل"
+
+msgid "Queue backlog alert at"
+msgstr "تنبيه تراكم الطابور عند"
+
+msgid "Disk alert at (%)"
+msgstr "تنبيه القرص عند (%)"
+
+msgid "Slow page threshold (ms)"
+msgstr "حد الصفحة البطيئة (مللي ثانية)"
+
+msgid "Lighthouse JSON report"
+msgstr "تقرير Lighthouse بصيغة JSON"
+
+msgid "Choose a value between 50 and 99."
+msgstr "اختر قيمة بين 50 و99."
+
+msgid "The report is larger than 8 MB."
+msgstr "حجم التقرير أكبر من 8 ميجابايت."
+
+msgid "Must be at least 1."
+msgstr "يجب أن تكون 1 على الأقل."
+
+msgid "This is not a JSON file."
+msgstr "هذا ليس ملف JSON."
+
+msgid "Public website (via Cloudflare)"
+msgstr "الموقع العام (عبر Cloudflare)"
+
+msgid "Database"
+msgstr "قاعدة البيانات"
+
+msgid ""
+"%(depth)s queued, oldest waiting %(wait)s s, %(failed)s failed or dead in 24"
+" h"
+msgstr ""
+"%(depth)s في الانتظار، الأقدم منذ %(wait)s ث، %(failed)s فشلت أو توقفت خلال "
+"24 ساعة"
+
+msgid "Background worker"
+msgstr "العامل في الخلفية"
+
+msgid "Memory"
+msgstr "الذاكرة"
+
+msgid "CPU"
+msgstr "المعالج"
+
+msgid "Backups"
+msgstr "النسخ الاحتياطية"
+
+msgid "Web application (Gunicorn + Django)"
+msgstr "تطبيق الويب (Gunicorn + Django)"
+
+msgid "Answered this request"
+msgstr "استجاب لهذا الطلب"
+
+msgid "External APIs"
+msgstr "الخدمات الخارجية (APIs)"
+
+msgid "Error tracking (Sentry)"
+msgstr "تتبع الأخطاء (Sentry)"
+
+msgid "%(ms).0f ms round trip"
+msgstr "%(ms).0f مللي ثانية ذهابًا وإيابًا"
+
+msgid "Background queue"
+msgstr "طابور المهام في الخلفية"
+
+msgid "No heartbeat recorded"
+msgstr "لا توجد نبضة مسجلة"
+
+msgid "Last heartbeat %(m)s min ago"
+msgstr "آخر نبضة منذ %(m)s دقيقة"
+
+msgid "Disk"
+msgstr "القرص"
+
+msgid "%(a)s MB available of %(t)s MB"
+msgstr "%(a)s ميجابايت متاحة من %(t)s ميجابايت"
+
+msgid "Load %(l1).2f (1 min), %(l15).2f (15 min) on %(c)s cores"
+msgstr "الحمل %(l1).2f (دقيقة)، %(l15).2f (15 دقيقة) على %(c)s أنوية"
+
+msgid "No backup found: schedule manage.py backup_data"
+msgstr "لا توجد نسخة احتياطية: جدول manage.py backup_data"
+
+msgid "Newest %(h)s h old, %(n)s kept"
+msgstr "أحدثها منذ %(h)s ساعة، والمحفوظ %(n)s"
+
+msgid "No probe yet: run manage.py founder_probe"
+msgstr "لا يوجد قياس بعد: شغّل manage.py founder_probe"
+
+msgid "No incident in 24 h"
+msgstr "لا حوادث خلال 24 ساعة"
+
+msgid "%(n)s incident(s) in 24 h across %(p)s provider(s)"
+msgstr "%(n)s حادثة خلال 24 ساعة لدى %(p)s مزود"
+
+msgid "Configured"
+msgstr "مُعدّ"
+
+msgid "Not configured: errors are only in server logs"
+msgstr "غير مُعدّ: الأخطاء موجودة في سجلات الخادم فقط"
+
+msgid "Query failed"
+msgstr "فشل الاستعلام"
+
+msgid "Queue backend is %(b)s, no separate worker"
+msgstr "نظام الطابور %(b)s، بدون عامل منفصل"
+
+msgid "Heartbeat %(s)s s ago"
+msgstr "نبضة منذ %(s)s ث"
+
+msgid "%(p).0f%% used, %(free).1f GB free"
+msgstr "مستخدم %(p).0f%%، والمتاح %(free).1f جيجابايت"
+
+msgid "Not measurable here"
+msgstr "غير قابل للقياس هنا"
+
+msgid "Backup folder not readable"
+msgstr "تعذّرت قراءة مجلد النسخ الاحتياطية"
+
+msgid "Last probe is stale (%(t)s)"
+msgstr "آخر قياس قديم (%(t)s)"
+
+msgid "HTTP 200, %(ms)s ms to first byte"
+msgstr "HTTP 200، %(ms)s مللي ثانية حتى أول بايت"
+
+msgid "Incident log not readable"
+msgstr "تعذّرت قراءة سجل الحوادث"
+
+msgid "Founder settings"
+msgstr "إعدادات المؤسس"
+
+msgid "Empty: ADMIN_ALERT_EMAIL from .env."
+msgstr "فارغ: يُستخدم ADMIN_ALERT_EMAIL من ملف ‎.env."
+
+msgid "Email critical alerts (deduplicated)."
+msgstr "إرسال التنبيهات الحرجة بالبريد (بدون تكرار)."
+
+msgid "Email a daily founder summary."
+msgstr "إرسال ملخص يومي للمؤسس بالبريد."
+
+msgid "Queued tasks before an alert."
+msgstr "عدد المهام في الانتظار قبل التنبيه."
+
+msgid "Server response time (TTFB) that counts as slow."
+msgstr "زمن استجابة الخادم (TTFB) الذي يُعد بطيئًا."
+
+msgid "Critical"
+msgstr "حرج"
+
+msgid "Warning"
+msgstr "تحذير"
+
+msgid "Milestone"
+msgstr "إنجاز"
+
+msgid "Info"
+msgstr "معلومة"
+
+msgid "Business"
+msgstr "الأعمال"
+
+msgid "System"
+msgstr "النظام"
+
+msgid "Automation"
+msgstr "الأتمتة"
+
+msgid "Security"
+msgstr "الأمان"
+
+msgid "Performance"
+msgstr "الأداء"
+
+msgid "Delivered"
+msgstr "تم التسليم"
+
+msgid "Not configured"
+msgstr "غير مُعدّ"
+
+msgid "Synthetic probe"
+msgstr "قياس اصطناعي"
+
+msgid "Lab (Lighthouse)"
+msgstr "معملي (Lighthouse)"
+
+msgid ""
+"Every visitor waits this long before anything renders; it adds directly to "
+"LCP."
+msgstr "كل زائر ينتظر هذه المدة قبل ظهور أي شيء، وتُضاف مباشرة إلى LCP."
+
+msgid ""
+"Profile the view (query count, template work); cache the anonymous page with"
+" @cache_public_page if it is the same for everyone."
+msgstr ""
+"حلّل الصفحة (عدد الاستعلامات وعمل القالب)، واحفظ الصفحة العامة مؤقتًا بـ "
+"‎@cache_public_page إذا كانت واحدة للجميع."
+
+msgid "1-3 h"
+msgstr "1-3 ساعات"
+
+msgid "Lower TTFB and LCP for every visit (estimate)"
+msgstr "TTFB وLCP أقل لكل زيارة (تقدير)"
+
+msgid "Text sent uncompressed is typically 3-5x larger on mobile networks."
+msgstr "النص غير المضغوط أكبر عادة 3-5 مرات على شبكات الموبايل."
+
+msgid "Enable gzip/Brotli for this content type in nginx or Cloudflare."
+msgstr "فعّل gzip/Brotli لهذا النوع من المحتوى في nginx أو Cloudflare."
+
+msgid "15 min"
+msgstr "15 دقيقة"
+
+msgid "Smaller transfers (estimate)"
+msgstr "حجم نقل أصغر (تقدير)"
+
+msgid "Static files are not cached long-term"
+msgstr "الملفات الثابتة لا تُحفظ مؤقتًا لمدة طويلة"
+
+msgid "Repeat visitors download CSS/JS again."
+msgstr "الزوار المتكررون يحمّلون CSS/JS من جديد."
+
+msgid ""
+"Serve hashed /static/ files with Cache-Control: public, max-age=31536000, "
+"immutable."
+msgstr ""
+"قدّم ملفات ‎/static/‎ المجزأة مع Cache-Control: public, max-age=31536000, "
+"immutable."
+
+msgid "Faster repeat visits (estimate)"
+msgstr "زيارات متكررة أسرع (تقدير)"
+
+msgid "The main content appears late; users on slow phones may leave."
+msgstr "المحتوى الرئيسي يظهر متأخرًا، وقد يغادر مستخدمو الهواتف البطيئة."
+
+msgid ""
+"Start with the Lighthouse opportunities listed for this run (largest savings"
+" first)."
+msgstr "ابدأ بفرص Lighthouse المذكورة لهذا القياس (الأكبر توفيرًا أولًا)."
+
+msgid "2-6 h"
+msgstr "2-6 ساعات"
+
+msgid "Better LCP (Lighthouse estimate, not measured)"
+msgstr "LCP أفضل (تقدير Lighthouse، غير مُقاس)"
+
+msgid "Content jumps while loading; mis-taps."
+msgstr "المحتوى يقفز أثناء التحميل فتحدث نقرات خاطئة."
+
+msgid "Reserve space for images/embeds; avoid animating layout properties."
+msgstr "احجز مساحة للصور والعناصر المضمّنة، وتجنب تحريك خصائص التخطيط."
+
+msgid "1-2 h"
+msgstr "1-2 ساعة"
+
+msgid "Stable layout"
+msgstr "تخطيط ثابت"
+
+msgid "Reported by Lighthouse for this lab run."
+msgstr "أبلغ عنها Lighthouse في هذا القياس المعملي."
+
+msgid "varies"
+msgstr "يختلف"
+
+msgid "Lighthouse estimate, not measured"
+msgstr "تقدير Lighthouse، غير مُقاس"
+
+msgid "This is what real users experience, not a lab run."
+msgstr "هذا ما يعيشه المستخدمون الحقيقيون، وليس قياسًا معمليًا."
+
+msgid "Compare with the lab run for the same page to find the cause."
+msgstr "قارن بالقياس المعملي لنفس الصفحة لمعرفة السبب."
+
+msgid "Measured improvement visible in field data after ~28 days"
+msgstr "يظهر التحسن المُقاس في بيانات الزوار بعد نحو 28 يومًا"
+
+msgid "Slow server response on %(path)s"
+msgstr "استجابة خادم بطيئة في %(path)s"
+
+msgid ""
+"Median TTFB %(ms)s ms over %(n)s probes in 24 h (synthetic, from the server "
+"through Cloudflare)"
+msgstr ""
+"وسيط TTFB ‏%(ms)s مللي ثانية في %(n)s قياس خلال 24 ساعة (اصطناعي، من الخادم "
+"عبر Cloudflare)"
+
+msgid "Uncompressed response: %(path)s"
+msgstr "استجابة غير مضغوطة: %(path)s"
+
+msgid "No Content-Encoding header on the latest probe (%(type)s)"
+msgstr "لا يوجد ترويسة Content-Encoding في آخر قياس (%(type)s)"
+
+msgid "Cache-Control: %(cc)s"
+msgstr "ترويسة Cache-Control الحالية: %(cc)s"
+
+msgid "Lab LCP above 2.5 s on %(path)s"
+msgstr "LCP المعملي أعلى من 2.5 ث في %(path)s"
+
+msgid "Lighthouse %(v)s (%(ff)s): LCP %(lcp).1f s, performance score %(s)s"
+msgstr "Lighthouse %(v)s (%(ff)s): ‏LCP ‏%(lcp).1f ث، ودرجة الأداء %(s)s"
+
+msgid "Layout shifts on %(path)s"
+msgstr "إزاحات في التخطيط في %(path)s"
+
+msgid "Lab CLS %(c).3f"
+msgstr "CLS المعملي %(c).3f"
+
+msgid ""
+"Lighthouse opportunity on %(path)s: ~%(ms)s ms / %(kb)s KB potential savings"
+msgstr ""
+"فرصة Lighthouse في %(path)s: توفير محتمل نحو %(ms)s مللي ثانية / %(kb)s "
+"كيلوبايت"
+
+msgid "See the Lighthouse audit '%(id)s' for the exact resources."
+msgstr "راجع فحص Lighthouse ‏'%(id)s' لمعرفة الموارد بالتحديد."
+
+msgid "Real visitors: poor %(m)s on %(d)s"
+msgstr "الزوار الحقيقيون: %(m)s ضعيف على %(d)s"
+
+msgid "%(p)s%% of %(n)s sampled visits rated poor in 28 days (field data)"
+msgstr ""
+"%(p)s%% من %(n)s زيارة في العينة صُنّفت ضعيفة خلال 28 يومًا (بيانات الزوار)"
+
+msgid "Superuser accounts and your own account cannot be suspended here."
+msgstr "لا يمكن إيقاف حسابات المشرفين الكاملين أو حسابك من هنا."
+
+msgid "Account reactivated."
+msgstr "تمت إعادة تفعيل الحساب."
+
+msgid "Account suspended."
+msgstr "تم إيقاف الحساب."
+
+msgid "short description"
+msgstr "وصف قصير"
+
+msgid "deadline in 3 days"
+msgstr "الموعد النهائي خلال 3 أيام"
+
+msgid "no applicants after a week"
+msgstr "لا متقدمين بعد أسبوع"
+
+msgid "Opportunity reopened."
+msgstr "أُعيد فتح الفرصة."
+
+msgid "Opportunity closed."
+msgstr "أُغلقت الفرصة."
+
+msgid "Debug mode off"
+msgstr "وضع التصحيح متوقف"
+
+msgid "HTTPS redirect"
+msgstr "التحويل إلى HTTPS"
+
+msgid "HSTS"
+msgstr "HSTS (إجبار الاتصال الآمن)"
+
+msgid "Secure session cookie"
+msgstr "كوكي جلسة آمن"
+
+msgid "Secure CSRF cookie"
+msgstr "كوكي CSRF آمن"
+
+msgid "Two-factor sign-in for staff"
+msgstr "التحقق بخطوتين لفريق العمل"
+
+msgid "Settings saved."
+msgstr "تم حفظ الإعدادات."
+
+msgid "n8n webhooks"
+msgstr "Webhooks الخاصة بـ n8n"
+
+msgid "IndexNow"
+msgstr "IndexNow (إبلاغ محركات البحث)"
+
+msgid "Alert email recipient"
+msgstr "مستلم بريد التنبيهات"
+
+msgid "Real-visitor Web Vitals"
+msgstr "مؤشرات الويب من الزوار الحقيقيين"
+
+msgid "A probe ran less than 5 minutes ago; showing those results."
+msgstr "تم قياس منذ أقل من 5 دقائق، وهذه نتائجه."
+
+msgid "Probe queued; results appear here within a minute."
+msgstr "تمت جدولة القياس، وستظهر النتائج هنا خلال دقيقة."
+
+msgid "Lighthouse report imported."
+msgstr "تم استيراد تقرير Lighthouse."
+
+msgid "Test event queued for delivery."
+msgstr "تمت جدولة حدث تجريبي للإرسال."
+
+msgid ""
+"n8n is not configured (N8N_WEBHOOK_URL and N8N_WEBHOOK_SECRET in .env)."
+msgstr "n8n غير مُعدّ (N8N_WEBHOOK_URL وN8N_WEBHOOK_SECRET في ‎.env)."
+
+msgid "Event queued again."
+msgstr "تمت جدولة الحدث مرة أخرى."
+
+msgid "Only failed events can be retried."
+msgstr "يمكن إعادة محاولة الأحداث الفاشلة فقط."
+
+msgid "Analytics"
+msgstr "التحليلات"
+
+msgid ""
+"Weekly counts from the database (last 12 weeks). Page views and clicks are "
+"not tracked, so they are not shown."
+msgstr ""
+"أعداد أسبوعية من قاعدة البيانات (آخر 12 أسبوعًا). مشاهدات الصفحات والنقرات "
+"غير مُتتبّعة، لذلك لا تظهر."
+
+msgid "Registrations per week"
+msgstr "التسجيلات أسبوعيًا"
+
+msgid "New companies per week"
+msgstr "الشركات الجديدة أسبوعيًا"
+
+msgid "Opportunities published per week"
+msgstr "الفرص المنشورة أسبوعيًا"
+
+msgid "Applications per week"
+msgstr "الطلبات أسبوعيًا"
+
+msgid "Application conversion"
+msgstr "تحويل الطلبات"
+
+msgid "%(n)s applications per published opportunity on average."
+msgstr "%(n)s طلب في المتوسط لكل فرصة منشورة."
+
+msgid "Student profile completion"
+msgstr "اكتمال ملفات الطلاب"
+
+msgid "Under 40%%"
+msgstr "أقل من 40%%"
+
+msgid "40-79%%"
+msgstr "40-79%%"
+
+msgid "80%% or more"
+msgstr "80%% أو أكثر"
+
+msgid "Most common majors"
+msgstr "التخصصات الأكثر شيوعًا"
+
+msgid "Opportunity locations"
+msgstr "أماكن الفرص"
+
+msgid "Applications in total: %(n)s"
+msgstr "إجمالي الطلبات: %(n)s"
+
+msgid "Progression"
+msgstr "مراحل التقدم"
+
+msgid "Show all"
+msgstr "عرض الكل"
+
+msgid "Opportunity or username"
+msgstr "الفرصة أو اسم المستخدم"
+
+msgid "No application matches these filters."
+msgstr "لا يوجد طلب يطابق هذه الفلاتر."
+
+msgid "Automations"
+msgstr "الأتمتة"
+
+msgid "Automations (n8n)"
+msgstr "الأتمتة (n8n)"
+
+msgid ""
+"Django stays the source of truth. Business events are recorded here and, "
+"when n8n is connected, delivered as signed webhooks by the background "
+"worker."
+msgstr ""
+"Django يبقى مصدر الحقيقة. تُسجَّل أحداث الأعمال هنا، وعند ربط n8n يرسلها "
+"العامل في الخلفية كـ webhooks موقّعة."
+
+msgid "Send test event"
+msgstr "إرسال حدث تجريبي"
+
+msgid "Connection"
+msgstr "الاتصال"
+
+msgid "Not connected"
+msgstr "غير متصل"
+
+msgid "set"
+msgstr "مضبوط"
+
+msgid "missing (https URL of the n8n Webhook node)"
+msgstr "غير موجود (رابط https لعقدة Webhook في n8n)"
+
+msgid "set (never shown)"
+msgstr "مضبوط (لا يُعرض أبدًا)"
+
+msgid "missing or shorter than 32 characters"
+msgstr "غير موجود أو أقصر من 32 حرفًا"
+
+msgid "Last delivered"
+msgstr "آخر تسليم"
+
+msgid "Last failure"
+msgstr "آخر فشل"
+
+msgid "Verifying a webhook in n8n"
+msgstr "التحقق من الـ webhook في n8n"
+
+msgid ""
+"Each request carries X-Internest-Event-Id, X-Internest-Timestamp and "
+"X-Internest-Signature = v1=HMAC-SHA256(secret, timestamp + '.' + raw body). "
+"In n8n: Webhook node (raw body) → Code node that recomputes the signature, "
+"rejects timestamps older than 5 minutes and skips event ids it has already "
+"processed. Retries reuse the same event id."
+msgstr ""
+"كل طلب يحمل X-Internest-Event-Id وX-Internest-Timestamp وX-Internest-"
+"Signature = v1=HMAC-SHA256(secret, timestamp + '.' + raw body). في n8n: عقدة"
+" Webhook (النص الخام) ← عقدة Code تعيد حساب التوقيع، وترفض الطوابع الزمنية "
+"الأقدم من 5 دقائق، وتتجاهل معرّفات الأحداث التي عالجتها من قبل. إعادة "
+"المحاولة تستخدم نفس معرّف الحدث."
+
+msgid ""
+"Events: student.registered, company.registered, company.verified, "
+"internship.published, internship.closed, milestone.users, "
+"milestone.applications, payment.receipt_uploaded, payment.succeeded, "
+"payment.cancelled, security.privileged_account, system.website_down, "
+"system.worker_down, system.queue_backlog, system.backup_stale, "
+"summary.daily."
+msgstr ""
+"الأحداث: student.registered، company.registered، company.verified، "
+"internship.published، internship.closed، milestone.users، "
+"milestone.applications، payment.receipt_uploaded، payment.succeeded، "
+"payment.cancelled، security.privileged_account، system.website_down، "
+"system.worker_down، system.queue_backlog، system.backup_stale، "
+"summary.daily."
+
+msgid "Filter by status"
+msgstr "التصفية حسب الحالة"
+
+msgid "Created"
+msgstr "تاريخ الإنشاء"
+
+msgid "Event"
+msgstr "الحدث"
+
+msgid "Attempts"
+msgstr "المحاولات"
+
+msgid "Last response"
+msgstr "آخر رد"
+
+msgid "Actions"
+msgstr "الإجراءات"
+
+msgid "Retry"
+msgstr "إعادة المحاولة"
+
+msgid "No event recorded yet."
+msgstr "لم يُسجَّل أي حدث بعد."
+
+msgid "Founder Control Center"
+msgstr "مركز تحكم المؤسس"
+
+msgid "Skip to content"
+msgstr "تخطَّ إلى المحتوى"
+
+msgid "Founder navigation"
+msgstr "تنقل المؤسس"
+
+msgid "Founder"
+msgstr "المؤسس"
+
+msgid "Overview"
+msgstr "نظرة عامة"
+
+msgid "Users"
+msgstr "المستخدمون"
+
+msgid "Finance"
+msgstr "المالية"
+
+msgid "Operations"
+msgstr "التشغيل"
+
+msgid "System health"
+msgstr "صحة النظام"
+
+msgid "Settings"
+msgstr "الإعدادات"
+
+msgid "Django admin"
+msgstr "لوحة Django"
+
+msgid "Menu"
+msgstr "القائمة"
+
+msgid "Search users, companies, opportunities"
+msgstr "ابحث في المستخدمين والشركات والفرص"
+
+msgid "Unread notifications: %(n)s"
+msgstr "إشعارات غير مقروءة: %(n)s"
+
+msgid ""
+"Opportunity submissions: %(p)s pending · %(a)s approved · %(r)s rejected"
+msgstr "طلبات نشر الفرص: %(p)s قيد المراجعة · %(a)s مقبولة · %(r)s مرفوضة"
+
+msgid "Verify startups (admin)"
+msgstr "توثيق الشركات (لوحة الإدارة)"
+
+msgid "Awaiting verification"
+msgstr "في انتظار التوثيق"
+
+msgid "All opportunities"
+msgstr "كل الفرص"
+
+msgid "Joined"
+msgstr "تاريخ الانضمام"
+
+msgid "Last sign-in"
+msgstr "آخر دخول"
+
+msgid "Links"
+msgstr "روابط"
+
+msgid "Account"
+msgstr "الحساب"
+
+msgid "No company matches these filters."
+msgstr "لا توجد شركة تطابق هذه الفلاتر."
+
+msgid ""
+"Company orders (Hiring Pass / plans) and course enrollments. Card details "
+"are never stored here: online payments go through the gateway."
+msgstr ""
+"طلبات الشركات (Hiring Pass / الباقات) والتسجيل في الكورسات. بيانات البطاقات "
+"لا تُخزَّن هنا أبدًا: الدفع الإلكتروني يتم عبر بوابة الدفع."
+
+msgid "Verify receipts (admin)"
+msgstr "مراجعة الإيصالات (لوحة الإدارة)"
+
+msgid "Confirmed revenue"
+msgstr "الإيراد المؤكد"
+
+msgid "Orders"
+msgstr "الطلبات"
+
+msgid "No confirmed order yet."
+msgstr "لا يوجد طلب مؤكد بعد."
+
+msgid "Course enrollments: %(n)s, recorded price total %(t)s."
+msgstr "التسجيل في الكورسات: %(n)s، وإجمالي السعر المسجل %(t)s."
+
+msgid "Refunds are not recorded in the database, so they are not shown."
+msgstr "المبالغ المستردة غير مسجلة في قاعدة البيانات، لذلك لا تظهر."
+
+msgid "Revenue by week"
+msgstr "الإيراد أسبوعيًا"
+
+msgid "Product"
+msgstr "المنتج"
+
+msgid "Amount"
+msgstr "المبلغ"
+
+msgid "Gateway"
+msgstr "بوابة الدفع"
+
+msgid "No order matches this filter."
+msgstr "لا يوجد طلب يطابق هذا الفلتر."
+
+msgid "Opportunities: %(n)s"
+msgstr "الفرص: %(n)s"
+
+msgid "%(p)s submissions pending"
+msgstr "%(p)s طلب نشر قيد المراجعة"
+
+msgid "Review submissions (admin)"
+msgstr "مراجعة طلبات النشر (لوحة الإدارة)"
+
+msgid "Title, company or #id"
+msgstr "العنوان أو الشركة أو ‎#الرقم"
+
+msgid "State"
+msgstr "الحالة"
+
+msgid "Needs attention"
+msgstr "يحتاج متابعة"
+
+msgid ""
+"Close this opportunity? Students can no longer apply; search engines are "
+"asked to recrawl it."
+msgstr ""
+"إغلاق هذه الفرصة؟ لن يتمكن الطلاب من التقديم، وسيُطلب من محركات البحث إعادة "
+"زحفها."
+
+msgid "Reopen this opportunity?"
+msgstr "إعادة فتح هذه الفرصة؟"
+
+msgid "Reopen"
+msgstr "إعادة فتح"
+
+msgid "No opportunity matches these filters."
+msgstr "لا توجد فرصة تطابق هذه الفلاتر."
+
+msgid "Notifications"
+msgstr "الإشعارات"
+
+msgid "Repeats of the same alert are folded into one line with a counter."
+msgstr "تكرارات نفس التنبيه تُجمع في سطر واحد مع عدّاد."
+
+msgid "Mark all as read"
+msgstr "تعليم الكل كمقروء"
+
+msgid "Unread"
+msgstr "غير مقروء"
+
+msgid "Mark read"
+msgstr "تعليم كمقروء"
+
+msgid "No notification."
+msgstr "لا توجد إشعارات."
+
+msgid "Live figures from the Internest database."
+msgstr "أرقام حية من قاعدة بيانات Internest."
+
+msgid "Period"
+msgstr "الفترة"
+
+msgid "%(d)s days"
+msgstr "%(d)s يوم"
+
+msgid "Alerts"
+msgstr "التنبيهات"
+
+msgid "Key figures"
+msgstr "الأرقام الرئيسية"
+
+msgid "Registered users"
+msgstr "المستخدمون المسجلون"
+
+msgid "%(a)s verified email · %(b)s signed in this period"
+msgstr "%(a)s بريد موثّق · %(b)s سجّلوا دخول في هذه الفترة"
+
+msgid "%(a)s awaiting verification"
+msgstr "%(a)s في انتظار التوثيق"
+
+msgid "%(a)s expired · %(b)s closed"
+msgstr "%(a)s منتهية · %(b)s مغلقة"
+
+msgid "%(a)s accepted or completed"
+msgstr "%(a)s مقبولة أو مكتملة"
+
+msgid "Revenue (confirmed orders)"
+msgstr "الإيراد (طلبات مؤكدة)"
+
+msgid "Last %(d)s days"
+msgstr "آخر %(d)s يوم"
+
+msgid "All time"
+msgstr "منذ البداية"
+
+msgid "No confirmed payment yet."
+msgstr "لا يوجد دفع مؤكد بعد."
+
+msgid "Health checks could not be loaded."
+msgstr "تعذّر تحميل فحوصات الصحة."
+
+msgid "Waiting for you"
+msgstr "في انتظارك"
+
+msgid "company to verify"
+msgstr "شركة للتوثيق"
+
+msgid "Nothing is waiting for approval."
+msgstr "لا شيء في انتظار الموافقة."
+
+msgid "Recent activity"
+msgstr "آخر النشاطات"
+
+msgid "No activity yet."
+msgstr "لا نشاط بعد."
+
+msgid "Manage opportunities"
+msgstr "إدارة الفرص"
+
+msgid "Verify receipts"
+msgstr "مراجعة الإيصالات"
+
+msgid "Check performance"
+msgstr "فحص الأداء"
+
+msgid "Unread notifications"
+msgstr "الإشعارات غير المقروءة"
+
+msgid "Website performance"
+msgstr "أداء الموقع"
+
+msgid ""
+"Three separate sources: synthetic probes (server response through "
+"Cloudflare), lab runs (Lighthouse) and field data (real visitors). They are "
+"never mixed."
+msgstr ""
+"ثلاثة مصادر منفصلة: قياسات اصطناعية (استجابة الخادم عبر Cloudflare)، وقياسات"
+" معملية (Lighthouse)، وبيانات الزوار الحقيقيين. لا تُخلط أبدًا."
+
+msgid "Run probe now"
+msgstr "قِس الآن"
+
+msgid "Recommendations"
+msgstr "التوصيات"
+
+msgid "High"
+msgstr "مرتفع"
+
+msgid "Low"
+msgstr "منخفض"
+
+msgid "Impact"
+msgstr "الأثر"
+
+msgid "Suggested fix"
+msgstr "الحل المقترح"
+
+msgid "Effort"
+msgstr "الجهد"
+
+msgid "Expected benefit"
+msgstr "الفائدة المتوقعة"
+
+msgid "Safe to automate"
+msgstr "آمن للأتمتة"
+
+msgid "No, needs a review"
+msgstr "لا، يحتاج مراجعة"
+
+msgid ""
+"No issue found in the stored measurements. Run a probe or import a "
+"Lighthouse report to get evidence."
+msgstr ""
+"لا توجد مشكلة في القياسات المحفوظة. شغّل قياسًا أو استورد تقرير Lighthouse "
+"للحصول على أدلة."
+
+msgid "Synthetic probe (last 24 h)"
+msgstr "القياس الاصطناعي (آخر 24 ساعة)"
+
+msgid ""
+"Source: this server requests each public page through Cloudflare, one after "
+"another, at most every 5 minutes. Measures server + network time, not "
+"rendering."
+msgstr ""
+"المصدر: هذا الخادم يطلب كل صفحة عامة عبر Cloudflare واحدة تلو الأخرى، مرة كل"
+" 5 دقائق على الأكثر. يقيس زمن الخادم والشبكة، وليس الرسم."
+
+msgid "Page"
+msgstr "الصفحة"
+
+msgid "TTFB (latest)"
+msgstr "TTFB (الأحدث)"
+
+msgid "TTFB (median 24 h)"
+msgstr "TTFB (الوسيط خلال 24 ساعة)"
+
+msgid "Transferred"
+msgstr "حجم النقل"
+
+msgid "Compression"
+msgstr "الضغط"
+
+msgid "Edge cache"
+msgstr "تخزين الحافة"
+
+msgid "Measured"
+msgstr "وقت القياس"
+
+msgid "No probe yet. Run one now or schedule manage.py founder_probe."
+msgstr "لا يوجد قياس بعد. شغّل قياسًا الآن أو جدول manage.py founder_probe."
+
+msgid "Homepage TTFB, daily median"
+msgstr "TTFB للصفحة الرئيسية، الوسيط اليومي"
+
+msgid "probes: %(n)s"
+msgstr "القياسات: %(n)s"
+
+msgid "Field data: real visitors (28 days)"
+msgstr "بيانات الزوار الحقيقيين (28 يومًا)"
+
+msgid ""
+"Source: browsers of anonymous visitors on public pages (sample rate %(r)s), "
+"counted per day as good / needs improvement / poor with the web.dev "
+"thresholds. No user, IP or URL id is stored. INP is the slowest interaction "
+"seen on the page (an approximation of the official p98)."
+msgstr ""
+"المصدر: متصفحات الزوار غير المسجلين على الصفحات العامة (نسبة العينة %(r)s)، "
+"تُعدّ يوميًا كجيد / يحتاج تحسين / ضعيف حسب حدود web.dev. لا يُخزَّن أي معرّف"
+" مستخدم أو IP أو رابط. INP هو أبطأ تفاعل على الصفحة (تقريب للقيمة الرسمية "
+"p98)."
+
+msgid "Metric"
+msgstr "المؤشر"
+
+msgid "Device"
+msgstr "الجهاز"
+
+msgid "Samples"
+msgstr "العينات"
+
+msgid "Needs improvement"
+msgstr "يحتاج تحسين"
+
+msgid "Poor"
+msgstr "ضعيف"
+
+msgid "Mean"
+msgstr "المتوسط"
+
+msgid "too few samples"
+msgstr "عينات قليلة جدًا"
+
+msgid ""
+"No field data yet. It appears after real visits once this release is live."
+msgstr "لا توجد بيانات زوار بعد. ستظهر بعد زيارات حقيقية عند نشر هذا الإصدار."
+
+msgid "Lab runs (Lighthouse)"
+msgstr "القياسات المعملية (Lighthouse)"
+
+msgid ""
+"Source: Lighthouse JSON reports you run (DevTools > Lighthouse > Save as "
+"JSON, or the lighthouse CLI) and import here. One run is one controlled "
+"test, not all visitors."
+msgstr ""
+"المصدر: تقارير Lighthouse بصيغة JSON تشغّلها أنت (DevTools > Lighthouse > "
+"Save as JSON أو أداة lighthouse) وتستوردها هنا. كل قياس اختبار واحد محكوم، "
+"وليس كل الزوار."
+
+msgid "Run"
+msgstr "القياس"
+
+msgid "TBT (lab proxy for INP)"
+msgstr "TBT (بديل معملي لـ INP)"
+
+msgid "Page weight"
+msgstr "حجم الصفحة"
+
+msgid "No lab run imported yet."
+msgstr "لم يُستورد أي قياس معملي بعد."
+
+msgid "Import report"
+msgstr "استيراد التقرير"
+
+msgid "Results for “%(q)s”"
+msgstr "نتائج “%(q)s”"
+
+msgid "Type at least 2 characters in the search box."
+msgstr "اكتب حرفين على الأقل في خانة البحث."
+
+msgid "No match."
+msgstr "لا نتائج."
+
+msgid ""
+"Configuration checks from the running settings and the audit trail of "
+"sensitive actions (ids only, no contents)."
+msgstr ""
+"فحوصات الإعدادات الحالية وسجل تدقيق الإجراءات الحساسة (معرّفات فقط، بدون "
+"محتوى)."
+
+msgid "Posture"
+msgstr "الوضع الأمني"
+
+msgid "on"
+msgstr "مفعّل"
+
+msgid "off"
+msgstr "متوقف"
+
+msgid ""
+"Two-factor sign-in is not installed. django-allauth (already used here) "
+"ships an MFA module; enabling it for staff accounts is the recommended next "
+"step."
+msgstr ""
+"التحقق بخطوتين غير مثبت. مكتبة django-allauth (المستخدمة هنا بالفعل) فيها "
+"وحدة MFA، وتفعيلها لحسابات فريق العمل هو الخطوة التالية الموصى بها."
+
+msgid "Staff and superuser accounts"
+msgstr "حسابات فريق العمل والمشرفين الكاملين"
+
+msgid "superuser"
+msgstr "مشرف كامل"
+
+msgid "staff"
+msgstr "فريق العمل"
+
+msgid "suspended"
+msgstr "موقوف"
+
+msgid "When"
+msgstr "الوقت"
+
+msgid "Who"
+msgstr "المنفّذ"
+
+msgid "Target"
+msgstr "الهدف"
+
+msgid "Result"
+msgstr "النتيجة"
+
+msgid "refused"
+msgstr "مرفوض"
+
+msgid "ok"
+msgstr "تم"
+
+msgid "No audit event."
+msgstr "لا توجد أحداث تدقيق."
+
+msgid ""
+"Thresholds and alert routing. Secrets stay in .env on the server and are "
+"never shown here."
+msgstr ""
+"الحدود وتوجيه التنبيهات. الأسرار تبقى في ‎.env على الخادم ولا تُعرض هنا "
+"أبدًا."
+
+msgid "Alerts and thresholds"
+msgstr "التنبيهات والحدود"
+
+msgid "Save settings"
+msgstr "حفظ الإعدادات"
+
+msgid "Integrations"
+msgstr "التكاملات"
+
+msgid "configured"
+msgstr "مُعدّ"
+
+msgid "not configured"
+msgstr "غير مُعدّ"
+
+msgid ""
+"Daily summary and periodic alerts are produced by manage.py founder_watch "
+"(schedule it every 10 minutes); synthetic timings by manage.py founder_probe"
+" (every 30 minutes)."
+msgstr ""
+"الملخص اليومي والتنبيهات الدورية يصدرها manage.py founder_watch (جدوله كل 10"
+" دقائق)، والقياسات الاصطناعية يصدرها manage.py founder_probe (كل 30 دقيقة)."
+
+msgid ""
+"Checked at %(t)s (cached up to 30 s). Read-only: nothing here restarts or "
+"changes the server."
+msgstr ""
+"تم الفحص الساعة %(t)s (مخزن مؤقتًا حتى 30 ث). للقراءة فقط: لا شيء هنا يعيد "
+"تشغيل الخادم أو يغيّره."
+
+msgid "Check now"
+msgstr "افحص الآن"
+
+msgid "All observed systems are healthy."
+msgstr "كل الأنظمة المراقَبة سليمة."
+
+msgid "Healthy where observed; some checks have no data."
+msgstr "سليم فيما تمت مراقبته، وبعض الفحوصات بلا بيانات."
+
+msgid "Something needs attention."
+msgstr "يوجد ما يحتاج متابعة."
+
+msgid "A system is unavailable."
+msgstr "يوجد نظام غير متاح."
+
+msgid "Healthy"
+msgstr "سليم"
+
+msgid "Degraded"
+msgstr "متدهور"
+
+msgid "Unavailable"
+msgstr "غير متاح"
+
+msgid "Unknown"
+msgstr "غير معروف"
+
+msgid "Failed background jobs (7 days)"
+msgstr "المهام الفاشلة في الخلفية (7 أيام)"
+
+msgid "No failed job."
+msgstr "لا توجد مهام فاشلة."
+
+msgid "Task log (admin)"
+msgstr "سجل المهام (لوحة الإدارة)"
+
+msgid "What is not observed here"
+msgstr "ما لا تتم مراقبته هنا"
+
+msgid ""
+"Queue backend: %(b)s. nginx and Cloudflare are observed indirectly by the "
+"synthetic probe (a request from the server through Cloudflare). Restarts and"
+" server logs stay on the server: they are not exposed to the web."
+msgstr ""
+"نظام الطابور: %(b)s. يُراقَب nginx وCloudflare بشكل غير مباشر عبر القياس "
+"الاصطناعي (طلب من الخادم عبر Cloudflare). إعادة التشغيل وسجلات الخادم تبقى "
+"على الخادم ولا تُعرض على الويب."
+
+msgid "Accounts: %(n)s"
+msgstr "الحسابات: %(n)s"
+
+msgid "Username, email or name"
+msgstr "اسم المستخدم أو البريد أو الاسم"
+
+msgid "Email not verified"
+msgstr "البريد غير موثّق"
+
+msgid "Suspended"
+msgstr "موقوف"
+
+msgid "Profile"
+msgstr "الملف"
+
+msgid "Superuser"
+msgstr "مشرف كامل"
+
+msgid "Email verified"
+msgstr "البريد موثّق"
+
+msgid "No account matches these filters."
+msgstr "لا يوجد حساب يطابق هذه الفلاتر."
+
+msgid "Joined %(d)s"
+msgstr "انضم في %(d)s"
+
+msgid "last sign-in %(t)s ago"
+msgstr "آخر دخول منذ %(t)s"
+
+msgid "never signed in"
+msgstr "لم يسجّل دخول أبدًا"
+
+msgid ""
+"Suspend this account? The person is signed out and cannot sign in until "
+"reactivated."
+msgstr ""
+"إيقاف هذا الحساب؟ سيتم تسجيل خروج صاحبه ولن يستطيع الدخول حتى تعيد تفعيله."
+
+msgid "Reactivate this account?"
+msgstr "إعادة تفعيل هذا الحساب؟"
+
+msgid "Suspend account"
+msgstr "إيقاف الحساب"
+
+msgid "Reactivate account"
+msgstr "إعادة تفعيل الحساب"
+
+msgid "Personal email verified"
+msgstr "البريد الشخصي موثّق"
+
+msgid "Uploaded or built"
+msgstr "مرفوعة أو منشأة"
+
+msgid "No applications."
+msgstr "لا توجد طلبات."
+
+msgid "Audit history"
+msgstr "سجل التدقيق"
+
+msgid "No recorded sensitive action."
+msgstr "لا توجد إجراءات حساسة مسجلة."
+
+msgid "+%(n)s this period"
+msgstr "+%(n)s في هذه الفترة"
+
+msgid "Page %(n)s of %(total)s"
+msgstr "صفحة %(n)s من %(total)s"
+
+msgid "Staff or superuser access granted"
+msgstr "تم منح صلاحية فريق العمل أو المشرف الكامل"
+
+msgid "New student registrations today"
+msgstr "تسجيلات طلاب جديدة اليوم"
+
+msgid "New company awaiting verification"
+msgstr "شركة جديدة في انتظار التوثيق"
+
+msgid "Opportunities published today"
+msgstr "فرص منشورة اليوم"
+
+msgid "Payment receipt to verify"
+msgstr "إيصال دفع يحتاج مراجعة"
+
+msgid "Payment confirmed"
+msgstr "تم تأكيد دفع"
+
+msgid "Payment order cancelled"
+msgstr "تم إلغاء طلب دفع"
+
+msgid "Milestone reached: users"
+msgstr "إنجاز جديد: المستخدمون"
+
+msgid "Milestone reached: applications"
+msgstr "إنجاز جديد: الطلبات"
+
+msgid "n8n webhook delivery failed"
+msgstr "فشل إرسال webhook إلى n8n"
+
+msgid "Website is not answering (2 probes failed)"
+msgstr "الموقع لا يستجيب (فشل قياسان)"
+
+msgid "Background worker is not running"
+msgstr "العامل في الخلفية متوقف"
+
+msgid "Background queue backlog"
+msgstr "تراكم في طابور المهام"
+
+msgid "Repeated background job failures"
+msgstr "فشل متكرر في مهام الخلفية"
+
+msgid "Disk space is running low"
+msgstr "مساحة القرص توشك على النفاد"
+
+msgid "No recent database backup"
+msgstr "لا توجد نسخة احتياطية حديثة لقاعدة البيانات"
+
+msgid "Repeated external API errors"
+msgstr "أخطاء متكررة في الخدمات الخارجية"

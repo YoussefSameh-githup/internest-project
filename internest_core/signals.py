@@ -4,13 +4,16 @@ from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 from django.contrib.sites.models import Site
 from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
-from django.dispatch import receiver
+from django.dispatch import Signal, receiver
 
 from . import identity, indexnow  # indexnow also registers its queue job
 from .models import EmailVerification, Internship, PartnerProfile, StudentProfile
 from .notifications import schedule_new_internship_emails  # also registers the batched job
 
 logger = logging.getLogger(__name__)
+
+# Sent by bulk paths that bypass model signals (admin queryset.update()): pks + the new is_active value.
+internships_bulk_changed = Signal()
 
 
 def _absolute_url(path: str) -> str:
