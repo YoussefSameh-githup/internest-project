@@ -534,6 +534,8 @@ SALES_EMAIL = env("SALES_EMAIL", default="sales@internest.app")
 # Canonical public origin for canonical/og URLs, robots.txt and the sitemap (production: https://internest.app).
 # Empty = build from the request (local development).
 SITE_URL = env("SITE_URL", default="")
+# IndexNow (Bing, Yandex...): the key file https://<SITE_URL host>/<key>.txt must serve this exact value. Empty = off.
+INDEXNOW_API_KEY = env("INDEXNOW_API_KEY", default="")
 SUPPORT_PHONE = env("SUPPORT_PHONE", default="01113999387")
 SUPPORT_EMAIL = env("SUPPORT_EMAIL", default="engineerthe973@gmail.com")
 

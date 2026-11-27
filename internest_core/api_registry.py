@@ -144,6 +144,15 @@ register(ProviderSpec(
     code_location="internest_students/cv_builder_service.py: transcribe", dashboard_url="https://console.groq.com/",
 ))
 register(ProviderSpec(
+    key="indexnow", name="IndexNow", category="search",
+    role="Tells Bing and the other IndexNow search engines when a public opportunity or page changes, so they recrawl it",
+    impact="Nothing user-facing: new or closed opportunities reach Bing only on its normal crawl (Google does not use IndexNow).",
+    degraded_behavior="Submissions are retried by the worker, then dropped; the sitemap still lists every open opportunity.",
+    env_var="INDEXNOW_API_KEY", key_setting="INDEXNOW_API_KEY",
+    code_location="internest_core/indexnow.py (job indexnow_submit; called from signals.py and the Internship admin actions)",
+    dashboard_url="https://www.bing.com/webmasters/indexnow",
+))
+register(ProviderSpec(
     key="sendgrid", name="SendGrid", category="email",
     role="Transactional email: verification codes (OTP), shortlist and invitation emails, opportunity notifications and these admin alerts",
     impact="Students cannot receive verification codes (sign-up and login re-verification are blocked), startups get no applicant news, "

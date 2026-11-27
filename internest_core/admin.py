@@ -15,11 +15,12 @@ from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationFo
 
 from internest_skills.models import Skill
 
+from . import indexnow
 from .admin_base import BAD, INFO, OK, WAIT, ModelAdmin, StackedInline, TabularInline, flag_badge, status_badge
 from .models import (
     APIIncident, APIProvider, Application, DiscountCode, EmailVerification, GamificationTask, GigExperience, Internship,
     PartnerApplicantData, PartnerCourseSubmission, PartnerInternshipSubmission, PartnerProfile, StudentEnrollment,
-    StudentProfile, StudentTaskRecord, TaskAnswer, TaskQuestion, UniversityInquiry,
+    StudentProfile, StudentTaskRecord, TaskAnswer, TaskQuestion, UniversityInquiry, opportunity_today,
 )
 
 SUBMISSION_COLORS = {"Pending": WAIT, "Approved": OK, "Rejected": BAD}
@@ -315,12 +316,17 @@ class InternshipAdmin(ModelAdmin):
 
     @admin.action(description=_("Activate selected opportunities"))
     def activate_internships(self, request, queryset):
+        # queryset.update() skips model signals: tell IndexNow about the ones this makes public
+        reopened = list(queryset.filter(is_active=False, deadline__gte=opportunity_today()).values_list("pk", flat=True))
         queryset.update(is_active=True)
+        indexnow.notify_internships(reopened)
         self.message_user(request, _("Selected opportunities are active."))
 
     @admin.action(description=_("Close selected opportunities"))
     def close_internships(self, request, queryset):
+        closing = list(queryset.open().values_list("pk", flat=True))
         queryset.update(is_active=False)
+        indexnow.notify_internships(closing)
         self.message_user(request, _("Selected opportunities are closed."))
 
 
@@ -333,8 +339,7 @@ class PartnerInternshipSubmissionAdmin(ModelAdmin):
     actions = ["approve_submissions", "reject_submissions"]
     status_col = status_badge("status", SUBMISSION_COLORS)
 
-    @admin.action(description=_("Approve and publish selected submissions"))
-    def approve_submissions(self, request, queryset):
+    def _publish_submissions(self, queryset):
         approved, errors = 0, []
         for submission in queryset.filter(status="Pending"):
             try:
@@ -349,6 +354,12 @@ class PartnerInternshipSubmissionAdmin(ModelAdmin):
                 approved += 1
             except Exception as exc:
                 errors.append(f"{submission.title}: {str(exc)[:100]}")
+        return approved, errors
+
+    @admin.action(description=_("Approve and publish selected submissions"))
+    def approve_submissions(self, request, queryset):
+        with indexnow.batch():  # all opportunities published here go to IndexNow in one request
+            approved, errors = self._publish_submissions(queryset)
         if approved:
             self.message_user(request, _("%(n)s submissions approved and published to students.") % {"n": approved}, messages.SUCCESS)
         for error in errors:

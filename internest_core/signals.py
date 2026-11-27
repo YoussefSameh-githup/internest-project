@@ -3,10 +3,10 @@ import logging
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 from django.contrib.sites.models import Site
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 
-from . import identity
+from . import identity, indexnow  # indexnow also registers its queue job
 from .models import EmailVerification, Internship, PartnerProfile, StudentProfile
 from .notifications import schedule_new_internship_emails  # also registers the batched job
 
@@ -20,6 +20,35 @@ def _absolute_url(path: str) -> str:
         return f"{protocol}://{current_site.domain}{path}"
     except Site.DoesNotExist:
         return f"http://127.0.0.1:8000{path}"
+
+
+@receiver(pre_save, sender=Internship)
+def remember_public_state(sender, instance, raw=False, **kwargs):
+    """Was this opportunity public before the save? (One indexed lookup, on writes only.)"""
+    if raw:
+        return
+    instance._indexnow_was_open = bool(instance.pk) and Internship.objects.open().filter(pk=instance.pk).exists()
+
+
+@receiver(post_save, sender=Internship)
+def indexnow_on_save(sender, instance, raw=False, **kwargs):
+    """Public now (new, edited, reopened) or public until this save (closed, deadline moved back): ask for a recrawl.
+    An opportunity that was never public is never submitted."""
+    if raw:
+        return
+    if instance.is_open or getattr(instance, "_indexnow_was_open", False):
+        indexnow.notify_internships([instance.pk])
+
+
+@receiver(pre_delete, sender=Internship)
+def remember_public_before_delete(sender, instance, **kwargs):
+    instance._indexnow_was_open = instance.is_open
+
+
+@receiver(post_delete, sender=Internship)
+def indexnow_on_delete(sender, instance, **kwargs):
+    if getattr(instance, "_indexnow_was_open", False):  # the public page now answers 404: recrawl it
+        indexnow.notify_internships([instance.pk])
 
 
 @receiver(post_save, sender=Internship)
